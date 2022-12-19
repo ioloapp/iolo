@@ -1,0 +1,29 @@
+{
+  "canisters": {
+    "iccrypt_backend": {
+      "candid": "src/iccrypt_backend/iccrypt_backend.did",
+      "package": "iccrypt_backend",
+      "type": "rust"
+    },
+    "iccrypt_frontend": {
+      "dependencies": [
+        "iccrypt_backend"
+      ],
+      "frontend": {
+        "entrypoint": "src/iccrypt_frontend/src/index.html"
+      },
+      "source": [
+        "src/iccrypt_frontend/assets",
+        "dist/iccrypt_frontend/"
+      ],
+      "type": "assets"
+    }
+  },
+  "defaults": {
+    "build": {
+      "args": "",
+      "packtool": ""
+    }
+  },
+  "version": 1
+}
