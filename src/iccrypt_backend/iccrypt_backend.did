@@ -1,3 +1,16 @@
+type Secret = record {
+  id : text;
+  url : text;
+  username : text;
+  owner : text;
+  password : text;
+  name : text;
+  category : SecretCategory;
+};
+type SecretCategory = variant { Password; CryptoWallet };
 service : {
-    "greet": (text) -> (text) query;
+  add_test_secrets : () -> ();
+  add_user_secret : (text, Secret) -> ();
+  get_all_secrets : () -> (vec Secret) query;
+  get_user_secrets : (text) -> (vec record { text; Secret }) query;
 }

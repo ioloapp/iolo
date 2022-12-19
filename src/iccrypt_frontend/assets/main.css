@@ -1,37 +1,176 @@
+/* Google Font Import - Poppins */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+* {
+    font-family: 'Poppins', sans-serif;
+}
+
+:root {
+    /* ===== Colors ===== */
+    --body-color: #F9FAFC;
+    --sidenav-color: #121828;
+    --sidenav-font: rgb(209, 213, 219);
+    --topbar-color: #fff;
+    --primary-color: #3a3b3c;
+    --primary-color-light: #3a3b3c;
+    --toggle-color: #fff;
+    --text-color: #000;
+
+    /* ====== Transition ====== */
+    --tran-03: all 0.2s ease;
+    --tran-03: all 0.3s ease;
+    --tran-04: all 0.3s ease;
+    --tran-05: all 0.3s ease;
+}
+
 body {
-    font-family: sans-serif;
-    font-size: 1.5rem;
+    /* min-height: 100vh; */
+    background-color: var(--body-color);
+    /* transition: var(--tran-05); */
 }
 
-img {
-    max-width: 50vw;
-    max-height: 25vw;
-    display: block;
-    margin: auto;
+
+.home {
+    margin-top: 90px;
+    margin-left: 20px;
 }
 
-form {
+.home>div {
     display: flex;
-    justify-content: center;
-    gap: 0.5em;
-    flex-flow: row wrap;
-    max-width: 40vw;
-    margin: auto;
+    flex-direction: column;
+}
+
+button {
+    background-color: var(--primary-color);
+    color: rgb(16, 185, 129);
+    border: 2px solid var(--primary-color);
+
+}
+
+button,
+input {
+    padding-left: 5px;
+    padding-right: 5px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    border-radius: 4px;
+}
+
+/* Create a top navigation bar with a black background color  */
+.topnav {
+    width: 100%;
+    background-color: white;
+    overflow: auto;
+    box-shadow: rgb(100 116 139 / 12%) 0px 1px 4px;
+    top: 0px;
+    left: 0px;
+    position: fixed;
     align-items: baseline;
+    /* display: flex; */
 }
 
-button[type="submit"] {
-    padding: 5px 20px;
-    margin: 10px auto;
+/* Navbar links */
+.topnav a {
+    vertical-align: middle;
+    float: left;
+    text-align: center;
+    padding: 16px;
+    color: var(--text-color);
+    text-decoration: none;
+    font-size: 22px;
+}
+
+/* Navbar links on mouse-over */
+.topnav a:hover {
+    background-color: white;
+}
+
+.topnav a.split {
     float: right;
+    /* background-color: #04AA6D; */
+    /* color: white; */
 }
 
-#greeting {
-    margin: 10px auto;
-    padding: 10px 60px;
-    border: 1px solid #222;
+.topnav input.split {
+    margin-top: 16px;
+    float: right;
+    height: 20px;
+    width: 240px;
+    /* background-color: #04AA6D; */
+    /* color: white; */
 }
 
-#greeting:empty {
+/* Style the sidebar - fixed full height */
+.sidenav {
+    height: 100%;
+    width: 300px;
+    position: fixed;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    background-color: var(--sidenav-color);
+    overflow-x: hidden;
+    padding-top: 16px;
+    transition: 0.5s;
+    overflow-x: hidden;
+}
+
+.sidenav.hidden {
     display: none;
+}
+
+.sidenav a.close {
+    position: absolute;
+    margin-top: 0px;
+    text-align: right;
+    margin-left: 230px
+}
+
+
+
+.sidenav a {
+    padding-top: 4px;
+    padding-bottom: 4px;
+    padding-left: 32px;
+    padding-right: 32px;
+    margin-left: 20px;
+    margin-right: 20px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    text-decoration: none;
+    font-size: 20px;
+    color: var(--sidenav-font);
+    display: block;
+    border-radius: 10px;
+}
+
+.sidenav img {
+    height: 64px;
+    margin-bottom: 64px;
+}
+
+.sidenav i {
+    margin-right: 8px;
+}
+
+.sidenav a:hover {
+    background-color: #1f2536;
+    color: rgb(16, 185, 129);
+}
+
+@media screen and (min-width: 1000px) {
+
+    .sidenav,
+    .sidenav.hidden {
+        display: block;
+    }
+
+    .sidenav .close {
+        display: none;
+    }
+
+    .home {
+        margin-left: 320px;
+    }
+
 }

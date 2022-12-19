@@ -1,19 +1,42 @@
-import { iccrypt_backend } from "../../declarations/iccrypt_backend";
+import React from "react";
+import { createRoot } from 'react-dom/client';
 
-document.querySelector("form").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const button = e.target.querySelector("button");
+import Topnav from "./topnav";
+import Sidenav from "./sidenav";
+import { useState } from "react";
+import Passwords from "./passwords/passwords";
 
-  const name = document.getElementById("name").value.toString();
 
-  button.setAttribute("disabled", true);
 
-  // Interact with foo actor, calling the greet method
-  const greeting = await iccrypt_backend.greet(name);
+const ICCrypt = () => {
 
-  button.removeAttribute("disabled");
+  const [sidenavHidden, setSidenavHidden] = useState(true);
 
-  document.getElementById("greeting").innerText = greeting;
 
-  return false;
-});
+
+  const openSidenav = () => {
+    setSidenavHidden(false);
+
+  }
+
+  const closeSidenav = () => {
+    setSidenavHidden(true);
+
+  }
+
+  return (
+    <div>
+      <Topnav openSidenav={openSidenav} />
+      <Sidenav closeSidenav={closeSidenav} isHidden={sidenavHidden} />
+
+      <div className="home">
+        <Passwords />
+      </div>
+    </div >
+  );
+};
+
+
+const rootElement = document.getElementById('app');
+const root = createRoot(rootElement);
+root.render(<ICCrypt />);
