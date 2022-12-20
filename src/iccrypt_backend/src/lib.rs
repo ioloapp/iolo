@@ -1,6 +1,6 @@
 use candid::candid_method;
 
-mod secrets;
+mod smart_vaults;
 
 // thread_local! {
 //     // SECRETS: UserId -> PasswordMap -> Password
