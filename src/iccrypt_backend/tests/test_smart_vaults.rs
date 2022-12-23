@@ -1,11 +1,16 @@
 use candid::{Encode, Principal};
 use ic_agent::Agent;
 use iccrypt_backend;
-use iccrypt_backend::smart_vaults::secret::{Secret, SecretCategory};
-use iccrypt_backend::smart_vaults::smart_vault::{add_user_secret, get_user_safe};
-use iccrypt_backend::users::user::{User, UserID};
+use iccrypt_backend::smart_vaults::secret::Secret;
+use iccrypt_backend::smart_vaults::smart_vault::{
+    add_user_secret, get_user_safe, update_user_secret,
+};
+use iccrypt_backend::users::user::User;
+
+use crate::test_data::{TEST_SECRET_1, TEST_SECRET_2, TEST_SECRET_3, TEST_SECRET_4};
 
 mod common;
+pub mod test_data;
 
 #[tokio::test]
 async fn test_smart_vaults() -> Result<(), Box<dyn std::error::Error>> {
@@ -26,59 +31,60 @@ async fn test_smart_vaults() -> Result<(), Box<dyn std::error::Error>> {
     let mut de = candid::de::IDLDeserialize::new(&res)?;
     dbg!(de.get_value::<String>().unwrap());
 
-    test_add_user_secrets().await?;
+    test_user_secrets_crud().await?;
+
     Ok(())
 }
 
-async fn test_add_user_secrets() -> Result<(), Box<dyn std::error::Error>> {
-    let test_user1 = User::new_random(1);
-    let test_user2 = User::new_random(2);
+async fn test_user_secrets_crud() -> Result<(), Box<dyn std::error::Error>> {
+    let test_user1: User = User::new_random_with_seed(1);
+    let test_user2: User = User::new_random_with_seed(2);
 
     add_user_secret(
-        test_user1.clone(),
+        test_user1.get_id(),
         Secret::new(
-            test_user1.clone(),
-            SecretCategory::Password,
-            "Tobi's first Secret".to_owned(),
-            "username1".to_owned(),
-            "password1".to_owned(),
-            "www.super.com".to_owned(),
+            test_user1.get_id(),
+            TEST_SECRET_1.category,
+            TEST_SECRET_1.name.to_string(),
+            TEST_SECRET_1.username.to_string(),
+            TEST_SECRET_1.password.to_string(),
+            TEST_SECRET_1.name.to_string(),
         ),
     );
 
     add_user_secret(
-        test_user1.clone(),
+        test_user1.get_id(),
         Secret::new(
-            test_user1.clone(),
-            SecretCategory::Password,
-            "Tobi's second Secret".to_owned(),
-            "username2".to_owned(),
-            "password2".to_owned(),
-            "www.duper.com".to_owned(),
+            test_user1.get_id(),
+            TEST_SECRET_2.category,
+            TEST_SECRET_2.name.to_string(),
+            TEST_SECRET_2.username.to_string(),
+            TEST_SECRET_2.password.to_string(),
+            TEST_SECRET_2.name.to_string(),
         ),
     );
 
     add_user_secret(
-        test_user2.clone(),
+        test_user2.get_id(),
         Secret::new(
-            test_user2.clone(),
-            SecretCategory::Password,
-            "name of this".to_owned(),
-            "username1".to_owned(),
-            "password1".to_owned(),
-            "www.super.com".to_owned(),
+            test_user2.get_id(),
+            TEST_SECRET_3.category,
+            TEST_SECRET_3.name.to_string(),
+            TEST_SECRET_3.username.to_string(),
+            TEST_SECRET_3.password.to_string(),
+            TEST_SECRET_3.name.to_string(),
         ),
     );
 
     add_user_secret(
-        test_user2.clone(),
+        test_user2.get_id(),
         Secret::new(
-            test_user2.clone(),
-            SecretCategory::Password,
-            "name of another thing".to_owned(),
-            "username2".to_owned(),
-            "password2".to_owned(),
-            "www.duper.com".to_owned(),
+            test_user2.get_id(),
+            TEST_SECRET_4.category,
+            TEST_SECRET_4.name.to_string(),
+            TEST_SECRET_4.username.to_string(),
+            TEST_SECRET_4.password.to_string(),
+            TEST_SECRET_4.name.to_string(),
         ),
     );
 
@@ -86,17 +92,36 @@ async fn test_add_user_secrets() -> Result<(), Box<dyn std::error::Error>> {
     //     dbg!(&ms);
     // });
 
-    let user1_secrets = get_user_safe(test_user1.clone()).secrets;
-    let user2_secrets = get_user_safe(test_user2.clone()).secrets;
+    // check right number of secrets in user safe
+    let user1_secrets = get_user_safe(test_user1.get_id()).secrets;
+    let user2_secrets = get_user_safe(test_user2.get_id()).secrets;
     assert_eq!(user1_secrets.keys().len(), 2);
     assert_eq!(user2_secrets.keys().len(), 2);
 
+    // check rightful owner of secrets within user safe
     for (_, secret) in user1_secrets.into_iter() {
-        assert_eq!(secret.get_owner(), test_user1.clone());
+        assert_eq!(secret.get_owner(), test_user1.get_id());
     }
 
     for (_, secret) in user2_secrets.into_iter() {
-        assert_eq!(secret.get_owner(), test_user2.clone());
+        assert_eq!(secret.get_owner(), test_user2.get_id());
     }
+
+    // check right secrets
+
+    // check if changing a password works
+    let better_pwd = "my_new_and_better_pwd".to_string();
+    update_user_secret(
+        test_user1.get_id(),
+        Secret::new(
+            test_user1.get_id(),
+            TEST_SECRET_1.category,
+            TEST_SECRET_1.name.to_string(),
+            TEST_SECRET_1.username.to_string(),
+            better_pwd,
+            TEST_SECRET_1.name.to_string(),
+        ),
+    );
+
     Ok(())
 }

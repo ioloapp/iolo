@@ -25,4 +25,5 @@ service : {
   add_user_secret : (principal, Secret) -> ();
   get_user_safe : (principal) -> (UserSafe) query;
   say_hi : () -> (text) query;
+  update_user_secret : (principal, Secret) -> ();
 }

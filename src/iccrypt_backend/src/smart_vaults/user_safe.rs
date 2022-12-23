@@ -29,4 +29,12 @@ impl UserSafe {
     pub fn add_secret(&mut self, secret: Secret) {
         self.secrets.insert(secret.get_id(), secret);
     }
+
+    pub fn remove_secret(&mut self, secret_id: SecretID) {
+        self.secrets.remove(&secret_id);
+    }
+
+    pub fn update_secret(&mut self, secret: Secret) {
+        self.secrets.insert(secret.get_id(), secret);
+    }
 }

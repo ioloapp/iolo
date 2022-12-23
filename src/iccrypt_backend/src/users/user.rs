@@ -1,5 +1,3 @@
-use std::fmt;
-
 use candid::{CandidType, Deserialize, Principal};
 
 pub type UserID = Principal;
@@ -26,10 +24,11 @@ impl User {
         self.id
     }
 
-    pub fn new_random(seed: u8) -> UserID {
-        Principal::from_slice(&[
+    pub fn new_random_with_seed(seed: u8) -> User {
+        let p = Principal::from_slice(&[
             seed, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0,
-        ])
+        ]);
+        User::new(p)
     }
 }

@@ -3,6 +3,7 @@ use std::collections::BTreeMap;
 use std::vec;
 
 use candid::candid_method;
+use ic_cdk::caller;
 
 use crate::users::user::{User, UserID};
 
@@ -36,11 +37,24 @@ pub fn add_user_secret(user: UserID, secret: Secret) {
     });
 }
 
+#[ic_cdk_macros::update]
+#[candid_method(update)]
+pub fn update_user_secret(user: UserID, secret: Secret) {
+    MASTERSAFE.with(|ms: &RefCell<MasterSafe>| {
+        let master_safe = &mut ms.borrow_mut();
+        master_safe.update_user_secret(user, secret);
+    });
+}
+
 #[ic_cdk_macros::query]
 #[candid_method(query)]
 fn say_hi() -> String {
-    let x = ic_cdk::api::time();
-    x.to_string()
+    // let x = ic_cdk::api::time();
+    // x.to_string()
+    let caller = caller();
+    let mut r: String = String::from("Now both cdylib and lib - Hi from: ");
+    r.push_str(&caller.to_string());
+    r
 }
 
 candid::export_service!();
@@ -53,9 +67,9 @@ mod tests {
     #[test]
     fn get_candid() {
         println!("####### Candid START #######");
-        println!("");
+        println!();
         std::println!("{}", __export_service());
-        println!("");
+        println!();
         println!("####### Candid END #######");
     }
 }

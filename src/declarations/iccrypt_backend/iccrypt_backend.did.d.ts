@@ -30,4 +30,5 @@ export interface _SERVICE {
   'add_user_secret' : ActorMethod<[Principal, Secret], undefined>,
   'get_user_safe' : ActorMethod<[Principal], UserSafe>,
   'say_hi' : ActorMethod<[], string>,
+  'update_user_secret' : ActorMethod<[Principal, Secret], undefined>,
 }

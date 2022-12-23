@@ -13,7 +13,7 @@ pub enum SecretCategory {
 
 #[derive(Debug, CandidType, Deserialize, Clone)]
 pub struct Secret {
-    id: String,
+    id: SecretID,
     owner: UserID,
     category: SecretCategory,
     name: String,

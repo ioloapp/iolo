@@ -6,8 +6,8 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lib]
-crate-type = ["lib"]
-# crate-type = ["cdylib"]
+# crate-type = ["lib"]
+crate-type = ["cdylib", "lib"]
 
 [dependencies]
 candid = "0.8.2"

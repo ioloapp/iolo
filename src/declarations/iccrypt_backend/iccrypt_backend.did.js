@@ -30,6 +30,7 @@ export const idlFactory = ({ IDL }) => {
     'add_user_secret' : IDL.Func([IDL.Principal, Secret], [], []),
     'get_user_safe' : IDL.Func([IDL.Principal], [UserSafe], ['query']),
     'say_hi' : IDL.Func([], [IDL.Text], ['query']),
+    'update_user_secret' : IDL.Func([IDL.Principal, Secret], [], []),
   });
 };
 export const init = ({ IDL }) => { return []; };

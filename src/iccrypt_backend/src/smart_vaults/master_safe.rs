@@ -4,7 +4,10 @@ use candid::{CandidType, Deserialize};
 
 use crate::users::user::{User, UserID};
 
-use super::{secret::Secret, user_safe::UserSafe};
+use super::{
+    secret::{Secret, SecretID},
+    user_safe::UserSafe,
+};
 
 #[derive(Debug, CandidType, Deserialize, Clone)]
 pub struct MasterSafe {
@@ -52,6 +55,20 @@ impl MasterSafe {
         } else {
             // open a new user safe and insert the new secret
             self.open_new_user_safe(user_id.clone()).add_secret(secret);
+        }
+    }
+
+    pub fn update_user_secret(&mut self, user_id: UserID, secret: Secret) {
+        if let Some(user_safe) = self.get_user_safe(user_id.clone()) {
+            user_safe.update_secret(secret);
+        }
+    }
+
+    pub fn remove_user_secret(&mut self, user_id: UserID, _secret_id: SecretID) {
+        if let Some(_user_safe) = self.get_user_safe(user_id.clone()) {
+            // the user has a safe
+            // user_safe.add_secret(secret);
+            todo!();
         }
     }
 }
