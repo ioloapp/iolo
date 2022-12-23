@@ -1,31 +1,29 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use candid::{CandidType, Deserialize};
 
-use super::{secret::Secret, smart_vault::UserID, user_safe::UserSafe};
+use crate::users::user::{User, UserID};
+
+use super::{secret::Secret, user_safe::UserSafe};
 
 #[derive(Debug, CandidType, Deserialize, Clone)]
 pub struct MasterSafe {
-    date_created: String,
-    date_modified: String,
-    pub user_safes: HashMap<UserID, UserSafe>,
+    date_created: Option<u64>,
+    date_modified: Option<u64>,
+    pub user_safes: BTreeMap<UserID, UserSafe>,
 }
 
 impl MasterSafe {
     pub fn new() -> Self {
         Self {
-            date_created: "now".to_string(),
-            date_modified: "now".to_string(),
-            user_safes: HashMap::new(),
+            date_created: None,
+            date_modified: None,
+            user_safes: BTreeMap::new(),
         }
     }
 
-    pub fn get_all_user_safes(&self) -> &HashMap<UserID, UserSafe> {
-        &self.user_safes
-    }
-
     /// Returns a mutable reference to the user safe
-    pub fn get_user_safe(&mut self, user: String) -> Option<&mut UserSafe> {
+    pub fn get_user_safe(&mut self, user: UserID) -> Option<&mut UserSafe> {
         if let Some(us) = self.user_safes.get_mut(&user) {
             Some(us)
         } else {
@@ -33,21 +31,27 @@ impl MasterSafe {
         }
     }
 
-    pub fn open_new_user_safe(&mut self, user: UserID) -> &mut UserSafe {
-        let new_user_safe = UserSafe::new(user.clone());
-        self.user_safes.insert(user.clone(), new_user_safe);
-        self.get_user_safe(user.clone()).unwrap()
+    pub fn get_all_user_safes(&self) -> BTreeMap<UserID, UserSafe> {
+        self.user_safes.clone()
+    }
+
+    pub fn open_new_user_safe(&mut self, user_id: UserID) -> &mut UserSafe {
+        // create the user
+        let new_user = User::new(user_id.clone());
+        let new_user_safe = UserSafe::new(new_user);
+        self.user_safes.insert(user_id.clone(), new_user_safe);
+        self.get_user_safe(user_id.clone()).unwrap()
     }
 
     /// Inserts a secret into a user's safe.
     /// If user safe does not exist yet, a new one will be created
-    pub fn add_user_secret(&mut self, user: UserID, secret: Secret) {
-        if let Some(user_safe) = self.get_user_safe(user.clone()) {
+    pub fn add_user_secret(&mut self, user_id: UserID, secret: Secret) {
+        if let Some(user_safe) = self.get_user_safe(user_id.clone()) {
             // the user already has a safe
             user_safe.add_secret(secret);
         } else {
             // open a new user safe and insert the new secret
-            self.open_new_user_safe(user.clone()).add_secret(secret);
+            self.open_new_user_safe(user_id.clone()).add_secret(secret);
         }
     }
 }

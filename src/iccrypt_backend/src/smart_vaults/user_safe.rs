@@ -1,29 +1,28 @@
-use std::collections::HashMap;
-
 use candid::{CandidType, Deserialize};
 
-use super::{
-    secret::{Secret, SecretID},
-    smart_vault::UserID,
-};
+use std::collections::BTreeMap;
+
+use crate::users::user::User;
+
+use super::secret::{Secret, SecretID};
 
 #[derive(Debug, CandidType, Deserialize, Clone)]
 pub struct UserSafe {
-    owner: UserID,
-    date_created: String,
-    date_modified: String,
+    owner: User,
+    date_created: Option<u64>,
+    date_modified: Option<u64>,
     heirs: Vec<String>,
-    pub secrets: HashMap<SecretID, Secret>,
+    pub secrets: BTreeMap<SecretID, Secret>,
 }
 
 impl UserSafe {
-    pub fn new(owner: UserID) -> Self {
+    pub fn new(owner: User) -> Self {
         Self {
             owner,
-            date_created: "now".to_string(),
-            date_modified: "now".to_string(),
+            date_created: None,
+            date_modified: None,
             heirs: vec![],
-            secrets: HashMap::new(),
+            secrets: BTreeMap::new(),
         }
     }
 

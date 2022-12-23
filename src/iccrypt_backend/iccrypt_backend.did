@@ -2,15 +2,27 @@ type Secret = record {
   id : text;
   url : text;
   username : text;
-  owner : text;
+  owner : principal;
   password : text;
   name : text;
   category : SecretCategory;
 };
-type SecretCategory = variant { Password; CryptoWallet };
+type SecretCategory = variant { Password; Note; Wallet };
+type User = record {
+  id : principal;
+  last_login : opt nat64;
+  heirs : vec principal;
+  date_created : opt nat64;
+};
+type UserSafe = record {
+  heirs : vec text;
+  date_created : opt nat64;
+  owner : User;
+  secrets : vec record { text; Secret };
+  date_modified : opt nat64;
+};
 service : {
-  add_test_secrets : () -> ();
-  add_user_secret : (text, Secret) -> ();
-  get_all_secrets : () -> (vec Secret) query;
-  get_user_secrets : (text) -> (vec record { text; Secret }) query;
+  add_user_secret : (principal, Secret) -> ();
+  get_user_safe : (principal) -> (UserSafe) query;
+  say_hi : () -> (text) query;
 }

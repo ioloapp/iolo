@@ -1,6 +1,6 @@
 use candid::{CandidType, Deserialize};
 
-use super::smart_vault::UserID;
+use crate::users::user::UserID;
 
 pub type SecretID = String;
 
