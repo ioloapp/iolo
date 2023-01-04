@@ -15,8 +15,10 @@ ic-cdk = "0.6.0"
 ic-cdk-macros = "0.6.0"
 ic-stable-structures = "0.3.0"
 serde = "1.0.150"
+anyhow = "1.0.68"
 
 [dev-dependencies]
 ic-agent = "0.23.0"
 ic-types = "0.7.0"
 tokio = { version = "1.23.0", features = ["full"] }
+xshell = "0.2.3"

@@ -50,6 +50,6 @@ impl Secret {
     }
 
     pub fn get_owner(&self) -> UserID {
-        self.owner.clone()
+        self.owner
     }
 }

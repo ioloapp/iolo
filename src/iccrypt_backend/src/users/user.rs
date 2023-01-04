@@ -1,8 +1,9 @@
 use candid::{CandidType, Deserialize, Principal};
+use serde::Serialize;
 
 pub type UserID = Principal;
 
-#[derive(Debug, CandidType, Deserialize, Clone)]
+#[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct User {
     id: UserID,
     heirs: Vec<UserID>,

@@ -1,3 +1,4 @@
+use ic_stable_structures::StableBTreeMap;
 use std::collections::BTreeMap;
 
 use candid::{CandidType, Deserialize};
@@ -9,11 +10,18 @@ use super::{
     user_safe::UserSafe,
 };
 
-#[derive(Debug, CandidType, Deserialize, Clone)]
+#[derive(CandidType, Deserialize, Clone)]
 pub struct MasterSafe {
     date_created: Option<u64>,
     date_modified: Option<u64>,
     pub user_safes: BTreeMap<UserID, UserSafe>,
+    // pub user_safes: StableBTreeMap<UserID, UserSafe>,
+}
+
+impl Default for MasterSafe {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl MasterSafe {
@@ -40,32 +48,32 @@ impl MasterSafe {
 
     pub fn open_new_user_safe(&mut self, user_id: UserID) -> &mut UserSafe {
         // create the user
-        let new_user = User::new(user_id.clone());
+        let new_user = User::new(user_id);
         let new_user_safe = UserSafe::new(new_user);
-        self.user_safes.insert(user_id.clone(), new_user_safe);
-        self.get_user_safe(user_id.clone()).unwrap()
+        self.user_safes.insert(user_id, new_user_safe);
+        self.get_user_safe(user_id).unwrap()
     }
 
     /// Inserts a secret into a user's safe.
     /// If user safe does not exist yet, a new one will be created
     pub fn add_user_secret(&mut self, user_id: UserID, secret: Secret) {
-        if let Some(user_safe) = self.get_user_safe(user_id.clone()) {
+        if let Some(user_safe) = self.get_user_safe(user_id) {
             // the user already has a safe
             user_safe.add_secret(secret);
         } else {
             // open a new user safe and insert the new secret
-            self.open_new_user_safe(user_id.clone()).add_secret(secret);
+            self.open_new_user_safe(user_id).add_secret(secret);
         }
     }
 
     pub fn update_user_secret(&mut self, user_id: UserID, secret: Secret) {
-        if let Some(user_safe) = self.get_user_safe(user_id.clone()) {
+        if let Some(user_safe) = self.get_user_safe(user_id) {
             user_safe.update_secret(secret);
         }
     }
 
     pub fn remove_user_secret(&mut self, user_id: UserID, _secret_id: SecretID) {
-        if let Some(_user_safe) = self.get_user_safe(user_id.clone()) {
+        if let Some(_user_safe) = self.get_user_safe(user_id) {
             // the user has a safe
             // user_safe.add_secret(secret);
             todo!();

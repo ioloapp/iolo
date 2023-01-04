@@ -1,5 +1,6 @@
 use candid::{Encode, Principal};
 use ic_agent::Agent;
+
 use iccrypt_backend;
 use iccrypt_backend::smart_vaults::secret::Secret;
 use iccrypt_backend::smart_vaults::smart_vault::{
@@ -7,13 +8,18 @@ use iccrypt_backend::smart_vaults::smart_vault::{
 };
 use iccrypt_backend::users::user::User;
 
+use anyhow::Ok;
+
+use crate::common::{cleanup, setup};
 use crate::test_data::{TEST_SECRET_1, TEST_SECRET_2, TEST_SECRET_3, TEST_SECRET_4};
 
 mod common;
 pub mod test_data;
 
 #[tokio::test]
-async fn test_smart_vaults() -> Result<(), Box<dyn std::error::Error>> {
+async fn test_smart_vaults() -> anyhow::Result<()> {
+    setup().expect("setup failed");
+
     let url = "http://localhost:4943/";
 
     let agent = Agent::builder()
@@ -21,7 +27,7 @@ async fn test_smart_vaults() -> Result<(), Box<dyn std::error::Error>> {
             ic_agent::agent::http_transport::ReqwestHttpReplicaV2Transport::create(url)?,
         )
         .build()?;
-    let cid_string = "rrkah-fqaaa-aaaaa-aaaaq-cai"; // The management canister ID.
+    let cid_string = "rrkah-fqaaa-aaaaa-aaaaq-cai"; // The ic crypt backend canister ID.
     let principal = Principal::from_text(cid_string).expect("Could not decode the principal.");
     let res: Vec<u8> = agent
         .query(&principal, "say_hi")
@@ -33,10 +39,12 @@ async fn test_smart_vaults() -> Result<(), Box<dyn std::error::Error>> {
 
     test_user_secrets_crud().await?;
 
+    cleanup().expect("cleanup failed");
+
     Ok(())
 }
 
-async fn test_user_secrets_crud() -> Result<(), Box<dyn std::error::Error>> {
+async fn test_user_secrets_crud() -> anyhow::Result<()> {
     let test_user1: User = User::new_random_with_seed(1);
     let test_user2: User = User::new_random_with_seed(2);
 
