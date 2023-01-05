@@ -1,4 +1,3 @@
-use ic_stable_structures::StableBTreeMap;
 use std::collections::BTreeMap;
 
 use candid::{CandidType, Deserialize};

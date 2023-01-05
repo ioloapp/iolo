@@ -37,7 +37,7 @@ const Passwords = (props) => {
 
     return (
         <div>
-
+            <h1>My vault</h1>
             {/* <input
                     id="name"
                     value={name}
@@ -65,6 +65,8 @@ const Passwords = (props) => {
                     <span>pwd: {secret.password}</span> */}
                 </div>
             ))}
+
+            <h1>My inheritance</h1>
 
         </div >
     );

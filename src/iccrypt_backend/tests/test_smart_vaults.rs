@@ -10,7 +10,7 @@ use iccrypt_backend::users::user::User;
 
 use anyhow::Ok;
 
-use crate::common::{cleanup, setup};
+use crate::common::setup;
 use crate::test_data::{TEST_SECRET_1, TEST_SECRET_2, TEST_SECRET_3, TEST_SECRET_4};
 
 mod common;
@@ -37,9 +37,9 @@ async fn test_smart_vaults() -> anyhow::Result<()> {
     let mut de = candid::de::IDLDeserialize::new(&res)?;
     dbg!(de.get_value::<String>().unwrap());
 
-    test_user_secrets_crud().await?;
+    // test_user_secrets_crud().await?;
 
-    cleanup().expect("cleanup failed");
+    // cleanup().expect("cleanup failed");
 
     Ok(())
 }

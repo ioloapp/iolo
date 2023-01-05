@@ -65,10 +65,10 @@ fn post_upgrade() {
 #[ic_cdk_macros::query]
 #[candid_method(query)]
 fn say_hi() -> String {
-    // let x = ic_cdk::api::time();
-    // x.to_string()
     let caller = caller();
-    let mut r: String = String::from("Now both cdylib and lib - Hi from: ");
+    let mut r: String = String::from("Greetings from the backend. It is currently ");
+    r.push_str(&ic_cdk::api::time().to_string());
+    r.push_str(" o'clock and i can see you with caller ID: ");
     r.push_str(&caller.to_string());
     r
 }
