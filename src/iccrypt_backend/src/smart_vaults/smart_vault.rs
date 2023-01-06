@@ -3,7 +3,7 @@ use std::collections::BTreeMap;
 use std::vec;
 
 use candid::candid_method;
-use ic_cdk::{caller, post_upgrade, pre_upgrade, storage};
+use ic_cdk::{post_upgrade, pre_upgrade, storage};
 use ic_stable_structures::memory_manager::VirtualMemory;
 use ic_stable_structures::DefaultMemoryImpl;
 
@@ -60,17 +60,6 @@ fn pre_upgrade() {
 fn post_upgrade() {
     let (old_ms,): (MasterSafe,) = storage::stable_restore().unwrap();
     MASTERSAFE.with(|ms| *ms.borrow_mut() = old_ms);
-}
-
-#[ic_cdk_macros::query]
-#[candid_method(query)]
-fn say_hi() -> String {
-    let caller = caller();
-    let mut r: String = String::from("Greetings from the backend. It is currently ");
-    r.push_str(&ic_cdk::api::time().to_string());
-    r.push_str(" o'clock and i can see you with caller ID: ");
-    r.push_str(&caller.to_string());
-    r
 }
 
 candid::export_service!();

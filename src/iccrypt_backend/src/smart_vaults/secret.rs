@@ -4,7 +4,7 @@ use crate::users::user::UserID;
 
 pub type SecretID = String;
 
-#[derive(Debug, CandidType, Deserialize, Clone, Copy)]
+#[derive(Debug, CandidType, Deserialize, Clone, Copy, PartialEq)]
 pub enum SecretCategory {
     Password,
     Wallet,
@@ -51,5 +51,9 @@ impl Secret {
 
     pub fn get_owner(&self) -> UserID {
         self.owner
+    }
+
+    pub fn get_category(&self) -> SecretCategory {
+        self.category
     }
 }

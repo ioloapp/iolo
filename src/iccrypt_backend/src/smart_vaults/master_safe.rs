@@ -14,7 +14,6 @@ pub struct MasterSafe {
     date_created: Option<u64>,
     date_modified: Option<u64>,
     pub user_safes: BTreeMap<UserID, UserSafe>,
-    // pub user_safes: StableBTreeMap<UserID, UserSafe>,
 }
 
 impl Default for MasterSafe {

@@ -18,7 +18,7 @@ pub mod test_data;
 
 #[tokio::test]
 async fn test_smart_vaults() -> anyhow::Result<()> {
-    setup().expect("setup failed");
+    // setup().expect("setup failed");
 
     let url = "http://localhost:4943/";
 
@@ -101,8 +101,8 @@ async fn test_user_secrets_crud() -> anyhow::Result<()> {
     // });
 
     // check right number of secrets in user safe
-    let user1_secrets = get_user_safe(test_user1.get_id()).secrets;
-    let user2_secrets = get_user_safe(test_user2.get_id()).secrets;
+    let user1_secrets = get_user_safe(test_user1.get_id()).get_secrets();
+    let user2_secrets = get_user_safe(test_user2.get_id()).get_secrets();
     assert_eq!(user1_secrets.keys().len(), 2);
     assert_eq!(user2_secrets.keys().len(), 2);
 
@@ -131,5 +131,9 @@ async fn test_user_secrets_crud() -> anyhow::Result<()> {
         ),
     );
 
+    Ok(())
+}
+
+async fn test_ic_is_up() -> anyhow::Result<()> {
     Ok(())
 }
