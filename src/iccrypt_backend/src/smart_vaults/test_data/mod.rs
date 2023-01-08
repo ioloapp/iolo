@@ -1,4 +1,4 @@
-use iccrypt_backend::smart_vaults::secret::SecretCategory;
+use super::secret::SecretCategory;
 
 pub struct SecretTestData {
     pub category: SecretCategory,
