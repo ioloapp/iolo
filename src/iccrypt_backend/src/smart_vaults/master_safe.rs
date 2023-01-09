@@ -40,8 +40,8 @@ impl MasterSafe {
         }
     }
 
-    pub fn get_all_user_safes(&self) -> BTreeMap<UserID, UserSafe> {
-        self.user_safes.clone()
+    pub fn get_all_user_safes(&self) -> &BTreeMap<UserID, UserSafe> {
+        &self.user_safes
     }
 
     pub fn open_new_user_safe(&mut self, user_id: UserID) -> &mut UserSafe {

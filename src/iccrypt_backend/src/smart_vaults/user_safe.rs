@@ -29,7 +29,7 @@ impl UserSafe {
     }
 
     pub fn add_secret(&mut self, secret: Secret) {
-        self.secrets.insert(secret.get_id(), secret);
+        self.secrets.insert(secret.id().to_string(), secret);
     }
 
     pub fn remove_secret(&mut self, secret_id: SecretID) {
@@ -37,15 +37,15 @@ impl UserSafe {
     }
 
     pub fn update_secret(&mut self, secret: Secret) {
-        self.secrets.insert(secret.get_id(), secret);
+        self.secrets.insert(secret.id().to_string(), secret);
     }
 
-    pub fn get_heirs(&self) -> Vec<Principal> {
-        self.heirs.clone()
+    pub fn get_heirs(&self) -> &Vec<Principal> {
+        &self.heirs
     }
 
-    pub fn get_secrets(&self) -> BTreeMap<SecretID, Secret> {
-        self.secrets.clone()
+    pub fn secrets(&self) -> &BTreeMap<SecretID, Secret> {
+        &self.secrets
     }
 }
 
@@ -61,7 +61,7 @@ mod tests {
         let user: User = User::new_random_with_seed(1);
         let mut user_safe: UserSafe = UserSafe::new(user.clone());
         assert_eq!(user_safe.get_heirs().len(), 0, "No heirs yet");
-        assert_eq!(user_safe.get_secrets().len(), 0, "No secrets yet");
+        assert_eq!(user_safe.secrets().len(), 0, "No secrets yet");
 
         let secret: Secret = Secret::new(
             user.get_id(),
@@ -73,15 +73,11 @@ mod tests {
         );
 
         user_safe.add_secret(secret.clone());
-        assert_eq!(user_safe.get_secrets().len(), 1, "Has one secret now");
+        assert_eq!(user_safe.secrets().len(), 1, "Has one secret now");
 
         assert_eq!(
-            user_safe
-                .get_secrets()
-                .get(&secret.get_id())
-                .unwrap()
-                .get_category(),
-            secret.get_category(),
+            user_safe.secrets().get(secret.id()).unwrap().category(),
+            secret.category(),
             "Has the right category"
         );
     }

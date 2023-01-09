@@ -24,7 +24,7 @@ thread_local! {
 #[candid_method(query)]
 pub fn get_user_safe(user: UserID) -> UserSafe {
     let user_vaults: BTreeMap<UserID, UserSafe> =
-        MASTERSAFE.with(|mv: &RefCell<MasterSafe>| mv.borrow().get_all_user_safes());
+        MASTERSAFE.with(|mv: &RefCell<MasterSafe>| mv.borrow().get_all_user_safes().clone());
 
     if let Some(uv) = user_vaults.get(&user) {
         uv.clone()
@@ -140,18 +140,18 @@ mod tests {
         // });
 
         // check right number of secrets in user safe
-        let user1_secrets = get_user_safe(test_user1.get_id()).get_secrets();
-        let user2_secrets = get_user_safe(test_user2.get_id()).get_secrets();
+        let user1_secrets = get_user_safe(test_user1.get_id()).secrets().clone();
+        let user2_secrets = get_user_safe(test_user2.get_id()).secrets().clone();
         assert_eq!(user1_secrets.keys().len(), 2);
         assert_eq!(user2_secrets.keys().len(), 2);
 
         // check rightful owner of secrets within user safe
         for (_, secret) in user1_secrets.into_iter() {
-            assert_eq!(secret.get_owner(), test_user1.get_id());
+            assert_eq!(secret.owner().clone(), test_user1.get_id());
         }
 
         for (_, secret) in user2_secrets.into_iter() {
-            assert_eq!(secret.get_owner(), test_user2.get_id());
+            assert_eq!(secret.owner().clone(), test_user2.get_id());
         }
 
         // check right secrets
