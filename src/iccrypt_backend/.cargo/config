@@ -1,0 +1,10 @@
+[alias]
+
+#unit tests
+ut = "test utest -- --nocapture"
+
+#integration tests
+it = "test itest -- --nocapture"
+
+#integration tests
+candid = "test get_candid -- --nocapture"

@@ -57,7 +57,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn ut_user_safe() {
+    fn utest_user_safe() {
         let user: User = User::new_random_with_seed(1);
         let mut user_safe: UserSafe = UserSafe::new(user.clone());
         assert_eq!(user_safe.get_heirs().len(), 0, "No heirs yet");
