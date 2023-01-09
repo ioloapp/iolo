@@ -1,27 +1,16 @@
-// cfg_if::cfg_if! {
-//     if #[cfg(test)] {
-//         // we are in the test environment
-
-//         pub fn get_current_time() -> u64 {
-//             dbg!("i am here in test ----------------------");
-//             // std::time::SystemTime::now()
-//             // .duration_since(std::time::UNIX_EPOCH)
-//             // .expect("Error getting system time")
-//             // .as_secs()
-//             123
-//         }
-//     } else {
-//         // we are running on the ic (local or web)
-//         pub fn get_current_time() -> u64 {
-//             //ic_cdk::api::time()
-//             dbg!("i am here in not test ----------------------");
-//             123
-//         }
-//     }
-// }
-
-pub fn get_current_time() -> u64 {
-    123
+cfg_if::cfg_if! {
+    if #[cfg(test)] {
+        pub fn get_current_time() -> u64 {
+            std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .expect("Error getting system time")
+            .as_secs()
+        }
+    } else {
+        pub fn get_current_time() -> u64 {
+            ic_cdk::api::time()
+        }
+    }
 }
 
 // alternative

@@ -1,6 +1,5 @@
 use candid::candid_method;
 use ic_cdk::caller;
-use utils::time::get_current_time;
 
 pub mod smart_vaults;
 pub mod users;
@@ -20,7 +19,7 @@ fn greet(name: String) -> String {
 fn say_hi() -> String {
     let caller = caller();
     let mut r: String = String::from("Greetings from the backend. It is currently ");
-    r.push_str(&get_current_time().to_string());
+    r.push_str(&ic_cdk::api::time().to_string());
     r.push_str(" o'clock and i can see you with caller ID: ");
     r.push_str(&caller.to_string());
     r
