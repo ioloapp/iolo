@@ -1,4 +1,4 @@
-use candid::{CandidType, Deserialize, Principal};
+use candid::{CandidType, Deserialize};
 
 use std::collections::BTreeMap;
 
@@ -11,7 +11,6 @@ pub struct UserSafe {
     owner: User,
     date_created: Option<u64>,
     date_modified: Option<u64>,
-    heirs: Vec<Principal>,
     secrets: BTreeMap<SecretID, Secret>,
 }
 
@@ -23,7 +22,6 @@ impl UserSafe {
             owner,
             date_created: Some(time),
             date_modified: Some(time),
-            heirs: vec![],
             secrets: BTreeMap::new(),
         }
     }
@@ -38,10 +36,6 @@ impl UserSafe {
 
     pub fn update_secret(&mut self, secret: Secret) {
         self.secrets.insert(secret.id().to_string(), secret);
-    }
-
-    pub fn get_heirs(&self) -> &Vec<Principal> {
-        &self.heirs
     }
 
     pub fn secrets(&self) -> &BTreeMap<SecretID, Secret> {
@@ -60,7 +54,6 @@ mod tests {
     fn utest_user_safe() {
         let user: User = User::new_random_with_seed(1);
         let mut user_safe: UserSafe = UserSafe::new(user.clone());
-        assert_eq!(user_safe.get_heirs().len(), 0, "No heirs yet");
         assert_eq!(user_safe.secrets().len(), 0, "No secrets yet");
 
         let secret: Secret = Secret::new(

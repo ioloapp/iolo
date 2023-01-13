@@ -1,6 +1,5 @@
 use std::cell::RefCell;
 use std::collections::BTreeMap;
-use std::vec;
 
 use candid::candid_method;
 use ic_cdk::{post_upgrade, pre_upgrade, storage};
@@ -14,10 +13,16 @@ use super::secret::Secret;
 use super::user_safe::UserSafe;
 
 pub type Memory = VirtualMemory<DefaultMemoryImpl>;
+pub type IneritanceRegistryEntry = Vec<UserID>;
+pub type InheritanceRegistry = BTreeMap<UserID, IneritanceRegistryEntry>;
 
 thread_local! {
+    // Mastersafe holding all the user safes
     static MASTERSAFE: RefCell<MasterSafe> = RefCell::new(MasterSafe::new());
 
+    // The inheritance registry keeps track of the inheritance relationships.
+    // UserID -> Vector of UserID
+    static INHERITANCE_REGISTRY: RefCell<InheritanceRegistry> = RefCell::new(InheritanceRegistry::new());
 }
 
 #[ic_cdk_macros::query]
@@ -54,15 +59,17 @@ pub fn update_user_secret(user: UserID, secret: Secret) {
 #[pre_upgrade]
 fn pre_upgrade() {
     MASTERSAFE.with(|ms| storage::stable_save((ms,)).unwrap());
+    INHERITANCE_REGISTRY.with(|ir| storage::stable_save((ir,)).unwrap());
 }
 
 #[post_upgrade]
 fn post_upgrade() {
     let (old_ms,): (MasterSafe,) = storage::stable_restore().unwrap();
     MASTERSAFE.with(|ms| *ms.borrow_mut() = old_ms);
-}
 
-candid::export_service!();
+    let (old_ir,): (InheritanceRegistry,) = storage::stable_restore().unwrap();
+    INHERITANCE_REGISTRY.with(|ir| *ir.borrow_mut() = old_ir);
+}
 
 #[cfg(test)]
 mod tests {
@@ -72,15 +79,6 @@ mod tests {
     };
 
     use super::*;
-
-    #[test]
-    fn get_candid() {
-        println!("####### Candid START #######");
-        println!();
-        std::println!("{}", __export_service());
-        println!();
-        println!("####### Candid END #######");
-    }
 
     #[test]
     fn utest_smart_vault() {
