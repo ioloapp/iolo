@@ -6,7 +6,7 @@ use ic_cdk::{post_upgrade, pre_upgrade, storage};
 use ic_stable_structures::memory_manager::VirtualMemory;
 use ic_stable_structures::DefaultMemoryImpl;
 
-use crate::users::user::{User, UserID};
+use crate::common::user::{User, UserID};
 
 use super::master_safe::MasterSafe;
 use super::secret::Secret;

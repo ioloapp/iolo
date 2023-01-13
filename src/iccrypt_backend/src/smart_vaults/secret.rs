@@ -1,10 +1,11 @@
 use candid::{CandidType, Deserialize};
 
-use crate::users::user::UserID;
+use crate::common::user::UserID;
+use crate::cryptography::Ciphertext;
 
 pub type SecretID = String;
 
-#[derive(Debug, CandidType, Deserialize, Clone, Copy, PartialEq)]
+#[derive(Debug, CandidType, Deserialize, Clone, Copy, PartialEq, Eq)]
 pub enum SecretCategory {
     Password,
     Wallet,
@@ -16,10 +17,10 @@ pub struct Secret {
     id: SecretID,
     owner: UserID,
     category: SecretCategory,
-    name: String,
-    username: String,
-    password: String,
-    url: String,
+    name: Ciphertext,
+    username: Ciphertext,
+    password: Ciphertext,
+    url: Ciphertext,
 }
 
 impl Secret {
@@ -65,7 +66,7 @@ impl Secret {
 #[cfg(test)]
 mod tests {
 
-    use crate::{smart_vaults::secret::SecretCategory, users::user::User};
+    use crate::{common::user::User, smart_vaults::secret::SecretCategory};
 
     use super::*;
 

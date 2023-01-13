@@ -1,15 +1,19 @@
 use candid::candid_method;
 use ic_cdk::caller;
 
+pub mod common;
+pub mod cryptography;
 pub mod smart_vaults;
 pub mod smart_wallets;
-pub mod users;
 pub mod utils;
 
 // for the candid file creation
+use crate::common::user::UserID;
+use crate::cryptography::DerivationID;
+use crate::cryptography::MasterKeyID;
+use crate::cryptography::TransportPublicKey;
 use crate::smart_vaults::secret::Secret;
 use crate::smart_vaults::user_safe::UserSafe;
-use crate::users::user::UserID;
 candid::export_service!();
 
 #[ic_cdk_macros::init]

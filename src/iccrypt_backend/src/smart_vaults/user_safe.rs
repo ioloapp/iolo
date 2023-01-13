@@ -2,7 +2,7 @@ use candid::{CandidType, Deserialize};
 
 use std::collections::BTreeMap;
 
-use crate::{users::user::User, utils::time::get_current_time};
+use crate::{common::user::User, utils::time::get_current_time};
 
 use super::secret::{Secret, SecretID};
 

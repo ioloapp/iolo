@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 
 use candid::{CandidType, Deserialize};
 
-use crate::users::user::{User, UserID};
+use crate::common::user::{User, UserID};
 
 use super::{
     secret::{Secret, SecretID},
