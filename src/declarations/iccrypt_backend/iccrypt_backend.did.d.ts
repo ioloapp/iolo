@@ -20,7 +20,6 @@ export interface User {
   'date_created' : [] | [bigint],
 }
 export interface UserSafe {
-  'heirs' : Array<string>,
   'date_created' : [] | [bigint],
   'owner' : User,
   'secrets' : Array<[string, Secret]>,
@@ -28,7 +27,7 @@ export interface UserSafe {
 }
 export interface _SERVICE {
   'add_user_secret' : ActorMethod<[Principal, Secret], undefined>,
+  'derive_key' : ActorMethod<[string, string, string], string>,
   'get_user_safe' : ActorMethod<[Principal], UserSafe>,
-  'say_hi' : ActorMethod<[], string>,
   'update_user_secret' : ActorMethod<[Principal, Secret], undefined>,
 }

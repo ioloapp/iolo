@@ -91,9 +91,6 @@ mod tests {
                 test_user1.get_id(),
                 TEST_SECRET_1.category,
                 TEST_SECRET_1.name.to_string(),
-                TEST_SECRET_1.username.to_string(),
-                TEST_SECRET_1.password.to_string(),
-                TEST_SECRET_1.name.to_string(),
             ),
         );
 
@@ -102,9 +99,6 @@ mod tests {
             Secret::new(
                 test_user1.get_id(),
                 TEST_SECRET_2.category,
-                TEST_SECRET_2.name.to_string(),
-                TEST_SECRET_2.username.to_string(),
-                TEST_SECRET_2.password.to_string(),
                 TEST_SECRET_2.name.to_string(),
             ),
         );
@@ -115,9 +109,6 @@ mod tests {
                 test_user2.get_id(),
                 TEST_SECRET_3.category,
                 TEST_SECRET_3.name.to_string(),
-                TEST_SECRET_3.username.to_string(),
-                TEST_SECRET_3.password.to_string(),
-                TEST_SECRET_3.name.to_string(),
             ),
         );
 
@@ -126,9 +117,6 @@ mod tests {
             Secret::new(
                 test_user2.get_id(),
                 TEST_SECRET_4.category,
-                TEST_SECRET_4.name.to_string(),
-                TEST_SECRET_4.username.to_string(),
-                TEST_SECRET_4.password.to_string(),
                 TEST_SECRET_4.name.to_string(),
             ),
         );
@@ -155,15 +143,12 @@ mod tests {
         // check right secrets
 
         // check if changing a password works
-        let better_pwd = "my_new_and_better_pwd".to_string();
+        let _better_pwd = "my_new_and_better_pwd".to_string();
         update_user_secret(
             test_user1.get_id(),
             Secret::new(
                 test_user1.get_id(),
                 TEST_SECRET_1.category,
-                TEST_SECRET_1.name.to_string(),
-                TEST_SECRET_1.username.to_string(),
-                better_pwd,
                 TEST_SECRET_1.name.to_string(),
             ),
         );

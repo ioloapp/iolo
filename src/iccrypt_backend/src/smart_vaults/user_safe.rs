@@ -59,10 +59,7 @@ mod tests {
         let secret: Secret = Secret::new(
             user.get_id(),
             SecretCategory::Password,
-            "My First PWD".to_string(),
-            "username@mail.com".to_string(),
-            "password".to_string(),
-            "www.url.com".to_string(),
+            "my-first-secret".to_string(),
         );
 
         user_safe.add_secret(secret.clone());

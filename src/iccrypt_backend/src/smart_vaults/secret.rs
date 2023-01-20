@@ -18,31 +18,29 @@ pub struct Secret {
     owner: UserID,
     category: SecretCategory,
     name: Ciphertext,
-    username: Ciphertext,
-    password: Ciphertext,
-    url: Ciphertext,
+    username: Option<Ciphertext>,
+    password: Option<Ciphertext>,
+    url: Option<Ciphertext>,
+    notes: Option<Ciphertext>,
 }
 
 impl Secret {
     pub fn new(
         owner: UserID,
         category: SecretCategory,
-        name: String,
-        username: String,
-        password: String,
-        url: String,
+        name: String
     ) -> Self {
         let mut id = String::from(&name);
-        id.push_str(&username);
-        id.push_str(&url);
+        id.push_str(&owner.to_text());
         Self {
-            owner,
             id,
+            owner,
             category,
             name,
-            username,
-            password,
-            url,
+            username: Option::None,
+            password: Option::None,
+            url: Option::None,
+            notes: Option::None,
         }
     }
 
@@ -58,8 +56,40 @@ impl Secret {
         &self.category
     }
 
-    pub fn username(&self) -> &str {
+    pub fn name(&self) -> &Ciphertext {
+        &self.name
+    }
+
+    pub fn username(&self) -> &Option<Ciphertext> {
         &self.username
+    }
+
+    pub fn set_username(&mut self, username: String) {
+        self.username = Option::Some(username);
+    }
+
+    pub fn password(&self) -> &Option<Ciphertext> {
+        &self.password
+    }
+
+    pub fn set_password(&mut self, password: String) {
+        self.password = Option::Some(password);
+    }
+
+    pub fn url(&self) -> &Option<Ciphertext> {
+        &self.url
+    }
+
+    pub fn set_url(&mut self, url: String) {
+        self.url = Option::Some(url);
+    }
+
+    pub fn notes(&self) -> &Option<Ciphertext> {
+        &self.notes
+    }
+
+    pub fn set_notes(&mut self, notes: String) {
+        self.notes = Option::Some(notes);
     }
 }
 
@@ -71,22 +101,61 @@ mod tests {
     use super::*;
 
     #[test]
-    fn utest_secret() {
-        let user: User = User::new_random_with_seed(1);
+    fn utest_secret_minimal() {
+        let owner: User = User::new_random_with_seed(1);
         let sc: SecretCategory = SecretCategory::Password;
-        let username: String = String::from("my_username");
-        let pwd: String = String::from("my_password");
+        let name: String = String::from("my-first-secret");
 
         let secret: Secret = Secret::new(
-            user.get_id(),
-            sc,
-            "My First PWD".to_string(),
-            username.clone(),
-            pwd,
-            "www.url.com".to_string(),
+            owner.get_id().clone(),
+            sc.clone(),
+            name.clone()
         );
 
+        let mut id = String::new();
+        id.push_str(&name);
+        id.push_str(&owner.get_id().to_string());
+        assert_eq!(secret.id(), &id);
+        assert_eq!(secret.owner(), &owner.get_id());
         assert_eq!(secret.category(), &sc);
-        assert_eq!(secret.username(), &username);
+        assert_eq!(secret.name(), &name);
+        assert_eq!(secret.username(), &Option::None);
+        assert_eq!(secret.password(), &Option::None);
+        assert_eq!(secret.url(), &Option::None);
+        assert_eq!(secret.notes(), &Option::None);
+    }
+
+    #[test]
+    fn utest_secret_maximal() {
+        let owner: User = User::new_random_with_seed(1);
+        let sc: SecretCategory = SecretCategory::Password;
+        let name: String = String::from("my-first-secret");
+
+        let mut secret: Secret = Secret::new(
+            owner.get_id().clone(),
+            sc.clone(),
+            name.clone()
+        );
+
+        let mut id = String::new();
+        id.push_str(&name);
+        id.push_str(&owner.get_id().to_string());
+        assert_eq!(secret.id(), &id);
+        assert_eq!(secret.owner(), &owner.get_id());
+        assert_eq!(secret.category(), &sc);
+        assert_eq!(secret.name(), &name);
+
+        let username = String::from("my-username");
+        let password = String::from("my-password");
+        let url = String::from("my-url");
+        let notes = String::from("my-notes");
+        secret.set_username(username.clone());
+        secret.set_password(password.clone());
+        secret.set_url(url.clone());
+        secret.set_notes(notes.clone());
+        assert_eq!(secret.username(), &Option::Some(username));
+        assert_eq!(secret.password(), &Option::Some(password));
+        assert_eq!(secret.url(), &Option::Some(url));
+        assert_eq!(secret.notes(), &Option::Some(notes));
     }
 }

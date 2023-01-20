@@ -20,7 +20,6 @@ export const idlFactory = ({ IDL }) => {
     'date_created' : IDL.Opt(IDL.Nat64),
   });
   const UserSafe = IDL.Record({
-    'heirs' : IDL.Vec(IDL.Text),
     'date_created' : IDL.Opt(IDL.Nat64),
     'owner' : User,
     'secrets' : IDL.Vec(IDL.Tuple(IDL.Text, Secret)),
@@ -28,8 +27,12 @@ export const idlFactory = ({ IDL }) => {
   });
   return IDL.Service({
     'add_user_secret' : IDL.Func([IDL.Principal, Secret], [], []),
+    'derive_key' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text],
+        [IDL.Text],
+        ['query'],
+      ),
     'get_user_safe' : IDL.Func([IDL.Principal], [UserSafe], ['query']),
-    'say_hi' : IDL.Func([], [IDL.Text], ['query']),
     'update_user_secret' : IDL.Func([IDL.Principal, Secret], [], []),
   });
 };
