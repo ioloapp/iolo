@@ -29,5 +29,7 @@ if [[ $ENV == "local" ]]; then
     # dfx start --clean
 fi
 
+# sometimes cargo build and dfx build is required to get the wasm modules in the destination folder
+
 # Deploy exchange_rate and exchange_rate_assets
 dfx deploy --network "$ENV"

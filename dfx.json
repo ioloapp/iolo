@@ -5,9 +5,9 @@
       "package": "iccrypt_backend",
       "type": "rust"
     },
-    "tkd_backend": {
-      "candid": "src/tkd_backend/tkd_backend.did",
-      "package": "tkd_backend",
+    "iccrypt_tkd": {
+      "candid": "src/iccrypt_tkd/iccrypt_tkd.did",
+      "package": "iccrypt_tkd",
       "type": "rust"
     },
     "iccrypt_frontend": {
