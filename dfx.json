@@ -12,7 +12,8 @@
     },
     "iccrypt_frontend": {
       "dependencies": [
-        "iccrypt_backend"
+        "iccrypt_backend",
+        "iccrypt_tkd"
       ],
       "frontend": {
         "entrypoint": "src/iccrypt_frontend/src/index.html"
