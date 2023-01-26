@@ -1,5 +1,4 @@
 use candid::candid_method;
-use ic_cdk::caller;
 
 pub mod common;
 pub mod cryptography;
@@ -14,7 +13,6 @@ use crate::cryptography::MasterKeyID;
 use crate::cryptography::TransportPublicKey;
 use crate::smart_vaults::secret::Secret;
 use crate::smart_vaults::user_safe::UserSafe;
-candid::export_service!();
 
 #[ic_cdk_macros::init]
 fn init() {}
@@ -27,14 +25,23 @@ fn greet(name: String) -> String {
 
 #[ic_cdk_macros::query]
 #[candid_method(query)]
-fn say_hi() -> String {
-    let caller = caller();
-    let mut r: String = String::from("Greetings from the backend. It is currently ");
-    r.push_str(&ic_cdk::api::time().to_string());
-    r.push_str(" o'clock and i can see you with caller ID: ");
-    r.push_str(&caller.to_string());
-    r
+fn who_am_i() -> String {
+    utils::caller::get_caller().to_string()
 }
+
+#[ic_cdk_macros::query]
+#[candid_method(query)]
+fn what_time_is_it() -> u64 {
+    utils::time::get_current_time()
+}
+
+#[ic_cdk_macros::query]
+#[candid_method(query)]
+async fn give_me_a_new_uuid() -> String {
+    utils::random::get_new_uuid().await
+}
+
+candid::export_service!();
 
 #[cfg(test)]
 mod tests {

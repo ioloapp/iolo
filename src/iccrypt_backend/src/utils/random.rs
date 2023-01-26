@@ -3,7 +3,6 @@ use uuid::Uuid;
 pub async fn get_new_uuid() -> String {
     let mut random_bytes = get_random_seed().await;
 
-    //random_bytes.resize(new_len, value)
     random_bytes.resize(16, 0);
 
     let bytes: [u8; 16] = random_bytes.try_into().unwrap_or_else(|v: Vec<u8>| {
@@ -26,14 +25,28 @@ cfg_if::cfg_if! {
         }
     } else {
         // Internet Computer
-        use candid::Principal;
-        use ic_cdk::{call, trap};
+        // use candid::Principal;
+        // use ic_cdk::{call, trap};
+        // #[ic_cdk_macros::query]
         async fn get_random_seed() -> Vec<u8> {
-            let random_bytes: Vec<u8> = match call(Principal::management_canister(), "raw_rand", ()).await {
-                Ok((res,)) => res,
-                Err((_, err)) => trap(&format!("Failed to get random seed: {}", err)),
-            };
+            // this management canistesr call throws errors. don't know why. can't find a good
+            // answer on the forum.
+            // Error msg: Error: The Replica returned an error: code 5, message: "IC0504: Canister rrkah-fqaaa-aaaaa-aaaaq-cai violated contract: "ic0_call_new" cannot be executed in non replicated query mode"
+            // TODO find fix for this!
+            // let random_bytes: Vec<u8> = match call(Principal::management_canister(), "raw_rand", ()).await {
+            //     Ok((res,)) => res,
+            //     Err((_, err)) => trap(&format!("Failed to get random seed: {}", err)),
+            // };
+            // random_bytes
+
+            // WORKAROUND: generating some pseudorandomness using the timestamp
+            let mut random_bytes: Vec<u8> = Vec::new();
+            let seed: u8 = ic_cdk::api::time() as u8;
+            for x in 1..33 {
+                random_bytes.push(seed + x);
+            }
             random_bytes
+
         }
     }
 }
@@ -41,6 +54,7 @@ cfg_if::cfg_if! {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use uuid::Uuid;
 
     #[tokio::test]
     async fn utest_uuid() {

@@ -1,10 +1,11 @@
 type Secret = record {
   id : text;
-  url : text;
-  username : text;
+  url : opt text;
+  username : opt text;
   owner : principal;
-  password : text;
+  password : opt text;
   name : text;
+  notes : opt text;
   category : SecretCategory;
 };
 type SecretCategory = variant { Password; Note; Wallet };
@@ -24,5 +25,9 @@ service : {
   add_user_secret : (principal, Secret) -> ();
   derive_key : (text, text, text) -> (text) query;
   get_user_safe : (principal) -> (UserSafe) query;
+  give_me_a_new_uuid : () -> (text) query;
+  greet : (text) -> (text) query;
   update_user_secret : (principal, Secret) -> ();
+  what_time_is_it : () -> (nat64) query;
+  who_am_i : () -> (text) query;
 }

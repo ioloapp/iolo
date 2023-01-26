@@ -1,36 +1,26 @@
-use anyhow::Ok;
-use candid::{Encode, Principal};
+use anyhow::Result;
+use candid::Principal;
 use ic_agent::Agent;
 use xshell::{cmd, Shell};
 
-#[tokio::test]
-async fn itest_smart_vaults() -> anyhow::Result<()> {
-    // setup().expect("setup failed");
+const URL: &str = "http://localhost:4943/";
+const ICCRYPT_BACKEND_CANISTER_ID: &str = "rrkah-fqaaa-aaaaa-aaaaq-cai";
 
-    let url = "http://localhost:4943/";
-
+pub fn get_dfx_agent() -> Result<Agent> {
     let agent = Agent::builder()
         .with_transport(
-            ic_agent::agent::http_transport::ReqwestHttpReplicaV2Transport::create(url)?,
+            ic_agent::agent::http_transport::ReqwestHttpReplicaV2Transport::create(URL)?,
         )
         .build()?;
-    let cid_string = "rrkah-fqaaa-aaaaa-aaaaq-cai"; // The ic crypt backend canister ID.
-    let principal = Principal::from_text(cid_string).expect("Could not decode the principal.");
-    let res: Vec<u8> = agent
-        .query(&principal, "say_hi")
-        .with_arg(&Encode!()?)
-        .call()
-        .await?;
-    let mut de = candid::de::IDLDeserialize::new(&res)?;
-    dbg!(de.get_value::<String>().unwrap());
 
-    // test_user_secrets_crud().await?;
-
-    // cleanup().expect("cleanup failed");
-
-    Ok(())
+    Ok(agent)
 }
 
+pub fn get_iccrypt_backend_canister() -> Principal {
+    Principal::from_text(ICCRYPT_BACKEND_CANISTER_ID).expect("Could not decode the principal.")
+}
+
+#[allow(dead_code)]
 pub fn setup() -> anyhow::Result<()> {
     let sh = Shell::new()?;
     // let manifest = sh.read_file("Cargo.toml")?;
@@ -50,6 +40,7 @@ pub fn setup() -> anyhow::Result<()> {
     Ok(())
 }
 
+#[allow(dead_code)]
 pub fn cleanup() -> anyhow::Result<()> {
     // let sh = Shell::new()?;
     // let manifest = sh.read_file("Cargo.toml")?;
