@@ -839,6 +839,7 @@ dependencies = [
 name = "iccrypt_tkd"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "candid",
  "ic-cdk",
  "ic-cdk-macros",
