@@ -32,7 +32,7 @@ impl Secret {
     pub async fn new(owner: UserID, category: SecretCategory, name: String) -> Self {
         
         let id = random::get_new_uuid().await;
-        let now = time::get_current_time();
+        let now: u64 = time::get_current_time();
         Self {
             id,
             date_created: now,
@@ -131,7 +131,7 @@ impl Secret {
 mod tests {
 
     use crate::{common::user::User, smart_vaults::secret::SecretCategory};
-
+    use std::{thread};
     use super::*;
 
     #[tokio::test]
@@ -141,11 +141,12 @@ mod tests {
         let name: String = String::from("my-first-secret");
 
         let before = time::get_current_time();
+        thread::sleep(std::time::Duration::from_millis(100)); // Sleep 100 milliseconds to ensure that secret has a different creation date
         let secret: Secret = Secret::new(owner.get_id().clone(), sc.clone(), name.clone()).await;
 
         assert_eq!(secret.id().len(), 36);
-        assert!(secret.date_created > before, "date_created: {} must be greater than before: {}", secret.date_created(), before);
-        assert_eq!(secret.date_modified, secret.date_created, "date_created: {} must be equal to date_modified: {}", secret.date_created(), secret.date_modified());
+        assert!(secret.date_created() > &before, "date_created: {} must be greater than before: {}", secret.date_created(), &before);
+        assert_eq!(secret.date_modified(), secret.date_created(), "date_created: {} must be equal to date_modified: {}", secret.date_created(), secret.date_modified());
         assert_eq!(secret.owner(), &owner.get_id());
         assert_eq!(secret.category(), &sc);
         assert_eq!(secret.name(), &name);
@@ -163,27 +164,21 @@ mod tests {
         let sc: SecretCategory = SecretCategory::Password;
         let name: String = String::from("my-first-secret");
         
-        let before = time::get_current_time();
         let mut secret: Secret = Secret::new(owner.get_id().clone(), sc.clone(), name.clone()).await;
-
-        assert_eq!(secret.id().len(), 36);
-        assert!(secret.date_created > before, "date_created: {} must be greater than before: {}", secret.date_created(), before);
-        assert_eq!(secret.date_modified, secret.date_created, "date_created: {} must be equal to date_modified: {}", secret.date_created(), secret.date_modified());
-        assert_eq!(secret.owner(), &owner.get_id());
-        assert_eq!(secret.category(), &sc);
-        assert_eq!(secret.name(), &name);
 
         // Update optional fields username, password, url and notes
         let username = String::from("my-username");
         let password = String::from("my-password");
         let url = String::from("my-url");
         let notes = String::from("my-notes");
+        let created_before_update = secret.date_created;
         let mut modified_before_update = secret.date_modified;
 
         secret.update(Option::None, Option::None, Option::Some(username.clone()), Option::Some(password.clone()), Option::Some(url.clone()), Option::Some(notes.clone()));
         
-        assert!(secret.date_created < secret.date_modified, "date_modified: {} must be greater than date_created: {}", secret.date_modified(), secret.date_created);
-        assert!(secret.date_modified > modified_before_update, "date_modified: {} must be greater than modified_before_update: {}", secret.date_modified(), modified_before_update);
+        assert!(secret.date_created() < secret.date_modified(), "date_modified: {} must be greater than date_created: {}", secret.date_modified(), secret.date_created());
+        assert_eq!(secret.date_created(), &created_before_update, "date_created: {} must be equal to created_before_update: {}", secret.date_created(), created_before_update);
+        assert!(secret.date_modified() > &modified_before_update, "date_modified: {} must be greater than modified_before_update: {}", secret.date_modified(), modified_before_update);
         assert_eq!(secret.username(), &Option::Some(username));
         assert_eq!(secret.password(), &Option::Some(password));
         assert_eq!(secret.url(), &Option::Some(url));
@@ -196,8 +191,7 @@ mod tests {
 
         secret.update(Option::Some(sc_updated.clone()), Option::Some(name_updated.clone()), Option::None,Option::None,Option::None,Option::None);
         
-        assert!(secret.date_created < secret.date_modified, "date_modified: {} must be greater than date_created: {}", secret.date_modified(), secret.date_created);
-        assert!(secret.date_modified > modified_before_update, "date_modified: {} must be greater than modified_before_update: {}", secret.date_modified(), modified_before_update);
+        assert!(secret.date_modified() > &modified_before_update, "date_modified: {} must be greater than modified_before_update: {}", secret.date_modified(), modified_before_update);
         assert_eq!(secret.category(), &sc_updated);
         assert_eq!(secret.name(), &name_updated);
     }

@@ -47,7 +47,7 @@ impl MasterSafe {
     pub fn open_new_user_safe(&mut self, user_id: UserID) -> &mut UserSafe {
         // create the user
         let new_user = User::new(user_id);
-        let new_user_safe = UserSafe::new(new_user);
+        let new_user_safe = UserSafe::new(new_user.get_id());
         self.user_safes.insert(user_id, new_user_safe);
         self.get_user_safe(user_id).unwrap()
     }

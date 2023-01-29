@@ -34,7 +34,7 @@ pub fn get_user_safe(user: UserID) -> UserSafe {
     if let Some(uv) = user_vaults.get(&user) {
         uv.clone()
     } else {
-        UserSafe::new(User::new(user))
+        UserSafe::new(User::new(user).get_id())
     }
 }
 
