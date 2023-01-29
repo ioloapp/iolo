@@ -2,7 +2,7 @@ use candid::{CandidType, Deserialize};
 
 use std::collections::BTreeMap;
 
-use crate::{common::user::User, utils::time::get_current_time};
+use crate::{common::user::User, utils::time};
 
 use super::secret::{Secret, SecretID};
 
@@ -16,7 +16,7 @@ pub struct UserSafe {
 
 impl UserSafe {
     pub fn new(owner: User) -> Self {
-        let time: u64 = get_current_time();
+        let time: u64 = time::get_current_time();
 
         Self {
             owner,
