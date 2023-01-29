@@ -2,6 +2,7 @@ use candid::{CandidType, Deserialize};
 
 use crate::common::user::UserID;
 use crate::cryptography::Ciphertext;
+use crate::utils::random;
 
 pub type SecretID = String;
 
@@ -25,25 +26,9 @@ pub struct Secret {
 }
 
 impl Secret {
-    pub fn new(owner: UserID, category: SecretCategory, name: String) -> Self {
-        /* TODO
-        Hallo Peter
-
-        If you want: Versuch doch mal meine uuid function da reinzuziehen:
-        crate::utils::random::get_new_uuid()
-
-        Ein paar Anmerkungen:
-        - get_new_uuid() ist asynchron, weil es einen call auf den management canister braucht. (so zumindest mein kentnisstand :_)
-        - du wirst also get_new_uuid().await aufrufen müssen (um das future aufzulösen)
-        - somit wird der ganze konstruktor async (quasi pub async fn new(...))
-        - somit muss jeder caller async werden
-        - damit in den tests async funktionen aufgerufen werden können, muss der test async sein. das geht nicht by default, es eignet sich hierzu tokio
-        - tokio ist eh die go-to runtime umgebung für async rust
-        - tokio ist schon integiert in ic crypt. du musst einfach in den unit tetst #[test] durch #[tokio::test] ersetzen und die testfunktion async machen :-)
-        */
-
-        let mut id = String::from(&name);
-        id.push_str(&owner.to_text());
+    pub async fn new(owner: UserID, category: SecretCategory, name: String) -> Self {
+        
+        let id = random::get_new_uuid().await;
         Self {
             id,
             owner,
@@ -112,18 +97,15 @@ mod tests {
 
     use super::*;
 
-    #[test]
-    fn utest_secret_minimal() {
+    #[tokio::test]
+    async fn utest_secret_minimal() {
         let owner: User = User::new_random_with_seed(1);
         let sc: SecretCategory = SecretCategory::Password;
         let name: String = String::from("my-first-secret");
 
-        let secret: Secret = Secret::new(owner.get_id().clone(), sc.clone(), name.clone());
+        let secret: Secret = Secret::new(owner.get_id().clone(), sc.clone(), name.clone()).await;
 
-        let mut id = String::new();
-        id.push_str(&name);
-        id.push_str(&owner.get_id().to_string());
-        assert_eq!(secret.id(), &id);
+        assert_eq!(secret.id().len(), 36);
         assert_eq!(secret.owner(), &owner.get_id());
         assert_eq!(secret.category(), &sc);
         assert_eq!(secret.name(), &name);
@@ -133,18 +115,15 @@ mod tests {
         assert_eq!(secret.notes(), &Option::None);
     }
 
-    #[test]
-    fn utest_secret_maximal() {
+    #[tokio::test]
+    async fn utest_secret_maximal() {
         let owner: User = User::new_random_with_seed(1);
         let sc: SecretCategory = SecretCategory::Password;
         let name: String = String::from("my-first-secret");
 
-        let mut secret: Secret = Secret::new(owner.get_id().clone(), sc.clone(), name.clone());
+        let mut secret: Secret = Secret::new(owner.get_id().clone(), sc.clone(), name.clone()).await;
 
-        let mut id = String::new();
-        id.push_str(&name);
-        id.push_str(&owner.get_id().to_string());
-        assert_eq!(secret.id(), &id);
+        assert_eq!(secret.id().len(), 36);
         assert_eq!(secret.owner(), &owner.get_id());
         assert_eq!(secret.category(), &sc);
         assert_eq!(secret.name(), &name);

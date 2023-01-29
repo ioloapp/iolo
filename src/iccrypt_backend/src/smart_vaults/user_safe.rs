@@ -50,8 +50,8 @@ mod tests {
 
     use super::*;
 
-    #[test]
-    fn utest_user_safe() {
+    #[tokio::test]
+    async fn utest_user_safe() {
         let user: User = User::new_random_with_seed(1);
         let mut user_safe: UserSafe = UserSafe::new(user.clone());
         assert_eq!(user_safe.secrets().len(), 0, "No secrets yet");
@@ -60,7 +60,7 @@ mod tests {
             user.get_id(),
             SecretCategory::Password,
             "my-first-secret".to_string(),
-        );
+        ).await;
 
         user_safe.add_secret(secret.clone());
         assert_eq!(user_safe.secrets().len(), 1, "Has one secret now");

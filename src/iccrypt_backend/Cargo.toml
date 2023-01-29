@@ -17,7 +17,7 @@ ic-stable-structures = "0.3.0"
 serde = "1.0.150"
 anyhow = "1.0.68"
 cfg-if = "1.0.0"
-uuid = "1.2.2"
+uuid = { version = "1.2.2", features = ["v4"] }
 
 [dev-dependencies]
 ic-agent = "0.23.0"

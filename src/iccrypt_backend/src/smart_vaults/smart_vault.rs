@@ -80,8 +80,8 @@ mod tests {
 
     use super::*;
 
-    #[test]
-    fn utest_smart_vault() {
+    #[tokio::test]
+    async fn utest_smart_vault() {
         let test_user1: User = User::new_random_with_seed(1);
         let test_user2: User = User::new_random_with_seed(2);
 
@@ -91,16 +91,16 @@ mod tests {
                 test_user1.get_id(),
                 TEST_SECRET_1.category,
                 TEST_SECRET_1.name.to_string(),
-            ),
+            ).await,
         );
-
+        
         add_user_secret(
             test_user1.get_id(),
             Secret::new(
                 test_user1.get_id(),
                 TEST_SECRET_2.category,
-                TEST_SECRET_2.name.to_string(),
-            ),
+                TEST_SECRET_2.name.to_string()
+            ).await,
         );
 
         add_user_secret(
@@ -109,7 +109,7 @@ mod tests {
                 test_user2.get_id(),
                 TEST_SECRET_3.category,
                 TEST_SECRET_3.name.to_string(),
-            ),
+            ).await,
         );
 
         add_user_secret(
@@ -118,7 +118,7 @@ mod tests {
                 test_user2.get_id(),
                 TEST_SECRET_4.category,
                 TEST_SECRET_4.name.to_string(),
-            ),
+            ).await,
         );
 
         // MASTERSAFE.with(|ms| {
@@ -140,7 +140,7 @@ mod tests {
             assert_eq!(secret.owner().clone(), test_user2.get_id());
         }
 
-        // check right secrets
+        // check right secrets not needed as already tested in secret.rs
 
         // check if changing a password works
         let _better_pwd = "my_new_and_better_pwd".to_string();
@@ -150,7 +150,7 @@ mod tests {
                 test_user1.get_id(),
                 TEST_SECRET_1.category,
                 TEST_SECRET_1.name.to_string(),
-            ),
+            ).await,
         );
     }
 }

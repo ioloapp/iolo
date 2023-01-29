@@ -1,7 +1,7 @@
 use anyhow::Ok;
 use anyhow::Result;
 use candid::Encode;
-use xshell::{cmd, Shell};
+//use xshell::{cmd, Shell};
 
 use crate::common::get_dfx_agent;
 use crate::common::get_iccrypt_backend_canister;
