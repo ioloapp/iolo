@@ -62,6 +62,12 @@ impl Secret {
             is_updated = true;
         }
 
+        // @Peter: alternativ, und ein wenig mehr idiomatisch, würde gehen:
+        if let Some(sc) = category {
+            self.category = sc;
+            is_updated = true;
+        }
+
         if name.is_some() {
             self.name = name.unwrap();
             is_updated = true;
