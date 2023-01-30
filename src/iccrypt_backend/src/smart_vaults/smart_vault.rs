@@ -91,16 +91,18 @@ mod tests {
                 test_user1.get_id(),
                 TEST_SECRET_1.category,
                 TEST_SECRET_1.name.to_string(),
-            ).await,
+            )
+            .await,
         );
-        
+
         add_user_secret(
             test_user1.get_id(),
             Secret::new(
                 test_user1.get_id(),
                 TEST_SECRET_2.category,
-                TEST_SECRET_2.name.to_string()
-            ).await,
+                TEST_SECRET_2.name.to_string(),
+            )
+            .await,
         );
 
         add_user_secret(
@@ -109,7 +111,8 @@ mod tests {
                 test_user2.get_id(),
                 TEST_SECRET_3.category,
                 TEST_SECRET_3.name.to_string(),
-            ).await,
+            )
+            .await,
         );
 
         add_user_secret(
@@ -118,7 +121,8 @@ mod tests {
                 test_user2.get_id(),
                 TEST_SECRET_4.category,
                 TEST_SECRET_4.name.to_string(),
-            ).await,
+            )
+            .await,
         );
 
         // MASTERSAFE.with(|ms| {
@@ -128,6 +132,7 @@ mod tests {
         // check right number of secrets in user safe
         let user1_secrets = get_user_safe(test_user1.get_id()).secrets().clone();
         let user2_secrets = get_user_safe(test_user2.get_id()).secrets().clone();
+
         assert_eq!(user1_secrets.keys().len(), 2);
         assert_eq!(user2_secrets.keys().len(), 2);
 
@@ -150,7 +155,8 @@ mod tests {
                 test_user1.get_id(),
                 TEST_SECRET_1.category,
                 TEST_SECRET_1.name.to_string(),
-            ).await,
+            )
+            .await,
         );
     }
 }
