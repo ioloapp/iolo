@@ -15,19 +15,17 @@ This milestone encompasses the implementation of Phase I (Smart Vaults):
 - Inheritance feature (Dead Man's Switch)
 - Analysis of a multi-canister setup for storing larger data (e.g. documents)
 
-As noted above, for the end-to-end encryption to work we will mock the on-chain encryption feature in a seperate canister. 
-
 Key part will be the inheritance feature which is basically an adoption of the so called "Dead Man's Switch" problem for the Internet Computer.
 
 ### Milestone 2. End to end encryption including Mocking of On-Chain encryption (aka. threshold key derivation)
 
-For this milestone we will implement full end-to-enc encryption of the smart vaults using the IC's on-chain encryption features. As the feature is currently being built by the DFINITY team (Aisling and Greg) we will mock it, i.e. we will mock the enablement of canisters to deterministically derive strong cryptographic key which can then be used for encryption. We want those keys to be delivered straight to the user front-end.
+For this milestone we will implement the full end-to-enc encryption of the smart vaults using the IC's on-chain encryption features. As the feature is currently being built by the DFINITY team (Aisling and Greg) we will mock it, i.e. we will mock the enablement of canisters to deterministically derive strong cryptographic key which can then be used for encryption. We want those keys to be delivered straight to the user front-end.
 
 We will work together with Aisling and Greg closely and we will reuse the system API proposed in the early design specs.
 
 ### Milestone 3. Setup IC Crypt as an SNS (DAO)
 
-As the whole IC Crypto project really is based upon security and trust, we will set up IC Crypto as an SNS, decentralizing control of the repo and processes.
+As the whole IC Crypto project heavily is based upon security and trust, we will set up IC Crypto as an SNS, decentralizing control of the repo and processes for the further evolution of the IC Crypt.
 
 ## Outlook
 
