@@ -10,8 +10,8 @@ pub type SecretID = String;
 #[derive(Debug, CandidType, Deserialize, Clone, Copy, PartialEq, Eq)]
 pub enum SecretCategory {
     Password,
-    Wallet,
     Note,
+    Document,
 }
 
 #[derive(Debug, CandidType, Deserialize, Clone)]
@@ -25,7 +25,7 @@ pub struct Secret {
     username: Option<Ciphertext>,
     password: Option<Ciphertext>,
     url: Option<Ciphertext>,
-    notes: Option<Ciphertext>,
+    notes: Option<Ciphertext>
 }
 
 impl Secret {
@@ -46,56 +46,14 @@ impl Secret {
         }
     }
 
-    pub fn update(
-        &mut self,
-        category: Option<SecretCategory>,
-        name: Option<String>,
-        username: Option<String>,
-        password: Option<String>,
-        url: Option<String>,
-        notes: Option<String>,
-    ) {
-        let mut is_updated: bool = false;
-
-        if category.is_some() {
-            self.category = category.unwrap();
-            is_updated = true;
-        }
-
-        // @Peter: alternativ, und ein wenig mehr idiomatisch, würde gehen:
-        if let Some(sc) = category {
-            self.category = sc;
-            is_updated = true;
-        }
-
-        if name.is_some() {
-            self.name = name.unwrap();
-            is_updated = true;
-        }
-
-        if username.is_some() {
-            self.username = username;
-            is_updated = true;
-        }
-
-        if password.is_some() {
-            self.password = password;
-            is_updated = true;
-        }
-
-        if url.is_some() {
-            self.url = url;
-            is_updated = true;
-        }
-
-        if notes.is_some() {
-            self.notes = notes;
-            is_updated = true;
-        }
-
-        if is_updated {
-            self.date_modified = time::get_current_time();
-        }
+    pub fn update(&mut self, secret: Secret) {
+        self.date_modified = time::get_current_time();
+        self.category = secret.category;
+        self.name = secret.name;
+        self.username = secret.username;
+        self.password = secret.password;
+        self.url = secret.url;
+        self.notes = secret.notes;
     }
 
     pub fn id(&self) -> &str {
@@ -103,12 +61,12 @@ impl Secret {
     }
 
     pub fn date_created(&self) -> &u64 {
-        &self.date_created
+       &self.date_created
     }
 
     pub fn date_modified(&self) -> &u64 {
         &self.date_modified
-    }
+     }
 
     pub fn owner(&self) -> &UserID {
         &self.owner
@@ -118,24 +76,54 @@ impl Secret {
         &self.category
     }
 
+    pub fn set_category(&mut self, category: SecretCategory) {
+        self.category = category;
+        self.date_modified = time::get_current_time();
+    }
+
     pub fn name(&self) -> &Ciphertext {
         &self.name
+    }
+
+    pub fn set_name(&mut self, name: String) {
+        self.name = name;
+        self.date_modified = time::get_current_time();
     }
 
     pub fn username(&self) -> &Option<Ciphertext> {
         &self.username
     }
 
+    pub fn set_username(&mut self, username: String) {
+        self.username = Option::Some(username);
+        self.date_modified = time::get_current_time();
+    }
+
     pub fn password(&self) -> &Option<Ciphertext> {
         &self.password
+    }
+
+    pub fn set_password(&mut self, password: String) {
+        self.password = Option::Some(password);
+        self.date_modified = time::get_current_time();
     }
 
     pub fn url(&self) -> &Option<Ciphertext> {
         &self.url
     }
 
+    pub fn set_url(&mut self, url: String) {
+        self.url = Option::Some(url);
+        self.date_modified = time::get_current_time();
+    }
+
     pub fn notes(&self) -> &Option<Ciphertext> {
         &self.notes
+    }
+
+    pub fn set_notes(&mut self, notes: String) {
+        self.notes = Option::Some(notes);
+        self.date_modified = time::get_current_time();
     }
 }
 
@@ -147,13 +135,13 @@ mod tests {
     use std::thread;
 
     #[tokio::test]
-    async fn utest_new_secret_minimal() {
+    async fn utest_new_secret() {
         let owner: User = User::new_random_with_seed(1);
         let sc: SecretCategory = SecretCategory::Password;
         let name: String = String::from("my-first-secret");
 
         let before = time::get_current_time();
-        thread::sleep(std::time::Duration::from_millis(100)); // Sleep 100 milliseconds to ensure that secret has a different creation date
+        thread::sleep(std::time::Duration::from_millis(10)); // Sleep 10 milliseconds to ensure that secret has a different creation date
         let secret: Secret = Secret::new(owner.get_id().clone(), sc.clone(), name.clone()).await;
 
         assert_eq!(secret.id().len(), 36);
@@ -189,68 +177,136 @@ mod tests {
         let mut secret: Secret =
             Secret::new(owner.get_id().clone(), sc.clone(), name.clone()).await;
 
-        // Update optional fields username, password, url and notes
-        let username = String::from("my-username");
-        let password = String::from("my-password");
-        let url = String::from("my-url");
-        let notes = String::from("my-notes");
-        let created_before_update = secret.date_created;
+        // Update category
+        let sc_updated = SecretCategory::Note;
+        let mut created_before_update = secret.date_created;
         let mut modified_before_update = secret.date_modified;
 
-        secret.update(
-            Option::None,
-            Option::None,
-            Option::Some(username.clone()),
-            Option::Some(password.clone()),
-            Option::Some(url.clone()),
-            Option::Some(notes.clone()),
-        );
-
-        assert!(
-            secret.date_created() < secret.date_modified(),
-            "date_modified: {} must be greater than date_created: {}",
-            secret.date_modified(),
-            secret.date_created()
-        );
+        thread::sleep(std::time::Duration::from_millis(10)); // Sleep 10 milliseconds to ensure that secret has a different creation date
+        secret.set_category(sc_updated.clone());
         assert_eq!(
             secret.date_created(),
             &created_before_update,
-            "date_created: {} must be equal to created_before_update: {}",
+            "Category: date_created: {} must be equal to created_before_update: {}",
             secret.date_created(),
             created_before_update
         );
         assert!(
             secret.date_modified() > &modified_before_update,
-            "date_modified: {} must be greater than modified_before_update: {}",
-            secret.date_modified(),
-            modified_before_update
-        );
-        assert_eq!(secret.username(), &Option::Some(username));
-        assert_eq!(secret.password(), &Option::Some(password));
-        assert_eq!(secret.url(), &Option::Some(url));
-        assert_eq!(secret.notes(), &Option::Some(notes));
-
-        // Update mandatory fields name and category
-        let sc_updated = SecretCategory::Note;
-        let name_updated = String::from("my-first-secret-updated");
-        modified_before_update = secret.date_modified;
-
-        secret.update(
-            Option::Some(sc_updated.clone()),
-            Option::Some(name_updated.clone()),
-            Option::None,
-            Option::None,
-            Option::None,
-            Option::None,
-        );
-
-        assert!(
-            secret.date_modified() > &modified_before_update,
-            "date_modified: {} must be greater than modified_before_update: {}",
+            "Category: date_modified: {} must be greater than modified_before_update: {}",
             secret.date_modified(),
             modified_before_update
         );
         assert_eq!(secret.category(), &sc_updated);
+
+        // Update name
+        let name_updated = String::from("my-first-secret-updated");
+        created_before_update = secret.date_created;
+        modified_before_update = secret.date_modified;
+        
+        thread::sleep(std::time::Duration::from_millis(10)); // Sleep 10 milliseconds to ensure that secret has a different creation date
+        secret.set_name(name_updated.clone());
+        assert_eq!(
+            secret.date_created(),
+            &created_before_update,
+            "Name: date_created: {} must be equal to created_before_update: {}",
+            secret.date_created(),
+            created_before_update
+        );
+        assert!(
+            secret.date_modified() > &modified_before_update,
+            "Name: date_modified: {} must be greater than modified_before_update: {}",
+            secret.date_modified(),
+            modified_before_update
+        );
         assert_eq!(secret.name(), &name_updated);
+
+        // Update username
+        let username = String::from("my-username");
+        created_before_update = secret.date_created;
+        modified_before_update = secret.date_modified;
+
+        thread::sleep(std::time::Duration::from_millis(10)); // Sleep 10 milliseconds to ensure that secret has a different creation date
+        secret.set_username(username.clone());
+        assert_eq!(
+            secret.date_created(),
+            &created_before_update,
+            "Username: date_created: {} must be equal to created_before_update: {}",
+            secret.date_created(),
+            created_before_update
+        );
+        assert!(
+            secret.date_modified() > &modified_before_update,
+            "Username: date_modified: {} must be greater than modified_before_update: {}",
+            secret.date_modified(),
+            modified_before_update
+        );
+        assert_eq!(secret.username(), &Option::Some(username));
+
+        // Update password
+        let password = String::from("my-password");
+        created_before_update = secret.date_created;
+        modified_before_update = secret.date_modified;
+
+        thread::sleep(std::time::Duration::from_millis(10)); // Sleep 10 milliseconds to ensure that secret has a different creation date
+        secret.set_password(password.clone());
+        assert_eq!(
+            secret.date_created(),
+            &created_before_update,
+            "Password: date_created: {} must be equal to created_before_update: {}",
+            secret.date_created(),
+            created_before_update
+        );
+        assert!(
+            secret.date_modified() > &modified_before_update,
+            "Password: date_modified: {} must be greater than modified_before_update: {}",
+            secret.date_modified(),
+            modified_before_update
+        );
+        assert_eq!(secret.password(), &Option::Some(password));
+
+        // Update url
+        let url = String::from("my-url");
+        created_before_update = secret.date_created;
+        modified_before_update = secret.date_modified;
+
+        thread::sleep(std::time::Duration::from_millis(10)); // Sleep 10 milliseconds to ensure that secret has a different creation date
+        secret.set_url(url.clone());
+        assert_eq!(
+            secret.date_created(),
+            &created_before_update,
+            "Url: date_created: {} must be equal to created_before_update: {}",
+            secret.date_created(),
+            created_before_update
+        );
+        assert!(
+            secret.date_modified() > &modified_before_update,
+            "Url: date_modified: {} must be greater than modified_before_update: {}",
+            secret.date_modified(),
+            modified_before_update
+        );
+        assert_eq!(secret.url(), &Option::Some(url));
+
+        // Updates notes
+        let notes = String::from("my-notes");
+        created_before_update = secret.date_created;
+        modified_before_update = secret.date_modified;
+               
+        thread::sleep(std::time::Duration::from_millis(10)); // Sleep 10 milliseconds to ensure that secret has a different creation date
+        secret.set_notes(notes.clone());
+        assert_eq!(
+            secret.date_created(),
+            &created_before_update,
+            "Notes: date_created: {} must be equal to created_before_update: {}",
+            secret.date_created(),
+            created_before_update
+        );
+        assert!(
+            secret.date_modified() > &modified_before_update,
+            "Notes: date_modified: {} must be greater than modified_before_update: {}",
+            secret.date_modified(),
+            modified_before_update
+        );    
+        assert_eq!(secret.notes(), &Option::Some(notes));
     }
 }

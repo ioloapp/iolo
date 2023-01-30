@@ -4,7 +4,7 @@ use std::collections::BTreeMap;
 
 use crate::common::user::{UserID};
 use crate::utils::time;
-use super::secret::{Secret, SecretID};
+use super::secret::{SecretID, Secret};
 
 #[derive(Debug, CandidType, Deserialize, Clone)]
 pub struct UserSafe {
@@ -31,11 +31,11 @@ impl UserSafe {
     }
 
     pub fn date_created(&self) -> &u64{
-        &&self.date_created
+        &self.date_created
     }
 
     pub fn date_modified(&self) -> &u64{
-        &&self.date_modified
+        &self.date_modified
     }
 
     pub fn secrets(&self) -> &BTreeMap<SecretID, Secret> {
@@ -98,7 +98,8 @@ mod tests {
         // Update secret
         let username = String::from("my-username");
         let password = String::from("my-password");
-        secret.update(None, None, Some(username.clone()), Some(password.clone()), None, None);
+        secret.set_username(username.clone());
+        secret.set_password(password.clone());
         modified_before_update = user_safe.date_modified;
         created_before_update = user_safe.date_created;
         user_safe.update_secret(secret);
