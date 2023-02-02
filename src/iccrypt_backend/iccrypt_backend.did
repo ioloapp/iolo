@@ -2,24 +2,20 @@ type Secret = record {
   id : text;
   url : opt text;
   username : opt text;
+  date_created : nat64;
   owner : principal;
   password : opt text;
   name : text;
   notes : opt text;
   category : SecretCategory;
+  date_modified : nat64;
 };
-type SecretCategory = variant { Password; Note; Wallet };
-type User = record {
-  id : principal;
-  last_login : opt nat64;
-  heirs : vec principal;
-  date_created : opt nat64;
-};
+type SecretCategory = variant { Password; Note; Document };
 type UserSafe = record {
-  date_created : opt nat64;
-  owner : User;
+  date_created : nat64;
+  owner : principal;
   secrets : vec record { text; Secret };
-  date_modified : opt nat64;
+  date_modified : nat64;
 };
 service : {
   add_user_secret : (principal, Secret) -> ();

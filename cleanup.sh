@@ -18,3 +18,6 @@ if [[ $ENV == "local" ]]; then
     # Remove .dfx folder
     rm -rf .dfx
 fi
+
+# Sometimes it is required to really clean up. E.g. because of some strange errors in the cargo.lock file
+# cargo clean

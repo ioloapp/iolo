@@ -9,11 +9,16 @@ use super::{
     user_safe::UserSafe,
 };
 
+// use anyhow::Ok;
+// use anyhow::Result;
+
+pub type UserSafes = BTreeMap<UserID, UserSafe>;
+
 #[derive(CandidType, Deserialize, Clone)]
 pub struct MasterSafe {
     date_created: Option<u64>,
     date_modified: Option<u64>,
-    pub user_safes: BTreeMap<UserID, UserSafe>,
+    pub user_safes: UserSafes,
 }
 
 impl Default for MasterSafe {
@@ -40,10 +45,6 @@ impl MasterSafe {
         }
     }
 
-    pub fn get_all_user_safes(&self) -> &BTreeMap<UserID, UserSafe> {
-        &self.user_safes
-    }
-
     pub fn open_new_user_safe(&mut self, user_id: UserID) -> &mut UserSafe {
         // create the user
         let new_user = User::new(user_id);
@@ -52,15 +53,16 @@ impl MasterSafe {
         self.get_user_safe(user_id).unwrap()
     }
 
+    pub fn delete_user_safe(&mut self, user: UserID) {
+        self.user_safes.remove(&user);
+    }
+
     /// Inserts a secret into a user's safe.
-    /// If user safe does not exist yet, a new one will be created
+    // TODO: propagate error if user_safe does not exist
     pub fn add_user_secret(&mut self, user_id: UserID, secret: Secret) {
         if let Some(user_safe) = self.get_user_safe(user_id) {
             // the user already has a safe
             user_safe.add_secret(secret);
-        } else {
-            // open a new user safe and insert the new secret
-            self.open_new_user_safe(user_id).add_secret(secret);
         }
     }
 

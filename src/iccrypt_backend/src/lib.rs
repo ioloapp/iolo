@@ -19,12 +19,6 @@ fn init() {}
 
 #[ic_cdk_macros::query]
 #[candid_method(query)]
-fn greet(name: String) -> String {
-    format!("Hello, {}!", name)
-}
-
-#[ic_cdk_macros::query]
-#[candid_method(query)]
 fn who_am_i() -> String {
     utils::caller::get_caller().to_string()
 }

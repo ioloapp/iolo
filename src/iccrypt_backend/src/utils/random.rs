@@ -14,6 +14,7 @@ cfg_if::cfg_if! {
 
     } else {
         // Internet Computer
+        #[ic_cdk_macros::update]
         async fn get_random_array() -> [u8;16]{
             // this management canistesr call throws errors. don't know why. can't find a good
             // answer on the forum.
@@ -22,6 +23,13 @@ cfg_if::cfg_if! {
             // let random_bytes: Vec<u8> = match call(Principal::management_canister(), "raw_rand", ()).await {
             //     Ok((res,)) => res,
             //     Err((_, err)) => trap(&format!("Failed to get random seed: {}", err)),
+            // };
+
+            // another try
+            // let management_canister = ic_cdk::export::Principal::management_canister();
+            // let random_bytes: Vec<u8> = match ic_cdk::call(management_canister, "raw_rand", ()).await {
+            //     Ok((res,)) => res,
+            //     Err((_, err)) => ic_cdk::trap(&format!("Failed to get random seed: {}", err)),
             // };
 
             // WORKAROUND: generating some pseudorandomness using the timestamp

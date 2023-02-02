@@ -5,26 +5,22 @@ export interface Secret {
   'id' : string,
   'url' : [] | [string],
   'username' : [] | [string],
+  'date_created' : bigint,
   'owner' : Principal,
   'password' : [] | [string],
   'name' : string,
   'notes' : [] | [string],
   'category' : SecretCategory,
+  'date_modified' : bigint,
 }
 export type SecretCategory = { 'Password' : null } |
   { 'Note' : null } |
-  { 'Wallet' : null };
-export interface User {
-  'id' : Principal,
-  'last_login' : [] | [bigint],
-  'heirs' : Array<Principal>,
-  'date_created' : [] | [bigint],
-}
+  { 'Document' : null };
 export interface UserSafe {
-  'date_created' : [] | [bigint],
-  'owner' : User,
+  'date_created' : bigint,
+  'owner' : Principal,
   'secrets' : Array<[string, Secret]>,
-  'date_modified' : [] | [bigint],
+  'date_modified' : bigint,
 }
 export interface _SERVICE {
   'add_user_secret' : ActorMethod<[Principal, Secret], undefined>,

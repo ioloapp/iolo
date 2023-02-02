@@ -3,8 +3,6 @@ use std::collections::BTreeMap;
 
 use candid::candid_method;
 use ic_cdk::{post_upgrade, pre_upgrade, storage};
-use ic_stable_structures::memory_manager::VirtualMemory;
-use ic_stable_structures::DefaultMemoryImpl;
 
 use crate::common::user::{User, UserID};
 
@@ -12,54 +10,82 @@ use super::master_safe::MasterSafe;
 use super::secret::Secret;
 use super::user_safe::UserSafe;
 
-pub type Memory = VirtualMemory<DefaultMemoryImpl>;
-pub type IneritanceRegistryEntry = Vec<UserID>;
-pub type InheritanceRegistry = BTreeMap<UserID, IneritanceRegistryEntry>;
+pub type UserRegistry = BTreeMap<UserID, User>;
 
 thread_local! {
     // Mastersafe holding all the user safes
     static MASTERSAFE: RefCell<MasterSafe> = RefCell::new(MasterSafe::new());
 
-    // The inheritance registry keeps track of the inheritance relationships.
-    // UserID -> Vector of UserID
-    static INHERITANCE_REGISTRY: RefCell<InheritanceRegistry> = RefCell::new(InheritanceRegistry::new());
-}
-
-#[ic_cdk_macros::query]
-#[candid_method(query)]
-pub fn get_user_safe(user: UserID) -> UserSafe {
-    let user_vaults: BTreeMap<UserID, UserSafe> =
-        MASTERSAFE.with(|mv: &RefCell<MasterSafe>| mv.borrow().get_all_user_safes().clone());
-
-    if let Some(uv) = user_vaults.get(&user) {
-        uv.clone()
-    } else {
-        UserSafe::new(User::new(user).get_id())
-    }
+    // User Registsry
+    static USER_REGISTRY: RefCell<UserRegistry> = RefCell::new(UserRegistry::new());
 }
 
 #[ic_cdk_macros::update]
 #[candid_method(update)]
-pub fn add_user_secret(user: UserID, secret: Secret) {
+pub fn create_new_user(uid: UserID) {
+    // create the new user
+    USER_REGISTRY.with(|ur: &RefCell<UserRegistry>| {
+        let mut user_registry = ur.borrow_mut();
+        user_registry.insert(uid, User::new(uid));
+    });
+
+    // open a safe for the new user
     MASTERSAFE.with(|ms: &RefCell<MasterSafe>| {
-        let master_safe = &mut ms.borrow_mut();
-        master_safe.add_user_secret(user, secret);
+        let mut master_safe = ms.borrow_mut();
+        master_safe.open_new_user_safe(uid);
     });
 }
 
 #[ic_cdk_macros::update]
 #[candid_method(update)]
-pub fn update_user_secret(user: UserID, secret: Secret) {
+pub fn delete_user(uid: UserID) {
+    // delete the user safe
     MASTERSAFE.with(|ms: &RefCell<MasterSafe>| {
-        let master_safe = &mut ms.borrow_mut();
-        master_safe.update_user_secret(user, secret);
+        let mut master_safe = ms.borrow_mut();
+        master_safe.delete_user_safe(uid);
+    });
+
+    // delete the user
+    USER_REGISTRY.with(|ur: &RefCell<UserRegistry>| {
+        let mut user_registry = ur.borrow_mut();
+        user_registry.remove(&uid);
+    });
+}
+
+#[ic_cdk_macros::query]
+#[candid_method(query)]
+pub fn get_user_safe(uid: UserID) -> Option<UserSafe> {
+    MASTERSAFE.with(|mv: &RefCell<MasterSafe>| {
+        if let Some(us) = mv.borrow_mut().get_user_safe(uid) {
+            // found a user safe
+            return Some(us.clone());
+        }
+        None
+    })
+}
+
+#[ic_cdk_macros::update]
+#[candid_method(update)]
+pub fn add_user_secret(uid: UserID, secret: Secret) {
+    MASTERSAFE.with(|ms: &RefCell<MasterSafe>| {
+        let mut master_safe = ms.borrow_mut();
+        master_safe.add_user_secret(uid, secret);
+    });
+}
+
+#[ic_cdk_macros::update]
+#[candid_method(update)]
+pub fn update_user_secret(uid: UserID, secret: Secret) {
+    MASTERSAFE.with(|ms: &RefCell<MasterSafe>| {
+        let mut master_safe = ms.borrow_mut();
+        master_safe.update_user_secret(uid, secret);
     });
 }
 
 #[pre_upgrade]
 fn pre_upgrade() {
     MASTERSAFE.with(|ms| storage::stable_save((ms,)).unwrap());
-    INHERITANCE_REGISTRY.with(|ir| storage::stable_save((ir,)).unwrap());
+    USER_REGISTRY.with(|ur| storage::stable_save((ur,)).unwrap());
 }
 
 #[post_upgrade]
@@ -67,8 +93,8 @@ fn post_upgrade() {
     let (old_ms,): (MasterSafe,) = storage::stable_restore().unwrap();
     MASTERSAFE.with(|ms| *ms.borrow_mut() = old_ms);
 
-    let (old_ir,): (InheritanceRegistry,) = storage::stable_restore().unwrap();
-    INHERITANCE_REGISTRY.with(|ir| *ir.borrow_mut() = old_ir);
+    let (old_ur,): (UserRegistry,) = storage::stable_restore().unwrap();
+    USER_REGISTRY.with(|ur| *ur.borrow_mut() = old_ur);
 }
 
 #[cfg(test)]
@@ -84,6 +110,9 @@ mod tests {
     async fn utest_smart_vault() {
         let test_user1: User = User::new_random_with_seed(1);
         let test_user2: User = User::new_random_with_seed(2);
+
+        create_new_user(test_user1.get_id());
+        create_new_user(test_user2.get_id());
 
         add_user_secret(
             test_user1.get_id(),
@@ -130,8 +159,14 @@ mod tests {
         // });
 
         // check right number of secrets in user safe
-        let user1_secrets = get_user_safe(test_user1.get_id()).secrets().clone();
-        let user2_secrets = get_user_safe(test_user2.get_id()).secrets().clone();
+        let user1_secrets = get_user_safe(test_user1.get_id())
+            .unwrap()
+            .secrets()
+            .clone();
+        let user2_secrets = get_user_safe(test_user2.get_id())
+            .unwrap()
+            .secrets()
+            .clone();
 
         assert_eq!(user1_secrets.keys().len(), 2);
         assert_eq!(user2_secrets.keys().len(), 2);
