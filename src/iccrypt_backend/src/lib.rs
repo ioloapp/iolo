@@ -29,8 +29,8 @@ fn what_time_is_it() -> u64 {
     utils::time::get_current_time()
 }
 
-#[ic_cdk_macros::query]
-#[candid_method(query)]
+#[ic_cdk_macros::update]
+#[candid_method(update)]
 async fn give_me_a_new_uuid() -> String {
     utils::random::get_new_uuid().await
 }

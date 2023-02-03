@@ -19,10 +19,11 @@ type UserSafe = record {
 };
 service : {
   add_user_secret : (principal, Secret) -> ();
+  create_new_user : (principal) -> ();
+  delete_user : (principal) -> ();
   derive_key : (text, text, text) -> (text) query;
-  get_user_safe : (principal) -> (UserSafe) query;
-  give_me_a_new_uuid : () -> (text) query;
-  greet : (text) -> (text) query;
+  get_user_safe : (principal) -> (opt UserSafe) query;
+  give_me_a_new_uuid : () -> (text);
   update_user_secret : (principal, Secret) -> ();
   what_time_is_it : () -> (nat64) query;
   who_am_i : () -> (text) query;

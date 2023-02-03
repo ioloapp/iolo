@@ -13,22 +13,6 @@ cfg_if::cfg_if! {
     }
 }
 
-// alternative
-// pub fn get_current_time_v2() -> u64 {
-//     let time: u64;
-//     if cfg!(test) {
-//         // we are in the test environment -> local rust
-//         time = std::time::SystemTime::now()
-//             .duration_since(std::time::UNIX_EPOCH)
-//             .expect("error getting system time")
-//             .as_secs();
-//     } else {
-//         // we are running on the ic
-//         time = ic_cdk::api::time();
-//     }
-//     time
-// }
-
 #[cfg(test)]
 mod tests {
 
@@ -38,8 +22,13 @@ mod tests {
     fn utest_time() {
         let time_1 = get_current_time();
         let time_2 = get_current_time();
-        
-        assert!(time_1 < time_2, "time_1 {} is not less than time_2 {}", time_1, time_2);
+
+        assert!(
+            time_1 < time_2,
+            "time_1 {} is not less than time_2 {}",
+            time_1,
+            time_2
+        );
         assert!(time_1 > 1674990000000000000, "time_1 {} is either not in Nanoseconds (19 digits) or less than 1674990000000000000 (2023-01-29, 12:00", time_1);
     }
 }
