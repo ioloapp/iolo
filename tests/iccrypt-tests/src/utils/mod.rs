@@ -1,4 +1,7 @@
+#![allow(dead_code)]
+
 use crate::common::{get_dfx_agent, get_iccrypt_backend_canister};
+use pretty_assertions::{assert_eq, assert_ne};
 
 use anyhow::Ok;
 use anyhow::Result;
@@ -6,9 +9,9 @@ use candid::Encode;
 
 pub async fn test_utils() -> Result<()> {
     dbg!("Testing the utils function");
-    dbg!(itest_utils_caller().await?);
-    dbg!(itest_utils_random().await?);
-    dbg!(itest_utils_time().await?);
+    // dbg!(itest_utils_caller().await?);
+    dbg!(itest_utils_uuid().await?);
+    // dbg!(itest_utils_time().await?);
     Ok(())
 }
 
@@ -38,7 +41,7 @@ async fn itest_utils_time() -> Result<u64> {
     Ok(time)
 }
 
-async fn itest_utils_random() -> Result<String> {
+async fn itest_utils_uuid() -> Result<String> {
     let agent = get_dfx_agent().unwrap();
     agent.fetch_root_key().await?;
     let canister = get_iccrypt_backend_canister();
@@ -50,5 +53,9 @@ async fn itest_utils_random() -> Result<String> {
         .unwrap();
     let mut res_deserialized = candid::de::IDLDeserialize::new(&res)?;
     let uuid: String = res_deserialized.get_value::<String>().unwrap();
+    assert_eq!(uuid.chars().nth(8).unwrap(), '-');
+    assert_eq!(uuid.chars().nth(13).unwrap(), '-');
+    assert_eq!(uuid.chars().nth(18).unwrap(), '-');
+    assert_eq!(uuid.chars().nth(23).unwrap(), '-');
     Ok(uuid)
 }
