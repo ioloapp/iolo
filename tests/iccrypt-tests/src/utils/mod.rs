@@ -1,5 +1,4 @@
 #![allow(dead_code)]
-
 use crate::common::{get_dfx_agent, get_iccrypt_backend_canister};
 use pretty_assertions::{assert_eq, assert_ne};
 
@@ -9,9 +8,9 @@ use candid::Encode;
 
 pub async fn test_utils() -> Result<()> {
     dbg!("Testing the utils function");
-    // dbg!(itest_utils_caller().await?);
+    dbg!(itest_utils_caller().await?);
     dbg!(itest_utils_uuid().await?);
-    // dbg!(itest_utils_time().await?);
+    dbg!(itest_utils_time().await?);
     Ok(())
 }
 

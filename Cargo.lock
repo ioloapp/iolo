@@ -837,6 +837,7 @@ dependencies = [
  "ic-cdk",
  "ic-cdk-macros",
  "ic-types",
+ "iccrypt_backend",
  "pretty_assertions",
  "serde",
  "tokio",

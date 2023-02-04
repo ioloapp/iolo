@@ -3,19 +3,17 @@
 use anyhow::Ok;
 use anyhow::Result;
 
+use smart_vaults::test_smart_vaults;
 use utils::test_utils;
 //use xshell::{cmd, Shell};
 
 mod common;
+mod smart_vaults;
 mod utils;
 
 #[tokio::main]
 async fn main() -> Result<()> {
     test_utils().await?;
-    Ok(())
-}
-
-async fn itest_smart_vaults() -> Result<()> {
-    // TODO
+    test_smart_vaults().await?;
     Ok(())
 }

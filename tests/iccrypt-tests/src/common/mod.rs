@@ -5,6 +5,7 @@ use xshell::{cmd, Shell};
 
 const URL: &str = "http://localhost:4943/";
 const ICCRYPT_BACKEND_CANISTER_ID: &str = "rrkah-fqaaa-aaaaa-aaaaq-cai";
+pub const MY_CALLER_ID: &str = "2vxsx-fae";
 
 pub fn get_dfx_agent() -> Result<Agent> {
     let agent = Agent::builder()

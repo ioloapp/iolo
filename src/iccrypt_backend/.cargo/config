@@ -3,8 +3,8 @@
 #unit tests
 ut = "test utest -- --nocapture"
 
-#integration tests
-it = "test itest -- --nocapture"
+#integration tests -> have moved to /iccrypt/tests/iccrypt-tests
+#it = "test itest -- --nocapture"
 
-#integration tests
+#getting the candid file (console output)
 candid = "test get_candid -- --nocapture"
