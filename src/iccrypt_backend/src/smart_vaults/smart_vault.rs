@@ -7,7 +7,7 @@ use ic_cdk::{post_upgrade, pre_upgrade, storage};
 use crate::common::user::{User, UserID};
 
 use super::master_safe::MasterSafe;
-use super::secret::Secret;
+use super::secret::{Secret, SecretCategory, SecretID};
 use super::user_safe::UserSafe;
 
 pub type UserRegistry = BTreeMap<UserID, User>;
@@ -66,10 +66,11 @@ pub fn get_user_safe(uid: UserID) -> Option<UserSafe> {
 
 #[ic_cdk_macros::update]
 #[candid_method(update)]
-pub fn add_user_secret(uid: UserID, secret: Secret) {
+pub async fn add_user_secret(uid: UserID, category: SecretCategory, name: String) {
+    let new_secret = Secret::new(uid, category, name).await;
     MASTERSAFE.with(|ms: &RefCell<MasterSafe>| {
         let mut master_safe = ms.borrow_mut();
-        master_safe.add_user_secret(uid, secret);
+        master_safe.add_user_secret(uid, new_secret);
     });
 }
 
@@ -116,43 +117,31 @@ mod tests {
 
         add_user_secret(
             test_user1.get_id(),
-            Secret::new(
-                test_user1.get_id(),
-                TEST_SECRET_1.category,
-                TEST_SECRET_1.name.to_string(),
-            )
-            .await,
-        );
+            TEST_SECRET_1.category,
+            TEST_SECRET_1.name.to_string(),
+        )
+        .await;
 
         add_user_secret(
             test_user1.get_id(),
-            Secret::new(
-                test_user1.get_id(),
-                TEST_SECRET_2.category,
-                TEST_SECRET_2.name.to_string(),
-            )
-            .await,
-        );
+            TEST_SECRET_2.category,
+            TEST_SECRET_2.name.to_string(),
+        )
+        .await;
 
         add_user_secret(
             test_user2.get_id(),
-            Secret::new(
-                test_user2.get_id(),
-                TEST_SECRET_3.category,
-                TEST_SECRET_3.name.to_string(),
-            )
-            .await,
-        );
+            TEST_SECRET_3.category,
+            TEST_SECRET_3.name.to_string(),
+        )
+        .await;
 
         add_user_secret(
             test_user2.get_id(),
-            Secret::new(
-                test_user2.get_id(),
-                TEST_SECRET_4.category,
-                TEST_SECRET_4.name.to_string(),
-            )
-            .await,
-        );
+            TEST_SECRET_4.category,
+            TEST_SECRET_4.name.to_string(),
+        )
+        .await;
 
         // MASTERSAFE.with(|ms| {
         //     dbg!(&ms);

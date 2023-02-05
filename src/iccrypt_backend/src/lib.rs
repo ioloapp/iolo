@@ -12,6 +12,7 @@ use crate::cryptography::DerivationID;
 use crate::cryptography::MasterKeyID;
 use crate::cryptography::TransportPublicKey;
 use crate::smart_vaults::secret::Secret;
+use crate::smart_vaults::secret::SecretCategory;
 use crate::smart_vaults::user_safe::UserSafe;
 
 #[ic_cdk_macros::init]
