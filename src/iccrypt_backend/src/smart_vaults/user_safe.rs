@@ -47,8 +47,8 @@ impl UserSafe {
         self.date_modified = time::get_current_time();
     }
 
-    pub fn remove_secret(&mut self, secret_id: SecretID) {
-        self.secrets.remove(&secret_id);
+    pub fn remove_secret(&mut self, secret_id: &SecretID) {
+        self.secrets.remove(secret_id);
         self.date_modified = time::get_current_time();
     }
 

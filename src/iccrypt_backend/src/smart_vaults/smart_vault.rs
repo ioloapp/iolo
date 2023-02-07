@@ -7,7 +7,7 @@ use ic_cdk::{post_upgrade, pre_upgrade, storage};
 use crate::common::user::{User, UserID};
 
 use super::master_safe::MasterSafe;
-use super::secret::{Secret, SecretCategory, SecretID};
+use super::secret::{Secret, SecretCategory};
 use super::user_safe::UserSafe;
 
 pub type UserRegistry = BTreeMap<UserID, User>;
@@ -32,54 +32,50 @@ pub fn create_new_user(uid: UserID) {
     // open a safe for the new user
     MASTERSAFE.with(|ms: &RefCell<MasterSafe>| {
         let mut master_safe = ms.borrow_mut();
-        master_safe.open_new_user_safe(uid);
+        master_safe.get_or_create_user_safe(uid);
     });
 }
 
 #[ic_cdk_macros::update]
 #[candid_method(update)]
-pub fn delete_user(uid: UserID) {
+pub fn delete_user(owner: UserID) {
     // delete the user safe
     MASTERSAFE.with(|ms: &RefCell<MasterSafe>| {
         let mut master_safe = ms.borrow_mut();
-        master_safe.delete_user_safe(uid);
+        master_safe.remove_user_safe(owner);
     });
 
     // delete the user
     USER_REGISTRY.with(|ur: &RefCell<UserRegistry>| {
         let mut user_registry = ur.borrow_mut();
-        user_registry.remove(&uid);
+        user_registry.remove(&owner);
     });
 }
 
 #[ic_cdk_macros::query]
 #[candid_method(query)]
-pub fn get_user_safe(uid: UserID) -> Option<UserSafe> {
+pub fn get_user_safe(owner: UserID) -> UserSafe {
     MASTERSAFE.with(|mv: &RefCell<MasterSafe>| {
-        if let Some(us) = mv.borrow_mut().get_user_safe(uid) {
-            // found a user safe
-            return Some(us.clone());
-        }
-        None
+        mv.borrow_mut().get_or_create_user_safe(owner).clone() // TODO: Does this clone() make sense??
     })
 }
 
 #[ic_cdk_macros::update]
 #[candid_method(update)]
-pub async fn add_user_secret(uid: UserID, category: SecretCategory, name: String) {
-    let new_secret = Secret::new(uid, category, name).await;
+pub async fn add_user_secret(owner: UserID, category: SecretCategory, name: String) {
+    let new_secret = Secret::new(owner, category, name).await;
     MASTERSAFE.with(|ms: &RefCell<MasterSafe>| {
         let mut master_safe = ms.borrow_mut();
-        master_safe.add_user_secret(uid, new_secret);
+        master_safe.add_secret(owner, new_secret);
     });
 }
 
 #[ic_cdk_macros::update]
 #[candid_method(update)]
-pub fn update_user_secret(uid: UserID, secret: Secret) {
+pub fn update_user_secret(owner: UserID, secret: Secret) {
     MASTERSAFE.with(|ms: &RefCell<MasterSafe>| {
         let mut master_safe = ms.borrow_mut();
-        master_safe.update_user_secret(uid, secret);
+        master_safe.update_secret(owner, secret);
     });
 }
 
@@ -149,11 +145,9 @@ mod tests {
 
         // check right number of secrets in user safe
         let user1_secrets = get_user_safe(test_user1.get_id())
-            .unwrap()
             .secrets()
             .clone();
         let user2_secrets = get_user_safe(test_user2.get_id())
-            .unwrap()
             .secrets()
             .clone();
 

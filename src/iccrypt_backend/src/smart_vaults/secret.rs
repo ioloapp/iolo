@@ -56,7 +56,7 @@ impl Secret {
         self.notes = secret.notes;
     }
 
-    pub fn id(&self) -> &str {
+    pub fn id(&self) -> &String {
         &self.id
     }
 
