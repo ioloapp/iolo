@@ -15,11 +15,11 @@ pub struct UserSafe {
 }
 
 impl UserSafe {
-    pub fn new(owner: UserID) -> Self {
+    pub fn new(owner: &UserID) -> Self {
         let now: u64 = time::get_current_time();
 
         Self {
-            owner,
+            owner: owner.clone(),
             date_created: now,
             date_modified: now,
             secrets: BTreeMap::new(),
@@ -42,8 +42,8 @@ impl UserSafe {
         &self.secrets
     }
 
-    pub fn add_secret(&mut self, secret: Secret) {
-        self.secrets.insert(secret.id().to_string(), secret);
+    pub fn add_secret(&mut self, secret: &Secret) {
+        self.secrets.insert(secret.id().clone().to_string(), secret.clone());
         self.date_modified = time::get_current_time();
     }
 
@@ -52,8 +52,8 @@ impl UserSafe {
         self.date_modified = time::get_current_time();
     }
 
-    pub fn update_secret(&mut self, secret: Secret) {
-        self.secrets.insert(secret.id().to_string(), secret);
+    pub fn update_secret(&mut self, secret: &Secret) {
+        self.secrets.insert(secret.id().clone().to_string(), secret.clone());
         self.date_modified = time::get_current_time();
     }
 }
@@ -73,22 +73,22 @@ mod tests {
         let user: User = User::new_random_with_seed(1);
         let before = time::get_current_time();
         thread::sleep(std::time::Duration::from_millis(100)); // Sleep 100 milliseconds to ensure that user_safe has a different creation date
-        let mut user_safe: UserSafe = UserSafe::new(user.get_id());
+        let mut user_safe: UserSafe = UserSafe::new(&user.id());
 
-        assert_eq!(user_safe.owner(), &user.get_id(), "Wrong owner: {}", user_safe.owner());
+        assert_eq!(user_safe.owner(), user.id(), "Wrong owner: {}", user_safe.owner());
         assert!(user_safe.date_created() > &before, "date_created: {} must be greater than before: {}", user_safe.date_created(), &before);
         assert_eq!(user_safe.date_created(), user_safe.date_modified(), "date_created: {} must be equal to date_modified: {}", user_safe.date_created(), user_safe.date_modified());
         assert_eq!(user_safe.secrets().len(), 0, "Usersafe should have no secrets yet but has {}", user_safe.secrets().len());
         
         // Add secret to user_safe
         let mut secret: Secret = Secret::new(
-            user.get_id(),
-            SecretCategory::Password,
-            String::from("my-first-secret"),
+            &user.id(),
+            &SecretCategory::Password,
+            &String::from("my-first-secret"),
         ).await;
         let mut modified_before_update = user_safe.date_modified;
         let mut created_before_update = user_safe.date_created;
-        user_safe.add_secret(secret.clone());
+        user_safe.add_secret(&secret);
 
         assert_eq!(user_safe.secrets().len(), 1, "Usersafe should have 1 secret now yet but has {}", user_safe.secrets().len());
         assert!(user_safe.date_modified() > user_safe.date_created(), "date_modified: {} must be greater than date_created: {}", user_safe.date_modified(), user_safe.date_created());
@@ -98,11 +98,11 @@ mod tests {
         // Update secret
         let username = String::from("my-username");
         let password = String::from("my-password");
-        secret.set_username(username.clone());
-        secret.set_password(password.clone());
+        secret.set_username(&username);
+        secret.set_password(&password);
         modified_before_update = user_safe.date_modified;
         created_before_update = user_safe.date_created;
-        user_safe.update_secret(secret);
+        user_safe.update_secret(&secret);
 
         assert_eq!(user_safe.secrets().len(), 1, "Usersafe should have 1 secret now yet but has {}", user_safe.secrets().len());
         assert!(user_safe.date_created() < user_safe.date_modified(), "date_modified: {} must be greater than date_created: {}", user_safe.date_modified(), user_safe.date_created());

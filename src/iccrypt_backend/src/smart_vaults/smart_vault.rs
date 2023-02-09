@@ -22,17 +22,17 @@ thread_local! {
 
 #[ic_cdk_macros::update]
 #[candid_method(update)]
-pub fn create_new_user(uid: UserID) {
+pub fn create_new_user(owner: UserID) {
     // create the new user
     USER_REGISTRY.with(|ur: &RefCell<UserRegistry>| {
         let mut user_registry = ur.borrow_mut();
-        user_registry.insert(uid, User::new(uid));
+        user_registry.insert(owner, User::new(&owner).clone());
     });
 
     // open a safe for the new user
     MASTERSAFE.with(|ms: &RefCell<MasterSafe>| {
         let mut master_safe = ms.borrow_mut();
-        master_safe.get_or_create_user_safe(uid);
+        master_safe.get_or_create_user_safe(&owner);
     });
 }
 
@@ -42,7 +42,7 @@ pub fn delete_user(owner: UserID) {
     // delete the user safe
     MASTERSAFE.with(|ms: &RefCell<MasterSafe>| {
         let mut master_safe = ms.borrow_mut();
-        master_safe.remove_user_safe(owner);
+        master_safe.remove_user_safe(&owner);
     });
 
     // delete the user
@@ -56,17 +56,17 @@ pub fn delete_user(owner: UserID) {
 #[candid_method(query)]
 pub fn get_user_safe(owner: UserID) -> UserSafe {
     MASTERSAFE.with(|mv: &RefCell<MasterSafe>| {
-        mv.borrow_mut().get_or_create_user_safe(owner).clone() // TODO: Does this clone() make sense??
+        mv.borrow_mut().get_or_create_user_safe(&owner).clone()
     })
 }
 
 #[ic_cdk_macros::update]
 #[candid_method(update)]
 pub async fn add_user_secret(owner: UserID, category: SecretCategory, name: String) {
-    let new_secret = Secret::new(owner, category, name).await;
+    let new_secret = Secret::new(&owner, &category, &name).await;
     MASTERSAFE.with(|ms: &RefCell<MasterSafe>| {
         let mut master_safe = ms.borrow_mut();
-        master_safe.add_secret(owner, new_secret);
+        master_safe.add_secret(&owner, &new_secret);
     });
 }
 
@@ -75,7 +75,7 @@ pub async fn add_user_secret(owner: UserID, category: SecretCategory, name: Stri
 pub fn update_user_secret(owner: UserID, secret: Secret) {
     MASTERSAFE.with(|ms: &RefCell<MasterSafe>| {
         let mut master_safe = ms.borrow_mut();
-        master_safe.update_secret(owner, secret);
+        master_safe.update_secret(&owner, &secret);
     });
 }
 
@@ -108,32 +108,32 @@ mod tests {
         let test_user1: User = User::new_random_with_seed(1);
         let test_user2: User = User::new_random_with_seed(2);
 
-        create_new_user(test_user1.get_id());
-        create_new_user(test_user2.get_id());
+        create_new_user(test_user1.id().clone());
+        create_new_user(test_user2.id().clone());
 
         add_user_secret(
-            test_user1.get_id(),
+            test_user1.id().clone(),
             TEST_SECRET_1.category,
             TEST_SECRET_1.name.to_string(),
         )
         .await;
 
         add_user_secret(
-            test_user1.get_id(),
+            test_user1.id().clone(),
             TEST_SECRET_2.category,
             TEST_SECRET_2.name.to_string(),
         )
         .await;
 
         add_user_secret(
-            test_user2.get_id(),
+            test_user2.id().clone(),
             TEST_SECRET_3.category,
             TEST_SECRET_3.name.to_string(),
         )
         .await;
 
         add_user_secret(
-            test_user2.get_id(),
+            test_user2.id().clone(),
             TEST_SECRET_4.category,
             TEST_SECRET_4.name.to_string(),
         )
@@ -144,10 +144,10 @@ mod tests {
         // });
 
         // check right number of secrets in user safe
-        let user1_secrets = get_user_safe(test_user1.get_id())
+        let user1_secrets = get_user_safe(test_user1.id().clone())
             .secrets()
             .clone();
-        let user2_secrets = get_user_safe(test_user2.get_id())
+        let user2_secrets = get_user_safe(test_user2.id().clone())
             .secrets()
             .clone();
 
@@ -156,11 +156,11 @@ mod tests {
 
         // check rightful owner of secrets within user safe
         for (_, secret) in user1_secrets.into_iter() {
-            assert_eq!(secret.owner().clone(), test_user1.get_id());
+            assert_eq!(secret.owner(), test_user1.id());
         }
 
         for (_, secret) in user2_secrets.into_iter() {
-            assert_eq!(secret.owner().clone(), test_user2.get_id());
+            assert_eq!(secret.owner().clone(), test_user2.id().clone());
         }
 
         // check right secrets not needed as already tested in secret.rs
@@ -168,11 +168,11 @@ mod tests {
         // check if changing a password works
         let _better_pwd = "my_new_and_better_pwd".to_string();
         update_user_secret(
-            test_user1.get_id(),
+            test_user1.id().clone(),
             Secret::new(
-                test_user1.get_id(),
-                TEST_SECRET_1.category,
-                TEST_SECRET_1.name.to_string(),
+                &test_user1.id().clone(),
+                &TEST_SECRET_1.category,
+                &TEST_SECRET_1.name.to_string(),
             )
             .await,
         );
