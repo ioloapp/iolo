@@ -16,10 +16,10 @@ impl User {
     pub fn new(id: &UserID) -> Self {
         let now = time::get_current_time();
         Self {
-            id: id.clone(),
+            id: *id,
             date_created: now,
             date_modified: now,
-            last_login: None
+            last_login: None,
         }
     }
 

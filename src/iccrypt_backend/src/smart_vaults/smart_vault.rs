@@ -26,7 +26,7 @@ pub fn create_new_user(owner: UserID) {
     // create the new user
     USER_REGISTRY.with(|ur: &RefCell<UserRegistry>| {
         let mut user_registry = ur.borrow_mut();
-        user_registry.insert(owner, User::new(&owner).clone());
+        user_registry.insert(owner, User::new(&owner));
     });
 
     // open a safe for the new user
@@ -55,9 +55,8 @@ pub fn delete_user(owner: UserID) {
 #[ic_cdk_macros::query]
 #[candid_method(query)]
 pub fn get_user_safe(owner: UserID) -> UserSafe {
-    MASTERSAFE.with(|mv: &RefCell<MasterSafe>| {
-        mv.borrow_mut().get_or_create_user_safe(&owner).clone()
-    })
+    MASTERSAFE
+        .with(|mv: &RefCell<MasterSafe>| mv.borrow_mut().get_or_create_user_safe(&owner).clone())
 }
 
 #[ic_cdk_macros::update]
@@ -144,12 +143,8 @@ mod tests {
         // });
 
         // check right number of secrets in user safe
-        let user1_secrets = get_user_safe(test_user1.id().clone())
-            .secrets()
-            .clone();
-        let user2_secrets = get_user_safe(test_user2.id().clone())
-            .secrets()
-            .clone();
+        let user1_secrets = get_user_safe(test_user1.id().clone()).secrets().clone();
+        let user2_secrets = get_user_safe(test_user2.id().clone()).secrets().clone();
 
         assert_eq!(user1_secrets.keys().len(), 2);
         assert_eq!(user2_secrets.keys().len(), 2);
