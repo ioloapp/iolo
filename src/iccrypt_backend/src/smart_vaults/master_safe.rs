@@ -47,6 +47,9 @@ impl MasterSafe {
         &mut self.user_safes
     }
 
+    pub fn is_user_safe_existing(&self, owner: &UserID) -> bool {
+        self.user_safes.contains_key(owner)
+    }
     // Returns a immuntable reference to the user safe
     // Creates a new one if not existing
     pub fn get_or_create_user_safe(&mut self, owner: &UserID) -> &UserSafe {
@@ -115,7 +118,12 @@ mod tests {
         // Add another user_safe
         let owner_2 = User::new_random_with_seed(2);
         let _user_safe_2 = master_safe.get_or_create_user_safe(owner_2.id()); // Create new user_safe
-        assert_eq!(master_safe.user_safes().len(), 2, "master_safe should have 2 user_safes but has {}", master_safe.user_safes().len());        
+        assert_eq!(master_safe.user_safes().len(), 2, "master_safe should have 2 user_safes but has {}", master_safe.user_safes().len()); 
+
+        // Check if user_safe exists
+        assert_eq!(master_safe.is_user_safe_existing(owner.id()), true, "user_safe for owner: {} should exist", owner.id());
+        let owner_3 = User::new_random_with_seed(3);
+        assert_eq!(master_safe.is_user_safe_existing(owner_3.id()), false, "user_safe for owner: {} should not exist", owner_3.id());
     }
 
     #[test]
