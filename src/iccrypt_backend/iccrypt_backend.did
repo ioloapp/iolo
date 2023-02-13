@@ -18,12 +18,13 @@ type UserSafe = record {
   date_modified : nat64;
 };
 service : {
-  add_user_secret : (principal, Secret) -> ();
+  add_user_secret : (principal, SecretCategory, text) -> ();
   create_new_user : (principal) -> ();
   delete_user : (principal) -> ();
   derive_key : (text, text, text) -> (text) query;
-  get_user_safe : (principal) -> (opt UserSafe) query;
+  get_user_safe : (principal) -> (UserSafe) query;
   give_me_a_new_uuid : () -> (text);
+  is_user_safe_existing : (principal) -> (bool) query;
   update_user_secret : (principal, Secret) -> ();
   what_time_is_it : () -> (nat64) query;
   who_am_i : () -> (text) query;

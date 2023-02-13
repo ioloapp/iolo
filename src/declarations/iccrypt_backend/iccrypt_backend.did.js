@@ -23,7 +23,11 @@ export const idlFactory = ({ IDL }) => {
     'date_modified' : IDL.Nat64,
   });
   return IDL.Service({
-    'add_user_secret' : IDL.Func([IDL.Principal, Secret], [], []),
+    'add_user_secret' : IDL.Func(
+        [IDL.Principal, SecretCategory, IDL.Text],
+        [],
+        [],
+      ),
     'create_new_user' : IDL.Func([IDL.Principal], [], []),
     'delete_user' : IDL.Func([IDL.Principal], [], []),
     'derive_key' : IDL.Func(
@@ -31,8 +35,9 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Text],
         ['query'],
       ),
-    'get_user_safe' : IDL.Func([IDL.Principal], [IDL.Opt(UserSafe)], ['query']),
+    'get_user_safe' : IDL.Func([IDL.Principal], [UserSafe], ['query']),
     'give_me_a_new_uuid' : IDL.Func([], [IDL.Text], []),
+    'is_user_safe_existing' : IDL.Func([IDL.Principal], [IDL.Bool], ['query']),
     'update_user_secret' : IDL.Func([IDL.Principal, Secret], [], []),
     'what_time_is_it' : IDL.Func([], [IDL.Nat64], ['query']),
     'who_am_i' : IDL.Func([], [IDL.Text], ['query']),

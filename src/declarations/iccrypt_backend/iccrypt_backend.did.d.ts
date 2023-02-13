@@ -23,12 +23,16 @@ export interface UserSafe {
   'date_modified' : bigint,
 }
 export interface _SERVICE {
-  'add_user_secret' : ActorMethod<[Principal, Secret], undefined>,
+  'add_user_secret' : ActorMethod<
+    [Principal, SecretCategory, string],
+    undefined
+  >,
   'create_new_user' : ActorMethod<[Principal], undefined>,
   'delete_user' : ActorMethod<[Principal], undefined>,
   'derive_key' : ActorMethod<[string, string, string], string>,
-  'get_user_safe' : ActorMethod<[Principal], [] | [UserSafe]>,
+  'get_user_safe' : ActorMethod<[Principal], UserSafe>,
   'give_me_a_new_uuid' : ActorMethod<[], string>,
+  'is_user_safe_existing' : ActorMethod<[Principal], boolean>,
   'update_user_secret' : ActorMethod<[Principal, Secret], undefined>,
   'what_time_is_it' : ActorMethod<[], bigint>,
   'who_am_i' : ActorMethod<[], string>,

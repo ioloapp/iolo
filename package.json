@@ -4,7 +4,6 @@
   "description": "Internet Computer starter application",
   "keywords": [
     "Internet Computer",
-    "Motoko",
     "JavaScript",
     "Canister"
   ],
@@ -16,9 +15,9 @@
     "generate": "dfx generate iccrypt_backend"
   },
   "devDependencies": {
-    "@dfinity/agent": "0.15.1",
-    "@dfinity/candid": "0.15.1",
-    "@dfinity/principal": "0.15.1",
+    "@dfinity/agent": "0.15.3",
+    "@dfinity/candid": "0.15.3",
+    "@dfinity/principal": "0.15.3",
     "assert": "2.0.0",
     "buffer": "6.0.3",
     "copy-webpack-plugin": "^11.0.0",
@@ -45,6 +44,10 @@
     "last 2 edge version"
   ],
   "dependencies": {
+    "@dfinity/auth-client": "^0.15.3",
+    "@emotion/react": "^11.10.5",
+    "@emotion/styled": "^11.10.5",
+    "@mui/material": "^5.11.8",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   }

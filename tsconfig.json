@@ -11,4 +11,8 @@
     "include": [
         "src/**/*"
     ],
+    "exclude": [ // Don't know why but this exclude section resolves errors...
+        "src/declarations/iccrypt_backend/*.js",
+        "src/declarations/iccrypt_frontend/*.js",
+    ]
 }

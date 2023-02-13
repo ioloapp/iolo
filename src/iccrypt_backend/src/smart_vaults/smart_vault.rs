@@ -51,6 +51,7 @@ pub fn delete_user(owner: UserID) {
         user_registry.remove(&owner);
     });
 }
+
 #[ic_cdk_macros::query]
 #[candid_method(query)]
 pub fn is_user_safe_existing(owner: UserID) -> bool {
