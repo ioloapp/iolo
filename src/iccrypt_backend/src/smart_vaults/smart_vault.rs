@@ -55,8 +55,7 @@ pub fn delete_user(owner: UserID) {
 #[ic_cdk_macros::query]
 #[candid_method(query)]
 pub fn is_user_safe_existing(owner: UserID) -> bool {
-    MASTERSAFE
-        .with(|mv: &RefCell<MasterSafe>| mv.borrow_mut().is_user_safe_existing(&owner))
+    MASTERSAFE.with(|mv: &RefCell<MasterSafe>| mv.borrow_mut().is_user_safe_existing(&owner))
 }
 
 #[ic_cdk_macros::query]
@@ -98,85 +97,4 @@ fn post_upgrade() {
 
     let (old_ur,): (UserRegistry,) = storage::stable_restore().unwrap();
     USER_REGISTRY.with(|ur| *ur.borrow_mut() = old_ur);
-}
-
-#[cfg(test)]
-mod tests {
-
-    use crate::smart_vaults::unit_test_data::{
-        TEST_SECRET_1, TEST_SECRET_2, TEST_SECRET_3, TEST_SECRET_4,
-    };
-
-    use super::*;
-
-    #[tokio::test]
-    async fn utest_smart_vault() {
-        let test_user1: User = User::new_random_with_seed(1);
-        let test_user2: User = User::new_random_with_seed(2);
-
-        create_new_user(test_user1.id().clone());
-        create_new_user(test_user2.id().clone());
-
-        add_user_secret(
-            test_user1.id().clone(),
-            TEST_SECRET_1.category,
-            TEST_SECRET_1.name.to_string(),
-        )
-        .await;
-
-        add_user_secret(
-            test_user1.id().clone(),
-            TEST_SECRET_2.category,
-            TEST_SECRET_2.name.to_string(),
-        )
-        .await;
-
-        add_user_secret(
-            test_user2.id().clone(),
-            TEST_SECRET_3.category,
-            TEST_SECRET_3.name.to_string(),
-        )
-        .await;
-
-        add_user_secret(
-            test_user2.id().clone(),
-            TEST_SECRET_4.category,
-            TEST_SECRET_4.name.to_string(),
-        )
-        .await;
-
-        // MASTERSAFE.with(|ms| {
-        //     dbg!(&ms);
-        // });
-
-        // check right number of secrets in user safe
-        let user1_secrets = get_user_safe(test_user1.id().clone()).secrets().clone();
-        let user2_secrets = get_user_safe(test_user2.id().clone()).secrets().clone();
-
-        assert_eq!(user1_secrets.keys().len(), 2);
-        assert_eq!(user2_secrets.keys().len(), 2);
-
-        // check rightful owner of secrets within user safe
-        for (_, secret) in user1_secrets.into_iter() {
-            assert_eq!(secret.owner(), test_user1.id());
-        }
-
-        for (_, secret) in user2_secrets.into_iter() {
-            assert_eq!(secret.owner().clone(), test_user2.id().clone());
-        }
-
-        // check right secrets not needed as already tested in secret.rs
-
-        // check if changing a password works
-        let _better_pwd = "my_new_and_better_pwd".to_string();
-        update_user_secret(
-            test_user1.id().clone(),
-            Secret::new(
-                &test_user1.id().clone(),
-                &TEST_SECRET_1.category,
-                &TEST_SECRET_1.name.to_string(),
-            )
-            .await,
-        );
-    }
 }

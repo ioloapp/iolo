@@ -27,7 +27,7 @@ pub async fn test_smart_vaults() -> Result<()> {
 async fn test_user_lifecycle() -> anyhow::Result<()> {
     let user = Principal::from_text(MY_CALLER_ID).expect("Could not decode the principal.");
 
-    // create a new user
+    // create a new user.
     let agent = get_dfx_agent().unwrap();
     agent.fetch_root_key().await?;
     let canister = get_iccrypt_backend_canister();
