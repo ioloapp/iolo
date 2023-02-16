@@ -1,3 +1,4 @@
 service : {
-    "greet": (text) -> (text) query;
+  derive_decryption_key : (int32, text) -> (opt vec nat8) query;
+  derive_encryption_key : (int32, text) -> (opt vec nat8) query;
 }

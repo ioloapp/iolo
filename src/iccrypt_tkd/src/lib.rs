@@ -1,35 +1,79 @@
-#[ic_cdk_macros::query]
-fn greet(name: String) -> String {
-    format!("Hello, {}!", name)
-}
-
 // Skeleton and mock for the key derivation functions as described in the DFINITY video about on-chain encryption
 // https://www.youtube.com/watch?v=baM6jHnmMq8&t=1633s
 
 // note: this is just a mock.
 
-pub mod cryptography;
+pub mod helper;
+pub mod utils;
 
-use anyhow::Result;
+// use anyhow::Result;
 use candid::candid_method;
-use cryptography::derive_encrypted_key;
+use utils::caller::get_caller;
 
-pub type Ciphertext = String;
-pub type MasterKeyID = String;
-pub type EncryptedKey = String;
-pub type TransportPublicKey = String;
-pub type DerivationID = String;
+use crate::helper::DerivationIdMapper::deterministically_derive_key_pair;
+
+// KeyPairs file contains 10 keys which get loaded into memory
+// Derivation ID is used to deterministically derive the index (between 0 and 10)
+// Corresponding key is returned
+#[ic_cdk_macros::query]
+#[candid_method(query)]
+fn derive_encryption_key(master_key_id: i32, derivation_id: String) -> Option<Vec<u8>> {
+    // for the final derivation ID we want to have:
+    // "caller || derivation_id" where derivation_id = "alice || bob" and caller = "iccrypt backend"
+    // this results in a derivation id like
+    // "iccrypt backend || alice || bob" and means: "alice is requesting an encryption key to encrypt the vault for bob"
+
+    // use helper function to get position index between 1 and 10
+    let kp =
+        deterministically_derive_key_pair(master_key_id, &get_caller().to_string(), &derivation_id);
+
+    Some(kp.public_key)
+}
 
 #[ic_cdk_macros::query]
 #[candid_method(query)]
-fn derive_key(
-    master_key_id: MasterKeyID,
-    transport_pk: TransportPublicKey,
-    derivation_id: DerivationID,
-) -> String {
-    let encrypted_key: EncryptedKey =
-        derive_encrypted_key(master_key_id, transport_pk, derivation_id).unwrap();
-    // TODO: unwrapping not acceptable :-) match the error types
-    // TODO: define error types
-    encrypted_key
+fn derive_decryption_key(master_key_id: i32, derivation_id: String) -> Option<Vec<u8>> {
+    // use helper function to get position index between 1 and 10
+    let kp =
+        deterministically_derive_key_pair(master_key_id, &get_caller().to_string(), &derivation_id);
+
+    Some(kp.private_key)
+}
+
+// #[ic_cdk_macros::query]
+// #[candid_method(query)]
+// fn derive_encrypted_encryption_key(
+//     master_key_id: i32,
+//     transport_pk: String,
+//     derivation_id: String,
+// ) -> Option<Vec<u8>> {
+//     // TODO
+//     None
+// }
+
+// #[ic_cdk_macros::query]
+// #[candid_method(query)]
+// fn derive_encrypted_decryption_key(
+//     master_key_id: i32,
+//     transport_pk: String,
+//     derivation_id: String,
+// ) -> Option<Vec<u8>> {
+//     // TODO
+//     None
+// }
+
+candid::export_service!();
+
+#[cfg(test)]
+mod tests {
+    use crate::__export_service;
+
+    #[test]
+    fn get_candid() {
+        println!("####### Candid START #######");
+        println!();
+        std::println!("{}", __export_service());
+        println!();
+        println!("####### Candid END #######");
+    }
 }
