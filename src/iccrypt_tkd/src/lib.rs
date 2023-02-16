@@ -12,8 +12,8 @@ use utils::caller::get_caller;
 
 use crate::helper::DerivationIdMapper::deterministically_derive_key_pair;
 
-// KeyPairs file contains 1000 keys which get loaded into memory
-// Derivation ID is used to deterministically derive the index (between 0 and 10000)
+// KeyPairs file contains 10 keys which get loaded into memory
+// Derivation ID is used to deterministically derive the index (between 0 and 10)
 // Corresponding key is returned
 #[ic_cdk_macros::query]
 #[candid_method(query)]
@@ -23,7 +23,7 @@ fn derive_encryption_key(master_key_id: i32, derivation_id: String) -> Option<Ve
     // this results in a derivation id like
     // "iccrypt backend || alice || bob" and means: "alice is requesting an encryption key to encrypt the vault for bob"
 
-    // use helper function to get position index between 1 and 1000
+    // use helper function to get position index between 1 and 10
     let kp =
         deterministically_derive_key_pair(master_key_id, &get_caller().to_string(), &derivation_id);
 
@@ -33,7 +33,7 @@ fn derive_encryption_key(master_key_id: i32, derivation_id: String) -> Option<Ve
 #[ic_cdk_macros::query]
 #[candid_method(query)]
 fn derive_decryption_key(master_key_id: i32, derivation_id: String) -> Option<Vec<u8>> {
-    // use helper function to get position index between 1 and 1000
+    // use helper function to get position index between 1 and 10
     let kp =
         deterministically_derive_key_pair(master_key_id, &get_caller().to_string(), &derivation_id);
 
@@ -61,3 +61,19 @@ fn derive_decryption_key(master_key_id: i32, derivation_id: String) -> Option<Ve
 //     // TODO
 //     None
 // }
+
+candid::export_service!();
+
+#[cfg(test)]
+mod tests {
+    use crate::__export_service;
+
+    #[test]
+    fn get_candid() {
+        println!("####### Candid START #######");
+        println!();
+        std::println!("{}", __export_service());
+        println!();
+        println!("####### Candid END #######");
+    }
+}

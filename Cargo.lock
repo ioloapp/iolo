@@ -872,6 +872,7 @@ dependencies = [
  "cfg-if",
  "ic-cdk",
  "ic-cdk-macros",
+ "ic-types",
  "serde",
  "serde_json",
 ]
