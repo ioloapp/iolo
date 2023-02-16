@@ -19,7 +19,7 @@ pub fn deterministically_derive_key_pair(
         index += usize::from(*b);
     });
 
-    kps[(index % 10)].clone()
+    kps[(index % kps.len())].clone()
 }
 
 #[cfg(test)]
