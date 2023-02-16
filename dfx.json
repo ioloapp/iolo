@@ -1,45 +1,46 @@
 {
-  "canisters": {
-    "iccrypt_backend": {
-      "candid": "src/iccrypt_backend/iccrypt_backend.did",
-      "package": "iccrypt_backend",
-      "type": "rust"
-    },
-    "iccrypt_tkd": {
-      "candid": "src/iccrypt_tkd/iccrypt_tkd.did",
-      "package": "iccrypt_tkd",
-      "type": "rust"
-    },
-    "iccrypt_frontend": {
-      "dependencies": [
-        "iccrypt_backend",
-        "iccrypt_tkd"
-      ],
-      "frontend": {
-        "entrypoint": "src/iccrypt_frontend/src/index.html"
-      },
-      "source": [
-        "src/iccrypt_frontend/assets",
-        "dist/iccrypt_frontend/"
-      ],
-      "type": "assets"
-    }, 
-    "internet_identity": {
-        "type": "custom",
-        "candid": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity.did",
-        "wasm": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity_dev.wasm",
-        "remote": {
-          "id": {
-            "ic": "rdmx6-jaaaa-aaaaa-aaadq-cai"
-          }
+    "canisters": {
+        "iccrypt_backend": {
+            "candid": "src/iccrypt_backend/iccrypt_backend.did",
+            "package": "iccrypt_backend",
+            "type": "rust"
+        },
+        "iccrypt_tkd": {
+            "candid": "src/iccrypt_tkd/iccrypt_tkd.did",
+            "package": "iccrypt_tkd",
+            "type": "rust"
+        },
+        "iccrypt_frontend": {
+            "dependencies": [
+                "iccrypt_backend",
+                "iccrypt_tkd"
+            ],
+            "frontend": {
+                "entrypoint": "src/iccrypt_frontend/src/index.html"
+            },
+            "source": [
+                "src/iccrypt_frontend/assets",
+                "dist/iccrypt_frontend/"
+            ],
+            "type": "assets"
+        },
+        "internet_identity": {
+            "type": "custom",
+            "candid": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity.did",
+            "wasm": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity_dev.wasm",
+            "remote": {
+                "id": {
+                    "ic": "rdmx6-jaaaa-aaaaa-aaadq-cai"
+                }
+            },
+            "frontend": {}
         }
-      }
-  },
-  "defaults": {
-    "build": {
-      "args": "",
-      "packtool": ""
-    }
-  },
-  "version": 1
+    },
+    "defaults": {
+        "build": {
+            "args": "",
+            "packtool": ""
+        }
+    },
+    "version": 1
 }

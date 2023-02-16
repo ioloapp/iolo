@@ -5,12 +5,12 @@ import {
     Routes,
     Route
 } from "react-router-dom";
-import Topnav from "./topnav";
-import Sidenav from "./sidenav";
+//import Topnav from "./topnav";
+//import Sidenav from "./sidenav";
 import { useState } from "react";
-import SmartVault from "./smart_vault/smart_vault";
-import Executor from "./executor/executor";
-import Settings from "./settings/settings";
+import SmartVault from "./smartVault/SmartVault";
+import Settings from "./settings/Settings";
+import NavigationBar from "./NavigationBar";
 
 function App() {
     const [sidenavHidden, setSidenavHidden] = useState(true);
@@ -27,19 +27,12 @@ function App() {
 
     return (
         <Router>
-            <div>
-                <Topnav openSidenav={openSidenav} />
-                <Sidenav closeSidenav={closeSidenav} isHidden={sidenavHidden} />
-
-                <div className="home">
-                    <Routes>
-                        <Route path="/" element={<SmartVault />} />
-                        <Route path="/vault" element={<SmartVault />} />
-                        <Route path="/executor" element={<Executor />} />
-                        <Route path="/settings" element={<Settings />} />
-                    </Routes>
-                </div>
-            </div >
+            <NavigationBar/>
+            <Routes>
+                <Route path="/" element={<SmartVault />} />
+                <Route path="/vault" element={<SmartVault />} />
+                <Route path="/settings" element={<Settings />} />
+            </Routes>
         </Router>
     );
 }

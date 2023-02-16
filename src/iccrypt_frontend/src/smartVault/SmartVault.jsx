@@ -4,8 +4,8 @@ import {
 } from '@mui/material';
 import { drawerWidth } from '../config';
 
-const Settings = () => {
-
+const SmartVault = () => {
+    
     return (
         <Box sx={{ display: 'flex' }}>
             <Box
@@ -23,10 +23,4 @@ const Settings = () => {
     );
 };
 
-export default Settings;
-
-
-
-
-
-
+export default SmartVault;
