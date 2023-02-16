@@ -8,12 +8,9 @@ pub mod utils;
 
 // use anyhow::Result;
 use candid::candid_method;
+use utils::caller::get_caller;
 
-// extern crate openssl;
-
-use crate::helper::DerivationIdMapper::deterministically_derive_index_from_derivation_id;
-use helper::KeyReader::read_keys;
-// use openssl::rsa::Rsa;
+use crate::helper::DerivationIdMapper::deterministically_derive_key_pair;
 
 // KeyPairs file contains 1000 keys which get loaded into memory
 // Derivation ID is used to deterministically derive the index (between 0 and 10000)
@@ -21,56 +18,46 @@ use helper::KeyReader::read_keys;
 #[ic_cdk_macros::query]
 #[candid_method(query)]
 fn derive_encryption_key(master_key_id: i32, derivation_id: String) -> Option<Vec<u8>> {
-    let kps = read_keys().0;
+    // for the final derivation ID we want to have:
+    // "caller || derivation_id" where derivation_id = "alice || bob" and caller = "iccrypt backend"
+    // this results in a derivation id like
+    // "iccrypt backend || alice || bob" and means: "alice is requesting an encryption key to encrypt the vault for bob"
 
-    // use helper function
-    let keyposition = deterministically_derive_index_from_derivation_id(&derivation_id);
+    // use helper function to get position index between 1 and 1000
+    let kp =
+        deterministically_derive_key_pair(master_key_id, &get_caller().to_string(), &derivation_id);
 
-    // Some(
-    //     Rsa::public_key_from_pem(&kps[keyposition].public_key)
-    //         .unwrap()
-    //         .public_key_to_pem()
-    //         .unwrap(),
-    // )
-
-    Some(kps[keyposition].public_key.clone())
+    Some(kp.public_key)
 }
 
 #[ic_cdk_macros::query]
 #[candid_method(query)]
 fn derive_decryption_key(master_key_id: i32, derivation_id: String) -> Option<Vec<u8>> {
-    let kps = read_keys().0;
+    // use helper function to get position index between 1 and 1000
+    let kp =
+        deterministically_derive_key_pair(master_key_id, &get_caller().to_string(), &derivation_id);
 
-    // use helper function
-    let keyposition = deterministically_derive_index_from_derivation_id(&derivation_id);
-
-    // Some(
-    //     Rsa::private_key_from_pem(&kps[keyposition].private_key)
-    //         .unwrap()
-    //         .private_key_to_pem()
-    //         .unwrap(),
-    // )
-    Some(kps[keyposition].private_key.clone())
+    Some(kp.private_key)
 }
 
-#[ic_cdk_macros::query]
-#[candid_method(query)]
-fn derive_encrypted_encryption_key(
-    master_key_id: i32,
-    transport_pk: String,
-    derivation_id: String,
-) -> Option<Vec<u8>> {
-    // TODO
-    None
-}
+// #[ic_cdk_macros::query]
+// #[candid_method(query)]
+// fn derive_encrypted_encryption_key(
+//     master_key_id: i32,
+//     transport_pk: String,
+//     derivation_id: String,
+// ) -> Option<Vec<u8>> {
+//     // TODO
+//     None
+// }
 
-#[ic_cdk_macros::query]
-#[candid_method(query)]
-fn derive_encrypted_decryption_key(
-    master_key_id: i32,
-    transport_pk: String,
-    derivation_id: String,
-) -> Option<Vec<u8>> {
-    // TODO
-    None
-}
+// #[ic_cdk_macros::query]
+// #[candid_method(query)]
+// fn derive_encrypted_decryption_key(
+//     master_key_id: i32,
+//     transport_pk: String,
+//     derivation_id: String,
+// ) -> Option<Vec<u8>> {
+//     // TODO
+//     None
+// }
