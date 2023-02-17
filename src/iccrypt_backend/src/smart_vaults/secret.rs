@@ -1,7 +1,8 @@
 use candid::{CandidType, Deserialize};
 
+use crate::common::types::Ciphertext;
 use crate::common::user::UserID;
-use crate::cryptography::Ciphertext;
+
 use crate::utils::random;
 use crate::utils::time;
 

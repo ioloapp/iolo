@@ -1,3 +1,4 @@
+pub mod key_manager;
 pub mod master_safe;
 pub mod secret;
 pub mod smart_vault;

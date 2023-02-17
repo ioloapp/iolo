@@ -17,7 +17,7 @@ use crate::helper::DerivationIdMapper::deterministically_derive_key_pair;
 // Corresponding key is returned
 #[ic_cdk_macros::query]
 #[candid_method(query)]
-fn derive_encryption_key(master_key_id: i32, derivation_id: String) -> Option<Vec<u8>> {
+fn derive_encryption_key(master_key_id: i32, derivation_id: String) -> Vec<u8> {
     // for the final derivation ID we want to have:
     // "caller || derivation_id" where derivation_id = "alice || bob" and caller = "iccrypt backend"
     // this results in a derivation id like
@@ -27,17 +27,17 @@ fn derive_encryption_key(master_key_id: i32, derivation_id: String) -> Option<Ve
     let kp =
         deterministically_derive_key_pair(master_key_id, &get_caller().to_string(), &derivation_id);
 
-    Some(kp.public_key)
+    kp.public_key
 }
 
 #[ic_cdk_macros::query]
 #[candid_method(query)]
-fn derive_decryption_key(master_key_id: i32, derivation_id: String) -> Option<Vec<u8>> {
+fn derive_decryption_key(master_key_id: i32, derivation_id: String) -> Vec<u8> {
     // use helper function to get position index between 1 and 10
     let kp =
         deterministically_derive_key_pair(master_key_id, &get_caller().to_string(), &derivation_id);
 
-    Some(kp.private_key)
+    kp.private_key
 }
 
 // #[ic_cdk_macros::query]

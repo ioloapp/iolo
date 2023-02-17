@@ -30,10 +30,10 @@ export const idlFactory = ({ IDL }) => {
       ),
     'create_new_user' : IDL.Func([IDL.Principal], [], []),
     'delete_user' : IDL.Func([IDL.Principal], [], []),
-    'derive_key' : IDL.Func(
-        [IDL.Text, IDL.Text, IDL.Text],
-        [IDL.Text],
-        ['query'],
+    'get_encryption_key_for' : IDL.Func(
+        [IDL.Principal],
+        [IDL.Opt(IDL.Vec(IDL.Nat8))],
+        [],
       ),
     'get_user_safe' : IDL.Func([IDL.Principal], [UserSafe], ['query']),
     'give_me_a_new_uuid' : IDL.Func([], [IDL.Text], []),

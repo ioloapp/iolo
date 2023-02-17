@@ -29,7 +29,7 @@ export interface _SERVICE {
   >,
   'create_new_user' : ActorMethod<[Principal], undefined>,
   'delete_user' : ActorMethod<[Principal], undefined>,
-  'derive_key' : ActorMethod<[string, string, string], string>,
+  'get_encryption_key_for' : ActorMethod<[Principal], [] | [Uint8Array]>,
   'get_user_safe' : ActorMethod<[Principal], UserSafe>,
   'give_me_a_new_uuid' : ActorMethod<[], string>,
   'is_user_safe_existing' : ActorMethod<[Principal], boolean>,
