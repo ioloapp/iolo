@@ -30,6 +30,11 @@ export const idlFactory = ({ IDL }) => {
       ),
     'create_new_user' : IDL.Func([IDL.Principal], [], []),
     'delete_user' : IDL.Func([IDL.Principal], [], []),
+    'get_decryption_key_from' : IDL.Func(
+        [IDL.Principal],
+        [IDL.Opt(IDL.Vec(IDL.Nat8))],
+        [],
+      ),
     'get_encryption_key_for' : IDL.Func(
         [IDL.Principal],
         [IDL.Opt(IDL.Vec(IDL.Nat8))],

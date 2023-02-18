@@ -10,7 +10,7 @@ pub mod utils;
 use candid::candid_method;
 use utils::caller::get_caller;
 
-use crate::helper::DerivationIdMapper::deterministically_derive_key_pair;
+use crate::helper::derivation_id_mapper::deterministically_derive_key_pair;
 
 // KeyPairs file contains 10 keys which get loaded into memory
 // Derivation ID is used to deterministically derive the index (between 0 and 10)

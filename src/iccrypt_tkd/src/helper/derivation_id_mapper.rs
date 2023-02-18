@@ -1,4 +1,4 @@
-use crate::utils::KeyPairs::{get_key_pairs, KeyPair};
+use crate::utils::key_pairs::{get_key_pairs, KeyPair};
 
 // returns a keypair
 pub fn deterministically_derive_key_pair(
