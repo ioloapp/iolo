@@ -2,10 +2,10 @@ import * as React from 'react';
 import {
     Box, 
 } from '@mui/material';
-import { drawerWidth } from '../config';
+import { drawerWidth } from '../config/config';
 
-const SmartVault = () => {
-    
+const Settings = () => {
+
     return (
         <Box sx={{ display: 'flex' }}>
             <Box
@@ -17,10 +17,17 @@ const SmartVault = () => {
             <Box
                 component="main"
                 sx={{ flexGrow: 1, p: 3, width: { sm: `calc(100% - ${drawerWidth}px)` } }}
+                display="flex" justifyContent="center"
             >               
             </Box>
         </Box>
     );
 };
 
-export default SmartVault;
+export default Settings;
+
+
+
+
+
+

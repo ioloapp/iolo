@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useNavigate } from "react-router-dom";
-import {MoveToInbox } from '@mui/icons-material';
+import { Home as HomeIcon, LockClock as LockClockIcon, Settings as SettingsIcon} from '@mui/icons-material';
 import {
     List, ListItem, ListItemButton, ListItemIcon, ListItemText, Divider, Toolbar, Box, InboxIcon
 } from '@mui/material'
@@ -15,19 +15,27 @@ function DrawerContent() {
             <Divider />
             <List>
                 <ListItem key="Home" disablePadding>
-                    <ListItemButton onClick={() => navigate('/vault')}>
+                    <ListItemButton onClick={() => navigate('/home')}>
                         <ListItemIcon>
-                            <MoveToInbox />
+                            <HomeIcon />
                         </ListItemIcon>
                         <ListItemText primary="Home" />
                     </ListItemButton>
                 </ListItem>
-                <ListItem key="Inbox" disablePadding>
+                <ListItem key="Vaults" disablePadding>
+                    <ListItemButton onClick={() => navigate('/vault')}>
+                        <ListItemIcon>
+                            <LockClockIcon />
+                        </ListItemIcon>
+                        <ListItemText primary="My vaults" />
+                    </ListItemButton>
+                </ListItem>
+                <ListItem key="Settings" disablePadding>
                     <ListItemButton onClick={() => navigate('/settings')}>
                         <ListItemIcon>
-                            <MoveToInbox />
+                            <SettingsIcon />
                         </ListItemIcon>
-                        <ListItemText primary="My vault" />
+                        <ListItemText primary="Settings" />
                     </ListItemButton>
                 </ListItem>
             </List>

@@ -1,31 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { AppBar, Box, Drawer, IconButton, Toolbar, Typography, Button, Menu, MenuItem } from '@mui/material/';
+import { useSelector, useDispatch } from 'react-redux';
+import { logIn, logOut } from '../../redux/loginSlice';
+import { AppBar, Box, Drawer, IconButton, Toolbar, Typography, Button, Menu, MenuItem, CssBaseline } from '@mui/material/';
 import { Menu as MenuIcon, AccountCircle } from '@mui/icons-material';
-import CssBaseline from '@mui/material/CssBaseline';
 import DrawerContent from './DrawerContent';
 import { AuthClient } from "@dfinity/auth-client";
-import { HttpAgent } from "@dfinity/agent";
-import { iccrypt_backend, createActor } from "../../declarations/iccrypt_backend";
-import { drawerWidth } from './config';
+import { drawerWidth } from '../../config/config';
 
 function NavigationBar(props) {
     // See https://github.com/gabrielnic/dfinity-react
     // See https://github.com/dfinity/examples/tree/master/motoko/internet_identity_integration for internet identity integration
 
     const { window } = props;
-    const [mobileOpen, setMobileOpen] = React.useState(false);
-
-    const handleDrawerToggle = () => {
-        setMobileOpen(!mobileOpen);
-    };
-
-    const [principal, setPrincipal] = useState();
-    const [isLoggedIn, setIsLoggedIn] = useState(null);
-    const [anchorEl, setAnchorEl] = React.useState(null);
-
-    useEffect(() => {
-        isAuth();
-    }, [principal]);
+    const [mobileOpen, setMobileOpen] = useState(false);
+    const [anchorEl, setAnchorEl] = useState(null);
 
     const handleMenu = (event) => {
         setAnchorEl(event.currentTarget);
@@ -35,22 +23,33 @@ function NavigationBar(props) {
         setAnchorEl(null);
     };
 
+    const dispatch = useDispatch();
+    const isLoggedIn = useSelector((state) => state.login.isLoggedIn);
+    const principal = useSelector((state) => state.login.principal);
+
+    const handleDrawerToggle = () => {
+        setMobileOpen(!mobileOpen);
+    };
+
+    useEffect(() => {
+        isAuth();
+    }, [principal]);
+
     const isAuth = async () => {
         const authClient = await AuthClient.create();
-        let loginState = await authClient.isAuthenticated();
-        setIsLoggedIn(loginState);
-        
-        // In the beginning principal is empty...
-        if (loginState) {
-            setPrincipal(await authClient.getIdentity().getPrincipal().toText());
+        let isAuthenticated = await authClient.isAuthenticated();
+        if (isAuthenticated) {
+            dispatch(logIn(authClient.getIdentity().getPrincipal().toText()));
+        } else {
+            dispatch(logOut());
         }
     }
 
     async function handleLogout() {
         const authClient = await AuthClient.create();
         await authClient.logout();
-        setPrincipal(await authClient.getIdentity().getPrincipal().toText());
-        setAnchorEl(null);
+        dispatch(logOut());
+        setAnchorEl(null);  // Close profile menu
     }
 
     async function handleLogin() {
@@ -59,15 +58,7 @@ function NavigationBar(props) {
         const authClient = await AuthClient.create();
         await authClient.login({
             onSuccess: async () => {
-                setPrincipal(authClient.getIdentity().getPrincipal().toText());
-                let actor = iccrypt_backend;
-                const identity = authClient.getIdentity();
-                const agent = new HttpAgent({ identity });
-                actor = createActor(process.env.ICCRYPT_BACKEND_CANISTER_ID, {
-                    agent,
-                });
-                const response = await actor.who_am_i();
-                console.log("RESPONSE: ", response);
+                dispatch(logIn(authClient.getIdentity().getPrincipal().toText()));
             },
             identityProvider: process.env.II_URL,
             maxTimeToLive: BigInt(expiry * 1000000)
@@ -131,7 +122,6 @@ function NavigationBar(props) {
                                 open={Boolean(anchorEl)}
                                 onClose={handleClose}
                             >
-                                <MenuItem onClick={handleClose}>{principal}</MenuItem>
                                 <MenuItem onClick={handleLogout}>Log out</MenuItem>
                             </Menu>
                         </Box>}
