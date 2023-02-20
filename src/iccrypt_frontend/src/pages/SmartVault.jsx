@@ -36,10 +36,8 @@ const SmartVault = () => {
 
     async function createSafe() {
         let actor = await prepareActor();
-        let result = await actor.get_user_safe(identity.getPrincipal());
-        console.log(result);
-        await checkSafes();
-        console.log(isUsersafeExisting)
+        await actor.create_new_user(identity.getPrincipal());
+        setUsersafeState(await actor.is_user_safe_existing(identity.getPrincipal()));
     }
 
     return (
@@ -82,9 +80,9 @@ const SmartVault = () => {
                         }
 
                         {isUsersafeExisting &&
-                            <Box ustifyContent="center">
+                            <Box justifyContent="center">
                                 <Typography paragraph>
-                                    Here we go....
+                                    Congrats! You have already a vault!
                                 </Typography>
                             </Box>
                         }
