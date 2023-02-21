@@ -11,7 +11,7 @@ type Secret = record {
   date_modified : nat64;
 };
 type SecretCategory = variant { Password; Note; Document };
-type UserSafe = record {
+type UserVault = record {
   date_created : nat64;
   owner : principal;
   secrets : vec record { text; Secret };
@@ -23,9 +23,9 @@ service : {
   delete_user : (principal) -> ();
   get_decryption_key_from : (principal) -> (opt vec nat8);
   get_encryption_key_for : (principal) -> (opt vec nat8);
-  get_user_safe : (principal) -> (UserSafe) query;
+  get_user_vault : (principal) -> (UserVault) query;
   give_me_a_new_uuid : () -> (text);
-  is_user_safe_existing : (principal) -> (bool) query;
+  is_user_vault_existing : (principal) -> (bool) query;
   update_user_secret : (principal, Secret) -> ();
   what_time_is_it : () -> (nat64) query;
   who_am_i : () -> (text) query;

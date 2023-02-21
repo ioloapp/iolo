@@ -11,11 +11,11 @@ import { drawerWidth } from '../config/config';
 const SmartVault = () => {
 
     const isLoggedIn = useSelector((state) => state.login.isLoggedIn);
-    const [isUsersafeExisting, setUsersafeState] = useState(false);
+    const [userVault, setUserVault] = useState({isExisting: false});
     let identity; 
 
     useEffect(() => {
-        if (isLoggedIn) checkSafes();
+        if (isLoggedIn) checkUserVaults();
     }, []);
 
     async function prepareActor () {
@@ -29,15 +29,26 @@ const SmartVault = () => {
         return actor;
     }
     
-    async function checkSafes() {
-        let actor = await prepareActor()
-        setUsersafeState(await actor.is_user_safe_existing(identity.getPrincipal()));
+    async function checkUserVaults() {
+        let actor = await prepareActor();
+        let isUserVaultExisting = await actor.is_user_vault_existing(identity.getPrincipal());
+        setUserVault({
+            ...userVault,
+            isExisting: isUserVaultExisting,
+        });
+        if (isUserVaultExisting) {
+            let userVault = await actor.get_user_vault(identity.getPrincipal());
+            console.log(userVault)
+        }
     }
 
-    async function createSafe() {
+    async function createUserVault() {
         let actor = await prepareActor();
         await actor.create_new_user(identity.getPrincipal());
-        setUsersafeState(await actor.is_user_safe_existing(identity.getPrincipal()));
+        setUserVault({
+            ...userVault,
+            isExisting: await actor.is_user_vault_existing(identity.getPrincipal()),
+        });
     }
 
     return (
@@ -65,21 +76,21 @@ const SmartVault = () => {
                 }
                 {isLoggedIn &&
                     <Box>
-                        {!isUsersafeExisting &&
+                        {!userVault.isExisting &&
                             <Box justifyContent="center">
                                 <Typography paragraph>
-                                    It seems that you have not created your safe yet. You wanna go for one?
+                                    It seems that you have not created your vault yet. You wanna go for one?
                                 </Typography>
                                 <TextField size="small" label="Name" variant="filled" />
                                 <Button variant="contained" sx={{ ml: 2, mt: 1 }} onClick={() => {
-                                    createSafe();
+                                    createUserVault();
                                 }}>
-                                    Create Safe
+                                    Create Vault
                                 </Button>
                             </Box>
                         }
 
-                        {isUsersafeExisting &&
+                        {userVault.isExisting &&
                             <Box justifyContent="center">
                                 <Typography paragraph>
                                     Congrats! You have already a vault!

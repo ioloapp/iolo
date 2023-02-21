@@ -22,7 +22,7 @@ mod tests {
     #[test]
     fn utest_time() {
         let time_1 = get_current_time();
-        thread::sleep(std::time::Duration::from_millis(100)); // Sleep 100 milliseconds to ensure that user_safe has a different creation date
+        thread::sleep(std::time::Duration::from_millis(100)); // Sleep 100 milliseconds to ensure that user_vault has a different creation date
         let time_2 = get_current_time();
 
         assert!(

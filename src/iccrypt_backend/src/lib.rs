@@ -9,7 +9,7 @@ pub mod utils;
 use crate::common::user::UserID;
 use crate::smart_vaults::secret::Secret;
 use crate::smart_vaults::secret::SecretCategory;
-use crate::smart_vaults::user_safe::UserSafe;
+use crate::smart_vaults::user_vault::UserVault;
 
 #[ic_cdk_macros::init]
 fn init() {}

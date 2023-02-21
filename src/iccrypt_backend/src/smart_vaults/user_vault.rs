@@ -7,14 +7,14 @@ use crate::common::user::UserID;
 use crate::utils::time;
 
 #[derive(Debug, CandidType, Deserialize, Clone)]
-pub struct UserSafe {
+pub struct UserVault {
     owner: UserID,
     date_created: u64,
     date_modified: u64,
     secrets: BTreeMap<SecretID, Secret>,
 }
 
-impl UserSafe {
+impl UserVault {
     pub fn new(owner: &UserID) -> Self {
         let now: u64 = time::get_current_time();
 
@@ -67,73 +67,73 @@ mod tests {
     use std::thread;
 
     #[tokio::test]
-    async fn utest_user_safe() {
-        // Create empty user_safe
+    async fn utest_user_vault() {
+        // Create empty user_vault
         let user: User = User::new_random_with_seed(1);
         let before = time::get_current_time();
-        thread::sleep(std::time::Duration::from_millis(100)); // Sleep 100 milliseconds to ensure that user_safe has a different creation date
-        let mut user_safe: UserSafe = UserSafe::new(&user.id());
+        thread::sleep(std::time::Duration::from_millis(100)); // Sleep 100 milliseconds to ensure that user_vault has a different creation date
+        let mut user_vault: UserVault = UserVault::new(&user.id());
 
         assert_eq!(
-            user_safe.owner(),
+            user_vault.owner(),
             user.id(),
             "Wrong owner: {}",
-            user_safe.owner()
+            user_vault.owner()
         );
         assert!(
-            user_safe.date_created() > &before,
+            user_vault.date_created() > &before,
             "date_created: {} must be greater than before: {}",
-            user_safe.date_created(),
+            user_vault.date_created(),
             &before
         );
         assert_eq!(
-            user_safe.date_created(),
-            user_safe.date_modified(),
+            user_vault.date_created(),
+            user_vault.date_modified(),
             "date_created: {} must be equal to date_modified: {}",
-            user_safe.date_created(),
-            user_safe.date_modified()
+            user_vault.date_created(),
+            user_vault.date_modified()
         );
         assert_eq!(
-            user_safe.secrets().len(),
+            user_vault.secrets().len(),
             0,
-            "Usersafe should have no secrets yet but has {}",
-            user_safe.secrets().len()
+            "user_vault should have no secrets yet but has {}",
+            user_vault.secrets().len()
         );
 
-        // Add secret to user_safe
+        // Add secret to user_vault
         let mut secret: Secret = Secret::new(
             &user.id(),
             &SecretCategory::Password,
             &String::from("my-first-secret"),
         )
         .await;
-        let mut modified_before_update = user_safe.date_modified;
-        let mut created_before_update = user_safe.date_created;
-        user_safe.add_secret(&secret);
+        let mut modified_before_update = user_vault.date_modified;
+        let mut created_before_update = user_vault.date_created;
+        user_vault.add_secret(&secret);
 
         assert_eq!(
-            user_safe.secrets().len(),
+            user_vault.secrets().len(),
             1,
-            "Usersafe should have 1 secret now yet but has {}",
-            user_safe.secrets().len()
+            "user_vault should have 1 secret now yet but has {}",
+            user_vault.secrets().len()
         );
         assert!(
-            user_safe.date_modified() > user_safe.date_created(),
+            user_vault.date_modified() > user_vault.date_created(),
             "date_modified: {} must be greater than date_created: {}",
-            user_safe.date_modified(),
-            user_safe.date_created()
+            user_vault.date_modified(),
+            user_vault.date_created()
         );
         assert_eq!(
-            user_safe.date_created(),
+            user_vault.date_created(),
             &created_before_update,
             "date_created: {} must be equal to created_before_update: {}",
-            user_safe.date_created(),
+            user_vault.date_created(),
             created_before_update
         );
         assert!(
-            user_safe.date_modified() > &modified_before_update,
+            user_vault.date_modified() > &modified_before_update,
             "date_modified: {} must be greater than modified_before_update: {}",
-            user_safe.date_modified(),
+            user_vault.date_modified(),
             modified_before_update
         );
 
@@ -142,33 +142,33 @@ mod tests {
         let password = String::from("my-password");
         secret.set_username(&username);
         secret.set_password(&password);
-        modified_before_update = user_safe.date_modified;
-        created_before_update = user_safe.date_created;
-        user_safe.update_secret(&secret);
+        modified_before_update = user_vault.date_modified;
+        created_before_update = user_vault.date_created;
+        user_vault.update_secret(&secret);
 
         assert_eq!(
-            user_safe.secrets().len(),
+            user_vault.secrets().len(),
             1,
-            "Usersafe should have 1 secret now yet but has {}",
-            user_safe.secrets().len()
+            "user_vault should have 1 secret now yet but has {}",
+            user_vault.secrets().len()
         );
         assert!(
-            user_safe.date_created() < user_safe.date_modified(),
+            user_vault.date_created() < user_vault.date_modified(),
             "date_modified: {} must be greater than date_created: {}",
-            user_safe.date_modified(),
-            user_safe.date_created()
+            user_vault.date_modified(),
+            user_vault.date_created()
         );
         assert_eq!(
-            user_safe.date_created(),
+            user_vault.date_created(),
             &created_before_update,
             "date_created: {} must be equal to created_before_update: {}",
-            user_safe.date_created(),
+            user_vault.date_created(),
             created_before_update
         );
         assert!(
-            user_safe.date_modified() > &modified_before_update,
+            user_vault.date_modified() > &modified_before_update,
             "date_modified: {} must be greater than modified_before_update: {}",
-            user_safe.date_modified(),
+            user_vault.date_modified(),
             modified_before_update
         );
     }

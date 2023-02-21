@@ -16,7 +16,7 @@ export interface Secret {
 export type SecretCategory = { 'Password' : null } |
   { 'Note' : null } |
   { 'Document' : null };
-export interface UserSafe {
+export interface UserVault {
   'date_created' : bigint,
   'owner' : Principal,
   'secrets' : Array<[string, Secret]>,
@@ -31,9 +31,9 @@ export interface _SERVICE {
   'delete_user' : ActorMethod<[Principal], undefined>,
   'get_decryption_key_from' : ActorMethod<[Principal], [] | [Uint8Array]>,
   'get_encryption_key_for' : ActorMethod<[Principal], [] | [Uint8Array]>,
-  'get_user_safe' : ActorMethod<[Principal], UserSafe>,
+  'get_user_vault' : ActorMethod<[Principal], UserVault>,
   'give_me_a_new_uuid' : ActorMethod<[], string>,
-  'is_user_safe_existing' : ActorMethod<[Principal], boolean>,
+  'is_user_vault_existing' : ActorMethod<[Principal], boolean>,
   'update_user_secret' : ActorMethod<[Principal, Secret], undefined>,
   'what_time_is_it' : ActorMethod<[], bigint>,
   'who_am_i' : ActorMethod<[], string>,

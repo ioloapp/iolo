@@ -1,8 +1,8 @@
 use crate::common::MY_CALLER_ID;
 use anyhow::Result;
 use candid::{CandidType, Deserialize, Encode, Principal};
-use iccrypt_backend::smart_vaults::user_safe::UserSafe;
-use pretty_assertions::{assert_eq, assert_ne};
+use iccrypt_backend::smart_vaults::user_vault::UserVault;
+use pretty_assertions::{assert_eq };
 
 use crate::common::{get_dfx_agent, get_iccrypt_backend_canister};
 
@@ -39,23 +39,23 @@ async fn test_user_lifecycle() -> anyhow::Result<()> {
         .await
         .unwrap();
 
-    // get user safe of newly created user
+    // get user vault of newly created user
     let res: Vec<u8> = agent
-        .query(&canister, "get_user_safe")
+        .query(&canister, "get_user_vault")
         .with_arg(&Encode!(&user)?)
         //.with_arg(&Encode!(&canister)?)
         .call()
         .await?;
     let mut res_deserialized = candid::de::IDLDeserialize::new(&res)?;
 
-    if let Some(user_safe) = res_deserialized.get_value::<Option<UserSafe>>().unwrap() {
+    if let Some(user_vault) = res_deserialized.get_value::<Option<UserVault>>().unwrap() {
         // check we have the right owner
-        assert_eq!(&user_safe.owner().to_string(), MY_CALLER_ID);
+        assert_eq!(&user_vault.owner().to_string(), MY_CALLER_ID);
 
         // check there are no secrets yet
-        assert!(&user_safe.secrets().is_empty());
+        assert!(&user_vault.secrets().is_empty());
     } else {
-        return Err(anyhow::format_err!("User Safe not found"));
+        return Err(anyhow::format_err!("User Vault not found"));
     }
 
     Ok(())
