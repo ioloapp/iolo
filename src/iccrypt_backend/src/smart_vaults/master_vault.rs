@@ -50,12 +50,18 @@ impl MasterVault {
     pub fn is_user_vault_existing(&self, owner: &UserID) -> bool {
         self.user_vaults.contains_key(owner)
     }
-    // Returns a immuntable reference to the user vault
-    // Creates a new one if not existing
-    pub fn get_or_create_user_vault(&mut self, owner: &UserID) -> &UserVault {
-        self.user_vaults()
-            .entry(*owner)
-            .or_insert_with(|| UserVault::new(owner)) // Get an existing user_vault for the owner or create a new one
+    
+    pub fn create_user_vault(&mut self, owner: &UserID) -> Option<&UserVault> {
+        if self.user_vaults().contains_key(owner) {
+            None
+        } else {
+            self.user_vaults.insert(*owner, UserVault::new(owner));
+            self.user_vaults().get(owner)
+        }
+    }
+
+    pub fn get_user_vault(&mut self, owner: &UserID) -> Option<&UserVault> {
+        self.user_vaults().get(owner)
     }
 
     // Delete a user_vault from the master_vault
@@ -125,24 +131,24 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn utest_get_or_create_user_vault() {
+    async fn utest_create_user_vault() {
         let mut master_vault = MasterVault::new();
 
         // Create a new empty user_vault
         let owner = User::new_random_with_seed(1);
-        let user_vault_1a = master_vault.get_or_create_user_vault(owner.id()); // This is the create part (.or_insert())
+        let user_vault = master_vault.create_user_vault(owner.id()).unwrap();
         assert_eq!(
-            user_vault_1a.owner(),
+            user_vault.owner(),
             owner.id(),
             "user_vault_1a should have owner: {},  but has {}",
             owner.id(),
-            user_vault_1a.owner()
+            user_vault.owner()
         );
         assert_eq!(
-            user_vault_1a.secrets().len(),
+            user_vault.secrets().len(),
             0,
             "user_vault_1a should have 0 secrets but has {}",
-            user_vault_1a.secrets().len()
+            user_vault.secrets().len()
         );
         assert_eq!(
             master_vault.user_vaults().len(),
@@ -151,35 +157,11 @@ mod tests {
             master_vault.user_vaults().len()
         );
 
-        let user_vault_1b = master_vault.get_or_create_user_vault(owner.id()); // This is the get part (.entry())
+        // Creation of a another user_vault for the same owner should fail
         assert_eq!(
-            user_vault_1b.owner(),
-            owner.id(),
-            "user_vault_1b should have owner: {},  but has {}",
-            owner.id(),
-            user_vault_1b.owner()
-        );
-        assert_eq!(
-            user_vault_1b.secrets().len(),
-            0,
-            "user_vault_1b should have 0 secrets but has {}",
-            user_vault_1b.secrets().len()
-        );
-        assert_eq!(
-            master_vault.user_vaults().len(),
-            1,
-            "master_vault should have 1 user_vault but has {}",
-            master_vault.user_vaults().len()
-        );
-
-        // Add another user_vault
-        let owner_2 = User::new_random_with_seed(2);
-        let _user_vault_2 = master_vault.get_or_create_user_vault(owner_2.id()); // Create new user_vault
-        assert_eq!(
-            master_vault.user_vaults().len(),
-            2,
-            "master_vault should have 2 user_vaults but has {}",
-            master_vault.user_vaults().len()
+            master_vault.create_user_vault(owner.id()).is_none(),
+            true,
+            "Same user should not create a 2nd user_vault"
         );
 
         // Check if user_vault exists
@@ -189,20 +171,79 @@ mod tests {
             "user_vault for owner: {} should exist",
             owner.id()
         );
-        let owner_3 = User::new_random_with_seed(3);
+        let owner_2 = User::new_random_with_seed(2);
         assert_eq!(
-            master_vault.is_user_vault_existing(owner_3.id()),
+            master_vault.is_user_vault_existing(owner_2.id()),
             false,
             "user_vault for owner: {} should not exist",
-            owner_3.id()
+            owner_2.id()
+        );
+
+        // Add another user_vault
+        let owner_3 = User::new_random_with_seed(3);
+        let _user_vault_3 = master_vault.create_user_vault(owner_3.id()); // Create new user_vault
+        assert_eq!(
+            master_vault.user_vaults().len(),
+            2,
+            "master_vault should have 2 user_vaults but has {}",
+            master_vault.user_vaults().len()
+        );
+    }
+
+    #[tokio::test]
+    async fn utest_get_user_vault() {
+        let mut master_vault = MasterVault::new();
+
+        // Create a new empty user_vault
+        let owner = User::new_random_with_seed(1);
+        let _user_vault = master_vault.create_user_vault(owner.id()).unwrap();
+
+        // Check that get_user_vault returns Some
+        assert_eq!(
+            master_vault.get_user_vault(owner.id()).is_some(),
+            true,
+            "get_user_vault should return Some"
+        );
+
+        // Check that this get_user_vault returns None
+        let owner_2 = User::new_random_with_seed(2);
+        assert_eq!(
+            master_vault.get_user_vault(owner_2.id()).is_none(),
+            true,
+            "get_user_vault should return None"
+        );
+
+        // Validate user_vault
+        let user_vault = master_vault.get_user_vault(owner.id()).unwrap();
+        assert_eq!(
+            user_vault.owner(),
+            owner.id(),
+            "user_vault should have owner: {},  but has {}",
+            owner.id(),
+            user_vault.owner()
+        );
+        assert_eq!(
+            user_vault.secrets().len(),
+            0,
+            "user_vault should have 0 secrets but has {}",
+            user_vault.secrets().len()
+        );
+        assert_eq!(
+            master_vault.user_vaults().len(),
+            1,
+            "master_vault should have 1 user_vault but has {}",
+            master_vault.user_vaults().len()
         );
     }
 
     #[test]
     fn utest_remove_user_vault() {
         let mut master_vault = MasterVault::new();
+
+        // Create a new empty user_vault
         let owner = User::new_random_with_seed(1);
-        master_vault.get_or_create_user_vault(owner.id());
+        let _user_vault = master_vault.create_user_vault(owner.id());
+        
         assert_eq!(
             master_vault.user_vaults().len(),
             1,
@@ -223,7 +264,7 @@ mod tests {
     async fn utest_secrets() {
         let mut master_vault = MasterVault::new();
         let owner = User::new_random_with_seed(1);
-        let user_vault = master_vault.get_or_create_user_vault(owner.id());
+        let user_vault = master_vault.create_user_vault(owner.id()).unwrap();
         assert_eq!(
             user_vault.secrets().len(),
             0,
@@ -237,21 +278,25 @@ mod tests {
             &String::from("my-super-secret"),
         )
         .await;
+
         master_vault.add_secret(owner.id(), &secret);
         assert_eq!(
             master_vault
-                .get_or_create_user_vault(owner.id())
+                .get_user_vault(owner.id())
+                .unwrap()
                 .secrets()
                 .len(),
             1,
             "user_vault should have 1 secrets but has {}",
             master_vault
-                .get_or_create_user_vault(owner.id())
+                .get_user_vault(owner.id())
+                .unwrap()
                 .secrets()
                 .len()
         );
         let secret_name = master_vault
-            .get_or_create_user_vault(owner.id())
+            .get_user_vault(owner.id())
+            .unwrap()
             .secrets()
             .get(secret.id())
             .unwrap()
@@ -266,7 +311,8 @@ mod tests {
         secret.set_name(&String::from("my-super-secret-new"));
         master_vault.update_secret(owner.id(), &secret);
         let secret_name = master_vault
-            .get_or_create_user_vault(owner.id())
+            .get_user_vault(owner.id())
+            .unwrap()
             .secrets()
             .get(secret.id())
             .unwrap()
@@ -280,13 +326,15 @@ mod tests {
         master_vault.remove_secret(owner.id(), &secret.id());
         assert_eq!(
             master_vault
-                .get_or_create_user_vault(owner.id())
+                .get_user_vault(owner.id())
+                .unwrap()
                 .secrets()
                 .len(),
             0,
             "user_vault should have 0 secrets but has {}",
             master_vault
-                .get_or_create_user_vault(owner.id())
+                .get_user_vault(owner.id())
+                .unwrap()
                 .secrets()
                 .len()
         );

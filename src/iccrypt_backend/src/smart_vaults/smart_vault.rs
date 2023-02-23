@@ -32,7 +32,7 @@ pub fn create_new_user(owner: UserID) {
     // open a vault for the new user
     MASTERVAULT.with(|ms: &RefCell<MasterVault>| {
         let mut master_vault = ms.borrow_mut();
-        master_vault.get_or_create_user_vault(&owner);
+        master_vault.create_user_vault(&owner);
     });
 }
 
@@ -60,9 +60,9 @@ pub fn is_user_vault_existing(owner: UserID) -> bool {
 
 #[ic_cdk_macros::query]
 #[candid_method(query)]
-pub fn get_user_vault(owner: UserID) -> UserVault {
+pub fn get_user_vault(owner: UserID) -> Option<UserVault> {
     MASTERVAULT
-        .with(|mv: &RefCell<MasterVault>| mv.borrow_mut().get_or_create_user_vault(&owner).clone())
+        .with(|mv: &RefCell<MasterVault>| mv.borrow_mut().get_user_vault(&owner).cloned())
 }
 
 #[ic_cdk_macros::update]

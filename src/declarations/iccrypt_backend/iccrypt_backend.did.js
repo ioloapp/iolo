@@ -40,7 +40,11 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Opt(IDL.Vec(IDL.Nat8))],
         [],
       ),
-    'get_user_vault' : IDL.Func([IDL.Principal], [UserVault], ['query']),
+    'get_user_vault' : IDL.Func(
+        [IDL.Principal],
+        [IDL.Opt(UserVault)],
+        ['query'],
+      ),
     'give_me_a_new_uuid' : IDL.Func([], [IDL.Text], []),
     'is_user_vault_existing' : IDL.Func([IDL.Principal], [IDL.Bool], ['query']),
     'update_user_secret' : IDL.Func([IDL.Principal, Secret], [], []),

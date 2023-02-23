@@ -31,7 +31,7 @@ export interface _SERVICE {
   'delete_user' : ActorMethod<[Principal], undefined>,
   'get_decryption_key_from' : ActorMethod<[Principal], [] | [Uint8Array]>,
   'get_encryption_key_for' : ActorMethod<[Principal], [] | [Uint8Array]>,
-  'get_user_vault' : ActorMethod<[Principal], UserVault>,
+  'get_user_vault' : ActorMethod<[Principal], [] | [UserVault]>,
   'give_me_a_new_uuid' : ActorMethod<[], string>,
   'is_user_vault_existing' : ActorMethod<[Principal], boolean>,
   'update_user_secret' : ActorMethod<[Principal, Secret], undefined>,
