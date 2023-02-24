@@ -6,6 +6,8 @@ pub mod smart_wallets;
 pub mod utils;
 
 // for the candid file creation
+use crate::common::messages::ReturnMessage;
+use crate::common::user::User;
 use crate::common::user::UserID;
 use crate::smart_vaults::secret::Secret;
 use crate::smart_vaults::secret::SecretCategory;

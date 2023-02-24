@@ -4,6 +4,7 @@ use std::collections::BTreeMap;
 use candid::candid_method;
 use ic_cdk::{post_upgrade, pre_upgrade, storage};
 
+use crate::common::messages::ReturnMessage;
 use crate::common::user::{User, UserID};
 
 use super::master_vault::MasterVault;
@@ -19,34 +20,58 @@ thread_local! {
     // User Registsry
     static USER_REGISTRY: RefCell<UserRegistry> = RefCell::new(UserRegistry::new());
 }
-use anyhow::Result;
+// use anyhow::Result;
+// #[ic_cdk_macros::update]
+// #[candid_method(update)]
+// pub fn create_new_user(user_id: UserID) -> Result<User>{
+//     // create the new user
+//     USER_REGISTRY.with(|ur: &RefCell<UserRegistry>| {
+//         let mut user_registry = ur.borrow_mut();
+//         if user_registry.contains_key(&user_id) {
+//             Err(String::from("User is already existing"))
+//         } else {
+//             user_registry.insert(user_id, User::new(&user_id));
+//             Ok(user_registry.get(&user_id).unwrap());
+//         }
+//     });
+
+// /*
+//     // create the new user
+//     USER_REGISTRY.with(|ur: &RefCell<UserRegistry>| {
+//         let mut user_registry = ur.borrow_mut();
+//         user_registry.insert(owner, User::new(&owner));
+//     });
+
+//     // open a vault for the new user
+//     MASTERVAULT.with(|ms: &RefCell<MasterVault>| {
+//         let mut master_vault = ms.borrow_mut();
+//         master_vault.create_user_vault(&owner);
+//     });*/
+// }
+
 #[ic_cdk_macros::update]
 #[candid_method(update)]
-pub fn create_new_user(user_id: UserID) -> Result<User>{
+pub fn create_new_user(user_id: UserID) -> Option<User> {
     // create the new user
     USER_REGISTRY.with(|ur: &RefCell<UserRegistry>| {
         let mut user_registry = ur.borrow_mut();
-        if user_registry.contains_key(&user_id) {
-            Err(String::from("User is already existing"))
-        } else {
-            user_registry.insert(user_id, User::new(&user_id));
-            Ok(user_registry.get(&user_id).unwrap());
-        }
-    });
-    
+        user_registry.insert(user_id, User::new(&user_id))
+    })
+}
 
-/*
+#[ic_cdk_macros::update]
+#[candid_method(update)]
+pub fn create_new_user_maybe_better(user_id: UserID) -> ReturnMessage<String> {
     // create the new user
-    USER_REGISTRY.with(|ur: &RefCell<UserRegistry>| {
+    let res = USER_REGISTRY.with(|ur: &RefCell<UserRegistry>| {
         let mut user_registry = ur.borrow_mut();
-        user_registry.insert(owner, User::new(&owner));
+        user_registry.insert(user_id, User::new(&user_id))
     });
 
-    // open a vault for the new user
-    MASTERVAULT.with(|ms: &RefCell<MasterVault>| {
-        let mut master_vault = ms.borrow_mut();
-        master_vault.create_user_vault(&owner);
-    });*/
+    match res {
+        Some(_) => ReturnMessage::Ok("User already existed. Nothing has been inserted".to_string()),
+        None => ReturnMessage::Ok("New user created".to_string()),
+    }
 }
 
 #[ic_cdk_macros::update]
@@ -74,8 +99,7 @@ pub fn is_user_vault_existing(owner: UserID) -> bool {
 #[ic_cdk_macros::query]
 #[candid_method(query)]
 pub fn get_user_vault(owner: UserID) -> Option<UserVault> {
-    MASTERVAULT
-        .with(|mv: &RefCell<MasterVault>| mv.borrow_mut().get_user_vault(&owner).cloned())
+    MASTERVAULT.with(|mv: &RefCell<MasterVault>| mv.borrow_mut().get_user_vault(&owner).cloned())
 }
 
 #[ic_cdk_macros::update]
