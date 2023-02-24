@@ -55,7 +55,7 @@ pub fn delete_user(owner: UserID) {
 #[ic_cdk_macros::query]
 #[candid_method(query)]
 pub fn is_user_vault_existing(owner: UserID) -> bool {
-    MASTERVAULT.with(|mv: &RefCell<MasterVault>| mv.borrow_mut().is_user_vault_existing(&owner))
+    MASTERVAULT.with(|mv: &RefCell<MasterVault>| mv.borrow().is_user_vault_existing(&owner))
 }
 
 #[ic_cdk_macros::query]

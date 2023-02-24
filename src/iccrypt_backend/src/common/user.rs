@@ -9,7 +9,7 @@ pub struct User {
     id: UserID,
     date_created: u64,
     date_modified: u64,
-    last_login: Option<u64>,
+    date_last_login: Option<u64>,
 }
 
 impl User {
@@ -19,7 +19,7 @@ impl User {
             id: *id,
             date_created: now,
             date_modified: now,
-            last_login: None,
+            date_last_login: None,
         }
     }
 
