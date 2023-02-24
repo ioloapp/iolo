@@ -6,7 +6,7 @@ use pretty_assertions::{assert_eq };
 
 use crate::common::{get_dfx_agent, get_iccrypt_backend_canister};
 
-#[derive(CandidType)]
+#[derive(CandidType, Deserialize)]
 struct CreateUserArg {
     user_id: Principal,
 }

@@ -1,7 +1,7 @@
 // Skeleton and mock for the key derivation functions as described in the DFINITY video about on-chain encryption
 // https://www.youtube.com/watch?v=baM6jHnmMq8&t=1633s
 
-// note: this is just a mock.
+// Note: this is just a mock.
 
 pub mod helper;
 pub mod utils;
@@ -26,7 +26,7 @@ fn derive_encryption_key(master_key_id: i32, derivation_id: String) -> Vec<u8> {
     // use helper function to get position index between 1 and 10
     let kp =
         deterministically_derive_key_pair(master_key_id, &get_caller().to_string(), &derivation_id);
-
+    let x = "hallo";
     kp.public_key
 }
 

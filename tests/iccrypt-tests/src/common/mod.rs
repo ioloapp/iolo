@@ -43,12 +43,28 @@ pub fn setup() -> anyhow::Result<()> {
 
 #[allow(dead_code)]
 pub fn cleanup() -> anyhow::Result<()> {
-    // let sh = Shell::new()?;
-    // let manifest = sh.read_file("Cargo.toml")?;
-    // cmd!(sh, "dfx start").run().unwrap_or_else(|_| {});
-    // cmd!(sh, "dfx stop").run().unwrap_or_else(|_| {});
+    let sh = Shell::new()?;
+    sh.change_dir("../../");
+    cmd!(sh, "./deploy.sh local").run().unwrap_or_else(|_| {});
+    Ok(())
+}
 
-    // assert_eq!(1, 2);
+#[allow(dead_code)]
+pub fn upgrade_canister(canister: String) -> anyhow::Result<()> {
+    let c: &str;
+    if canister == "all" {
+        c = "--all";
+    } else {
+        c = &canister;
+    }
 
+    let sh = Shell::new()?;
+    sh.change_dir("../../");
+
+    cmd!(sh, "dfx canister create {c}").run().unwrap();
+    cmd!(sh, "dfx build {c}").run().unwrap();
+    cmd!(sh, "dfx canister install {c} --mode upgrade")
+        .run()
+        .unwrap();
     Ok(())
 }

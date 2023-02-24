@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 use crate::common::{get_dfx_agent, get_iccrypt_backend_canister};
-use pretty_assertions::{assert_eq};
+use pretty_assertions::assert_eq;
 
 use anyhow::Ok;
 use anyhow::Result;
