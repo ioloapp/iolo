@@ -51,12 +51,13 @@ impl MasterVault {
         self.user_vaults.contains_key(owner)
     }
     
-    pub fn create_user_vault(&mut self, owner: &UserID) -> Option<&UserVault> {
-        if self.user_vaults().contains_key(owner) {
-            None
+    pub fn create_user_vault(&mut self, owner: &UserID) -> Result<&UserVault, String> {
+        // This if section will be replaced with .try_insert() once it's not experimental anymore...
+        if self.user_vaults().contains_key(&owner) {
+            Err(String::from("Owner has already a key"))
         } else {
-            self.user_vaults.insert(*owner, UserVault::new(owner));
-            self.user_vaults().get(owner)
+            self.user_vaults.insert(*owner, UserVault::new(&owner));
+            Ok(self.user_vaults().get(&owner).unwrap())
         }
     }
 
@@ -159,7 +160,7 @@ mod tests {
 
         // Creation of a another user_vault for the same owner should fail
         assert_eq!(
-            master_vault.create_user_vault(owner.id()).is_none(),
+            master_vault.create_user_vault(owner.id()).is_err(),
             true,
             "Same user should not create a 2nd user_vault"
         );
