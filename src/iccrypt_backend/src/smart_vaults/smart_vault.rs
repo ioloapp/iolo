@@ -19,10 +19,23 @@ thread_local! {
     // User Registsry
     static USER_REGISTRY: RefCell<UserRegistry> = RefCell::new(UserRegistry::new());
 }
-
+use anyhow::Result;
 #[ic_cdk_macros::update]
 #[candid_method(update)]
-pub fn create_new_user(owner: UserID) {
+pub fn create_new_user(user_id: UserID) -> Result<User>{
+    // create the new user
+    USER_REGISTRY.with(|ur: &RefCell<UserRegistry>| {
+        let mut user_registry = ur.borrow_mut();
+        if user_registry.contains_key(&user_id) {
+            Err(String::from("User is already existing"))
+        } else {
+            user_registry.insert(user_id, User::new(&user_id));
+            Ok(user_registry.get(&user_id).unwrap());
+        }
+    });
+    
+
+/*
     // create the new user
     USER_REGISTRY.with(|ur: &RefCell<UserRegistry>| {
         let mut user_registry = ur.borrow_mut();
@@ -33,7 +46,7 @@ pub fn create_new_user(owner: UserID) {
     MASTERVAULT.with(|ms: &RefCell<MasterVault>| {
         let mut master_vault = ms.borrow_mut();
         master_vault.create_user_vault(&owner);
-    });
+    });*/
 }
 
 #[ic_cdk_macros::update]
