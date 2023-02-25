@@ -54,7 +54,7 @@ impl MasterVault {
     pub fn create_user_vault(&mut self, owner: &UserID) -> Result<&UserVault, String> {
         // This if section will be replaced with .try_insert() once it's not experimental anymore...
         if self.user_vaults().contains_key(&owner) {
-            Err(String::from("Owner has already a key"))
+            Err(String::from("Owner has already a user_vault"))
         } else {
             self.user_vaults.insert(*owner, UserVault::new(&owner));
             Ok(self.user_vaults().get(&owner).unwrap())

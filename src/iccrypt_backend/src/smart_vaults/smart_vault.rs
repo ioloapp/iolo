@@ -20,58 +20,63 @@ thread_local! {
     // User Registsry
     static USER_REGISTRY: RefCell<UserRegistry> = RefCell::new(UserRegistry::new());
 }
-// use anyhow::Result;
-// #[ic_cdk_macros::update]
-// #[candid_method(update)]
-// pub fn create_new_user(user_id: UserID) -> Result<User>{
-//     // create the new user
-//     USER_REGISTRY.with(|ur: &RefCell<UserRegistry>| {
-//         let mut user_registry = ur.borrow_mut();
-//         if user_registry.contains_key(&user_id) {
-//             Err(String::from("User is already existing"))
-//         } else {
-//             user_registry.insert(user_id, User::new(&user_id));
-//             Ok(user_registry.get(&user_id).unwrap());
-//         }
-//     });
 
-// /*
-//     // create the new user
-//     USER_REGISTRY.with(|ur: &RefCell<UserRegistry>| {
-//         let mut user_registry = ur.borrow_mut();
-//         user_registry.insert(owner, User::new(&owner));
-//     });
-
-//     // open a vault for the new user
-//     MASTERVAULT.with(|ms: &RefCell<MasterVault>| {
-//         let mut master_vault = ms.borrow_mut();
-//         master_vault.create_user_vault(&owner);
-//     });*/
-// }
-
-#[ic_cdk_macros::update]
+/*#[ic_cdk_macros::update]
 #[candid_method(update)]
-pub fn create_new_user(user_id: UserID) -> Option<User> {
+pub fn create_user(user_id: UserID) -> ReturnMessage<User, String> {
     // create the new user
-    USER_REGISTRY.with(|ur: &RefCell<UserRegistry>| {
+    let res_create = USER_REGISTRY.with(|ur: &RefCell<UserRegistry>| {
         let mut user_registry = ur.borrow_mut();
-        user_registry.insert(user_id, User::new(&user_id))
-    })
-}
+        let res_insert = user_registry.insert(user_id, User::new(&user_id));
+
+        // Insert returns None if user has been created and Some if user already exists.
+        // We change this behaviour and return None if user already exists and Some (with new user) if user has been created
+        match res_insert {
+            Some(_) => None,
+            None => user_registry.get(&user_id).cloned(),
+        }
+    });
+
+    match res_create {
+        Some(user) => ReturnMessage::Ok(user),
+        None => ReturnMessage::Err("User already existed. Nothing has been inserted".to_string()),
+    }
+}*/
 
 #[ic_cdk_macros::update]
 #[candid_method(update)]
-pub fn create_new_user_maybe_better(user_id: UserID) -> ReturnMessage<String> {
+pub fn create_user(user_id: UserID) -> ReturnMessage<UserVault, String> {
     // create the new user
-    let res = USER_REGISTRY.with(|ur: &RefCell<UserRegistry>| {
+    let res_create_user = USER_REGISTRY.with(|ur: &RefCell<UserRegistry>| {
         let mut user_registry = ur.borrow_mut();
         user_registry.insert(user_id, User::new(&user_id))
     });
 
-    match res {
-        Some(_) => ReturnMessage::Ok("User already existed. Nothing has been inserted".to_string()),
-        None => ReturnMessage::Ok("New user created".to_string()),
+    match res_create_user {
+        None => { // User has been created, let's create its user_vault
+            let res_create_user_vault = MASTERVAULT.with(|ms: &RefCell<MasterVault>| {
+                let mut master_vault = ms.borrow_mut();
+                master_vault.create_user_vault(&user_id)
+            });
+            match res_create_user_vault {
+                Ok(v) => ReturnMessage::Ok(v.cloned()),
+                Err(e) => ReturnMessage::Err("User_vault already existed. Nothing has been inserted".to_string())
+            }
+        }
+        Some(_) => ReturnMessage::Err("User already existed. Nothing has been inserted".to_string()),
     }
+}
+
+#[ic_cdk_macros::query]
+#[candid_method(query)]
+pub fn get_user_vault(owner: UserID) -> Option<UserVault> {
+    MASTERVAULT.with(|mv: &RefCell<MasterVault>| mv.borrow_mut().get_user_vault(&owner).cloned())
+}
+
+#[ic_cdk_macros::query]
+#[candid_method(query)]
+pub fn is_user_vault_existing(owner: UserID) -> bool {
+    MASTERVAULT.with(|mv: &RefCell<MasterVault>| mv.borrow().is_user_vault_existing(&owner))
 }
 
 #[ic_cdk_macros::update]
@@ -88,18 +93,6 @@ pub fn delete_user(owner: UserID) {
         let mut user_registry = ur.borrow_mut();
         user_registry.remove(&owner);
     });
-}
-
-#[ic_cdk_macros::query]
-#[candid_method(query)]
-pub fn is_user_vault_existing(owner: UserID) -> bool {
-    MASTERVAULT.with(|mv: &RefCell<MasterVault>| mv.borrow().is_user_vault_existing(&owner))
-}
-
-#[ic_cdk_macros::query]
-#[candid_method(query)]
-pub fn get_user_vault(owner: UserID) -> Option<UserVault> {
-    MASTERVAULT.with(|mv: &RefCell<MasterVault>| mv.borrow_mut().get_user_vault(&owner).cloned())
 }
 
 #[ic_cdk_macros::update]

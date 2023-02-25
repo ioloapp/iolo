@@ -1,4 +1,5 @@
 use candid::{CandidType, Deserialize};
+use serde::Serialize;
 
 use std::collections::BTreeMap;
 
@@ -6,7 +7,7 @@ use super::secret::{Secret, SecretID};
 use crate::common::user::UserID;
 use crate::utils::time;
 
-#[derive(Debug, CandidType, Deserialize, Clone)]
+#[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct UserVault {
     owner: UserID,
     date_created: u64,

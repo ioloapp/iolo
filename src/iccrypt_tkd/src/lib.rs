@@ -26,7 +26,7 @@ fn derive_encryption_key(master_key_id: i32, derivation_id: String) -> Vec<u8> {
     // use helper function to get position index between 1 and 10
     let kp =
         deterministically_derive_key_pair(master_key_id, &get_caller().to_string(), &derivation_id);
-    let x = "hallo";
+    let _x = "hallo";
     kp.public_key
 }
 

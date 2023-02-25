@@ -1,4 +1,5 @@
 use candid::{CandidType, Deserialize};
+use serde::Serialize;
 
 use crate::common::types::Ciphertext;
 use crate::common::user::UserID;
@@ -8,14 +9,14 @@ use crate::utils::time;
 
 pub type SecretID = String;
 
-#[derive(Debug, CandidType, Deserialize, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, CandidType, Deserialize, Serialize, Clone, Copy, PartialEq, Eq)]
 pub enum SecretCategory {
     Password,
     Note,
     Document,
 }
 
-#[derive(Debug, CandidType, Deserialize, Clone)]
+#[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct Secret {
     id: SecretID,
     date_created: u64,
