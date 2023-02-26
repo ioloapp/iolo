@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 
 use candid::{CandidType, Deserialize, Principal};
 
-use crate::common::user::UserID;
+use crate::common::{error::SmartVaultErr, user::UserID};
 use crate::utils::time;
 
 use super::{
@@ -50,11 +50,12 @@ impl MasterVault {
     pub fn is_user_vault_existing(&self, owner: &UserID) -> bool {
         self.user_vaults.contains_key(owner)
     }
-    
-    pub fn create_user_vault(&mut self, owner: &UserID) -> Result<&UserVault, String> {
+
+    pub fn create_user_vault(&mut self, owner: &UserID) -> Result<&UserVault, SmartVaultErr> {
         // This if section will be replaced with .try_insert() once it's not experimental anymore...
         if self.user_vaults().contains_key(&owner) {
-            Err(String::from("Owner has already a user_vault"))
+            //Err(String::from("Owner has already a user_vault"))
+            Err(SmartVaultErr::UserVaultAlreadyExists(owner.to_string()))
         } else {
             self.user_vaults.insert(*owner, UserVault::new(&owner));
             Ok(self.user_vaults().get(&owner).unwrap())
@@ -244,7 +245,7 @@ mod tests {
         // Create a new empty user_vault
         let owner = User::new_random_with_seed(1);
         let _user_vault = master_vault.create_user_vault(owner.id());
-        
+
         assert_eq!(
             master_vault.user_vaults().len(),
             1,
