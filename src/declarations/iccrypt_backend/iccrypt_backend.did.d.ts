@@ -1,6 +1,8 @@
 import type { Principal } from '@dfinity/principal';
 import type { ActorMethod } from '@dfinity/agent';
 
+export type Result = { 'Ok' : User } |
+  { 'Err' : SmartVaultErr };
 export interface Secret {
   'id' : string,
   'url' : [] | [string],
@@ -16,6 +18,15 @@ export interface Secret {
 export type SecretCategory = { 'Password' : null } |
   { 'Note' : null } |
   { 'Document' : null };
+export type SmartVaultErr = { 'UserAlreadyExists' : string } |
+  { 'UserVaultAlreadyExists' : string } |
+  { 'UserVaultCreationFailed' : string };
+export interface User {
+  'id' : Principal,
+  'date_created' : bigint,
+  'date_last_login' : [] | [bigint],
+  'date_modified' : bigint,
+}
 export interface UserVault {
   'date_created' : bigint,
   'owner' : Principal,
@@ -27,7 +38,7 @@ export interface _SERVICE {
     [Principal, SecretCategory, string],
     undefined
   >,
-  'create_new_user' : ActorMethod<[Principal], undefined>,
+  'create_user' : ActorMethod<[Principal], Result>,
   'delete_user' : ActorMethod<[Principal], undefined>,
   'get_decryption_key_from' : ActorMethod<[Principal], [] | [Uint8Array]>,
   'get_encryption_key_for' : ActorMethod<[Principal], [] | [Uint8Array]>,

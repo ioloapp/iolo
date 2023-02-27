@@ -1,9 +1,12 @@
 use std::fmt::Display;
 
-#[derive(Debug)]
+use candid::CandidType;
+
+#[derive(Debug, CandidType)]
 pub enum SmartVaultErr {
     UserAlreadyExists(String),
     UserVaultAlreadyExists(String),
+    UserVaultCreationFailed(String),
 }
 
 impl Display for SmartVaultErr {
@@ -15,6 +18,11 @@ impl Display for SmartVaultErr {
             SmartVaultErr::UserVaultAlreadyExists(user) => write!(
                 f,
                 "User vault already exists for the following user: {}",
+                user
+            ),
+            SmartVaultErr::UserVaultCreationFailed(user) => write!(
+                f,
+                "Failed creating a vault for the following user: {}",
                 user
             ),
         }

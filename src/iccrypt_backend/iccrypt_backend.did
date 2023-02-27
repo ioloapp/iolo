@@ -1,3 +1,4 @@
+type Result = variant { Ok : User; Err : SmartVaultErr };
 type Secret = record {
   id : text;
   url : opt text;
@@ -11,6 +12,17 @@ type Secret = record {
   date_modified : nat64;
 };
 type SecretCategory = variant { Password; Note; Document };
+type SmartVaultErr = variant {
+  UserAlreadyExists : text;
+  UserVaultAlreadyExists : text;
+  UserVaultCreationFailed : text;
+};
+type User = record {
+  id : principal;
+  date_created : nat64;
+  date_last_login : opt nat64;
+  date_modified : nat64;
+};
 type UserVault = record {
   date_created : nat64;
   owner : principal;
@@ -19,7 +31,7 @@ type UserVault = record {
 };
 service : {
   add_user_secret : (principal, SecretCategory, text) -> ();
-  create_new_user : (principal) -> ();
+  create_user : (principal) -> (Result);
   delete_user : (principal) -> ();
   get_decryption_key_from : (principal) -> (opt vec nat8);
   get_encryption_key_for : (principal) -> (opt vec nat8);

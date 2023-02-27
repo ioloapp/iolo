@@ -4,7 +4,7 @@ use std::collections::BTreeMap;
 use candid::candid_method;
 use ic_cdk::{post_upgrade, pre_upgrade, storage};
 
-use crate::common::messages::ReturnMessage;
+use crate::common::error::SmartVaultErr;
 use crate::common::user::{User, UserID};
 
 use super::master_vault::MasterVault;
@@ -21,50 +21,26 @@ thread_local! {
     static USER_REGISTRY: RefCell<UserRegistry> = RefCell::new(UserRegistry::new());
 }
 
-/*#[ic_cdk_macros::update]
-#[candid_method(update)]
-pub fn create_user(user_id: UserID) -> ReturnMessage<User, String> {
-    // create the new user
-    let res_create = USER_REGISTRY.with(|ur: &RefCell<UserRegistry>| {
-        let mut user_registry = ur.borrow_mut();
-        let res_insert = user_registry.insert(user_id, User::new(&user_id));
-
-        // Insert returns None if user has been created and Some if user already exists.
-        // We change this behaviour and return None if user already exists and Some (with new user) if user has been created
-        match res_insert {
-            Some(_) => None,
-            None => user_registry.get(&user_id).cloned(),
-        }
-    });
-
-    match res_create {
-        Some(user) => ReturnMessage::Ok(user),
-        None => ReturnMessage::Err("User already existed. Nothing has been inserted".to_string()),
-    }
-}*/
-
 #[ic_cdk_macros::update]
 #[candid_method(update)]
-pub fn create_user(user_id: UserID) -> ReturnMessage<UserVault, String> {
-    // create the new user
-    let res_create_user = USER_REGISTRY.with(|ur: &RefCell<UserRegistry>| {
+pub fn create_user(user_id: UserID) -> Result<User, SmartVaultErr> {
+    let new_user = User::new(&user_id);
+    if let Some(_) = USER_REGISTRY.with(|ur: &RefCell<UserRegistry>| {
         let mut user_registry = ur.borrow_mut();
-        user_registry.insert(user_id, User::new(&user_id))
-    });
-
-    match res_create_user {
-        None => { // User has been created, let's create its user_vault
-            let res_create_user_vault = MASTERVAULT.with(|ms: &RefCell<MasterVault>| {
-                let mut master_vault = ms.borrow_mut();
-                master_vault.create_user_vault(&user_id)
-            });
-            match res_create_user_vault {
-                Ok(v) => ReturnMessage::Ok(v.cloned()),
-                Err(e) => ReturnMessage::Err("User_vault already existed. Nothing has been inserted".to_string())
-            }
-        }
-        Some(_) => ReturnMessage::Err("User already existed. Nothing has been inserted".to_string()),
+        user_registry.insert(user_id, new_user.clone())
+    }) {
+        // The user already exists
+        return Err(SmartVaultErr::UserAlreadyExists(user_id.to_string()));
     }
+
+    // Let's create a vault for the user
+    MASTERVAULT.with(|ms: &RefCell<MasterVault>| -> Result<(), SmartVaultErr> {
+        let mut master_vault = ms.borrow_mut();
+        master_vault.create_user_vault(&user_id)?;
+        Ok(())
+    })?;
+
+    Ok(new_user)
 }
 
 #[ic_cdk_macros::query]
