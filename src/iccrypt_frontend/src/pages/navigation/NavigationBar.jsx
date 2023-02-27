@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { logIn, logOut } from '../../redux/loginSlice';
+import { logIn, logOut } from '../../redux/userSlice';
 import { AppBar, Box, Drawer, IconButton, Toolbar, Typography, Button, Menu, MenuItem, CssBaseline } from '@mui/material/';
 import { Menu as MenuIcon, AccountCircle } from '@mui/icons-material';
 import DrawerContent from './DrawerContent';
 import { AuthClient } from "@dfinity/auth-client";
 import { drawerWidth } from '../../config/config';
+import { Outlet } from 'react-router-dom';
 
 function NavigationBar(props) {
     // See https://github.com/gabrielnic/dfinity-react
@@ -24,8 +25,8 @@ function NavigationBar(props) {
     };
 
     const dispatch = useDispatch();
-    const isLoggedIn = useSelector((state) => state.login.isLoggedIn);
-    const principal = useSelector((state) => state.login.principal);
+    const isLoggedIn = useSelector((state) => state.user.isLoggedIn);
+    const principal = useSelector((state) => state.user.principal);
 
     const handleDrawerToggle = () => {
         setMobileOpen(!mobileOpen);
@@ -164,6 +165,15 @@ function NavigationBar(props) {
                 sx={{ flexGrow: 1, p: 3, width: { sm: `calc(100% - ${drawerWidth}px)` } }}
             >
                 <Toolbar />
+                <Box sx={{ display: 'flex' }}>
+                    <Box
+                        component="main"
+                        sx={{ flexGrow: 1, p: 3, width: { sm: `calc(100% - ${drawerWidth}px)` } }}
+                        display="flex" justifyContent="center"
+                    >
+                        <Outlet />
+                    </Box>
+                </Box>
             </Box>
         </Box>
     );

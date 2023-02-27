@@ -6,6 +6,7 @@ use ic_cdk::{post_upgrade, pre_upgrade, storage};
 
 use crate::common::error::SmartVaultErr;
 use crate::common::user::{User, UserID};
+use crate::utils::caller::get_caller;
 
 use super::master_vault::MasterVault;
 use super::secret::{Secret, SecretCategory};
@@ -23,20 +24,21 @@ thread_local! {
 
 #[ic_cdk_macros::update]
 #[candid_method(update)]
-pub fn create_user(user_id: UserID) -> Result<User, SmartVaultErr> {
-    let new_user = User::new(&user_id);
+pub fn create_user() -> Result<User, SmartVaultErr> {
+    let principal = get_caller();
+    let new_user = User::new(&principal);
     if let Some(_) = USER_REGISTRY.with(|ur: &RefCell<UserRegistry>| {
         let mut user_registry = ur.borrow_mut();
-        user_registry.insert(user_id, new_user.clone())
+        user_registry.insert(principal, new_user.clone())
     }) {
         // The user already exists
-        return Err(SmartVaultErr::UserAlreadyExists(user_id.to_string()));
+        return Err(SmartVaultErr::UserAlreadyExists(principal.to_string()));
     }
 
     // Let's create a vault for the user
     MASTERVAULT.with(|ms: &RefCell<MasterVault>| -> Result<(), SmartVaultErr> {
         let mut master_vault = ms.borrow_mut();
-        master_vault.create_user_vault(&user_id)?;
+        master_vault.create_user_vault(&principal)?;
         Ok(())
     })?;
 
@@ -45,48 +47,53 @@ pub fn create_user(user_id: UserID) -> Result<User, SmartVaultErr> {
 
 #[ic_cdk_macros::query]
 #[candid_method(query)]
-pub fn get_user_vault(owner: UserID) -> Option<UserVault> {
-    MASTERVAULT.with(|mv: &RefCell<MasterVault>| mv.borrow_mut().get_user_vault(&owner).cloned())
+pub fn get_user_vault() -> Option<UserVault> {
+    let principal = get_caller();
+    MASTERVAULT
+        .with(|mv: &RefCell<MasterVault>| mv.borrow_mut().get_user_vault(&principal).cloned())
 }
 
 #[ic_cdk_macros::query]
 #[candid_method(query)]
-pub fn is_user_vault_existing(owner: UserID) -> bool {
-    MASTERVAULT.with(|mv: &RefCell<MasterVault>| mv.borrow().is_user_vault_existing(&owner))
+pub fn is_user_vault_existing() -> bool {
+    let principal = get_caller();
+    MASTERVAULT.with(|mv: &RefCell<MasterVault>| mv.borrow().is_user_vault_existing(&principal))
 }
 
 #[ic_cdk_macros::update]
 #[candid_method(update)]
-pub fn delete_user(owner: UserID) {
-    // delete the user vault
+pub fn delete_user() {
+    let principal = get_caller();
     MASTERVAULT.with(|ms: &RefCell<MasterVault>| {
         let mut master_vault = ms.borrow_mut();
-        master_vault.remove_user_vault(&owner);
+        master_vault.remove_user_vault(&principal);
     });
 
     // delete the user
     USER_REGISTRY.with(|ur: &RefCell<UserRegistry>| {
         let mut user_registry = ur.borrow_mut();
-        user_registry.remove(&owner);
+        user_registry.remove(&principal);
     });
 }
 
 #[ic_cdk_macros::update]
 #[candid_method(update)]
-pub async fn add_user_secret(owner: UserID, category: SecretCategory, name: String) {
-    let new_secret = Secret::new(&owner, &category, &name).await;
+pub async fn add_user_secret(category: SecretCategory, name: String) {
+    let principal = get_caller();
+    let new_secret = Secret::new(&principal, &category, &name).await;
     MASTERVAULT.with(|ms: &RefCell<MasterVault>| {
         let mut master_vault = ms.borrow_mut();
-        master_vault.add_secret(&owner, &new_secret);
+        master_vault.add_secret(&principal, &new_secret);
     });
 }
 
 #[ic_cdk_macros::update]
 #[candid_method(update)]
-pub fn update_user_secret(owner: UserID, secret: Secret) {
+pub fn update_user_secret(secret: Secret) {
+    let principal = get_caller();
     MASTERVAULT.with(|ms: &RefCell<MasterVault>| {
         let mut master_vault = ms.borrow_mut();
-        master_vault.update_secret(&owner, &secret);
+        master_vault.update_secret(&principal, &secret);
     });
 }
 

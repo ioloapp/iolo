@@ -1,10 +1,11 @@
 import { createSlice } from '@reduxjs/toolkit'
 
-export const loginSlice = createSlice({
+export const userSlice = createSlice({
     name: 'user',
     initialState: {
         isLoggedIn: false,
         principal: null,
+        hasAccount: false,
     },
     reducers: {
         logIn: (state, action) => {
@@ -19,10 +20,13 @@ export const loginSlice = createSlice({
             state.isLoggedIn = false;
             state.principal = null;
         },
+        setAccountState: (state, action) => {
+            state.hasAccount = action.payload;
+        }
     },
 })
 
 // Action creators are generated for each case reducer function
-export const { logIn, logOut } = loginSlice.actions;
+export const { logIn, logOut, setAccountState } = userSlice.actions;
 
-export default loginSlice.reducer;
+export default userSlice.reducer;

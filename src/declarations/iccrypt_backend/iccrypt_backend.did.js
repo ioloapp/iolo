@@ -35,13 +35,9 @@ export const idlFactory = ({ IDL }) => {
     'date_modified' : IDL.Nat64,
   });
   return IDL.Service({
-    'add_user_secret' : IDL.Func(
-        [IDL.Principal, SecretCategory, IDL.Text],
-        [],
-        [],
-      ),
-    'create_user' : IDL.Func([IDL.Principal], [Result], []),
-    'delete_user' : IDL.Func([IDL.Principal], [], []),
+    'add_user_secret' : IDL.Func([SecretCategory, IDL.Text], [], []),
+    'create_user' : IDL.Func([], [Result], []),
+    'delete_user' : IDL.Func([], [], []),
     'get_decryption_key_from' : IDL.Func(
         [IDL.Principal],
         [IDL.Opt(IDL.Vec(IDL.Nat8))],
@@ -52,14 +48,10 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Opt(IDL.Vec(IDL.Nat8))],
         [],
       ),
-    'get_user_vault' : IDL.Func(
-        [IDL.Principal],
-        [IDL.Opt(UserVault)],
-        ['query'],
-      ),
+    'get_user_vault' : IDL.Func([], [IDL.Opt(UserVault)], ['query']),
     'give_me_a_new_uuid' : IDL.Func([], [IDL.Text], []),
-    'is_user_vault_existing' : IDL.Func([IDL.Principal], [IDL.Bool], ['query']),
-    'update_user_secret' : IDL.Func([IDL.Principal, Secret], [], []),
+    'is_user_vault_existing' : IDL.Func([], [IDL.Bool], ['query']),
+    'update_user_secret' : IDL.Func([Secret], [], []),
     'what_time_is_it' : IDL.Func([], [IDL.Nat64], ['query']),
     'who_am_i' : IDL.Func([], [IDL.Text], ['query']),
   });
