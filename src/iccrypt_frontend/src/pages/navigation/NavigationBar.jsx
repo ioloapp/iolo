@@ -7,6 +7,8 @@ import DrawerContent from './DrawerContent';
 import { AuthClient } from "@dfinity/auth-client";
 import { drawerWidth } from '../../config/config';
 import { Outlet } from 'react-router-dom';
+import { getActor } from '../../utils/backend';
+import { setAccountState } from '../../redux/userSlice';
 
 function NavigationBar(props) {
     // See https://github.com/gabrielnic/dfinity-react
@@ -60,6 +62,11 @@ function NavigationBar(props) {
         await authClient.login({
             onSuccess: async () => {
                 dispatch(logIn(authClient.getIdentity().getPrincipal().toText()));
+
+                // Check if user account is existing (to control which drawers are enabled)
+                let actor = await getActor();
+                let isUserVaultExisting = await actor.is_user_vault_existing();
+                dispatch(setAccountState(isUserVaultExisting));
             },
             identityProvider: process.env.II_URL,
             maxTimeToLive: BigInt(expiry * 1000000)
