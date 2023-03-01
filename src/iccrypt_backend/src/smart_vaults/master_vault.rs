@@ -279,7 +279,6 @@ mod tests {
         );
 
         let mut secret = Secret::new(
-            owner.id(),
             &SecretCategory::Password,
             &String::from("my-super-secret"),
         )

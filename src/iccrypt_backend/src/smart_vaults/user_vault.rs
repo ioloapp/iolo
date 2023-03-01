@@ -103,7 +103,6 @@ mod tests {
 
         // Add secret to user_vault
         let mut secret: Secret = Secret::new(
-            &user.id(),
             &SecretCategory::Password,
             &String::from("my-first-secret"),
         )

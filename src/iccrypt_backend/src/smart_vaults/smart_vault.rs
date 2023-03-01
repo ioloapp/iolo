@@ -80,7 +80,7 @@ pub fn delete_user() {
 #[candid_method(update)]
 pub async fn add_user_secret(category: SecretCategory, name: String) {
     let principal = get_caller();
-    let new_secret = Secret::new(&principal, &category, &name).await;
+    let new_secret = Secret::new(&category, &name).await;
     MASTERVAULT.with(|ms: &RefCell<MasterVault>| {
         let mut master_vault = ms.borrow_mut();
         master_vault.add_secret(&principal, &new_secret);
