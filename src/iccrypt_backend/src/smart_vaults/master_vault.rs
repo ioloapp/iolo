@@ -61,7 +61,7 @@ impl MasterVault {
             let uv = self
                 .user_vaults()
                 .get(owner)
-                .ok_or(SmartVaultErr::UserVaultCreationFailed(owner.to_string()))?;
+                .ok_or_else(|| SmartVaultErr::UserVaultCreationFailed(owner.to_string()))?;
             Ok(uv)
         }
     }
@@ -278,11 +278,8 @@ mod tests {
             user_vault.secrets().len()
         );
 
-        let mut secret = Secret::new(
-            &SecretCategory::Password,
-            &String::from("my-super-secret"),
-        )
-        .await;
+        let mut secret =
+            Secret::new(&SecretCategory::Password, &String::from("my-super-secret")).await;
 
         master_vault.add_secret(owner.id(), &secret);
         assert_eq!(

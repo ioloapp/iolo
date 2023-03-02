@@ -2,9 +2,11 @@ use std::fmt::Display;
 
 use candid::CandidType;
 
-#[derive(Debug, CandidType)]
+#[derive(Debug, CandidType, PartialEq, Eq)]
 pub enum SmartVaultErr {
     UserAlreadyExists(String),
+    UserDoesNotExist(String),
+    UserDeletionFailed(String),
     UserVaultAlreadyExists(String),
     UserVaultCreationFailed(String),
 }
@@ -14,6 +16,16 @@ impl Display for SmartVaultErr {
         match self {
             SmartVaultErr::UserAlreadyExists(user) => {
                 write!(f, "The following user already exists: {}", user)
+            }
+            SmartVaultErr::UserDoesNotExist(user) => {
+                write!(f, "There is no user for the following principal {}", user)
+            }
+            SmartVaultErr::UserDeletionFailed(user) => {
+                write!(
+                    f,
+                    "Failed to delete the user with the following principal: {}",
+                    user
+                )
             }
             SmartVaultErr::UserVaultAlreadyExists(user) => write!(
                 f,

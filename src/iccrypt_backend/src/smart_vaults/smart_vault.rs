@@ -5,14 +5,13 @@ use candid::candid_method;
 use ic_cdk::{post_upgrade, pre_upgrade, storage};
 
 use crate::common::error::SmartVaultErr;
-use crate::common::user::{User, UserID};
+use crate::common::user::{self, User, UserID};
+use crate::smart_vaults::user_registry::UserRegistry;
 use crate::utils::caller::get_caller;
 
 use super::master_vault::MasterVault;
 use super::secret::{Secret, SecretCategory};
 use super::user_vault::UserVault;
-
-pub type UserRegistry = BTreeMap<UserID, User>;
 
 thread_local! {
     // Master_vault holding all the user vaults
@@ -27,13 +26,23 @@ thread_local! {
 pub fn create_user() -> Result<User, SmartVaultErr> {
     let principal = get_caller();
     let new_user = User::new(&principal);
-    if let Some(_) = USER_REGISTRY.with(|ur: &RefCell<UserRegistry>| {
-        let mut user_registry = ur.borrow_mut();
-        user_registry.insert(principal, new_user.clone())
-    }) {
-        // The user already exists
-        return Err(SmartVaultErr::UserAlreadyExists(principal.to_string()));
-    }
+    // if let Ok(_) = USER_REGISTRY.with(|ur: &RefCell<UserRegistry>| {
+    //     let mut user_registry = ur.borrow_mut();
+    //     user_registry.create_new_user(&principal)
+    // }) {
+    //     // The user already exists
+    //     return Err(SmartVaultErr::UserAlreadyExists(principal.to_string()));
+    // }
+
+    USER_REGISTRY.with(
+        |ur: &RefCell<UserRegistry>| -> Result<User, SmartVaultErr> {
+            let mut user_registry = ur.borrow_mut();
+            match user_registry.create_new_user(&principal) {
+                Ok(u) => Ok(u.clone()),
+                Err(e) => Err(e),
+            }
+        },
+    )?;
 
     // Let's create a vault for the user
     MASTERVAULT.with(|ms: &RefCell<MasterVault>| -> Result<(), SmartVaultErr> {
@@ -72,7 +81,7 @@ pub fn delete_user() {
     // delete the user
     USER_REGISTRY.with(|ur: &RefCell<UserRegistry>| {
         let mut user_registry = ur.borrow_mut();
-        user_registry.remove(&principal);
+        user_registry.delete_user(&principal);
     });
 }
 

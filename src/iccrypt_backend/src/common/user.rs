@@ -4,7 +4,7 @@ use serde::Serialize;
 pub type UserID = Principal;
 use crate::utils::time;
 
-#[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
+#[derive(Debug, CandidType, Deserialize, Serialize, Clone, Copy)]
 pub struct User {
     id: UserID,
     date_created: u64,
