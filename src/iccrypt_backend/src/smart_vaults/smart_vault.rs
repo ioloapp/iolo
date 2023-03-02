@@ -1,11 +1,10 @@
 use std::cell::RefCell;
-use std::collections::BTreeMap;
 
 use candid::candid_method;
 use ic_cdk::{post_upgrade, pre_upgrade, storage};
 
 use crate::common::error::SmartVaultErr;
-use crate::common::user::{self, User, UserID};
+use crate::common::user::User;
 use crate::smart_vaults::user_registry::UserRegistry;
 use crate::utils::caller::get_caller;
 
@@ -31,7 +30,7 @@ pub fn create_user() -> Result<User, SmartVaultErr> {
         |ur: &RefCell<UserRegistry>| -> Result<User, SmartVaultErr> {
             let mut user_registry = ur.borrow_mut();
             match user_registry.create_new_user(&principal) {
-                Ok(u) => Ok(u.clone()),
+                Ok(u) => Ok(*u), // u is of type &User. User implements Copy
                 Err(e) => Err(e),
             }
         },
@@ -64,7 +63,7 @@ pub fn is_user_vault_existing() -> bool {
 
 #[ic_cdk_macros::update]
 #[candid_method(update)]
-pub fn delete_user() {
+pub fn delete_user() -> Result<User, SmartVaultErr> {
     let principal = get_caller();
     MASTERVAULT.with(|ms: &RefCell<MasterVault>| {
         let mut master_vault = ms.borrow_mut();
@@ -74,8 +73,8 @@ pub fn delete_user() {
     // delete the user
     USER_REGISTRY.with(|ur: &RefCell<UserRegistry>| {
         let mut user_registry = ur.borrow_mut();
-        user_registry.delete_user(&principal);
-    });
+        user_registry.delete_user(&principal)
+    })
 }
 
 #[ic_cdk_macros::update]
