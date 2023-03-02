@@ -26,13 +26,6 @@ thread_local! {
 pub fn create_user() -> Result<User, SmartVaultErr> {
     let principal = get_caller();
     let new_user = User::new(&principal);
-    // if let Ok(_) = USER_REGISTRY.with(|ur: &RefCell<UserRegistry>| {
-    //     let mut user_registry = ur.borrow_mut();
-    //     user_registry.create_new_user(&principal)
-    // }) {
-    //     // The user already exists
-    //     return Err(SmartVaultErr::UserAlreadyExists(principal.to_string()));
-    // }
 
     USER_REGISTRY.with(
         |ur: &RefCell<UserRegistry>| -> Result<User, SmartVaultErr> {
