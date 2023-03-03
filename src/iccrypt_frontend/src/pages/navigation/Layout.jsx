@@ -10,7 +10,7 @@ import { Outlet } from 'react-router-dom';
 import { getActor } from '../../utils/backend';
 import { setAccountState } from '../../redux/userSlice';
 
-function NavigationBar(props) {
+function Layout(props) {
     // See https://github.com/gabrielnic/dfinity-react
     // See https://github.com/dfinity/examples/tree/master/motoko/internet_identity_integration for internet identity integration
 
@@ -186,4 +186,4 @@ function NavigationBar(props) {
     );
 }
 
-export default NavigationBar;
+export default Layout;

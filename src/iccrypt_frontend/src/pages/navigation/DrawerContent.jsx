@@ -25,7 +25,7 @@ function DrawerContent() {
                         <ListItemText primary="Home" />
                     </ListItemButton>
                 </ListItem>
-                {isLoggedIn && isAccountExisting &&
+                {isLoggedIn && isAccountExisting && 
                     <ListItem key="Vaults" disablePadding>
                         <ListItemButton onClick={() => navigate('/vault')}>
                             <ListItemIcon>

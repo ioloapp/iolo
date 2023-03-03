@@ -1,7 +1,7 @@
 import React from "react";
 import SmartVault from "./pages/SmartVault";
 import Settings from "./pages/Settings";
-import NavigationBar from "./pages/navigation/NavigationBar";
+import Layout from "./pages/navigation/Layout";
 import Home from './pages/Home';
 import {
     createBrowserRouter,
@@ -12,7 +12,7 @@ import {
 
 const router = createBrowserRouter(
     createRoutesFromElements(
-        <Route path="/" element={<NavigationBar />}>
+        <Route path="/" element={<Layout />}>
             <Route index element={<Home />} />
             <Route path="/home" element={<Home />} />
             <Route path="/vault" element={<SmartVault />} />
