@@ -8,7 +8,6 @@ pub mod utils;
 // for the candid file creation
 use crate::common::error::SmartVaultErr;
 use crate::common::user::User;
-use crate::common::user::UserID;
 use crate::smart_vaults::secret::Secret;
 use crate::smart_vaults::secret::SecretCategory;
 use crate::smart_vaults::user_vault::UserVault;

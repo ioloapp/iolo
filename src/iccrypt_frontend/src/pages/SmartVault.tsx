@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+import * as React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {
     Box, Typography, List, ListItem, IconButton, ListItemText, TextField, Button, Select, MenuItem
@@ -11,7 +12,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import Avatar from '@mui/material/Avatar';
 
-
+import type { Secret } from '../../../declarations/iccrypt_backend/iccrypt_backend.did';
 
 const SmartVault = () => {
 
@@ -39,7 +40,7 @@ const SmartVault = () => {
     }
 
     function handleChange(e) {
-        setValue({ input: e.target.value });
+        //setValue({ input: e.target.value });
         console.log(e.target.value);
     }
 

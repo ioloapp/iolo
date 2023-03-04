@@ -22,7 +22,7 @@ thread_local! {
 
 #[ic_cdk_macros::update]
 #[candid_method(update)]
-pub fn create_user() -> Result<User, SmartVaultErr> {
+pub async fn create_user() -> Result<User, SmartVaultErr> {
     let principal = get_caller();
     let new_user = User::new(&principal);
 
@@ -39,7 +39,7 @@ pub fn create_user() -> Result<User, SmartVaultErr> {
     // Let's create a vault for the user
     MASTERVAULT.with(|ms: &RefCell<MasterVault>| -> Result<(), SmartVaultErr> {
         let mut master_vault = ms.borrow_mut();
-        master_vault.create_user_vault(&principal)?;
+        master_vault.create_user_vault().await;
         Ok(())
     })?;
 
@@ -48,54 +48,89 @@ pub fn create_user() -> Result<User, SmartVaultErr> {
 
 #[ic_cdk_macros::query]
 #[candid_method(query)]
-pub fn get_user_vault() -> Option<UserVault> {
+pub fn get_user_vault() -> Result<UserVault, SmartVaultErr> {
     let principal = get_caller();
-    MASTERVAULT
-        .with(|mv: &RefCell<MasterVault>| mv.borrow_mut().get_user_vault(&principal).cloned())
-}
 
-#[ic_cdk_macros::query]
-#[candid_method(query)]
-pub fn is_user_vault_existing() -> bool {
-    let principal = get_caller();
-    MASTERVAULT.with(|mv: &RefCell<MasterVault>| mv.borrow().is_user_vault_existing(&principal))
+    // Get vault_id of caller
+    let user = USER_REGISTRY.with(|ur: &RefCell<UserRegistry>| {
+        let user_registry = ur.borrow();
+        user_registry.get_user(&principal)
+    })?;
+    let user_vault_id = user.user_vault_id();
+    
+    MASTERVAULT
+        .with(|mv: &RefCell<MasterVault>| mv.borrow_mut().get_user_vault(&user_vault_id).cloned())
 }
 
 #[ic_cdk_macros::update]
 #[candid_method(update)]
-pub fn delete_user() -> Result<User, SmartVaultErr> {
+pub fn delete_user() -> Result<(), SmartVaultErr> {
     let principal = get_caller();
+
+    // Get vault_id of caller
+    let user = USER_REGISTRY.with(|ur: &RefCell<UserRegistry>| {
+        let user_registry = ur.borrow();
+        user_registry.get_user(&principal)
+    })?;
+    let user_vault_id = user.user_vault_id();
+
+
     MASTERVAULT.with(|ms: &RefCell<MasterVault>| {
         let mut master_vault = ms.borrow_mut();
-        master_vault.remove_user_vault(&principal);
+        master_vault.remove_user_vault(&user_vault_id);
     });
 
     // delete the user
     USER_REGISTRY.with(|ur: &RefCell<UserRegistry>| {
         let mut user_registry = ur.borrow_mut();
-        user_registry.delete_user(&principal)
-    })
+        user_registry.delete_user(&principal);
+    });
+    Ok(())
 }
 
 #[ic_cdk_macros::update]
 #[candid_method(update)]
-pub async fn add_user_secret(category: SecretCategory, name: String) {
+pub async fn add_user_secret(category: SecretCategory, name: String) -> Result<(), SmartVaultErr> {
     let principal = get_caller();
+
+    // Get vault_id of caller
+    let user = USER_REGISTRY.with(|ur: &RefCell<UserRegistry>| {
+        let user_registry = ur.borrow();
+        user_registry.get_user(&principal).cloned()
+    });
+
+
+    let u = match user {
+        Err(e) => return Err(e),
+        Ok(u) => u,
+    };
+    let user_vault_id = u.user_vault_id();
+
     let new_secret = Secret::new(&category, &name).await;
     MASTERVAULT.with(|ms: &RefCell<MasterVault>| {
         let mut master_vault = ms.borrow_mut();
-        master_vault.add_secret(&principal, &new_secret);
+        master_vault.add_secret(&user_vault_id, &new_secret);
     });
+    Ok(())
 }
 
 #[ic_cdk_macros::update]
 #[candid_method(update)]
-pub fn update_user_secret(secret: Secret) {
+pub fn update_user_secret(secret: Secret) -> Result<(), SmartVaultErr> {
     let principal = get_caller();
+
+    // Get vault_id of caller
+    let user = USER_REGISTRY.with(|ur: &RefCell<UserRegistry>| {
+        let user_registry = ur.borrow();
+        user_registry.get_user(&principal)
+    })?;
+    let user_vault_id = user.user_vault_id();
+    
     MASTERVAULT.with(|ms: &RefCell<MasterVault>| {
         let mut master_vault = ms.borrow_mut();
-        master_vault.update_secret(&principal, &secret);
+        master_vault.update_secret(&user_vault_id, &secret);
     });
+    Ok(())
 }
 
 #[pre_upgrade]

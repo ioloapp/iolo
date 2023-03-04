@@ -3,32 +3,32 @@ use serde::Serialize;
 
 use std::collections::BTreeMap;
 
-use super::secret::{Secret, SecretID};
-use crate::common::user::UserID;
+use super::secret::Secret;
 use crate::utils::time;
+use crate::utils::random;
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct UserVault {
-    owner: UserID,
+    id: String,
     date_created: u64,
     date_modified: u64,
-    secrets: BTreeMap<SecretID, Secret>,
+    secrets: BTreeMap<String, Secret>,
 }
 
 impl UserVault {
-    pub fn new(owner: &UserID) -> Self {
+    pub async fn new() -> Self {
         let now: u64 = time::get_current_time();
-
+        let id = random::get_new_uuid().await;
         Self {
-            owner: *owner,
+            id,
             date_created: now,
             date_modified: now,
             secrets: BTreeMap::new(),
         }
     }
 
-    pub fn owner(&self) -> &UserID {
-        &self.owner
+    pub fn id(&self) -> &String {
+        &self.id
     }
 
     pub fn date_created(&self) -> &u64 {
@@ -39,7 +39,7 @@ impl UserVault {
         &self.date_modified
     }
 
-    pub fn secrets(&self) -> &BTreeMap<SecretID, Secret> {
+    pub fn secrets(&self) -> &BTreeMap<String, Secret> {
         &self.secrets
     }
 
@@ -48,7 +48,7 @@ impl UserVault {
         self.date_modified = time::get_current_time();
     }
 
-    pub fn remove_secret(&mut self, secret_id: &SecretID) {
+    pub fn remove_secret(&mut self, secret_id: &String) {
         self.secrets.remove(secret_id);
         self.date_modified = time::get_current_time();
     }
@@ -63,24 +63,17 @@ impl UserVault {
 mod tests {
 
     use super::*;
-    use crate::common::user::User;
     use crate::smart_vaults::secret::SecretCategory;
     use std::thread;
 
     #[tokio::test]
     async fn utest_user_vault() {
         // Create empty user_vault
-        let user: User = User::new_random_with_seed(1);
         let before = time::get_current_time();
         thread::sleep(std::time::Duration::from_millis(100)); // Sleep 100 milliseconds to ensure that user_vault has a different creation date
-        let mut user_vault: UserVault = UserVault::new(&user.id());
+        let mut user_vault: UserVault = UserVault::new().await;
 
-        assert_eq!(
-            user_vault.owner(),
-            user.id(),
-            "Wrong owner: {}",
-            user_vault.owner()
-        );
+        assert_eq!(user_vault.id().len(), 36);
         assert!(
             user_vault.date_created() > &before,
             "date_created: {} must be greater than before: {}",

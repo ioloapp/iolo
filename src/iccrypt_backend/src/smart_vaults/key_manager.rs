@@ -1,7 +1,6 @@
 use candid::candid_method;
 
 use crate::{
-    common::user::UserID,
     utils::threshold_key_derivation::derive_encryption_key,
     utils::{caller::get_caller, threshold_key_derivation::derive_decryption_key},
 };
@@ -22,7 +21,7 @@ const MASTER_KEY_ID: i32 = 1;
 // derivation_id="iccrypt_backend || alice || bob".
 #[ic_cdk_macros::update]
 #[candid_method(update)]
-pub async fn get_encryption_key_for(heir: UserID) -> Option<Vec<u8>> {
+pub async fn get_encryption_key_for(heir: String) -> Option<Vec<u8>> {
     let mut derivation_id: String = get_caller().to_string();
     derivation_id.push_str(&heir.to_string());
     derive_encryption_key(MASTER_KEY_ID, &derivation_id).await
@@ -41,7 +40,7 @@ pub async fn get_encryption_key_for(heir: UserID) -> Option<Vec<u8>> {
 // derivation_id="iccrypt_backend || alice || bob".
 #[ic_cdk_macros::update]
 #[candid_method(update)]
-pub async fn get_decryption_key_from(testator: UserID) -> Option<Vec<u8>> {
+pub async fn get_decryption_key_from(testator: String) -> Option<Vec<u8>> {
     let mut derivation_id: String = testator.to_string();
     derivation_id.push_str(&get_caller().to_string());
     derive_decryption_key(MASTER_KEY_ID, &derivation_id).await

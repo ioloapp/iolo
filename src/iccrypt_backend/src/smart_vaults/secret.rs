@@ -1,12 +1,8 @@
 use candid::{CandidType, Deserialize};
 use serde::Serialize;
 
-use crate::common::types::Ciphertext;
-
 use crate::utils::random;
 use crate::utils::time;
-
-pub type SecretID = String;
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone, Copy, PartialEq, Eq)]
 pub enum SecretCategory {
@@ -17,15 +13,15 @@ pub enum SecretCategory {
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct Secret {
-    id: SecretID,
+    id: String,
     date_created: u64,
     date_modified: u64,
     category: SecretCategory,
-    name: Ciphertext,
-    username: Option<Ciphertext>,
-    password: Option<Ciphertext>,
-    url: Option<Ciphertext>,
-    notes: Option<Ciphertext>,
+    name: String,
+    username: Option<String>,
+    password: Option<String>,
+    url: Option<String>,
+    notes: Option<String>,
 }
 
 impl Secret {
@@ -76,7 +72,7 @@ impl Secret {
         self.date_modified = time::get_current_time();
     }
 
-    pub fn name(&self) -> &Ciphertext {
+    pub fn name(&self) -> &String {
         &self.name
     }
 
@@ -85,7 +81,7 @@ impl Secret {
         self.date_modified = time::get_current_time();
     }
 
-    pub fn username(&self) -> &Option<Ciphertext> {
+    pub fn username(&self) -> &Option<String> {
         &self.username
     }
 
@@ -94,7 +90,7 @@ impl Secret {
         self.date_modified = time::get_current_time();
     }
 
-    pub fn password(&self) -> &Option<Ciphertext> {
+    pub fn password(&self) -> &Option<String> {
         &self.password
     }
 
@@ -103,7 +99,7 @@ impl Secret {
         self.date_modified = time::get_current_time();
     }
 
-    pub fn url(&self) -> &Option<Ciphertext> {
+    pub fn url(&self) -> &Option<String> {
         &self.url
     }
 
@@ -112,7 +108,7 @@ impl Secret {
         self.date_modified = time::get_current_time();
     }
 
-    pub fn notes(&self) -> &Option<Ciphertext> {
+    pub fn notes(&self) -> &Option<String> {
         &self.notes
     }
 

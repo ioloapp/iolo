@@ -7,8 +7,8 @@ pub enum SmartVaultErr {
     UserAlreadyExists(String),
     UserDoesNotExist(String),
     UserDeletionFailed(String),
-    UserVaultAlreadyExists(String),
     UserVaultCreationFailed(String),
+    UserVaultDoesNotExist(String),
 }
 
 impl Display for SmartVaultErr {
@@ -27,16 +27,14 @@ impl Display for SmartVaultErr {
                     user
                 )
             }
-            SmartVaultErr::UserVaultAlreadyExists(user) => write!(
-                f,
-                "User vault already exists for the following user: {}",
-                user
-            ),
             SmartVaultErr::UserVaultCreationFailed(user) => write!(
                 f,
                 "Failed creating a vault for the following user: {}",
                 user
             ),
+            SmartVaultErr::UserVaultDoesNotExist(id) => {
+                write!(f, "Failed to read vault with the following id: {}", id)
+            }
         }
     }
 }
