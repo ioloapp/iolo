@@ -1,12 +1,23 @@
-import { createSlice } from '@reduxjs/toolkit'
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import type { RootState } from './store';
+
+// Define a type for the slice state
+interface UserState {
+    isLoggedIn: boolean,
+    principal: String,
+    hasAccount: boolean,
+}
+
+// Define the initial state using that type
+const initialState: UserState = {
+    isLoggedIn: false,
+    principal: null,
+    hasAccount: false,
+}
 
 export const userSlice = createSlice({
     name: 'user',
-    initialState: {
-        isLoggedIn: false,
-        principal: null,
-        hasAccount: false,
-    },
+    initialState,
     reducers: {
         logIn: (state, action) => {
             // Redux Toolkit allows us to write "mutating" logic in reducers. It
@@ -20,13 +31,13 @@ export const userSlice = createSlice({
             state.isLoggedIn = false;
             state.principal = null;
         },
-        setAccountState: (state, action) => {
+        hasAccount: (state, action: PayloadAction<boolean>) => {
             state.hasAccount = action.payload;
         }
     },
 })
 
 // Action creators are generated for each case reducer function
-export const { logIn, logOut, setAccountState } = userSlice.actions;
+export const { logIn, logOut, hasAccount } = userSlice.actions;
 
 export default userSlice.reducer;

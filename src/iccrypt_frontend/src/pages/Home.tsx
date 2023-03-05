@@ -1,34 +1,29 @@
-import React, { useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import * as React from 'react';
+
+// Redux
+import { useAppSelector, useAppDispatch } from '../redux/hooks'; // for typescript
+import { hasAccount } from '../redux/userSlice';
+
+// MUI
 import {
     Box, Typography, TextField, Button
 } from '@mui/material';
+
+// IC
 import { getActor } from '../utils/backend';
-import { setAccountState } from '../redux/userSlice';
+
 
 const Home = () => {
 
-    const dispatch = useDispatch();
-    const isLoggedIn = useSelector((state) => state.user.isLoggedIn);
-    const principal = useSelector((state) => state.user.principal);
-    const isAccountExisting = useSelector((state) => state.user.hasAccount);
-
-    useEffect(() => {
-        if (isLoggedIn) {
-            checkUserVault();
-        }
-    }, []);
-
-    async function checkUserVault() {
-        let actor = await getActor();
-        let isUserVaultExisting = await actor.is_user_vault_existing();
-        dispatch(setAccountState(isUserVaultExisting));
-    }
+    const dispatch = useAppDispatch();
+    const isLoggedIn = useAppSelector((state) => state.user.isLoggedIn);
+    const principal = useAppSelector((state) => state.user.principal);
+    const isAccountExisting = useAppSelector((state) => state.user.hasAccount);
 
     async function createUser() {
         let actor = await getActor();
         await actor.create_user();
-        dispatch(setAccountState(true));
+        dispatch(hasAccount(true));
     }
 
     return (
@@ -46,7 +41,6 @@ const Home = () => {
                             <Typography paragraph>
                                 It seems you have not yet created your IC Crypt account. You wanna go for one?
                             </Typography>
-                            <TextField size="small" label="Name" variant="filled" />
                             <Button variant="contained" sx={{ ml: 2, mt: 1 }} onClick={() => {
                                 createUser();
                             }}>

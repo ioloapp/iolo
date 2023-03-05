@@ -1,16 +1,20 @@
 import * as React from 'react';
 import { useNavigate } from "react-router-dom";
+
+// Redux
+import { useAppSelector } from '../../redux/hooks'; // for typescript
+
+// MUI
 import { Home as HomeIcon, LockClock as LockClockIcon, Settings as SettingsIcon } from '@mui/icons-material';
 import {
-    List, ListItem, ListItemButton, ListItemIcon, ListItemText, Divider, Toolbar, Box, InboxIcon
+    List, ListItem, ListItemButton, ListItemIcon, ListItemText, Divider, Toolbar, Box
 } from '@mui/material'
-import { useSelector } from 'react-redux';
 
 function DrawerContent() {
 
     let navigate = useNavigate();
-    const isLoggedIn = useSelector((state) => state.user.isLoggedIn);
-    const isAccountExisting = useSelector((state) => state.user.hasAccount);
+    const isLoggedIn = useAppSelector((state) => state.user.isLoggedIn);
+    const hasAccount = useAppSelector((state) => state.user.hasAccount);
 
     return (
         <Box>
@@ -25,7 +29,7 @@ function DrawerContent() {
                         <ListItemText primary="Home" />
                     </ListItemButton>
                 </ListItem>
-                {isLoggedIn && isAccountExisting && 
+                {isLoggedIn && hasAccount &&
                     <ListItem key="Vaults" disablePadding>
                         <ListItemButton onClick={() => navigate('/vault')}>
                             <ListItemIcon>

@@ -1,14 +1,24 @@
-import React, { useEffect, useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import * as React from 'react';
+import { useEffect, useState } from 'react';
+import { Outlet, useNavigate } from 'react-router-dom';
+
+// Redux
+import { useAppSelector, useAppDispatch } from '../../redux/hooks'; // for typescript
+import { hasAccount } from '../../redux/userSlice';
 import { logIn, logOut } from '../../redux/userSlice';
+
+// MUI
 import { AppBar, Box, Drawer, IconButton, Toolbar, Typography, Button, Menu, MenuItem, CssBaseline } from '@mui/material/';
 import { Menu as MenuIcon, AccountCircle } from '@mui/icons-material';
-import DrawerContent from './DrawerContent';
-import { AuthClient } from "@dfinity/auth-client";
+
+// Components
 import { drawerWidth } from '../../config/config';
-import { Outlet } from 'react-router-dom';
+import DrawerContent from './DrawerContent';
+
+// IC
+import { AuthClient } from "@dfinity/auth-client";
 import { getActor } from '../../utils/backend';
-import { setAccountState } from '../../redux/userSlice';
+
 
 function Layout(props) {
     // See https://github.com/gabrielnic/dfinity-react
@@ -18,6 +28,8 @@ function Layout(props) {
     const [mobileOpen, setMobileOpen] = useState(false);
     const [anchorEl, setAnchorEl] = useState(null);
 
+    let navigate = useNavigate();
+
     const handleMenu = (event) => {
         setAnchorEl(event.currentTarget);
     };
@@ -26,9 +38,9 @@ function Layout(props) {
         setAnchorEl(null);
     };
 
-    const dispatch = useDispatch();
-    const isLoggedIn = useSelector((state) => state.user.isLoggedIn);
-    const principal = useSelector((state) => state.user.principal);
+    const dispatch = useAppDispatch();
+    const isLoggedIn = useAppSelector((state) => state.user.isLoggedIn);
+    const principal = useAppSelector((state) => state.user.principal);
 
     const handleDrawerToggle = () => {
         setMobileOpen(!mobileOpen);
@@ -36,7 +48,8 @@ function Layout(props) {
 
     useEffect(() => {
         isAuth();
-    }, [principal]);
+        checkUserVault();
+    }, []);
 
     const isAuth = async () => {
         const authClient = await AuthClient.create();
@@ -48,11 +61,19 @@ function Layout(props) {
         }
     }
 
+    async function checkUserVault() {
+        let actor = await getActor();
+        //let isUserVaultExisting = await actor.is_user_vault_existing();
+        let isUserVaultExisting = true;
+        dispatch(hasAccount(isUserVaultExisting));
+    }
+
     async function handleLogout() {
         const authClient = await AuthClient.create();
         await authClient.logout();
         dispatch(logOut());
         setAnchorEl(null);  // Close profile menu
+        navigate('/home');
     }
 
     async function handleLogin() {
@@ -66,7 +87,7 @@ function Layout(props) {
                 // Check if user account is existing (to control which drawers are enabled)
                 let actor = await getActor();
                 let isUserVaultExisting = await actor.is_user_vault_existing();
-                dispatch(setAccountState(isUserVaultExisting));
+                dispatch(hasAccount(isUserVaultExisting));
             },
             identityProvider: process.env.II_URL,
             maxTimeToLive: BigInt(expiry * 1000000)
