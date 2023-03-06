@@ -6,7 +6,7 @@ use crate::common::{error::SmartVaultErr, uuid::UUID};
 
 use super::{secret::Secret, user_vault::UserVault};
 
-#[derive(CandidType, Deserialize, Clone)]
+#[derive(CandidType, Deserialize, Clone, Debug)]
 pub struct MasterVault {
     user_vaults: BTreeMap<UUID, UserVault>,
 }

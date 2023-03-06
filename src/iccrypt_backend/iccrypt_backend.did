@@ -1,10 +1,12 @@
-type Result = variant { Ok : User; Err : SmartVaultErr };
+type Result = variant { Ok : text; Err : SmartVaultErr };
+type Result_1 = variant { Ok : User; Err : SmartVaultErr };
+type Result_2 = variant { Ok; Err : SmartVaultErr };
+type Result_3 = variant { Ok : UserVault; Err : SmartVaultErr };
 type Secret = record {
-  id : text;
+  id : nat;
   url : opt text;
   username : opt text;
   date_created : nat64;
-  owner : principal;
   password : opt text;
   name : text;
   notes : opt text;
@@ -14,31 +16,31 @@ type Secret = record {
 type SecretCategory = variant { Password; Note; Document };
 type SmartVaultErr = variant {
   UserAlreadyExists : text;
-  UserVaultAlreadyExists : text;
+  UserDeletionFailed : text;
   UserVaultCreationFailed : text;
+  UserDoesNotExist : text;
+  UserVaultDoesNotExist : text;
 };
 type User = record {
   id : principal;
   date_created : nat64;
   date_last_login : opt nat64;
+  user_vault_id : nat;
   date_modified : nat64;
 };
 type UserVault = record {
+  id : nat;
   date_created : nat64;
-  owner : principal;
-  secrets : vec record { text; Secret };
+  secrets : vec record { nat; Secret };
   date_modified : nat64;
 };
 service : {
-  add_user_secret : (SecretCategory, text) -> ();
-  create_user : () -> (Result);
-  delete_user : () -> ();
-  get_decryption_key_from : (principal) -> (opt vec nat8);
-  get_encryption_key_for : (principal) -> (opt vec nat8);
-  get_user_vault : () -> (opt UserVault) query;
-  give_me_a_new_uuid : () -> (text);
+  add_user_secret : (SecretCategory, text) -> (Result);
+  create_user : () -> (Result_1);
+  delete_user : () -> (Result_2);
+  get_decryption_key_from : (text) -> (opt vec nat8);
+  get_encryption_key_for : (text) -> (opt vec nat8);
+  get_user_vault : () -> (Result_3) query;
   is_user_vault_existing : () -> (bool) query;
-  update_user_secret : (Secret) -> ();
-  what_time_is_it : () -> (nat64) query;
-  who_am_i : () -> (text) query;
+  update_user_secret : (Secret) -> (Result_2);
 }

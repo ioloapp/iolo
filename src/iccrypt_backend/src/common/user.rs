@@ -10,18 +10,19 @@ pub struct User {
     date_created: u64,
     date_modified: u64,
     date_last_login: Option<u64>,
-    user_vault_id: UUID,
+    user_vault_id: UUID, // TODO make option
 }
 
 impl User {
     pub fn new(id: &Principal) -> Self {
         let now = time::get_current_time();
+
         Self {
             id: *id,
             date_created: now,
             date_modified: now,
             date_last_login: None,
-            user_vault_id: UUID::new(),
+            user_vault_id: UUID::new_empty(), // TODO: empty not okay. use None
         }
     }
 
@@ -31,6 +32,10 @@ impl User {
 
     pub fn user_vault_id(&self) -> &UUID {
         &self.user_vault_id
+    }
+
+    pub fn set_user_vault(&mut self, user_vault_id: UUID) {
+        self.user_vault_id = user_vault_id;
     }
 
     pub fn new_random_with_seed(seed: u8) -> User {

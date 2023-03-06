@@ -22,12 +22,11 @@ impl UserRegistry {
         }
     }
 
-    pub fn create_new_user(&mut self, user_id: &Principal) -> Result<&User, SmartVaultErr> {
-        let new_user = User::new(user_id);
-        if self.users.insert(*user_id, new_user).is_some() {
-            Err(SmartVaultErr::UserAlreadyExists(user_id.to_string()))
+    pub fn add_user(&mut self, user: User) -> Result<&User, SmartVaultErr> {
+        if self.users.insert(*user.id(), user).is_some() {
+            Err(SmartVaultErr::UserAlreadyExists(user.id().to_string()))
         } else {
-            self.get_user(user_id)
+            self.get_user(user.id())
         }
     }
 
@@ -48,7 +47,10 @@ impl UserRegistry {
 mod tests {
     use candid::Principal;
 
-    use crate::{common::error::SmartVaultErr, smart_vaults::user_registry::UserRegistry};
+    use crate::{
+        common::{error::SmartVaultErr, user::User},
+        smart_vaults::user_registry::UserRegistry,
+    };
 
     #[tokio::test]
     async fn utest_user_registry() {
@@ -61,12 +63,14 @@ mod tests {
             1, 2, 3, 4, 5, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         ]);
 
+        let new_user = User::new(&principal);
+
         let mut user_registry: UserRegistry = UserRegistry::new();
 
-        assert!(user_registry.create_new_user(&principal).is_ok());
+        assert!(user_registry.add_user(new_user).is_ok());
         // no duplicates
         assert_eq!(
-            user_registry.create_new_user(&principal).unwrap_err(),
+            user_registry.add_user(new_user).unwrap_err(),
             SmartVaultErr::UserAlreadyExists(principal.to_string())
         );
 
