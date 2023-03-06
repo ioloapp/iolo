@@ -20,62 +20,34 @@ import { AuthClient } from "@dfinity/auth-client";
 import { getActor } from '../../utils/backend';
 
 
-function Layout(props) {
+function Layout() {
     // See https://github.com/gabrielnic/dfinity-react
     // See https://github.com/dfinity/examples/tree/master/motoko/internet_identity_integration for internet identity integration
-
-    const { window } = props;
-    const [mobileOpen, setMobileOpen] = useState(false);
-    const [anchorEl, setAnchorEl] = useState(null);
-
-    let navigate = useNavigate();
-
-    const handleMenu = (event) => {
-        setAnchorEl(event.currentTarget);
-    };
-
-    const handleClose = () => {
-        setAnchorEl(null);
-    };
-
-    const dispatch = useAppDispatch();
-    const isLoggedIn = useAppSelector((state) => state.user.isLoggedIn);
-    const principal = useAppSelector((state) => state.user.principal);
-
-    const handleDrawerToggle = () => {
-        setMobileOpen(!mobileOpen);
-    };
 
     useEffect(() => {
         isAuth();
         checkUserVault();
     }, []);
+    let navigate = useNavigate();
+    const dispatch = useAppDispatch();
+    const isLoggedIn = useAppSelector((state) => state.user.isLoggedIn);
 
-    const isAuth = async () => {
-        const authClient = await AuthClient.create();
-        let isAuthenticated = await authClient.isAuthenticated();
-        if (isAuthenticated) {
-            dispatch(logIn(authClient.getIdentity().getPrincipal().toText()));
-        } else {
-            dispatch(logOut());
-        }
-    }
+    // Menu Drawer
+    const [drawerOpen, setDrawerOpen] = useState(false);
+    const handleDrawerToggle = () => {
+        setDrawerOpen(!drawerOpen); // Toggle open/close of drawer
+    };
 
-    async function checkUserVault() {
-        let actor = await getActor();
-        //let isUserVaultExisting = await actor.is_user_vault_existing();
-        let isUserVaultExisting = true;
-        dispatch(hasAccount(isUserVaultExisting));
-    }
+    // User Menu
+    const [anchorElement, setAnchorElement] = useState(null);
+    const openUserMenu = (event) => {
+        setAnchorElement(event.currentTarget);
+    };
+    const handleCloseUserMenu = () => {
+        setAnchorElement(null);
+    };
 
-    async function handleLogout() {
-        const authClient = await AuthClient.create();
-        await authClient.logout();
-        dispatch(logOut());
-        setAnchorEl(null);  // Close profile menu
-        navigate('/home');
-    }
-
+    // Login/Logout
     async function handleLogin() {
         const daysToAdd = 7;
         const expiry = Date.now() + (daysToAdd * 86400000);
@@ -94,7 +66,31 @@ function Layout(props) {
         });
     }
 
-    const container = window !== undefined ? () => window().document.body : undefined;
+    async function handleLogout() {
+        const authClient = await AuthClient.create();
+        await authClient.logout();
+        dispatch(logOut());
+        setAnchorElement(null);  // Close profile menu
+        navigate('/home');
+    }
+    
+   // IC
+    const isAuth = async () => {
+        const authClient = await AuthClient.create();
+        let isAuthenticated = await authClient.isAuthenticated();
+        if (isAuthenticated) {
+            dispatch(logIn(authClient.getIdentity().getPrincipal().toText()));
+        } else {
+            dispatch(logOut());
+        }
+    }
+
+    async function checkUserVault() {
+        let actor = await getActor();
+        //let isUserVaultExisting = await actor.is_user_vault_existing();
+        let isUserVaultExisting = true;
+        dispatch(hasAccount(isUserVaultExisting));
+    }
 
     return (
         <Box sx={{ display: 'flex' }}>
@@ -128,17 +124,13 @@ function Layout(props) {
                         <Box>
                             <IconButton
                                 size="large"
-                                aria-label="account of current user"
-                                aria-controls="menu-appbar"
-                                aria-haspopup="true"
-                                onClick={handleMenu}
+                                onClick={openUserMenu}
                                 color="inherit"
                             >
                                 <AccountCircle />
                             </IconButton>
                             <Menu
-                                id="menu-appbar"
-                                anchorEl={anchorEl}
+                                anchorEl={anchorElement}
                                 anchorOrigin={{
                                     vertical: 'top',
                                     horizontal: 'right',
@@ -148,8 +140,8 @@ function Layout(props) {
                                     vertical: 'top',
                                     horizontal: 'right',
                                 }}
-                                open={Boolean(anchorEl)}
-                                onClose={handleClose}
+                                open={Boolean(anchorElement)}
+                                onClose={handleCloseUserMenu}
                             >
                                 <MenuItem onClick={handleLogout}>Log out</MenuItem>
                             </Menu>
@@ -163,9 +155,8 @@ function Layout(props) {
             >
                 {/* The implementation can be swapped with js to avoid SEO duplication of links. */}
                 <Drawer
-                    container={container}
                     variant="temporary"
-                    open={mobileOpen}
+                    open={drawerOpen}
                     onClose={handleDrawerToggle}
                     ModalProps={{
                         keepMounted: true, // Better open performance on mobile.
