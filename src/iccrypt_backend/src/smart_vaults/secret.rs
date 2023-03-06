@@ -13,7 +13,7 @@ pub enum SecretCategory {
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct Secret {
-    id: String,
+    id: UUID,
     date_created: u64,
     date_modified: u64,
     category: SecretCategory,
@@ -26,7 +26,7 @@ pub struct Secret {
 
 impl Secret {
     pub async fn new(category: &SecretCategory, name: &str) -> Self {
-        let id = UUID::new().to_string();
+        let id = UUID::new();
         let now: u64 = time::get_current_time();
         Self {
             id,
@@ -51,7 +51,7 @@ impl Secret {
         self.notes = secret.notes.clone();
     }
 
-    pub fn id(&self) -> &String {
+    pub fn id(&self) -> &UUID {
         &self.id
     }
 

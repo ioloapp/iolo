@@ -1,4 +1,4 @@
-use std::{cell::RefCell, ops::Deref};
+use std::{cell::RefCell, fmt};
 
 use candid::{CandidType, Deserialize};
 use serde::Serialize;
@@ -13,10 +13,6 @@ thread_local! {
 )]
 pub struct UUID(u128);
 impl UUID {
-    pub fn to_string(&self) -> String {
-        self.0.to_string()
-    }
-
     pub fn new() -> Self {
         // get current counter
         let mut current_counter =
@@ -31,5 +27,17 @@ impl UUID {
         });
 
         UUID(current_counter)
+    }
+}
+
+impl fmt::Display for UUID {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+impl Default for UUID {
+    fn default() -> Self {
+        Self::new()
     }
 }

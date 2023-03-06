@@ -12,7 +12,13 @@ pub struct UserVault {
     id: UUID,
     date_created: u64,
     date_modified: u64,
-    secrets: BTreeMap<String, Secret>,
+    secrets: BTreeMap<UUID, Secret>,
+}
+
+impl Default for UserVault {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl UserVault {
@@ -39,22 +45,22 @@ impl UserVault {
         &self.date_modified
     }
 
-    pub fn secrets(&self) -> &BTreeMap<String, Secret> {
+    pub fn secrets(&self) -> &BTreeMap<UUID, Secret> {
         &self.secrets
     }
 
     pub fn add_secret(&mut self, secret: &Secret) {
-        self.secrets.insert(secret.id().to_string(), secret.clone());
+        self.secrets.insert(*secret.id(), secret.clone());
         self.date_modified = time::get_current_time();
     }
 
-    pub fn remove_secret(&mut self, secret_id: &String) {
+    pub fn remove_secret(&mut self, secret_id: &UUID) {
         self.secrets.remove(secret_id);
         self.date_modified = time::get_current_time();
     }
 
     pub fn update_secret(&mut self, secret: &Secret) {
-        self.secrets.insert(secret.id().to_string(), secret.clone());
+        self.secrets.insert(*secret.id(), secret.clone());
         self.date_modified = time::get_current_time();
     }
 }

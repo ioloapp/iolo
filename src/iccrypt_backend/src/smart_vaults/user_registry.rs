@@ -2,14 +2,17 @@ use std::collections::BTreeMap;
 
 use candid::{CandidType, Deserialize, Principal};
 
-use crate::common::{
-    error::SmartVaultErr,
-    user::User,
-};
+use crate::common::{error::SmartVaultErr, user::User};
 
 #[derive(Debug, CandidType, Deserialize)]
 pub struct UserRegistry {
     users: BTreeMap<Principal, User>,
+}
+
+impl Default for UserRegistry {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl UserRegistry {
@@ -45,10 +48,7 @@ impl UserRegistry {
 mod tests {
     use candid::Principal;
 
-    use crate::{
-        common::error::SmartVaultErr,
-        smart_vaults::user_registry::UserRegistry,
-    };
+    use crate::{common::error::SmartVaultErr, smart_vaults::user_registry::UserRegistry};
 
     #[tokio::test]
     async fn utest_user_registry() {

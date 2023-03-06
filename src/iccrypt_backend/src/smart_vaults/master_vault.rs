@@ -32,10 +32,6 @@ impl MasterVault {
         self.user_vaults.contains_key(vault_id)
     }
 
-    fn number_of_user_vaults(&self) -> usize {
-        self.user_vaults.len()
-    }
-
     pub fn create_user_vault(&mut self) -> UUID {
         let new_user_vault = UserVault::new();
         let new_user_vault_id = *new_user_vault.id();
@@ -82,7 +78,7 @@ impl MasterVault {
     pub fn remove_secret(
         &mut self,
         vault_id: &UUID,
-        secret_id: &String,
+        secret_id: &UUID,
     ) -> Result<(), SmartVaultErr> {
         if !self.user_vaults.contains_key(vault_id) {
             return Err(SmartVaultErr::UserVaultDoesNotExist(vault_id.to_string()));
@@ -117,7 +113,7 @@ mod tests {
         let mut master_vault = MasterVault::new();
 
         // no user vault yet
-        assert_eq!(master_vault.number_of_user_vaults(), 0);
+        assert_eq!(master_vault.user_vaults().len(), 0);
 
         // Create a new empty user_vault
         let new_uv_id = master_vault.create_user_vault();
@@ -126,7 +122,7 @@ mod tests {
         assert!(master_vault.get_user_vault(&new_uv_id).is_ok());
 
         // there is a user vault in the master vault
-        assert_eq!(master_vault.number_of_user_vaults(), 1);
+        assert_eq!(master_vault.user_vaults().len(), 1);
 
         // user vault must be empty
         assert_eq!(
@@ -158,7 +154,7 @@ mod tests {
         let mut master_vault = MasterVault::new();
 
         // no user vault yet
-        assert_eq!(master_vault.number_of_user_vaults(), 0);
+        assert_eq!(master_vault.user_vaults().len(), 0);
 
         // Create a new empty user_vault
         let new_uv_id = master_vault.create_user_vault();
@@ -167,7 +163,7 @@ mod tests {
         assert!(master_vault.get_user_vault(&new_uv_id).is_ok());
 
         // there is a user vault in the master vault
-        assert_eq!(master_vault.number_of_user_vaults(), 1);
+        assert_eq!(master_vault.user_vaults().len(), 1);
 
         master_vault.remove_user_vault(&new_uv_id);
 
@@ -175,7 +171,7 @@ mod tests {
         assert!(master_vault.get_user_vault(&new_uv_id).is_err());
 
         // there is no user vault in the master vault anymore
-        assert_eq!(master_vault.number_of_user_vaults(), 0);
+        assert_eq!(master_vault.user_vaults().len(), 0);
     }
 
     #[tokio::test]
