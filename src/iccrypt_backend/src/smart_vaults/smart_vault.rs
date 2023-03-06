@@ -15,10 +15,13 @@ use super::user_vault::UserVault;
 
 thread_local! {
     // Master_vault holding all the user vaults
-    static MASTERVAULT: RefCell<MasterVault> = RefCell::new(MasterVault::new());
+    pub static MASTERVAULT: RefCell<MasterVault> = RefCell::new(MasterVault::new());
 
     // User Registsry
-    static USER_REGISTRY: RefCell<UserRegistry> = RefCell::new(UserRegistry::new());
+    pub static USER_REGISTRY: RefCell<UserRegistry> = RefCell::new(UserRegistry::new());
+
+    // counter for the UUIDs
+    pub static UUID_COUNTER: RefCell<u128>  = RefCell::new(1);
 }
 
 #[ic_cdk_macros::update]
@@ -143,6 +146,7 @@ fn get_vault_id_for(principal: Principal) -> Result<UUID, SmartVaultErr> {
 fn pre_upgrade() {
     MASTERVAULT.with(|ms| storage::stable_save((ms,)).unwrap());
     USER_REGISTRY.with(|ur| storage::stable_save((ur,)).unwrap());
+    UUID_COUNTER.with(|c| storage::stable_save((c,)).unwrap());
 }
 
 #[post_upgrade]
@@ -152,4 +156,7 @@ fn post_upgrade() {
 
     let (old_ur,): (UserRegistry,) = storage::stable_restore().unwrap();
     USER_REGISTRY.with(|ur| *ur.borrow_mut() = old_ur);
+
+    let (old_c,): (u128,) = storage::stable_restore().unwrap();
+    UUID_COUNTER.with(|c| *c.borrow_mut() = old_c);
 }

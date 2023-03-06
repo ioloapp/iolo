@@ -4,9 +4,7 @@ use candid::{CandidType, Deserialize};
 use ic_cdk::{post_upgrade, pre_upgrade, storage};
 use serde::Serialize;
 
-thread_local! {
-    static UUID_COUNTER: RefCell<u128>  = RefCell::new(1);
-}
+use crate::smart_vaults::smart_vault::UUID_COUNTER;
 
 #[derive(
     Debug, CandidType, Deserialize, Serialize, Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd,
@@ -44,15 +42,4 @@ impl Default for UUID {
     fn default() -> Self {
         Self::new()
     }
-}
-
-#[pre_upgrade]
-fn pre_upgrade() {
-    UUID_COUNTER.with(|c| storage::stable_save((c,)).unwrap());
-}
-
-#[post_upgrade]
-fn post_upgrade() {
-    let (old_c,): (u128,) = storage::stable_restore().unwrap();
-    UUID_COUNTER.with(|c| *c.borrow_mut() = old_c);
 }
