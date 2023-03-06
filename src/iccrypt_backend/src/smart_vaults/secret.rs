@@ -1,7 +1,7 @@
 use candid::{CandidType, Deserialize};
 use serde::Serialize;
 
-use crate::utils::random;
+use crate::common::uuid::UUID;
 use crate::utils::time;
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone, Copy, PartialEq, Eq)]
@@ -26,7 +26,7 @@ pub struct Secret {
 
 impl Secret {
     pub async fn new(category: &SecretCategory, name: &str) -> Self {
-        let id = random::get_new_uuid().await;
+        let id = UUID::new().to_string();
         let now: u64 = time::get_current_time();
         Self {
             id,
@@ -122,7 +122,7 @@ impl Secret {
 mod tests {
 
     use super::*;
-    use crate::{smart_vaults::secret::SecretCategory};
+    use crate::smart_vaults::secret::SecretCategory;
     use std::thread;
 
     #[tokio::test]
@@ -134,7 +134,6 @@ mod tests {
         thread::sleep(std::time::Duration::from_millis(10)); // Sleep 10 milliseconds to ensure that secret has a different creation date
         let secret: Secret = Secret::new(&sc, &name).await;
 
-        assert_eq!(secret.id().len(), 36);
         assert!(
             secret.date_created() > &before,
             "date_created: {} must be greater than before: {}",

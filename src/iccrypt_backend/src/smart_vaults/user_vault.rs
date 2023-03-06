@@ -4,30 +4,30 @@ use serde::Serialize;
 use std::collections::BTreeMap;
 
 use super::secret::Secret;
+use crate::common::uuid::UUID;
 use crate::utils::time;
-use crate::utils::random;
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct UserVault {
-    id: String,
+    id: UUID,
     date_created: u64,
     date_modified: u64,
     secrets: BTreeMap<String, Secret>,
 }
 
 impl UserVault {
-    pub async fn new() -> Self {
+    pub fn new() -> Self {
         let now: u64 = time::get_current_time();
-        let id = random::get_new_uuid().await;
+        let uuid = UUID::new();
         Self {
-            id,
+            id: uuid,
             date_created: now,
             date_modified: now,
             secrets: BTreeMap::new(),
         }
     }
 
-    pub fn id(&self) -> &String {
+    pub fn id(&self) -> &UUID {
         &self.id
     }
 
@@ -71,9 +71,8 @@ mod tests {
         // Create empty user_vault
         let before = time::get_current_time();
         thread::sleep(std::time::Duration::from_millis(100)); // Sleep 100 milliseconds to ensure that user_vault has a different creation date
-        let mut user_vault: UserVault = UserVault::new().await;
+        let mut user_vault: UserVault = UserVault::new();
 
-        assert_eq!(user_vault.id().len(), 36);
         assert!(
             user_vault.date_created() > &before,
             "date_created: {} must be greater than before: {}",
@@ -95,11 +94,8 @@ mod tests {
         );
 
         // Add secret to user_vault
-        let mut secret: Secret = Secret::new(
-            &SecretCategory::Password,
-            &String::from("my-first-secret"),
-        )
-        .await;
+        let mut secret: Secret =
+            Secret::new(&SecretCategory::Password, &String::from("my-first-secret")).await;
         let mut modified_before_update = user_vault.date_modified;
         let mut created_before_update = user_vault.date_created;
         user_vault.add_secret(&secret);

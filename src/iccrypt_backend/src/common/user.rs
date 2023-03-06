@@ -1,15 +1,16 @@
+use crate::utils::time;
 use candid::{CandidType, Deserialize, Principal};
 use serde::Serialize;
 
-use crate::utils::time;
+use super::uuid::UUID;
 
-#[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
+#[derive(Debug, CandidType, Deserialize, Serialize, Clone, Copy)]
 pub struct User {
     id: Principal,
     date_created: u64,
     date_modified: u64,
     date_last_login: Option<u64>,
-    user_vault_id: String,
+    user_vault_id: UUID,
 }
 
 impl User {
@@ -20,7 +21,7 @@ impl User {
             date_created: now,
             date_modified: now,
             date_last_login: None,
-            user_vault_id: "".to_string(),
+            user_vault_id: UUID::new(),
         }
     }
 
@@ -28,7 +29,7 @@ impl User {
         &self.id
     }
 
-    pub fn user_vault_id(&self) -> &String {
+    pub fn user_vault_id(&self) -> &UUID {
         &self.user_vault_id
     }
 

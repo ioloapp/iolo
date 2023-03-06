@@ -1,10 +1,11 @@
 use std::cell::RefCell;
 
-use candid::candid_method;
+use candid::{candid_method, Principal};
 use ic_cdk::{post_upgrade, pre_upgrade, storage};
 
 use crate::common::error::SmartVaultErr;
 use crate::common::user::User;
+use crate::common::uuid::UUID;
 use crate::smart_vaults::user_registry::UserRegistry;
 use crate::utils::caller::get_caller;
 
@@ -37,11 +38,11 @@ pub async fn create_user() -> Result<User, SmartVaultErr> {
     )?;
 
     // Let's create a vault for the user
-    MASTERVAULT.with(|ms: &RefCell<MasterVault>| -> Result<(), SmartVaultErr> {
-        let mut master_vault = ms.borrow_mut();
-        master_vault.create_user_vault().await;
-        Ok(())
-    })?;
+    // MASTERVAULT.with(|ms: &RefCell<MasterVault>| -> Result<(), SmartVaultErr> {
+    //     let mut master_vault = ms.borrow_mut();
+    //     master_vault.create_user_vault().await;
+    //     Ok(())
+    // })?;
 
     Ok(new_user)
 }
@@ -52,12 +53,15 @@ pub fn get_user_vault() -> Result<UserVault, SmartVaultErr> {
     let principal = get_caller();
 
     // Get vault_id of caller
-    let user = USER_REGISTRY.with(|ur: &RefCell<UserRegistry>| {
-        let user_registry = ur.borrow();
-        user_registry.get_user(&principal)
-    })?;
-    let user_vault_id = user.user_vault_id();
-    
+    // let user_vault_id: UUID = USER_REGISTRY.with(
+    //     |ur: &RefCell<UserRegistry>| -> Result<UUID, SmartVaultErr> {
+    //         let user_registry = ur.borrow();
+    //         let user = user_registry.get_user(&principal)?;
+    //         Ok(*user.user_vault_id())
+    //     },
+    // )?;
+    let user_vault_id: UUID = get_vault_id_of_caller(principal)?;
+
     MASTERVAULT
         .with(|mv: &RefCell<MasterVault>| mv.borrow_mut().get_user_vault(&user_vault_id).cloned())
 }
@@ -68,12 +72,14 @@ pub fn delete_user() -> Result<(), SmartVaultErr> {
     let principal = get_caller();
 
     // Get vault_id of caller
-    let user = USER_REGISTRY.with(|ur: &RefCell<UserRegistry>| {
-        let user_registry = ur.borrow();
-        user_registry.get_user(&principal)
-    })?;
-    let user_vault_id = user.user_vault_id();
-
+    // let user_vault_id: UUID = USER_REGISTRY.with(
+    //     |ur: &RefCell<UserRegistry>| -> Result<UUID, SmartVaultErr> {
+    //         let user_registry = ur.borrow();
+    //         let user = user_registry.get_user(&principal)?;
+    //         Ok(*user.user_vault_id())
+    //     },
+    // )?;
+    let user_vault_id: UUID = get_vault_id_of_caller(principal)?;
 
     MASTERVAULT.with(|ms: &RefCell<MasterVault>| {
         let mut master_vault = ms.borrow_mut();
@@ -94,17 +100,14 @@ pub async fn add_user_secret(category: SecretCategory, name: String) -> Result<(
     let principal = get_caller();
 
     // Get vault_id of caller
-    let user = USER_REGISTRY.with(|ur: &RefCell<UserRegistry>| {
-        let user_registry = ur.borrow();
-        user_registry.get_user(&principal).cloned()
-    });
-
-
-    let u = match user {
-        Err(e) => return Err(e),
-        Ok(u) => u,
-    };
-    let user_vault_id = u.user_vault_id();
+    // let user_vault_id: UUID = USER_REGISTRY.with(
+    //     |ur: &RefCell<UserRegistry>| -> Result<UUID, SmartVaultErr> {
+    //         let user_registry = ur.borrow();
+    //         let user = user_registry.get_user(&principal)?;
+    //         Ok(*user.user_vault_id())
+    //     },
+    // )?;
+    let user_vault_id: UUID = get_vault_id_of_caller(principal)?;
 
     let new_secret = Secret::new(&category, &name).await;
     MASTERVAULT.with(|ms: &RefCell<MasterVault>| {
@@ -120,17 +123,32 @@ pub fn update_user_secret(secret: Secret) -> Result<(), SmartVaultErr> {
     let principal = get_caller();
 
     // Get vault_id of caller
-    let user = USER_REGISTRY.with(|ur: &RefCell<UserRegistry>| {
-        let user_registry = ur.borrow();
-        user_registry.get_user(&principal)
-    })?;
-    let user_vault_id = user.user_vault_id();
-    
+    // let user_vault_id: UUID = USER_REGISTRY.with(
+    //     |ur: &RefCell<UserRegistry>| -> Result<UUID, SmartVaultErr> {
+    //         let user_registry = ur.borrow();
+    //         let user = user_registry.get_user(&principal)?;
+    //         Ok(*user.user_vault_id())
+    //     },
+    // )?;
+    let user_vault_id: UUID = get_vault_id_of_caller(principal)?;
+
     MASTERVAULT.with(|ms: &RefCell<MasterVault>| {
         let mut master_vault = ms.borrow_mut();
         master_vault.update_secret(&user_vault_id, &secret);
     });
     Ok(())
+}
+
+#[ic_cdk_macros::query]
+#[candid_method(query)]
+pub fn get_vault_id_of_caller(principal: Principal) -> Result<UUID, SmartVaultErr> {
+    USER_REGISTRY.with(
+        |ur: &RefCell<UserRegistry>| -> Result<UUID, SmartVaultErr> {
+            let user_registry = ur.borrow();
+            let user = user_registry.get_user(&principal)?;
+            Ok(*user.user_vault_id())
+        },
+    )
 }
 
 #[pre_upgrade]

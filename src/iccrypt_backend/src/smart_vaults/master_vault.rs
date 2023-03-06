@@ -2,16 +2,13 @@ use std::collections::BTreeMap;
 
 use candid::{CandidType, Deserialize};
 
-use crate::common::{error::SmartVaultErr};
+use crate::common::{error::SmartVaultErr, uuid::UUID};
 
-use super::{
-    secret::{Secret, SecretCategory},
-    user_vault::UserVault,
-};
+use super::{secret::Secret, user_vault::UserVault};
 
 #[derive(CandidType, Deserialize, Clone)]
 pub struct MasterVault {
-    user_vaults: BTreeMap<String, UserVault>,
+    user_vaults: BTreeMap<UUID, UserVault>,
 }
 
 impl Default for MasterVault {
@@ -27,69 +24,71 @@ impl MasterVault {
         }
     }
 
-    pub fn user_vaults(&mut self) -> &mut BTreeMap<String, UserVault> {
-        &mut self.user_vaults
+    pub fn user_vaults(&self) -> &BTreeMap<UUID, UserVault> {
+        &self.user_vaults
     }
 
-    pub fn is_user_vault_existing(&self, id: &String) -> bool {
-        self.user_vaults.contains_key(id)
+    pub fn is_user_vault_existing(&self, vault_id: &UUID) -> bool {
+        self.user_vaults.contains_key(vault_id)
     }
 
-    pub async fn create_user_vault(&mut self) -> &UserVault {
-        // This if section can be replaced with .try_insert() once it's not experimental anymore...
-        let user_vault = UserVault::new().await;
-        self.user_vaults.insert(user_vault.id().clone(), user_vault.clone());
-        self.user_vaults.get(user_vault.id()).unwrap()
+    fn number_of_user_vaults(&self) -> usize {
+        self.user_vaults.len()
     }
 
-    pub fn get_user_vault(&mut self, vault_id: &String) -> Result<&UserVault, SmartVaultErr>  {
+    pub fn create_user_vault(&mut self) -> UUID {
+        let new_user_vault = UserVault::new();
+        let new_user_vault_id = *new_user_vault.id();
+        self.user_vaults.insert(new_user_vault_id, new_user_vault);
+        new_user_vault_id
+    }
+
+    pub fn get_user_vault(&mut self, vault_id: &UUID) -> Result<&UserVault, SmartVaultErr> {
         if !self.user_vaults.contains_key(vault_id) {
-            return Err(SmartVaultErr::UserVaultDoesNotExist(*vault_id));
+            return Err(SmartVaultErr::UserVaultDoesNotExist(vault_id.to_string()));
         }
 
-        Ok(self.user_vaults().get(vault_id).unwrap())
+        Ok(self.user_vaults.get(vault_id).unwrap())
     }
 
     // Delete a user_vault from the master_vault
-    pub fn remove_user_vault(&mut self, id: &String) {
+    pub fn remove_user_vault(&mut self, id: &UUID) {
         self.user_vaults.remove(id);
     }
 
     // Inserts a secret into a user's vault.
-    pub fn add_secret(&mut self, vault_id: &String, secret: &Secret) -> Result<(), SmartVaultErr> {
+    pub fn add_secret(&mut self, vault_id: &UUID, secret: &Secret) -> Result<(), SmartVaultErr> {
         if !self.user_vaults.contains_key(vault_id) {
-            return Err(SmartVaultErr::UserVaultDoesNotExist(*vault_id));
+            return Err(SmartVaultErr::UserVaultDoesNotExist(vault_id.to_string()));
         }
 
-        let user_vault = self
-            .user_vaults()
-            .get(vault_id).unwrap();
+        let user_vault = self.user_vaults.get_mut(vault_id).unwrap();
         user_vault.add_secret(secret);
         Ok(())
     }
 
     // Replace a secret
-    pub fn update_secret(&mut self, vault_id: &String, secret: &Secret) -> Result<(), SmartVaultErr> {
+    pub fn update_secret(&mut self, vault_id: &UUID, secret: &Secret) -> Result<(), SmartVaultErr> {
         if !self.user_vaults.contains_key(vault_id) {
-            return Err(SmartVaultErr::UserVaultDoesNotExist(*vault_id));
+            return Err(SmartVaultErr::UserVaultDoesNotExist(vault_id.to_string()));
         }
 
-        let user_vault = self
-            .user_vaults()
-            .get(vault_id).unwrap();
+        let user_vault = self.user_vaults.get_mut(vault_id).unwrap();
         user_vault.update_secret(secret);
         Ok(())
     }
 
     // Remove a secret
-    pub fn remove_secret(&mut self, vault_id: &String, secret_id: &String) -> Result<(), SmartVaultErr> {
+    pub fn remove_secret(
+        &mut self,
+        vault_id: &UUID,
+        secret_id: &String,
+    ) -> Result<(), SmartVaultErr> {
         if !self.user_vaults.contains_key(vault_id) {
-            return Err(SmartVaultErr::UserVaultDoesNotExist(*vault_id));
+            return Err(SmartVaultErr::UserVaultDoesNotExist(vault_id.to_string()));
         }
 
-        let user_vault = self
-            .user_vaults()
-            .get(vault_id).unwrap();
+        let user_vault = self.user_vaults.get_mut(vault_id).unwrap();
         user_vault.remove_secret(secret_id);
         Ok(())
     }
@@ -99,7 +98,7 @@ impl MasterVault {
 mod tests {
 
     use super::*;
-    use crate::utils::random;
+    use crate::{smart_vaults::secret::SecretCategory, utils::random};
 
     #[test]
     fn utest_new_master_vault() {
@@ -117,137 +116,97 @@ mod tests {
     async fn utest_create_user_vault() {
         let mut master_vault = MasterVault::new();
 
+        // no user vault yet
+        assert_eq!(master_vault.number_of_user_vaults(), 0);
+
         // Create a new empty user_vault
-        let user_vault = master_vault.create_user_vault().await;
-        assert_eq!(user_vault.id().len(), 36);
-        assert_eq!(
-            user_vault.secrets().len(),
-            0,
-            "user_vault_1a should have 0 secrets but has {}",
-            user_vault.secrets().len()
-        );
-        assert_eq!(
-            master_vault.user_vaults().len(),
-            1,
-            "master_vault should have 1 user_vault but has {}",
-            master_vault.user_vaults().len()
-        );
+        let new_uv_id = master_vault.create_user_vault();
 
-        // Check if user_vault exists
-        assert_eq!(
-            master_vault.is_user_vault_existing(user_vault.id()),
-            true,
-            "user_vault with id {} should exist",
-            user_vault.id()
-        );
-        let id = random::get_new_uuid().await;
-        assert_eq!(
-            master_vault.is_user_vault_existing(&id),
-            false,
-            "user_vault with id {} should not exist",
-            id
-        );
+        // new user vault exists
+        assert!(master_vault.get_user_vault(&new_uv_id).is_ok());
 
-        // Add another user_vault
-        let _user_vault_2 = master_vault.create_user_vault();
+        // there is a user vault in the master vault
+        assert_eq!(master_vault.number_of_user_vaults(), 1);
+
+        // user vault must be empty
         assert_eq!(
-            master_vault.user_vaults().len(),
-            2,
-            "master_vault should have 2 user_vaults but has {}",
-            master_vault.user_vaults().len()
+            master_vault
+                .get_user_vault(&new_uv_id)
+                .unwrap()
+                .secrets()
+                .len(),
+            0
         );
     }
 
     #[tokio::test]
     async fn utest_get_user_vault() {
         let mut master_vault = MasterVault::new();
-        let user_vault = master_vault.create_user_vault().await;
 
-        // Check that get_user_vault returns Some
-        assert_eq!(
-            master_vault.get_user_vault(user_vault.id()).is_ok(),
-            true,
-            "get_user_vault should return Ok"
-        );
+        // Create a new empty user_vault
+        let new_uv_id = master_vault.create_user_vault();
 
-        // Check that this get_user_vault returns Err
-        let id = random::get_new_uuid().await;
-        assert_eq!(
-            master_vault.get_user_vault(&id).is_err(),
-            true,
-            "get_user_vault should return Err"
-        );
+        // new user vault exists
+        assert!(master_vault.get_user_vault(&new_uv_id).is_ok());
 
-        // Validate user_vault
-        let user_vault = master_vault.get_user_vault(user_vault.id()).unwrap();
-        assert_eq!(
-            user_vault.secrets().len(),
-            0,
-            "user_vault should have 0 secrets but has {}",
-            user_vault.secrets().len()
-        );
-        assert_eq!(
-            master_vault.user_vaults().len(),
-            1,
-            "master_vault should have 1 user_vault but has {}",
-            master_vault.user_vaults().len()
-        );
+        // following user vault should not exist
+        assert!(master_vault.get_user_vault(&UUID::new()).is_err());
     }
 
     #[tokio::test]
     async fn utest_remove_user_vault() {
         let mut master_vault = MasterVault::new();
 
+        // no user vault yet
+        assert_eq!(master_vault.number_of_user_vaults(), 0);
+
         // Create a new empty user_vault
-        let user_vault = master_vault.create_user_vault().await;
+        let new_uv_id = master_vault.create_user_vault();
 
-        assert_eq!(
-            master_vault.user_vaults().len(),
-            1,
-            "master_vault should have 1 user_vault but has {}",
-            master_vault.user_vaults().len()
-        );
+        // new user vault exists
+        assert!(master_vault.get_user_vault(&new_uv_id).is_ok());
 
-        master_vault.remove_user_vault(user_vault.id());
-        assert_eq!(
-            master_vault.user_vaults().len(),
-            0,
-            "master_vault should have 0 user_vault but has {}",
-            master_vault.user_vaults().len()
-        );
+        // there is a user vault in the master vault
+        assert_eq!(master_vault.number_of_user_vaults(), 1);
+
+        master_vault.remove_user_vault(&new_uv_id);
+
+        // new user vault does not exist anymore
+        assert!(master_vault.get_user_vault(&new_uv_id).is_err());
+
+        // there is no user vault in the master vault anymore
+        assert_eq!(master_vault.number_of_user_vaults(), 0);
     }
 
     #[tokio::test]
     async fn utest_secrets() {
         let mut master_vault = MasterVault::new();
-        let user_vault = master_vault.create_user_vault().await;
+        let new_uv_id = master_vault.create_user_vault();
+
+        // user vault must be empty
         assert_eq!(
-            user_vault.secrets().len(),
-            0,
-            "user_vault should have 0 secrets but has {}",
-            user_vault.secrets().len()
+            master_vault
+                .get_user_vault(&new_uv_id)
+                .unwrap()
+                .secrets()
+                .len(),
+            0
         );
 
         let mut secret =
             Secret::new(&SecretCategory::Password, &String::from("my-super-secret")).await;
 
-        master_vault.add_secret(user_vault.id(), &secret);
+        master_vault.add_secret(&new_uv_id, &secret);
         assert_eq!(
             master_vault
-                .get_user_vault(user_vault.id())
+                .get_user_vault(&new_uv_id)
                 .unwrap()
                 .secrets()
                 .len(),
-            1,
-            "user_vault should have 1 secrets but has {}",
-            master_vault
-                .get_user_vault(user_vault.id())
-                .unwrap()
-                .secrets()
-                .len()
+            1
         );
         let secret_name = master_vault
-            .get_user_vault(user_vault.id())
+            .get_user_vault(&new_uv_id)
             .unwrap()
             .secrets()
             .get(secret.id())
@@ -261,9 +220,9 @@ mod tests {
         );
 
         secret.set_name(&String::from("my-super-secret-new"));
-        master_vault.update_secret(user_vault.id(), &secret);
+        master_vault.update_secret(&new_uv_id, &secret);
         let secret_name = master_vault
-            .get_user_vault(user_vault.id())
+            .get_user_vault(&new_uv_id)
             .unwrap()
             .secrets()
             .get(secret.id())
@@ -275,20 +234,14 @@ mod tests {
             secret_name
         );
 
-        master_vault.remove_secret(user_vault.id(), &secret.id());
+        master_vault.remove_secret(&new_uv_id, &secret.id());
         assert_eq!(
             master_vault
-                .get_user_vault(user_vault.id())
+                .get_user_vault(&new_uv_id)
                 .unwrap()
                 .secrets()
                 .len(),
-            0,
-            "user_vault should have 0 secrets but has {}",
-            master_vault
-                .get_user_vault(user_vault.id())
-                .unwrap()
-                .secrets()
-                .len()
+            0
         );
     }
 }
