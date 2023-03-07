@@ -10,7 +10,7 @@ use crate::smart_vaults::user_registry::UserRegistry;
 use crate::utils::caller::get_caller;
 
 use super::master_vault::MasterVault;
-use super::secret::{Secret, SecretCategory};
+use super::secret::{Secret, SecretForFrontend};
 use super::user_vault::UserVault;
 
 thread_local! {
@@ -89,18 +89,15 @@ pub fn delete_user() -> Result<(), SmartVaultErr> {
 
 #[ic_cdk_macros::update]
 #[candid_method(update)]
-pub async fn add_user_secret(
-    category: SecretCategory,
-    name: String,
-) -> Result<String, SmartVaultErr> {
+pub async fn add_user_secret(secret_for_frontend: SecretForFrontend, ) -> Result<String, SmartVaultErr> {
     let principal = get_caller();
 
     let user_vault_id: UUID = get_vault_id_for(principal)?;
-
-    let new_secret = Secret::new(&category, &name).await;
+    let secret: Secret = secret_for_frontend.to_secret().await;
+    
     MASTERVAULT.with(|ms: &RefCell<MasterVault>| -> Result<(), SmartVaultErr> {
         let mut master_vault = ms.borrow_mut();
-        master_vault.add_secret(&user_vault_id, &new_secret)
+        master_vault.add_secret(&user_vault_id, &secret)
     })?;
     Ok("Success".to_string())
 }

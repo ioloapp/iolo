@@ -23,6 +23,14 @@ export interface Secret {
 export type SecretCategory = { 'Password' : null } |
   { 'Note' : null } |
   { 'Document' : null };
+export interface SecretForFrontend {
+  'url' : [] | [string],
+  'username' : [] | [string],
+  'password' : [] | [string],
+  'name' : string,
+  'notes' : [] | [string],
+  'category' : SecretCategory,
+}
 export type SmartVaultErr = { 'UserAlreadyExists' : string } |
   { 'UserDeletionFailed' : string } |
   { 'UserVaultCreationFailed' : string } |
@@ -42,7 +50,7 @@ export interface UserVault {
   'date_modified' : bigint,
 }
 export interface _SERVICE {
-  'add_user_secret' : ActorMethod<[SecretCategory, string], Result>,
+  'add_user_secret' : ActorMethod<[SecretForFrontend], Result>,
   'create_user' : ActorMethod<[], Result_1>,
   'delete_user' : ActorMethod<[], Result_2>,
   'get_decryption_key_from' : ActorMethod<[string], [] | [Uint8Array]>,

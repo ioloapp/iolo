@@ -8,7 +8,7 @@ use crate::common::error::SmartVaultErr;
 use crate::common::user::User;
 
 use crate::smart_vaults::secret::Secret;
-use crate::smart_vaults::secret::SecretCategory;
+use crate::smart_vaults::secret::SecretForFrontend;
 use crate::smart_vaults::user_vault::UserVault;
 
 #[ic_cdk_macros::init]

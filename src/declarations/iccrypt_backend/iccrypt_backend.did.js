@@ -4,6 +4,14 @@ export const idlFactory = ({ IDL }) => {
     'Note' : IDL.Null,
     'Document' : IDL.Null,
   });
+  const SecretForFrontend = IDL.Record({
+    'url' : IDL.Opt(IDL.Text),
+    'username' : IDL.Opt(IDL.Text),
+    'password' : IDL.Opt(IDL.Text),
+    'name' : IDL.Text,
+    'notes' : IDL.Opt(IDL.Text),
+    'category' : SecretCategory,
+  });
   const SmartVaultErr = IDL.Variant({
     'UserAlreadyExists' : IDL.Text,
     'UserDeletionFailed' : IDL.Text,
@@ -40,7 +48,7 @@ export const idlFactory = ({ IDL }) => {
   });
   const Result_3 = IDL.Variant({ 'Ok' : UserVault, 'Err' : SmartVaultErr });
   return IDL.Service({
-    'add_user_secret' : IDL.Func([SecretCategory, IDL.Text], [Result], []),
+    'add_user_secret' : IDL.Func([SecretForFrontend], [Result], []),
     'create_user' : IDL.Func([], [Result_1], []),
     'delete_user' : IDL.Func([], [Result_2], []),
     'get_decryption_key_from' : IDL.Func(

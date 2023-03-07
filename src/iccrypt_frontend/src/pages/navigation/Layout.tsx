@@ -87,8 +87,7 @@ function Layout() {
 
     async function checkUserVault() {
         let actor = await getActor();
-        //let isUserVaultExisting = await actor.is_user_vault_existing();
-        let isUserVaultExisting = true;
+        let isUserVaultExisting = await actor.is_user_vault_existing();
         dispatch(hasAccount(isUserVaultExisting));
     }
 

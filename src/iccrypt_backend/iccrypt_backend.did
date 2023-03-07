@@ -14,6 +14,14 @@ type Secret = record {
   date_modified : nat64;
 };
 type SecretCategory = variant { Password; Note; Document };
+type SecretForFrontend = record {
+  url : opt text;
+  username : opt text;
+  password : opt text;
+  name : text;
+  notes : opt text;
+  category : SecretCategory;
+};
 type SmartVaultErr = variant {
   UserAlreadyExists : text;
   UserDeletionFailed : text;
@@ -35,7 +43,7 @@ type UserVault = record {
   date_modified : nat64;
 };
 service : {
-  add_user_secret : (SecretCategory, text) -> (Result);
+  add_user_secret : (SecretForFrontend) -> (Result);
   create_user : () -> (Result_1);
   delete_user : () -> (Result_2);
   get_decryption_key_from : (text) -> (opt vec nat8);

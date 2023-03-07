@@ -4,6 +4,28 @@ use serde::Serialize;
 use crate::common::uuid::UUID;
 use crate::utils::time;
 
+#[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
+pub struct SecretForFrontend {
+    category: SecretCategory,
+    name: String,
+    username: Option<String>,
+    password: Option<String>,
+    url: Option<String>,
+    notes: Option<String>,
+}
+
+impl SecretForFrontend {
+    pub async fn to_secret(self) -> Secret {
+        let mut secret = Secret::new(&self.category, &self.name).await;
+        secret.set_name(&self.name);
+        secret.username = self.username; 
+        secret.password = self.password;
+        secret.url = self.url;
+        secret.notes = self.notes;
+        return secret.clone();
+    }
+}
+
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone, Copy, PartialEq, Eq)]
 pub enum SecretCategory {
     Password,
