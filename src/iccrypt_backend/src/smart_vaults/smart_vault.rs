@@ -10,7 +10,7 @@ use crate::smart_vaults::user_registry::UserRegistry;
 use crate::utils::caller::get_caller;
 
 use super::master_vault::MasterVault;
-use super::secret::{Secret, SecretForFrontend};
+use super::secret::{Secret, SecretCategory, SecretForCreation, SecretForUpdate};
 use super::user_vault::UserVault;
 
 thread_local! {
@@ -89,29 +89,61 @@ pub fn delete_user() -> Result<(), SmartVaultErr> {
 
 #[ic_cdk_macros::update]
 #[candid_method(update)]
-pub async fn add_user_secret(secret_for_frontend: SecretForFrontend, ) -> Result<String, SmartVaultErr> {
+pub async fn add_user_secret(secret: SecretForCreation) -> Result<String, SmartVaultErr> {
     let principal = get_caller();
 
     let user_vault_id: UUID = get_vault_id_for(principal)?;
-    let secret: Secret = secret_for_frontend.to_secret().await;
+    let mut new_secret: Secret = Secret::new(&secret.category(), &secret.name()).await;
+    if secret.username().is_some() {
+        new_secret.set_username(&secret.username().clone().unwrap());
+    }
+    if secret.password().is_some() {
+        new_secret.set_password(&secret.password().clone().unwrap());
+    }
+    if secret.url().is_some() {
+        new_secret.set_url(&secret.url().clone().unwrap());
+    }
+    if secret.notes().is_some() {
+        new_secret.set_notes(&secret.notes().clone().unwrap());
+    }
     
     MASTERVAULT.with(|ms: &RefCell<MasterVault>| -> Result<(), SmartVaultErr> {
         let mut master_vault = ms.borrow_mut();
-        master_vault.add_secret(&user_vault_id, &secret)
+        master_vault.add_secret(&user_vault_id, &new_secret)
     })?;
     Ok("Success".to_string())
 }
 
 #[ic_cdk_macros::update]
 #[candid_method(update)]
-pub fn update_user_secret(secret: Secret) -> Result<(), SmartVaultErr> {
+pub async fn update_user_secret(secret: SecretForUpdate) -> Result<(), SmartVaultErr> {
     let principal = get_caller();
 
     let user_vault_id: UUID = get_vault_id_for(principal)?;
 
     MASTERVAULT.with(|ms: &RefCell<MasterVault>| -> Result<(), SmartVaultErr> {
         let mut master_vault = ms.borrow_mut();
-        master_vault.update_secret(&user_vault_id, &secret)
+        let secret_to_update: &mut Secret = master_vault.get_secret(&user_vault_id, &secret.id())?;
+        if secret.name().is_some() {
+            secret_to_update.set_name(&secret.name().clone().unwrap());
+        }
+        if secret.category().is_some() {
+            secret_to_update.set_category(&secret.category().clone().unwrap());
+        }
+        if secret.password().is_some() {
+            secret_to_update.set_password(&secret.password().clone().unwrap());
+        }
+        if secret.username().is_some() {
+            secret_to_update.set_username(&secret.username().clone().unwrap());
+        }
+        if secret.url().is_some() {
+            secret_to_update.set_url(&secret.url().clone().unwrap());
+        }
+        if secret.notes().is_some() {
+            secret_to_update.set_notes(&secret.notes().clone().unwrap());
+        }
+
+        master_vault.update_secret(&user_vault_id, secret_to_update)
     })?;
     Ok(())
 }

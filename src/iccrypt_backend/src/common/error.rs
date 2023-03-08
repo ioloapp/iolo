@@ -9,6 +9,8 @@ pub enum SmartVaultErr {
     UserDeletionFailed(String),
     UserVaultCreationFailed(String),
     UserVaultDoesNotExist(String),
+    SecretDoesNotExist(String),
+    SecretHasNoId,
 }
 
 impl Display for SmartVaultErr {
@@ -34,7 +36,13 @@ impl Display for SmartVaultErr {
             ),
             SmartVaultErr::UserVaultDoesNotExist(id) => {
                 write!(f, "Failed to read vault with the following id: {}", id)
-            }
+            },
+            SmartVaultErr::SecretDoesNotExist(id) => {
+                write!(f, "Failed to read secret with the following id: {}", id)
+            },
+            SmartVaultErr::SecretHasNoId => {
+                write!(f, "Secret has no id")
+            },
         }
     }
 }

@@ -23,7 +23,7 @@ export interface Secret {
 export type SecretCategory = { 'Password' : null } |
   { 'Note' : null } |
   { 'Document' : null };
-export interface SecretForFrontend {
+export interface SecretForCreation {
   'url' : [] | [string],
   'username' : [] | [string],
   'password' : [] | [string],
@@ -31,8 +31,19 @@ export interface SecretForFrontend {
   'notes' : [] | [string],
   'category' : SecretCategory,
 }
+export interface SecretForUpdate {
+  'id' : bigint,
+  'url' : [] | [string],
+  'username' : [] | [string],
+  'password' : [] | [string],
+  'name' : [] | [string],
+  'notes' : [] | [string],
+  'category' : [] | [SecretCategory],
+}
 export type SmartVaultErr = { 'UserAlreadyExists' : string } |
+  { 'SecretHasNoId' : null } |
   { 'UserDeletionFailed' : string } |
+  { 'SecretDoesNotExist' : string } |
   { 'UserVaultCreationFailed' : string } |
   { 'UserDoesNotExist' : string } |
   { 'UserVaultDoesNotExist' : string };
@@ -50,12 +61,12 @@ export interface UserVault {
   'date_modified' : bigint,
 }
 export interface _SERVICE {
-  'add_user_secret' : ActorMethod<[SecretForFrontend], Result>,
+  'add_user_secret' : ActorMethod<[SecretForCreation], Result>,
   'create_user' : ActorMethod<[], Result_1>,
   'delete_user' : ActorMethod<[], Result_2>,
   'get_decryption_key_from' : ActorMethod<[string], [] | [Uint8Array]>,
   'get_encryption_key_for' : ActorMethod<[string], [] | [Uint8Array]>,
   'get_user_vault' : ActorMethod<[], Result_3>,
   'is_user_vault_existing' : ActorMethod<[], boolean>,
-  'update_user_secret' : ActorMethod<[Secret], Result_2>,
+  'update_user_secret' : ActorMethod<[SecretForUpdate], Result_2>,
 }

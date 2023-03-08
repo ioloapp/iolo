@@ -12,32 +12,15 @@ import { Edit as EditIcon, Key as KeyIcon, Add as AddIcon } from '@mui/icons-mat
 
 // IC
 import { getActor } from '../utils/backend';
-import { SecretForFrontend, SecretCategory, Result_3, UserVault } from '../../../declarations/iccrypt_backend/iccrypt_backend.did';
+import { SecretCategory, SecretForCreation, SecretForUpdate, Result_2, Result_3, Result, Secret } from '../../../declarations/iccrypt_backend/iccrypt_backend.did';
 
 const secretCategories = {
     Password: "Password",
     Note: "Note",
     Document: "Document"
 }
-const secrets = [{
-    id: 1,
-    name: "my-first-secret",
-    category: secretCategories.Password,
-    username: "harry.hole@jim-beam.com",
-    password: "dont-forget",
-    url: '',
-    notes: ''
-}, {
-    id: 2,
-    name: "my-second-secret",
-    type: secretCategories.Note,
-    username: "diego.armando.maradona@heaven.com",
-    password: "dont-forget",
-    url: '',
-    notes: ''
-}];
 
-const editSecretInitValues = {
+const secretInModalInitValues = {
     id: 0,
     name: '',
     category: secretCategories.Password,
@@ -65,33 +48,45 @@ const SmartVault = () => {
     }, []);
 
     // State hooks
-    const [editSecret, setEditSecret] = useState(editSecretInitValues);
+    const [secretList, setSecretList] = useState([]);
+    const [secretInModal, setSecretInModal] = useState(secretInModalInitValues);
     const [openModal, setOpenModal] = useState(false);
 
     async function saveSecret() {
         let secretCategory: SecretCategory = null;
-        if (editSecret.category === secretCategories.Password) {
+        if (secretInModal.category === secretCategories.Password) {
             secretCategory = { 'Password': null };
-        } else if (editSecret.category === secretCategories.Note) {
+        } else if (secretInModal.category === secretCategories.Note) {
             secretCategory = { 'Note': null };
-        } else if (editSecret.category === secretCategories.Document) {
+        } else if (secretInModal.category === secretCategories.Document) {
             secretCategory = { 'Document': null };
         }
-        let secret: SecretForFrontend = {
-            name: editSecret.name,
-            url: [editSecret.url],
-            category: secretCategory,
-            username: [editSecret.username],
-            password: [editSecret.password],
-            notes: [editSecret.notes]
-        };
 
         let actor = await getActor();
-        if (editSecret.id > 0) {
+        if (secretInModal.id > 0) {
             // Update
+            let secret: SecretForUpdate = {
+                id: BigInt(secretInModal.id),
+                name: [secretInModal.name],
+                url: [secretInModal.url],
+                category: [secretCategory],
+                username: [secretInModal.username],
+                password: [secretInModal.password],
+                notes: [secretInModal.notes]
+            };
+            let res: Result_2 = await actor.update_user_secret(secret);
+            console.log(res);
         } else {
             // Create
-            let res = await actor.add_user_secret(secret);
+            let secret: SecretForCreation = {
+                name: secretInModal.name,
+                url: [secretInModal.url],
+                category: secretCategory,
+                username: [secretInModal.username],
+                password: [secretInModal.password],
+                notes: [secretInModal.notes]
+            };
+            let res: Result = await actor.add_user_secret(secret); 
             console.log(res);
         }
 
@@ -101,10 +96,10 @@ const SmartVault = () => {
     const handleOpenModal = (selectedSecret) => {
         if (selectedSecret) {
             // Prefill values with existing secret
-            setEditSecret({ id: selectedSecret.id, name: selectedSecret.name, category: selectedSecret.category, username: selectedSecret.username, password: selectedSecret.password, url: selectedSecret.url, notes: selectedSecret.notes });
+            setSecretInModal({ id: selectedSecret.id, name: selectedSecret.name, category: selectedSecret.category, username: selectedSecret.username, password: selectedSecret.password, url: selectedSecret.url, notes: selectedSecret.notes });
         } else {
             // Initialize values for new secret
-            setEditSecret(editSecretInitValues);
+            setSecretInModal(secretInModalInitValues);
         }
 
         // Open Modal
@@ -115,8 +110,8 @@ const SmartVault = () => {
 
     const handleEditSecretValueChange = (e) => {
         const { name, value } = e.target;
-        setEditSecret({
-            ...editSecret,
+        setSecretInModal({
+            ...secretInModal,
             [name]: value,
         });
     }
@@ -124,17 +119,25 @@ const SmartVault = () => {
     async function getUserVault() {
         let actor = await getActor();
         let userVault: Result_3 = await actor.get_user_vault();
-        /*let uv: UserVault = {
-            id: BigInt(1),
-            date_created: BigInt(2),
-            date_modified: BigInt(3),
-            secrets: []
+        if (Object.keys(userVault)[0] === 'Ok') {
+            let secrets: [Secret] = userVault['Ok']['secrets'];
+            let secretsForList = secrets.map((secret) => {
+                let mappedSecret = {
+                    id: secret[1].id,
+                    name: secret[1].name,
+                    category: Object.keys(secret[1].category)[0],
+                    username: secret[1].username[0],
+                    password: secret[1].password[0],
+                    notes: secret[1].notes[0],
+                    url: secret[1].url[0],
+                }
+
+                return mappedSecret;
+            });
+            setSecretList(secretsForList);
+        } else {
+            console.error(userVault['Err']);
         }
-        let test: Result_3 = {Ok: uv};*/
-
-        console.log(userVault);
-        //console.log(test.Ok)
-
     }
 
     return (
@@ -145,7 +148,7 @@ const SmartVault = () => {
                 </Typography>
             </Box>
             <List>
-                {secrets.map(secret =>
+                {secretList.map(secret =>
                     <ListItem
                         key={secret.id}
                         secondaryAction={
@@ -175,7 +178,7 @@ const SmartVault = () => {
             >
                 <Box sx={modalStyle}>
                     <Box>
-                        <TextField required name="name" margin="normal" fullWidth size="small" label="Name" variant="filled" value={editSecret.name} onChange={handleEditSecretValueChange} />
+                        <TextField required name="name" margin="normal" fullWidth size="small" label="Name" variant="filled" value={secretInModal.name} onChange={handleEditSecretValueChange} />
                     </Box>
                     <Box>
                         <Select
@@ -183,7 +186,7 @@ const SmartVault = () => {
                             name="category"
                             label="Category"
                             autoWidth
-                            value={editSecret.category}
+                            value={secretInModal.category}
                             onChange={handleEditSecretValueChange}
                         >
                             <MenuItem value={secretCategories.Password}>Password</MenuItem>
@@ -193,11 +196,11 @@ const SmartVault = () => {
                     </Box>
 
                     <Box>
-                        <TextField required name="username" margin="normal" fullWidth size="small" label="Username" variant="filled" value={editSecret.username} onChange={handleEditSecretValueChange} />
+                        <TextField required name="username" margin="normal" fullWidth size="small" label="Username" variant="filled" value={secretInModal.username} onChange={handleEditSecretValueChange} />
                     </Box>
 
                     <Box>
-                        <TextField required name="password" margin="normal" fullWidth size="small" label="Password" variant="filled" value={editSecret.password} onChange={handleEditSecretValueChange} />
+                        <TextField required name="password" margin="normal" fullWidth size="small" label="Password" variant="filled" value={secretInModal.password} onChange={handleEditSecretValueChange} />
                     </Box>
                     <Box>
                         <Button variant="contained" type="submit" onClick={() => saveSecret()}>Save</Button>

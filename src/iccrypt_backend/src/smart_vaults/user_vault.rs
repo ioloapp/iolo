@@ -6,6 +6,7 @@ use std::collections::BTreeMap;
 use super::secret::Secret;
 use crate::common::uuid::UUID;
 use crate::utils::time;
+use crate::SmartVaultErr;
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct UserVault {
@@ -49,7 +50,12 @@ impl UserVault {
         &self.secrets
     }
 
+    pub fn get_secret(&mut self, secret_id: &UUID) -> Result<&mut Secret, SmartVaultErr> {     
+        self.secrets.get_mut(secret_id).ok_or_else(|| SmartVaultErr::SecretDoesNotExist(secret_id.to_string()))
+    }
+
     pub fn add_secret(&mut self, secret: &Secret) {
+        
         self.secrets.insert(*secret.id(), secret.clone());
         self.date_modified = time::get_current_time();
     }
@@ -59,9 +65,13 @@ impl UserVault {
         self.date_modified = time::get_current_time();
     }
 
-    pub fn update_secret(&mut self, secret: &Secret) {
+    pub fn update_secret(&mut self, secret: &Secret) -> Result<(), SmartVaultErr> {
+        if !self.secrets.contains_key(secret.id()) {
+            return Err(SmartVaultErr::SecretDoesNotExist(secret.id().to_string()));
+        }
         self.secrets.insert(*secret.id(), secret.clone());
         self.date_modified = time::get_current_time();
+        Ok(())
     }
 }
 

@@ -52,6 +52,20 @@ impl MasterVault {
         self.user_vaults.remove(id);
     }
 
+    // Get a secret
+    pub fn get_secret(
+        &mut self,
+        vault_id: &UUID,
+        secret_id: &UUID,
+    ) -> Result<&mut Secret, SmartVaultErr> {
+        if !self.user_vaults.contains_key(vault_id) {
+            return Err(SmartVaultErr::UserVaultDoesNotExist(vault_id.to_string()));
+        }
+
+        let user_vault = self.user_vaults.get_mut(vault_id).unwrap();
+        user_vault.get_secret(secret_id)
+    }
+
     // Inserts a secret into a user's vault.
     pub fn add_secret(&mut self, vault_id: &UUID, secret: &Secret) -> Result<(), SmartVaultErr> {
         if !self.user_vaults.contains_key(vault_id) {
@@ -70,8 +84,7 @@ impl MasterVault {
         }
 
         let user_vault = self.user_vaults.get_mut(vault_id).unwrap();
-        user_vault.update_secret(secret);
-        Ok(())
+        user_vault.update_secret(secret)
     }
 
     // Remove a secret
@@ -94,7 +107,7 @@ impl MasterVault {
 mod tests {
 
     use super::*;
-    use crate::{smart_vaults::secret::SecretCategory, utils::random};
+    use crate::{smart_vaults::secret::SecretCategory};
 
     #[test]
     fn utest_new_master_vault() {

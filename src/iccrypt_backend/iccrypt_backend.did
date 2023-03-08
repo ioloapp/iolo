@@ -14,7 +14,7 @@ type Secret = record {
   date_modified : nat64;
 };
 type SecretCategory = variant { Password; Note; Document };
-type SecretForFrontend = record {
+type SecretForCreation = record {
   url : opt text;
   username : opt text;
   password : opt text;
@@ -22,9 +22,20 @@ type SecretForFrontend = record {
   notes : opt text;
   category : SecretCategory;
 };
+type SecretForUpdate = record {
+  id : nat;
+  url : opt text;
+  username : opt text;
+  password : opt text;
+  name : opt text;
+  notes : opt text;
+  category : opt SecretCategory;
+};
 type SmartVaultErr = variant {
   UserAlreadyExists : text;
+  SecretHasNoId;
   UserDeletionFailed : text;
+  SecretDoesNotExist : text;
   UserVaultCreationFailed : text;
   UserDoesNotExist : text;
   UserVaultDoesNotExist : text;
@@ -43,12 +54,12 @@ type UserVault = record {
   date_modified : nat64;
 };
 service : {
-  add_user_secret : (SecretForFrontend) -> (Result);
+  add_user_secret : (SecretForCreation) -> (Result);
   create_user : () -> (Result_1);
   delete_user : () -> (Result_2);
   get_decryption_key_from : (text) -> (opt vec nat8);
   get_encryption_key_for : (text) -> (opt vec nat8);
   get_user_vault : () -> (Result_3) query;
   is_user_vault_existing : () -> (bool) query;
-  update_user_secret : (Secret) -> (Result_2);
+  update_user_secret : (SecretForUpdate) -> (Result_2);
 }

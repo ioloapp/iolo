@@ -4,8 +4,15 @@ use serde::Serialize;
 use crate::common::uuid::UUID;
 use crate::utils::time;
 
+#[derive(Debug, CandidType, Deserialize, Serialize, Clone, Copy, PartialEq, Eq)]
+pub enum SecretCategory {
+    Password,
+    Note,
+    Document,
+}
+
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
-pub struct SecretForFrontend {
+pub struct SecretForCreation {
     category: SecretCategory,
     name: String,
     username: Option<String>,
@@ -14,23 +21,70 @@ pub struct SecretForFrontend {
     notes: Option<String>,
 }
 
-impl SecretForFrontend {
-    pub async fn to_secret(self) -> Secret {
-        let mut secret = Secret::new(&self.category, &self.name).await;
-        secret.set_name(&self.name);
-        secret.username = self.username; 
-        secret.password = self.password;
-        secret.url = self.url;
-        secret.notes = self.notes;
-        return secret.clone();
+impl SecretForCreation {
+    pub fn category(&self) -> &SecretCategory {
+        &self.category
+    }
+
+    pub fn name(&self) -> &String {
+        &self.name
+    }
+
+    pub fn username(&self) -> &Option<String> {
+        &self.username
+    }
+
+    pub fn password(&self) -> &Option<String> {
+        &self.password
+    }
+
+    pub fn url(&self) -> &Option<String> {
+        &self.url
+    }
+
+    pub fn notes(&self) -> &Option<String> {
+        &self.notes
     }
 }
 
-#[derive(Debug, CandidType, Deserialize, Serialize, Clone, Copy, PartialEq, Eq)]
-pub enum SecretCategory {
-    Password,
-    Note,
-    Document,
+#[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
+pub struct SecretForUpdate {
+    id: UUID,
+    category: Option<SecretCategory>,
+    name: Option<String>,
+    username: Option<String>,
+    password: Option<String>,
+    url: Option<String>,
+    notes: Option<String>,
+}
+
+impl SecretForUpdate {
+    pub fn id(&self) -> &UUID {
+        &self.id
+    }
+    pub fn category(&self) -> &Option<SecretCategory> {
+        &self.category
+    }
+
+    pub fn name(&self) -> &Option<String> {
+        &self.name
+    }
+
+    pub fn username(&self) -> &Option<String> {
+        &self.username
+    }
+
+    pub fn password(&self) -> &Option<String> {
+        &self.password
+    }
+
+    pub fn url(&self) -> &Option<String> {
+        &self.url
+    }
+
+    pub fn notes(&self) -> &Option<String> {
+        &self.notes
+    }
 }
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
@@ -61,16 +115,6 @@ impl Secret {
             url: Option::None,
             notes: Option::None,
         }
-    }
-
-    pub fn update(&mut self, secret: &Secret) {
-        self.date_modified = time::get_current_time();
-        self.category = secret.category;
-        self.name = secret.name.clone();
-        self.username = secret.username.clone();
-        self.password = secret.password.clone();
-        self.url = secret.url.clone();
-        self.notes = secret.notes.clone();
     }
 
     pub fn id(&self) -> &UUID {

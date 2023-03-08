@@ -4,7 +4,7 @@ export const idlFactory = ({ IDL }) => {
     'Note' : IDL.Null,
     'Document' : IDL.Null,
   });
-  const SecretForFrontend = IDL.Record({
+  const SecretForCreation = IDL.Record({
     'url' : IDL.Opt(IDL.Text),
     'username' : IDL.Opt(IDL.Text),
     'password' : IDL.Opt(IDL.Text),
@@ -14,7 +14,9 @@ export const idlFactory = ({ IDL }) => {
   });
   const SmartVaultErr = IDL.Variant({
     'UserAlreadyExists' : IDL.Text,
+    'SecretHasNoId' : IDL.Null,
     'UserDeletionFailed' : IDL.Text,
+    'SecretDoesNotExist' : IDL.Text,
     'UserVaultCreationFailed' : IDL.Text,
     'UserDoesNotExist' : IDL.Text,
     'UserVaultDoesNotExist' : IDL.Text,
@@ -47,8 +49,17 @@ export const idlFactory = ({ IDL }) => {
     'date_modified' : IDL.Nat64,
   });
   const Result_3 = IDL.Variant({ 'Ok' : UserVault, 'Err' : SmartVaultErr });
+  const SecretForUpdate = IDL.Record({
+    'id' : IDL.Nat,
+    'url' : IDL.Opt(IDL.Text),
+    'username' : IDL.Opt(IDL.Text),
+    'password' : IDL.Opt(IDL.Text),
+    'name' : IDL.Opt(IDL.Text),
+    'notes' : IDL.Opt(IDL.Text),
+    'category' : IDL.Opt(SecretCategory),
+  });
   return IDL.Service({
-    'add_user_secret' : IDL.Func([SecretForFrontend], [Result], []),
+    'add_user_secret' : IDL.Func([SecretForCreation], [Result], []),
     'create_user' : IDL.Func([], [Result_1], []),
     'delete_user' : IDL.Func([], [Result_2], []),
     'get_decryption_key_from' : IDL.Func(
@@ -63,7 +74,7 @@ export const idlFactory = ({ IDL }) => {
       ),
     'get_user_vault' : IDL.Func([], [Result_3], ['query']),
     'is_user_vault_existing' : IDL.Func([], [IDL.Bool], ['query']),
-    'update_user_secret' : IDL.Func([Secret], [Result_2], []),
+    'update_user_secret' : IDL.Func([SecretForUpdate], [Result_2], []),
   });
 };
 export const init = ({ IDL }) => { return []; };
