@@ -7,9 +7,9 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-*.2js
-*.3js
-*.4js
+*.did 2js
+*.did 3js
+*.did 4js
 
 node_modules
 dist
