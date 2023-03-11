@@ -74,7 +74,7 @@ const SmartVault = () => {
                 password: [secretInModal.password],
                 notes: [secretInModal.notes]
             };
-            let res: Result_2 = await actor.update_user_secret(secret);
+            let res: Result = await actor.update_user_secret(secret);
             console.log(res);
         } else {
             // Create
@@ -149,7 +149,7 @@ const SmartVault = () => {
             </Box>
             <List>
                 {secretList.map(secret =>
-                    <ListItem
+                    <ListItem button
                         key={secret.id}
                         secondaryAction={
                             <IconButton edge="end" aria-label="delete" onClick={() => handleOpenModal(secret)}>

@@ -50,7 +50,11 @@ impl UserVault {
         &self.secrets
     }
 
-    pub fn get_secret(&mut self, secret_id: &UUID) -> Result<&mut Secret, SmartVaultErr> {     
+    pub fn get_secret(&mut self, secret_id: &UUID) -> Result<&Secret, SmartVaultErr> {     
+        self.secrets.get(secret_id).ok_or_else(|| SmartVaultErr::SecretDoesNotExist(secret_id.to_string()))
+    }
+
+    pub fn get_secret_mut(&mut self, secret_id: &UUID) -> Result<&mut Secret, SmartVaultErr> {     
         self.secrets.get_mut(secret_id).ok_or_else(|| SmartVaultErr::SecretDoesNotExist(secret_id.to_string()))
     }
 
@@ -82,8 +86,8 @@ mod tests {
     use crate::smart_vaults::secret::SecretCategory;
     use std::thread;
 
-    #[tokio::test]
-    async fn utest_user_vault() {
+    #[test]
+    fn utest_user_vault() {
         // Create empty user_vault
         let before = time::get_current_time();
         thread::sleep(std::time::Duration::from_millis(100)); // Sleep 100 milliseconds to ensure that user_vault has a different creation date
@@ -111,7 +115,7 @@ mod tests {
 
         // Add secret to user_vault
         let mut secret: Secret =
-            Secret::new(&SecretCategory::Password, &String::from("my-first-secret")).await;
+            Secret::new(&SecretCategory::Password, &String::from("my-first-secret"));
         let mut modified_before_update = user_vault.date_modified;
         let mut created_before_update = user_vault.date_created;
         user_vault.add_secret(&secret);

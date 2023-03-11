@@ -1,4 +1,4 @@
-type Result = variant { Ok : text; Err : SmartVaultErr };
+type Result = variant { Ok : Secret; Err : SmartVaultErr };
 type Result_1 = variant { Ok : User; Err : SmartVaultErr };
 type Result_2 = variant { Ok; Err : SmartVaultErr };
 type Result_3 = variant { Ok : UserVault; Err : SmartVaultErr };
@@ -61,5 +61,5 @@ service : {
   get_encryption_key_for : (text) -> (opt vec nat8);
   get_user_vault : () -> (Result_3) query;
   is_user_vault_existing : () -> (bool) query;
-  update_user_secret : (SecretForUpdate) -> (Result_2);
+  update_user_secret : (SecretForUpdate) -> (Result);
 }

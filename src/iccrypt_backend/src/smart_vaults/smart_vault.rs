@@ -10,7 +10,7 @@ use crate::smart_vaults::user_registry::UserRegistry;
 use crate::utils::caller::get_caller;
 
 use super::master_vault::MasterVault;
-use super::secret::{Secret, SecretForCreation, SecretForUpdate};
+use super::secret::{SecretForCreation, SecretForUpdate, Secret};
 use super::user_vault::UserVault;
 
 thread_local! {
@@ -26,7 +26,7 @@ thread_local! {
 
 #[ic_cdk_macros::update]
 #[candid_method(update)]
-pub async fn create_user() -> Result<User, SmartVaultErr> {
+pub fn create_user() -> Result<User, SmartVaultErr> {
     let principal = get_caller();
     let mut new_user = User::new(&principal);
 
@@ -89,43 +89,28 @@ pub fn delete_user() -> Result<(), SmartVaultErr> {
 
 #[ic_cdk_macros::update]
 #[candid_method(update)]
-pub async fn add_user_secret(secret: SecretForCreation) -> Result<String, SmartVaultErr> {
+pub fn add_user_secret(secret_for_creation: SecretForCreation) -> Result<Secret, SmartVaultErr> {
     let principal = get_caller();
 
-    let user_vault_id: UUID = get_vault_id_for(principal)?;
-    let mut new_secret: Secret = Secret::new(&secret.category(), &secret.name()).await;
-    if secret.username().is_some() {
-        new_secret.set_username(&secret.username().clone().unwrap());
-    }
-    if secret.password().is_some() {
-        new_secret.set_password(&secret.password().clone().unwrap());
-    }
-    if secret.url().is_some() {
-        new_secret.set_url(&secret.url().clone().unwrap());
-    }
-    if secret.notes().is_some() {
-        new_secret.set_notes(&secret.notes().clone().unwrap());
-    }
-    
-    MASTERVAULT.with(|ms: &RefCell<MasterVault>| -> Result<(), SmartVaultErr> {
+    let user_vault_id: UUID = get_vault_id_for(principal)?;   
+    MASTERVAULT.with(|ms: &RefCell<MasterVault>| -> Result<Secret, SmartVaultErr> {
         let mut master_vault = ms.borrow_mut();
-        master_vault.add_secret(&user_vault_id, &new_secret)
-    })?;
-    Ok("Success".to_string())
+        master_vault.add_secret(&user_vault_id, &secret_for_creation)
+    })
+    
 }
 
 #[ic_cdk_macros::update]
 #[candid_method(update)]
-pub async fn update_user_secret(secret_for_update: SecretForUpdate) -> Result<(), SmartVaultErr> {
+pub fn update_user_secret(secret_for_update: SecretForUpdate) -> Result<Secret, SmartVaultErr> {
     let principal = get_caller();
 
     let user_vault_id: UUID = get_vault_id_for(principal)?;
 
-    MASTERVAULT.with(|ms: &RefCell<MasterVault>| -> Result<(), SmartVaultErr> {
+    MASTERVAULT.with(|ms: &RefCell<MasterVault>| -> Result<Secret, SmartVaultErr> {
         let mut master_vault = ms.borrow_mut();
-        master_vault.update_secret(&user_vault_id, &secret_for_update)
-    })?;
-    Ok(())
+        master_vault.update_secret(&user_vault_id, &secret_for_update) 
+    })
 }
 
 #[ic_cdk_macros::query]

@@ -1,7 +1,7 @@
 import type { Principal } from '@dfinity/principal';
 import type { ActorMethod } from '@dfinity/agent';
 
-export type Result = { 'Ok' : string } |
+export type Result = { 'Ok' : Secret } |
   { 'Err' : SmartVaultErr };
 export type Result_1 = { 'Ok' : User } |
   { 'Err' : SmartVaultErr };
@@ -68,5 +68,5 @@ export interface _SERVICE {
   'get_encryption_key_for' : ActorMethod<[string], [] | [Uint8Array]>,
   'get_user_vault' : ActorMethod<[], Result_3>,
   'is_user_vault_existing' : ActorMethod<[], boolean>,
-  'update_user_secret' : ActorMethod<[SecretForUpdate], Result_2>,
+  'update_user_secret' : ActorMethod<[SecretForUpdate], Result>,
 }

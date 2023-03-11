@@ -22,6 +22,17 @@ pub struct SecretForCreation {
 }
 
 impl SecretForCreation {
+    pub fn new(name: String, category: SecretCategory) -> Self {
+        Self {
+            name,
+            category,
+            username: None,
+            password: None,
+            url: None,
+            notes: None
+        }
+    }
+
     pub fn category(&self) -> &SecretCategory {
         &self.category
     }
@@ -59,15 +70,39 @@ pub struct SecretForUpdate {
 }
 
 impl SecretForUpdate {
+    pub fn new() -> Self {
+        let id = UUID::new();
+        Self {
+            id,
+            name: None,
+            category: None,
+            username: None,
+            password: None,
+            url: None,
+            notes: None
+        }
+    }
+
     pub fn id(&self) -> &UUID {
         &self.id
     }
+
+    pub fn set_id(&mut self, id: UUID) {
+        // needed for unit tests
+        self.id = id;
+    }
+
     pub fn category(&self) -> &Option<SecretCategory> {
         &self.category
     }
 
     pub fn name(&self) -> &Option<String> {
         &self.name
+    }
+
+    pub fn set_name(&mut self, name: String) {
+        // needed for unit tests
+        self.name = Some(name);
     }
 
     pub fn username(&self) -> &Option<String> {
@@ -101,7 +136,7 @@ pub struct Secret {
 }
 
 impl Secret {
-    pub async fn new(category: &SecretCategory, name: &str) -> Self {
+    pub fn new(category: &SecretCategory, name: &str) -> Self {
         let id = UUID::new();
         let now: u64 = time::get_current_time();
         Self {
@@ -191,14 +226,14 @@ mod tests {
     use crate::smart_vaults::secret::SecretCategory;
     use std::thread;
 
-    #[tokio::test]
-    async fn utest_new_secret() {
+    #[test]
+    fn utest_new_secret() {
         let sc: SecretCategory = SecretCategory::Password;
         let name: String = String::from("my-first-secret");
 
         let before = time::get_current_time();
         thread::sleep(std::time::Duration::from_millis(10)); // Sleep 10 milliseconds to ensure that secret has a different creation date
-        let secret: Secret = Secret::new(&sc, &name).await;
+        let secret: Secret = Secret::new(&sc, &name);
 
         assert!(
             secret.date_created() > &before,
@@ -221,13 +256,13 @@ mod tests {
         assert_eq!(secret.notes(), &Option::None);
     }
 
-    #[tokio::test]
-    async fn utest_update_secret() {
+    #[test]
+    fn utest_update_secret() {
         // Create secret
         let sc: SecretCategory = SecretCategory::Password;
         let name: String = String::from("my-first-secret");
 
-        let mut secret: Secret = Secret::new(&sc, &name).await;
+        let mut secret: Secret = Secret::new(&sc, &name);
 
         // Update category
         let sc_updated = SecretCategory::Note;

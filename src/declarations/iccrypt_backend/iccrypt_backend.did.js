@@ -12,25 +12,6 @@ export const idlFactory = ({ IDL }) => {
     'notes' : IDL.Opt(IDL.Text),
     'category' : SecretCategory,
   });
-  const SmartVaultErr = IDL.Variant({
-    'UserAlreadyExists' : IDL.Text,
-    'SecretHasNoId' : IDL.Null,
-    'UserDeletionFailed' : IDL.Text,
-    'SecretDoesNotExist' : IDL.Text,
-    'UserVaultCreationFailed' : IDL.Text,
-    'UserDoesNotExist' : IDL.Text,
-    'UserVaultDoesNotExist' : IDL.Text,
-  });
-  const Result = IDL.Variant({ 'Ok' : IDL.Text, 'Err' : SmartVaultErr });
-  const User = IDL.Record({
-    'id' : IDL.Principal,
-    'date_created' : IDL.Nat64,
-    'date_last_login' : IDL.Opt(IDL.Nat64),
-    'user_vault_id' : IDL.Nat,
-    'date_modified' : IDL.Nat64,
-  });
-  const Result_1 = IDL.Variant({ 'Ok' : User, 'Err' : SmartVaultErr });
-  const Result_2 = IDL.Variant({ 'Ok' : IDL.Null, 'Err' : SmartVaultErr });
   const Secret = IDL.Record({
     'id' : IDL.Nat,
     'url' : IDL.Opt(IDL.Text),
@@ -42,6 +23,25 @@ export const idlFactory = ({ IDL }) => {
     'category' : SecretCategory,
     'date_modified' : IDL.Nat64,
   });
+  const SmartVaultErr = IDL.Variant({
+    'UserAlreadyExists' : IDL.Text,
+    'SecretHasNoId' : IDL.Null,
+    'UserDeletionFailed' : IDL.Text,
+    'SecretDoesNotExist' : IDL.Text,
+    'UserVaultCreationFailed' : IDL.Text,
+    'UserDoesNotExist' : IDL.Text,
+    'UserVaultDoesNotExist' : IDL.Text,
+  });
+  const Result = IDL.Variant({ 'Ok' : Secret, 'Err' : SmartVaultErr });
+  const User = IDL.Record({
+    'id' : IDL.Principal,
+    'date_created' : IDL.Nat64,
+    'date_last_login' : IDL.Opt(IDL.Nat64),
+    'user_vault_id' : IDL.Nat,
+    'date_modified' : IDL.Nat64,
+  });
+  const Result_1 = IDL.Variant({ 'Ok' : User, 'Err' : SmartVaultErr });
+  const Result_2 = IDL.Variant({ 'Ok' : IDL.Null, 'Err' : SmartVaultErr });
   const UserVault = IDL.Record({
     'id' : IDL.Nat,
     'date_created' : IDL.Nat64,
@@ -74,7 +74,7 @@ export const idlFactory = ({ IDL }) => {
       ),
     'get_user_vault' : IDL.Func([], [Result_3], ['query']),
     'is_user_vault_existing' : IDL.Func([], [IDL.Bool], ['query']),
-    'update_user_secret' : IDL.Func([SecretForUpdate], [Result_2], []),
+    'update_user_secret' : IDL.Func([SecretForUpdate], [Result], []),
   });
 };
 export const init = ({ IDL }) => { return []; };
