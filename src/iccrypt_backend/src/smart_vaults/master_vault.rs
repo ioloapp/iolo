@@ -4,7 +4,7 @@ use candid::{CandidType, Deserialize};
 
 use crate::common::{error::SmartVaultErr, uuid::UUID};
 
-use super::{secret::Secret, user_vault::UserVault};
+use super::{secret::{Secret, SecretForUpdate}, user_vault::UserVault};
 
 #[derive(CandidType, Deserialize, Clone, Debug)]
 pub struct MasterVault {
@@ -77,14 +77,37 @@ impl MasterVault {
         Ok(())
     }
 
+
+
     // Replace a secret
-    pub fn update_secret(&mut self, vault_id: &UUID, secret: &Secret) -> Result<(), SmartVaultErr> {
+    pub fn update_secret(&mut self, vault_id: &UUID, secret_for_update: &SecretForUpdate) -> Result<(), SmartVaultErr> {
         if !self.user_vaults.contains_key(vault_id) {
             return Err(SmartVaultErr::UserVaultDoesNotExist(vault_id.to_string()));
         }
 
+        let secret_to_update: &mut Secret = self.get_secret(vault_id, secret_for_update.id())?;
+        if secret_for_update.name().is_some() {
+            secret_to_update.set_name(&secret_for_update.name().clone().unwrap());
+        }
+        if secret_for_update.category().is_some() {
+            secret_to_update.set_category(&secret_for_update.category().clone().unwrap());
+        }
+        if secret_for_update.password().is_some() {
+            secret_to_update.set_password(&secret_for_update.password().clone().unwrap());
+        }
+        if secret_for_update.username().is_some() {
+            secret_to_update.set_username(&secret_for_update.username().clone().unwrap());
+        }
+        if secret_for_update.url().is_some() {
+            secret_to_update.set_url(&secret_for_update.url().clone().unwrap());
+        }
+        if secret_for_update.notes().is_some() {
+            secret_to_update.set_notes(&secret_for_update.notes().clone().unwrap());
+        }
+        
         let user_vault = self.user_vaults.get_mut(vault_id).unwrap();
-        user_vault.update_secret(secret)
+        user_vault.update_secret(secret_to_update)
+
     }
 
     // Remove a secret

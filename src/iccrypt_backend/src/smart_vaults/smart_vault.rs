@@ -10,7 +10,7 @@ use crate::smart_vaults::user_registry::UserRegistry;
 use crate::utils::caller::get_caller;
 
 use super::master_vault::MasterVault;
-use super::secret::{Secret, SecretCategory, SecretForCreation, SecretForUpdate};
+use super::secret::{Secret, SecretForCreation, SecretForUpdate};
 use super::user_vault::UserVault;
 
 thread_local! {
@@ -116,34 +116,14 @@ pub async fn add_user_secret(secret: SecretForCreation) -> Result<String, SmartV
 
 #[ic_cdk_macros::update]
 #[candid_method(update)]
-pub async fn update_user_secret(secret: SecretForUpdate) -> Result<(), SmartVaultErr> {
+pub async fn update_user_secret(secret_for_update: SecretForUpdate) -> Result<(), SmartVaultErr> {
     let principal = get_caller();
 
     let user_vault_id: UUID = get_vault_id_for(principal)?;
 
     MASTERVAULT.with(|ms: &RefCell<MasterVault>| -> Result<(), SmartVaultErr> {
         let mut master_vault = ms.borrow_mut();
-        let secret_to_update: &mut Secret = master_vault.get_secret(&user_vault_id, &secret.id())?;
-        if secret.name().is_some() {
-            secret_to_update.set_name(&secret.name().clone().unwrap());
-        }
-        if secret.category().is_some() {
-            secret_to_update.set_category(&secret.category().clone().unwrap());
-        }
-        if secret.password().is_some() {
-            secret_to_update.set_password(&secret.password().clone().unwrap());
-        }
-        if secret.username().is_some() {
-            secret_to_update.set_username(&secret.username().clone().unwrap());
-        }
-        if secret.url().is_some() {
-            secret_to_update.set_url(&secret.url().clone().unwrap());
-        }
-        if secret.notes().is_some() {
-            secret_to_update.set_notes(&secret.notes().clone().unwrap());
-        }
-
-        master_vault.update_secret(&user_vault_id, secret_to_update)
+        master_vault.update_secret(&user_vault_id, &secret_for_update)
     })?;
     Ok(())
 }
