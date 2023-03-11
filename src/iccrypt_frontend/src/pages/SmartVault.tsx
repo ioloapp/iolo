@@ -6,9 +6,9 @@ import { useAppDispatch } from '../redux/hooks'; // for typescript
 
 // MUI
 import {
-    Box, Typography, List, ListItem, IconButton, ListItemText, TextField, Button, Select, MenuItem, ListItemAvatar, Avatar, Modal, Fab
+    Box, Typography, List, ListItem, IconButton, ListItemText, TextField, Button, Select, MenuItem, ListItemAvatar, Avatar, Modal, Fab, ListItemButton
 } from '@mui/material';
-import { Edit as EditIcon, Key as KeyIcon, Add as AddIcon } from '@mui/icons-material';
+import { Delete as DeleteIcon, Key as KeyIcon, Add as AddIcon } from '@mui/icons-material';
 
 // IC
 import { getActor } from '../utils/backend';
@@ -89,8 +89,11 @@ const SmartVault = () => {
             let res: Result = await actor.add_user_secret(secret); 
             console.log(res);
         }
-
         handleCloseModal();
+    }
+
+    async function deleteSecret() {
+        console.log("DELETE")
     }
 
     const handleOpenModal = (selectedSecret) => {
@@ -149,14 +152,15 @@ const SmartVault = () => {
             </Box>
             <List>
                 {secretList.map(secret =>
-                    <ListItem button
+                    <ListItem
                         key={secret.id}
+                        disablePadding
                         secondaryAction={
-                            <IconButton edge="end" aria-label="delete" onClick={() => handleOpenModal(secret)}>
-                                <EditIcon />
+                            <IconButton edge="end" onClick={() => deleteSecret()}>
+                                <DeleteIcon />
                             </IconButton>
                         }
-                    >
+                    ><ListItemButton onClick={() => handleOpenModal(secret)}>
                         <ListItemAvatar>
                             <Avatar>
                                 <KeyIcon />
@@ -166,6 +170,8 @@ const SmartVault = () => {
                             primary={secret.name}
                             secondary={secret.username}
                         />
+                    </ListItemButton>
+                        
                     </ListItem>
                 )}
             </List>
