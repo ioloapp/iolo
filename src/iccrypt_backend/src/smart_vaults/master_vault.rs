@@ -131,9 +131,8 @@ impl MasterVault {
             return Err(SmartVaultErr::UserVaultDoesNotExist(vault_id.to_string()));
         }
 
-        let user_vault = self.user_vaults.get_mut(vault_id).unwrap();
-        user_vault.remove_secret(secret_id);
-        Ok(())
+        let user_vault = self.user_vaults.get_mut(vault_id).unwrap();              
+        user_vault.remove_secret(secret_id)
     }
 }
 

@@ -67,33 +67,62 @@ const SmartVault = () => {
             // Update
             let secret: SecretForUpdate = {
                 id: BigInt(secretInModal.id),
-                name: [secretInModal.name],
-                url: [secretInModal.url],
+                name: [],
+                url: [],
                 category: [secretCategory],
-                username: [secretInModal.username],
-                password: [secretInModal.password],
-                notes: [secretInModal.notes]
+                username: [],
+                password: [],
+                notes: []
             };
+            if (secretInModal.name !== '') {
+                secret.name = [secretInModal.name];
+            }
+            if (secretInModal.username !== '') {
+                secret.username = [secretInModal.username];
+            }
+            if (secretInModal.password !== '') {
+                secret.password = [secretInModal.password];
+            } 
+            if (secretInModal.url !== '') {
+                secret.url = [secretInModal.url];
+            } 
+            if (secretInModal.notes !== '') {
+                secret.notes = [secretInModal.notes];
+            } 
             let res: Result = await actor.update_user_secret(secret);
             console.log(res);
         } else {
             // Create
             let secret: SecretForCreation = {
                 name: secretInModal.name,
-                url: [secretInModal.url],
                 category: secretCategory,
-                username: [secretInModal.username],
-                password: [secretInModal.password],
-                notes: [secretInModal.notes]
+                username: [],
+                password: [],
+                url: [],
+                notes: []
             };
+            if (secretInModal.username !== '') {
+                secret.username = [secretInModal.username];
+            }
+            if (secretInModal.password !== '') {
+                secret.password = [secretInModal.password];
+            } 
+            if (secretInModal.url !== '') {
+                secret.url = [secretInModal.url];
+            } 
+            if (secretInModal.notes !== '') {
+                secret.notes = [secretInModal.notes];
+            } 
             let res: Result = await actor.add_user_secret(secret); 
             console.log(res);
         }
         handleCloseModal();
     }
 
-    async function deleteSecret() {
-        console.log("DELETE")
+    async function removeSecret(secretId: number) {
+        let actor = await getActor();
+        let res: Result_2 = await actor.remove_user_secret(BigInt(secretId));
+        console.log(res);
     }
 
     const handleOpenModal = (selectedSecret) => {
@@ -156,7 +185,7 @@ const SmartVault = () => {
                         key={secret.id}
                         disablePadding
                         secondaryAction={
-                            <IconButton edge="end" onClick={() => deleteSecret()}>
+                            <IconButton edge="end" onClick={() => removeSecret(secret.id)}>
                                 <DeleteIcon />
                             </IconButton>
                         }

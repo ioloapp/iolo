@@ -113,6 +113,19 @@ pub fn update_user_secret(secret_for_update: SecretForUpdate) -> Result<Secret, 
     })
 }
 
+#[ic_cdk_macros::update]
+#[candid_method(update)]
+pub fn remove_user_secret(secret_id: UUID) -> Result<(), SmartVaultErr> {
+    let principal = get_caller();
+
+    let user_vault_id: UUID = get_vault_id_for(principal)?;
+
+    MASTERVAULT.with(|ms: &RefCell<MasterVault>| -> Result<(), SmartVaultErr> {
+        let mut master_vault = ms.borrow_mut();
+        master_vault.remove_secret(&user_vault_id, &secret_id) 
+    })
+}
+
 #[ic_cdk_macros::query]
 #[candid_method(query)]
 pub fn is_user_vault_existing() -> bool {

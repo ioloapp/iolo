@@ -64,9 +64,17 @@ impl UserVault {
         self.date_modified = time::get_current_time();
     }
 
-    pub fn remove_secret(&mut self, secret_id: &UUID) {
+    pub fn remove_secret(&mut self, secret_id: &UUID) -> Result<(), SmartVaultErr> {
+        ic_cdk::println!("Secret-ID: {}", secret_id);
+        ic_cdk::println!("{:?}", self.secrets());
+        ic_cdk::println!("{:?}", self.secrets.keys());
+        ic_cdk::println!("{:?}", self.secrets.first_key_value());
+        if self.secrets.contains_key(secret_id) {
+            return Err(SmartVaultErr::SecretDoesNotExist(secret_id.to_string()));
+        }
         self.secrets.remove(secret_id);
         self.date_modified = time::get_current_time();
+        Ok(())
     }
 
     pub fn update_secret(&mut self, secret: &Secret) -> Result<(), SmartVaultErr> {

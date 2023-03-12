@@ -68,5 +68,6 @@ export interface _SERVICE {
   'get_encryption_key_for' : ActorMethod<[string], [] | [Uint8Array]>,
   'get_user_vault' : ActorMethod<[], Result_3>,
   'is_user_vault_existing' : ActorMethod<[], boolean>,
+  'remove_user_secret' : ActorMethod<[bigint], Result_2>,
   'update_user_secret' : ActorMethod<[SecretForUpdate], Result>,
 }
