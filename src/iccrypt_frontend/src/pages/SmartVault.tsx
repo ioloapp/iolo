@@ -1,9 +1,6 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 
-// Redux
-import { useAppDispatch } from '../redux/hooks'; // for typescript
-
 // MUI
 import {
     Box, Typography, List, ListItem, IconButton, ListItemText, TextField, Button, Select, MenuItem, ListItemAvatar, Avatar, Modal, Fab, ListItemButton
@@ -82,15 +79,26 @@ const SmartVault = () => {
             }
             if (secretInModal.password !== '') {
                 secret.password = [secretInModal.password];
-            } 
+            }
             if (secretInModal.url !== '') {
                 secret.url = [secretInModal.url];
-            } 
+            }
             if (secretInModal.notes !== '') {
                 secret.notes = [secretInModal.notes];
-            } 
+            }
             let res: Result = await actor.update_user_secret(secret);
-            console.log(res);
+            if (Object.keys(res)[0] === 'Ok') {
+                const secretsForList = secretList.map((secret, i) => {
+                    if (secret.id === secretInModal.id) {
+                        return secretInModal;
+                    } else {
+                        return secret;
+                    }
+                });
+                setSecretList(secretsForList);
+            } else {
+                console.error(res);
+            }
         } else {
             // Create
             let secret: SecretForCreation = {
@@ -106,15 +114,22 @@ const SmartVault = () => {
             }
             if (secretInModal.password !== '') {
                 secret.password = [secretInModal.password];
-            } 
+            }
             if (secretInModal.url !== '') {
                 secret.url = [secretInModal.url];
-            } 
+            }
             if (secretInModal.notes !== '') {
                 secret.notes = [secretInModal.notes];
-            } 
-            let res: Result = await actor.add_user_secret(secret); 
-            console.log(res);
+            }
+            let res: Result = await actor.add_user_secret(secret);
+            if (Object.keys(res)[0] === 'Ok') {
+                setSecretList([
+                    ...secretList,
+                    { id: res['Ok']['id'], name: secretInModal.name, category: secretInModal.category, username: secretInModal.username, password: secretInModal.password, url: secretInModal.url, notes: secretInModal.notes }
+                ]);
+            } else {
+                console.error(res);
+            }
         }
         handleCloseModal();
     }
@@ -122,8 +137,16 @@ const SmartVault = () => {
     async function removeSecret(secretId: number) {
         let actor = await getActor();
         let res: Result_2 = await actor.remove_user_secret(BigInt(secretId));
-        console.log(res);
-    }
+        if (Object.keys(res)[0] === 'Ok') {
+            setSecretList(
+                secretList.filter(s =>
+                  s.id !== secretId
+                )
+              );
+        } else {
+            console.error(res);
+        }
+}
 
     const handleOpenModal = (selectedSecret) => {
         if (selectedSecret) {
@@ -190,17 +213,17 @@ const SmartVault = () => {
                             </IconButton>
                         }
                     ><ListItemButton onClick={() => handleOpenModal(secret)}>
-                        <ListItemAvatar>
-                            <Avatar>
-                                <KeyIcon />
-                            </Avatar>
-                        </ListItemAvatar>
-                        <ListItemText
-                            primary={secret.name}
-                            secondary={secret.username}
-                        />
-                    </ListItemButton>
-                        
+                            <ListItemAvatar>
+                                <Avatar>
+                                    <KeyIcon />
+                                </Avatar>
+                            </ListItemAvatar>
+                            <ListItemText
+                                primary={secret.name}
+                                secondary={secret.username}
+                            />
+                        </ListItemButton>
+
                     </ListItem>
                 )}
             </List>
@@ -236,6 +259,12 @@ const SmartVault = () => {
 
                     <Box>
                         <TextField required name="password" margin="normal" fullWidth size="small" label="Password" variant="filled" value={secretInModal.password} onChange={handleEditSecretValueChange} />
+                    </Box>
+                    <Box>
+                        <TextField required name="url" margin="normal" fullWidth size="small" label="Url" variant="filled" value={secretInModal.url} onChange={handleEditSecretValueChange} />
+                    </Box>
+                    <Box>
+                        <TextField required name="notes" margin="normal" fullWidth size="small" label="Notes" variant="filled" value={secretInModal.notes} onChange={handleEditSecretValueChange} />
                     </Box>
                     <Box>
                         <Button variant="contained" type="submit" onClick={() => saveSecret()}>Save</Button>
