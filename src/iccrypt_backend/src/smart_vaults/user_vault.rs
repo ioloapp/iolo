@@ -65,11 +65,7 @@ impl UserVault {
     }
 
     pub fn remove_secret(&mut self, secret_id: &UUID) -> Result<(), SmartVaultErr> {
-        ic_cdk::println!("Secret-ID: {}", secret_id);
-        ic_cdk::println!("{:?}", self.secrets());
-        ic_cdk::println!("{:?}", self.secrets.keys());
-        ic_cdk::println!("{:?}", self.secrets.first_key_value());
-        if self.secrets.contains_key(secret_id) {
+        if !self.secrets.contains_key(secret_id) {
             return Err(SmartVaultErr::SecretDoesNotExist(secret_id.to_string()));
         }
         self.secrets.remove(secret_id);
