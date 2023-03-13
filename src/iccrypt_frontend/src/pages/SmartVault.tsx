@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 
 // MUI
 import {
-    Box, Typography, List, ListItem, IconButton, ListItemText, TextField, Button, Select, MenuItem, ListItemAvatar, Avatar, Modal, Fab, ListItemButton
+    Box, Typography, List, ListItem, IconButton, ListItemText, TextField, Button, Select, MenuItem, ListItemAvatar, Avatar, Modal, Fab, ListItemButton, Backdrop, CircularProgress
 } from '@mui/material';
 import { Delete as DeleteIcon, Key as KeyIcon, Add as AddIcon } from '@mui/icons-material';
 
@@ -48,6 +48,7 @@ const SmartVault = () => {
     const [secretList, setSecretList] = useState([]);
     const [secretInModal, setSecretInModal] = useState(secretInModalInitValues);
     const [openModal, setOpenModal] = useState(false);
+    const [loadingIconIsOpen, setLoadingIcon] = React.useState(false);
 
     async function saveSecret() {
         let secretCategory: SecretCategory = null;
@@ -59,6 +60,7 @@ const SmartVault = () => {
             secretCategory = { 'Document': null };
         }
 
+        setLoadingIcon(true);
         let actor = await getActor();
         if (secretInModal.id > 0) {
             // Update
@@ -131,6 +133,7 @@ const SmartVault = () => {
                 console.error(res);
             }
         }
+        setLoadingIcon(false);
         handleCloseModal();
     }
 
@@ -140,13 +143,13 @@ const SmartVault = () => {
         if (Object.keys(res)[0] === 'Ok') {
             setSecretList(
                 secretList.filter(s =>
-                  s.id !== secretId
+                    s.id !== secretId
                 )
-              );
+            );
         } else {
             console.error(res);
         }
-}
+    }
 
     const handleOpenModal = (selectedSecret) => {
         if (selectedSecret) {
@@ -269,6 +272,12 @@ const SmartVault = () => {
                     <Box>
                         <Button variant="contained" type="submit" onClick={() => saveSecret()}>Save</Button>
                     </Box>
+                    <Backdrop
+                        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+                        open={loadingIconIsOpen}
+                    >
+                        <CircularProgress color="inherit" />
+                    </Backdrop>
                 </Box>
             </Modal>
         </Box>

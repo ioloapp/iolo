@@ -39,7 +39,6 @@ function DrawerContent() {
                         </ListItemButton>
                     </ListItem>
                 }
-
                 <ListItem key="Settings" disablePadding>
                     <ListItemButton onClick={() => navigate('/settings')}>
                         <ListItemIcon>

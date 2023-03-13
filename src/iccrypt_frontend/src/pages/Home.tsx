@@ -6,7 +6,7 @@ import { hasAccount } from '../redux/userSlice';
 
 // MUI
 import {
-    Box, Typography, TextField, Button
+    Box, Typography, Backdrop, Button, CircularProgress
 } from '@mui/material';
 
 // IC
@@ -20,10 +20,14 @@ const Home = () => {
     const principal = useAppSelector((state) => state.user.principal);
     const isAccountExisting = useAppSelector((state) => state.user.hasAccount);
 
+    const [loadingIconIsOpen, setLoadingIcon] = React.useState(false);
+
     async function createUser() {
+        setLoadingIcon(true);
         let actor = await getActor();
         await actor.create_user();
         dispatch(hasAccount(true));
+        setLoadingIcon(false);
     }
 
     return (
@@ -46,7 +50,14 @@ const Home = () => {
                             }}>
                                 Create Account
                             </Button>
+                            <Backdrop
+                                sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+                                open={loadingIconIsOpen}
+                            >
+                                <CircularProgress color="inherit" />
+                            </Backdrop>
                         </Box>
+
                     }
                     {isAccountExisting &&
                         <Box justifyContent="center">

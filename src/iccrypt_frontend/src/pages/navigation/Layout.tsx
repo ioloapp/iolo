@@ -8,7 +8,7 @@ import { hasAccount } from '../../redux/userSlice';
 import { logIn, logOut } from '../../redux/userSlice';
 
 // MUI
-import { AppBar, Box, Drawer, IconButton, Toolbar, Typography, Button, Menu, MenuItem, CssBaseline } from '@mui/material/';
+import { AppBar, Box, Drawer, IconButton, Toolbar, Typography, Button, Menu, MenuItem, CssBaseline, Backdrop, CircularProgress } from '@mui/material/';
 import { Menu as MenuIcon, AccountCircle } from '@mui/icons-material';
 
 // Components
@@ -31,6 +31,7 @@ function Layout() {
     let navigate = useNavigate();
     const dispatch = useAppDispatch();
     const isLoggedIn = useAppSelector((state) => state.user.isLoggedIn);
+    const hasIccryptAccount = useAppSelector((state) => state.user.hasAccount);
 
     // Menu Drawer
     const [drawerOpen, setDrawerOpen] = useState(false);
@@ -46,6 +47,7 @@ function Layout() {
     const handleCloseUserMenu = () => {
         setAnchorElement(null);
     };
+    const [loadingIconIsOpen, setLoadingIcon] = React.useState(false);
 
     // Login/Logout
     async function handleLogin() {
@@ -73,8 +75,8 @@ function Layout() {
         setAnchorElement(null);  // Close profile menu
         navigate('/home');
     }
-    
-   // IC
+
+    // IC
     const isAuth = async () => {
         const authClient = await AuthClient.create();
         let isAuthenticated = await authClient.isAuthenticated();
@@ -89,6 +91,18 @@ function Layout() {
         let actor = await getActor();
         let isUserVaultExisting = await actor.is_user_vault_existing();
         dispatch(hasAccount(isUserVaultExisting));
+    }
+
+    async function deleteAccount() {
+        setAnchorElement(null);  // Close profile menu
+        setLoadingIcon(true);
+        let actor = await getActor();
+        let res = await actor.delete_user();
+        if (Object.keys(res)[0] === 'Ok') {
+            dispatch(hasAccount(false));
+        }
+        setLoadingIcon(false);
+        navigate('/home');
     }
 
     return (
@@ -143,6 +157,7 @@ function Layout() {
                                 onClose={handleCloseUserMenu}
                             >
                                 <MenuItem onClick={handleLogout}>Log out</MenuItem>
+                                {hasIccryptAccount && <MenuItem onClick={deleteAccount}>Delete account</MenuItem>}
                             </Menu>
                         </Box>}
                 </Toolbar>
@@ -177,6 +192,12 @@ function Layout() {
                 >
                     <DrawerContent />
                 </Drawer>
+                <Backdrop
+                    sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+                    open={loadingIconIsOpen}
+                >
+                    <CircularProgress color="inherit" />
+                </Backdrop>
             </Box>
             <Box
                 component="main"
