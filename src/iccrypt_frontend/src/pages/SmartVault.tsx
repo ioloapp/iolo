@@ -48,7 +48,8 @@ const SmartVault = () => {
     const [secretList, setSecretList] = useState([]);
     const [secretInModal, setSecretInModal] = useState(secretInModalInitValues);
     const [openModal, setOpenModal] = useState(false);
-    const [loadingIconIsOpen, setLoadingIcon] = React.useState(false);
+    const [loadingIconForSaveIsOpen, setLoadingIconForSave] = React.useState(false);
+    const [loadingIconForDeleteIsOpen, setLoadingIconForDelete] = React.useState(false);
 
     async function saveSecret() {
         let secretCategory: SecretCategory = null;
@@ -60,7 +61,7 @@ const SmartVault = () => {
             secretCategory = { 'Document': null };
         }
 
-        setLoadingIcon(true);
+        setLoadingIconForSave(true);
         let actor = await getActor();
         if (secretInModal.id > 0) {
             // Update
@@ -133,13 +134,15 @@ const SmartVault = () => {
                 console.error(res);
             }
         }
-        setLoadingIcon(false);
+        setLoadingIconForSave(false);
         handleCloseModal();
     }
 
     async function removeSecret(secretId: number) {
+        setLoadingIconForDelete(true);
         let actor = await getActor();
         let res: Result_2 = await actor.remove_user_secret(BigInt(secretId));
+        setLoadingIconForDelete(false);
         if (Object.keys(res)[0] === 'Ok') {
             setSecretList(
                 secretList.filter(s =>
@@ -230,6 +233,12 @@ const SmartVault = () => {
                     </ListItem>
                 )}
             </List>
+            <Backdrop
+                sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+                open={loadingIconForDeleteIsOpen}
+            >
+                <CircularProgress color="inherit" />
+            </Backdrop>
             <Fab color="primary" aria-label="add" onClick={() => handleOpenModal(null)} sx={{ position: 'absolute', bottom: 16, right: 16 }}>
                 <AddIcon />
             </Fab>
@@ -274,7 +283,7 @@ const SmartVault = () => {
                     </Box>
                     <Backdrop
                         sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
-                        open={loadingIconIsOpen}
+                        open={loadingIconForSaveIsOpen}
                     >
                         <CircularProgress color="inherit" />
                     </Backdrop>
