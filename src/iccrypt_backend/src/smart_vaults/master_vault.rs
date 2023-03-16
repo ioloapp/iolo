@@ -65,24 +65,25 @@ impl MasterVault {
             return Err(SmartVaultErr::UserVaultDoesNotExist(vault_id.to_string()));
         }
 
-        let mut secret: Secret = Secret::new(secret_for_creation.category(), secret_for_creation.name());
+        let mut secret: Secret = Secret::new(secret_for_creation.category().clone(), secret_for_creation.name().clone());
         if secret_for_creation.username().is_some() {
-            secret.set_username(&secret_for_creation.username().clone().unwrap());
+            secret.set_username(secret_for_creation.username().clone().unwrap());
         }
         if secret_for_creation.password().is_some() {
-            secret.set_password(&secret_for_creation.password().clone().unwrap());
+            secret.set_password(secret_for_creation.password().clone().unwrap());
         }
         if secret_for_creation.url().is_some() {
-            secret.set_url(&secret_for_creation.url().clone().unwrap());
+            secret.set_url(secret_for_creation.url().clone().unwrap());
         }
         if secret_for_creation.notes().is_some() {
-            secret.set_notes(&secret_for_creation.notes().clone().unwrap());
+            secret.set_notes(secret_for_creation.notes().clone().unwrap());
         }
 
         let user_vault = self.user_vaults.get_mut(vault_id).unwrap();
-        user_vault.add_secret(&secret);
+        let secret_id = secret.id().clone();
+        user_vault.add_secret(secret);
 
-        Ok(user_vault.get_secret(secret.id()).unwrap().clone())
+        Ok(user_vault.get_secret(&secret_id).unwrap().clone())
 
     }
 
@@ -100,22 +101,22 @@ impl MasterVault {
         let secret: &mut Secret = user_vault.get_secret_mut(secret_for_update.id())?;
         
         if secret_for_update.name().is_some() {
-            secret.set_name(&secret_for_update.name().clone().unwrap());
+            secret.set_name(secret_for_update.name().clone().unwrap());
         }
         if secret_for_update.category().is_some() {
-            secret.set_category(&secret_for_update.category().clone().unwrap());
+            secret.set_category(secret_for_update.category().clone().unwrap());
         }
         if secret_for_update.password().is_some() {
-            secret.set_password(&secret_for_update.password().clone().unwrap());
+            secret.set_password(secret_for_update.password().clone().unwrap());
         }
         if secret_for_update.username().is_some() {
-            secret.set_username(&secret_for_update.username().clone().unwrap());
+            secret.set_username(secret_for_update.username().clone().unwrap());
         }
         if secret_for_update.url().is_some() {
-            secret.set_url(&secret_for_update.url().clone().unwrap());
+            secret.set_url(secret_for_update.url().clone().unwrap());
         }
         if secret_for_update.notes().is_some() {
-            secret.set_notes(&secret_for_update.notes().clone().unwrap());
+            secret.set_notes(secret_for_update.notes().clone().unwrap());
         }
         let s = secret.clone();
         Ok(s)

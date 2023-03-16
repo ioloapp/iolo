@@ -58,9 +58,9 @@ impl UserVault {
         self.secrets.get_mut(secret_id).ok_or_else(|| SmartVaultErr::SecretDoesNotExist(secret_id.to_string()))
     }
 
-    pub fn add_secret(&mut self, secret: &Secret) {
+    pub fn add_secret(&mut self, secret: Secret) {
         
-        self.secrets.insert(*secret.id(), secret.clone());
+        self.secrets.insert(*secret.id(), secret);
         self.date_modified = time::get_current_time();
     }
 
@@ -73,11 +73,11 @@ impl UserVault {
         Ok(())
     }
 
-    pub fn update_secret(&mut self, secret: &Secret) -> Result<(), SmartVaultErr> {
+    pub fn update_secret(&mut self, secret: Secret) -> Result<(), SmartVaultErr> {
         if !self.secrets.contains_key(secret.id()) {
             return Err(SmartVaultErr::SecretDoesNotExist(secret.id().to_string()));
         }
-        self.secrets.insert(*secret.id(), secret.clone());
+        self.secrets.insert(*secret.id(), secret);
         self.date_modified = time::get_current_time();
         Ok(())
     }
@@ -119,10 +119,10 @@ mod tests {
 
         // Add secret to user_vault
         let mut secret: Secret =
-            Secret::new(&SecretCategory::Password, &String::from("my-first-secret"));
+            Secret::new(SecretCategory::Password, String::from("my-first-secret"));
         let mut modified_before_update = user_vault.date_modified;
         let mut created_before_update = user_vault.date_created;
-        user_vault.add_secret(&secret);
+        user_vault.add_secret(secret.clone());
 
         assert_eq!(
             user_vault.secrets().len(),
@@ -153,11 +153,11 @@ mod tests {
         // Update secret
         let username = String::from("my-username");
         let password = String::from("my-password");
-        secret.set_username(&username);
-        secret.set_password(&password);
+        secret.set_username(username);
+        secret.set_password(password);
         modified_before_update = user_vault.date_modified;
         created_before_update = user_vault.date_created;
-        user_vault.update_secret(&secret);
+        user_vault.update_secret(secret);
 
         assert_eq!(
             user_vault.secrets().len(),
