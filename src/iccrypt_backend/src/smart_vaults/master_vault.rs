@@ -65,7 +65,10 @@ impl MasterVault {
             return Err(SmartVaultErr::UserVaultDoesNotExist(vault_id.to_string()));
         }
 
-        let mut secret: Secret = Secret::new(secret_for_creation.category().clone(), secret_for_creation.name().clone());
+        let mut secret: Secret = Secret::new(
+            secret_for_creation.category().clone(),
+            secret_for_creation.name().clone(),
+        );
         if secret_for_creation.username().is_some() {
             secret.set_username(secret_for_creation.username().clone().unwrap());
         }
@@ -84,7 +87,6 @@ impl MasterVault {
         user_vault.add_secret(secret);
 
         Ok(user_vault.get_secret(&secret_id).unwrap().clone())
-
     }
 
     // Replace a secret
@@ -99,7 +101,7 @@ impl MasterVault {
 
         let user_vault = self.user_vaults.get_mut(vault_id).unwrap();
         let secret: &mut Secret = user_vault.get_secret_mut(secret_for_update.id())?;
-        
+
         if secret_for_update.name().is_some() {
             secret.set_name(secret_for_update.name().clone().unwrap());
         }
@@ -132,7 +134,7 @@ impl MasterVault {
             return Err(SmartVaultErr::UserVaultDoesNotExist(vault_id.to_string()));
         }
 
-        let user_vault = self.user_vaults.get_mut(vault_id).unwrap();              
+        let user_vault = self.user_vaults.get_mut(vault_id).unwrap();
         user_vault.remove_secret(secret_id)
     }
 }
@@ -236,8 +238,17 @@ mod tests {
             0
         );
 
-        let secret_for_creation = SecretForCreation::new(String::from("my-super-secret"), SecretCategory::Password);
-        let secret = master_vault.add_secret(&new_uv_id, &secret_for_creation).unwrap();
+        let secret_for_creation = SecretForCreation::new(
+            SecretCategory::Password,
+            String::from("my-super-secret"),
+            None,
+            None,
+            None,
+            None,
+        );
+        let secret = master_vault
+            .add_secret(&new_uv_id, &secret_for_creation)
+            .unwrap();
         assert_eq!(
             master_vault
                 .get_user_vault(&new_uv_id)
@@ -260,9 +271,15 @@ mod tests {
             secret_name
         );
 
-        let mut secret_to_update = SecretForUpdate::new();
-        secret_to_update.set_id(*secret.id());
-        secret_to_update.set_name("my-super-secret-new".to_string());
+        let mut secret_to_update = SecretForUpdate::new(
+            *secret.id(),
+            None,
+            Some("my-super-secret-new".to_string()),
+            None,
+            None,
+            None,
+            None,
+        );
         master_vault.update_secret(&new_uv_id, &secret_to_update);
         let secret_name = master_vault
             .get_user_vault(&new_uv_id)

@@ -22,14 +22,21 @@ pub struct SecretForCreation {
 }
 
 impl SecretForCreation {
-    pub fn new(name: String, category: SecretCategory) -> Self {
+    // new() only needed for unit tests in master_vault.rs!
+    pub fn new(
+        category: SecretCategory,
+        name: String,
+        username: Option<String>,
+        password: Option<String>,
+        url: Option<String>,
+        notes: Option<String>,) -> Self {
         Self {
             name,
             category,
-            username: None,
-            password: None,
-            url: None,
-            notes: None
+            username,
+            password,
+            url,
+            notes,
         }
     }
 
@@ -70,26 +77,29 @@ pub struct SecretForUpdate {
 }
 
 impl SecretForUpdate {
-    pub fn new() -> Self {
-        let id = UUID::new();
+    // new() only needed for unit tests in master_vault.rs!
+    pub fn new(
+        id: UUID,
+        category: Option<SecretCategory>,
+        name: Option<String>,
+        username: Option<String>,
+        password: Option<String>,
+        url: Option<String>,
+        notes: Option<String>,
+    ) -> Self {
         Self {
             id,
-            name: None,
-            category: None,
-            username: None,
-            password: None,
-            url: None,
-            notes: None
+            name,
+            category,
+            username,
+            password,
+            url,
+            notes,
         }
     }
 
     pub fn id(&self) -> &UUID {
         &self.id
-    }
-
-    pub fn set_id(&mut self, id: UUID) {
-        // only needed for unit tests
-        self.id = id;
     }
 
     pub fn category(&self) -> &Option<SecretCategory> {
@@ -98,11 +108,6 @@ impl SecretForUpdate {
 
     pub fn name(&self) -> &Option<String> {
         &self.name
-    }
-
-    pub fn set_name(&mut self, name: String) {
-        // needed for unit tests
-        self.name = Some(name);
     }
 
     pub fn username(&self) -> &Option<String> {
@@ -187,7 +192,7 @@ impl Secret {
     }
 
     pub fn set_username(&mut self, username: String) {
-        self.username = Option::Some(username);
+        self.username = Some(username);
         self.date_modified = time::get_current_time();
     }
 
@@ -196,7 +201,7 @@ impl Secret {
     }
 
     pub fn set_password(&mut self, password: String) {
-        self.password = Option::Some(password);
+        self.password = Some(password);
         self.date_modified = time::get_current_time();
     }
 
@@ -205,7 +210,7 @@ impl Secret {
     }
 
     pub fn set_url(&mut self, url: String) {
-        self.url = Option::Some(url);
+        self.url = Some(url);
         self.date_modified = time::get_current_time();
     }
 
@@ -214,7 +219,7 @@ impl Secret {
     }
 
     pub fn set_notes(&mut self, notes: String) {
-        self.notes = Option::Some(notes);
+        self.notes = Some(notes);
         self.date_modified = time::get_current_time();
     }
 }
@@ -228,27 +233,27 @@ mod tests {
 
     #[test]
     fn utest_new_secret() {
-        let sc: SecretCategory = SecretCategory::Password;
+        let category: SecretCategory = SecretCategory::Password;
         let name: String = String::from("my-first-secret");
 
         let before = time::get_current_time();
         thread::sleep(std::time::Duration::from_millis(10)); // Sleep 10 milliseconds to ensure that secret has a different creation date
-        let secret: Secret = Secret::new(sc, name.clone());
+        let secret: Secret = Secret::new(category, name.clone());
 
         assert!(
             secret.date_created() > &before,
-            "date_created: {} must be greater than before: {}",
+            "date_created {} must be greater than before: {}",
             secret.date_created(),
             &before
         );
         assert_eq!(
             secret.date_modified(),
             secret.date_created(),
-            "date_created: {} must be equal to date_modified: {}",
+            "date_created {} must be equal to date_modified {}",
             secret.date_created(),
             secret.date_modified()
         );
-        assert_eq!(secret.category(), &sc);
+        assert_eq!(secret.category(), &category);
         assert_eq!(secret.name(), &name);
         assert_eq!(secret.username(), &Option::None);
         assert_eq!(secret.password(), &Option::None);
@@ -259,50 +264,50 @@ mod tests {
     #[test]
     fn utest_update_secret() {
         // Create secret
-        let sc: SecretCategory = SecretCategory::Password;
+        let category: SecretCategory = SecretCategory::Password;
         let name: String = String::from("my-first-secret");
 
-        let mut secret: Secret = Secret::new(sc, name);
+        let mut secret: Secret = Secret::new(category, name);
 
         // Update category
-        let sc_updated = SecretCategory::Note;
+        let category_updated = SecretCategory::Note;
         let mut created_before_update = secret.date_created;
         let mut modified_before_update = secret.date_modified;
+        thread::sleep(std::time::Duration::from_millis(10)); // Sleep 10 milliseconds to ensure that secret has a different update date
 
-        thread::sleep(std::time::Duration::from_millis(10)); // Sleep 10 milliseconds to ensure that secret has a different creation date
-        secret.set_category(sc_updated);
+        secret.set_category(category_updated);
         assert_eq!(
             secret.date_created(),
             &created_before_update,
-            "Category: date_created: {} must be equal to created_before_update: {}",
+            "Category: date_created {} must be equal to created_before_update {}",
             secret.date_created(),
             created_before_update
         );
         assert!(
             secret.date_modified() > &modified_before_update,
-            "Category: date_modified: {} must be greater than modified_before_update: {}",
+            "Category: date_modified {} must be greater than modified_before_update {}",
             secret.date_modified(),
             modified_before_update
         );
-        assert_eq!(secret.category(), &sc_updated);
+        assert_eq!(secret.category(), &category_updated);
 
         // Update name
         let name_updated = String::from("my-first-secret-updated");
         created_before_update = secret.date_created;
         modified_before_update = secret.date_modified;
+        thread::sleep(std::time::Duration::from_millis(10)); // Sleep 10 milliseconds to ensure that secret has a different update date
 
-        thread::sleep(std::time::Duration::from_millis(10)); // Sleep 10 milliseconds to ensure that secret has a different creation date
         secret.set_name(name_updated.clone());
         assert_eq!(
             secret.date_created(),
             &created_before_update,
-            "Name: date_created: {} must be equal to created_before_update: {}",
+            "Name: date_created {} must be equal to created_before_update {}",
             secret.date_created(),
             created_before_update
         );
         assert!(
             secret.date_modified() > &modified_before_update,
-            "Name: date_modified: {} must be greater than modified_before_update: {}",
+            "Name: date_modified {} must be greater than modified_before_update {}",
             secret.date_modified(),
             modified_before_update
         );
@@ -312,19 +317,19 @@ mod tests {
         let username = String::from("my-username");
         created_before_update = secret.date_created;
         modified_before_update = secret.date_modified;
+        thread::sleep(std::time::Duration::from_millis(10)); // Sleep 10 milliseconds to ensure that secret has a different update date
 
-        thread::sleep(std::time::Duration::from_millis(10)); // Sleep 10 milliseconds to ensure that secret has a different creation date
         secret.set_username(username.clone());
         assert_eq!(
             secret.date_created(),
             &created_before_update,
-            "Username: date_created: {} must be equal to created_before_update: {}",
+            "Username: date_created {} must be equal to created_before_update {}",
             secret.date_created(),
             created_before_update
         );
         assert!(
             secret.date_modified() > &modified_before_update,
-            "Username: date_modified: {} must be greater than modified_before_update: {}",
+            "Username: date_modified {} must be greater than modified_before_update {}",
             secret.date_modified(),
             modified_before_update
         );
@@ -334,19 +339,19 @@ mod tests {
         let password = String::from("my-password");
         created_before_update = secret.date_created;
         modified_before_update = secret.date_modified;
+        thread::sleep(std::time::Duration::from_millis(10)); // Sleep 10 milliseconds to ensure that secret has a different update date
 
-        thread::sleep(std::time::Duration::from_millis(10)); // Sleep 10 milliseconds to ensure that secret has a different creation date
         secret.set_password(password.clone());
         assert_eq!(
             secret.date_created(),
             &created_before_update,
-            "Password: date_created: {} must be equal to created_before_update: {}",
+            "Password: date_created {} must be equal to created_before_update {}",
             secret.date_created(),
             created_before_update
         );
         assert!(
             secret.date_modified() > &modified_before_update,
-            "Password: date_modified: {} must be greater than modified_before_update: {}",
+            "Password: date_modified {} must be greater than modified_before_update {}",
             secret.date_modified(),
             modified_before_update
         );
@@ -356,19 +361,19 @@ mod tests {
         let url = String::from("my-url");
         created_before_update = secret.date_created;
         modified_before_update = secret.date_modified;
+        thread::sleep(std::time::Duration::from_millis(10)); // Sleep 10 milliseconds to ensure that secret has a different update date
 
-        thread::sleep(std::time::Duration::from_millis(10)); // Sleep 10 milliseconds to ensure that secret has a different creation date
         secret.set_url(url.clone());
         assert_eq!(
             secret.date_created(),
             &created_before_update,
-            "Url: date_created: {} must be equal to created_before_update: {}",
+            "Url: date_created {} must be equal to created_before_update {}",
             secret.date_created(),
             created_before_update
         );
         assert!(
             secret.date_modified() > &modified_before_update,
-            "Url: date_modified: {} must be greater than modified_before_update: {}",
+            "Url: date_modified {} must be greater than modified_before_update {}",
             secret.date_modified(),
             modified_before_update
         );
@@ -378,22 +383,99 @@ mod tests {
         let notes = String::from("my-notes");
         created_before_update = secret.date_created;
         modified_before_update = secret.date_modified;
+        thread::sleep(std::time::Duration::from_millis(10)); // Sleep 10 milliseconds to ensure that secret has a different update date
 
-        thread::sleep(std::time::Duration::from_millis(10)); // Sleep 10 milliseconds to ensure that secret has a different creation date
         secret.set_notes(notes.clone());
         assert_eq!(
             secret.date_created(),
             &created_before_update,
-            "Notes: date_created: {} must be equal to created_before_update: {}",
+            "Notes: date_created {} must be equal to created_before_update {}",
             secret.date_created(),
             created_before_update
         );
         assert!(
             secret.date_modified() > &modified_before_update,
-            "Notes: date_modified: {} must be greater than modified_before_update: {}",
+            "Notes: date_modified {} must be greater than modified_before_update {}",
             secret.date_modified(),
             modified_before_update
         );
         assert_eq!(secret.notes(), &Option::Some(notes));
+    }
+
+    #[test]
+    fn utest_new_secret_for_update() {
+        let id = UUID::new();
+
+        // Check return of None
+        let secret_for_update = SecretForUpdate::new(id, None, None, None, None, None, None);
+        assert!(*secret_for_update.id() == id);
+        assert!(*secret_for_update.category() == None);
+        assert!(*secret_for_update.name() == None);
+        assert!(*secret_for_update.username() == None);
+        assert!(*secret_for_update.password() == None);
+        assert!(*secret_for_update.url() == None);
+        assert!(*secret_for_update.notes() == None);
+
+        // Check return of Some
+        let category = Some(SecretCategory::Note);
+        let name = Some("my-super-secret-update".to_string());
+        let username = Some("my-super-username-update".to_string());
+        let password = Some("my-super-password-update".to_string());
+        let url = Some("my-super-url-update".to_string());
+        let notes = Some("my-super-notes-update".to_string());
+        let secret_for_update = SecretForUpdate::new(
+            id,
+            category.clone(),
+            name.clone(),
+            username.clone(),
+            password.clone(),
+            url.clone(),
+            notes.clone(),
+        );
+        assert!(*secret_for_update.id() == id);
+        assert!(*secret_for_update.category() == category);
+        assert!(*secret_for_update.name() == name);
+        assert!(*secret_for_update.username() == username);
+        assert!(*secret_for_update.password() == password);
+        assert!(*secret_for_update.url() == url);
+        assert!(*secret_for_update.notes() == notes);
+    }
+
+    #[test]
+    fn utest_new_secret_for_creation() {
+
+        let category = SecretCategory::Document;
+        let name = "my-super-secret".to_string();
+
+        // Check return of None
+        let secret_for_creation = SecretForCreation::new(category.clone(), name.clone(), None, None, None, None);
+        assert!(*secret_for_creation.category() == category);
+        assert!(*secret_for_creation.name() == name);
+        assert!(*secret_for_creation.username() == None);
+        assert!(*secret_for_creation.password() == None);
+        assert!(*secret_for_creation.url() == None);
+        assert!(*secret_for_creation.notes() == None);
+
+        // Check return of Some
+        let category = SecretCategory::Note;
+        let name = "my-super-secret-update".to_string();
+        let username = Some("my-super-username-update".to_string());
+        let password = Some("my-super-password-update".to_string());
+        let url = Some("my-super-url-update".to_string());
+        let notes = Some("my-super-notes-update".to_string());
+        let secret_for_update = SecretForCreation::new(
+            category.clone(),
+            name.clone(),
+            username.clone(),
+            password.clone(),
+            url.clone(),
+            notes.clone(),
+        );
+        assert!(*secret_for_update.category() == category);
+        assert!(*secret_for_update.name() == name);
+        assert!(*secret_for_update.username() == username);
+        assert!(*secret_for_update.password() == password);
+        assert!(*secret_for_update.url() == url);
+        assert!(*secret_for_update.notes() == notes);
     }
 }
