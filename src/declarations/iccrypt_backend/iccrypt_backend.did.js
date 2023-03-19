@@ -76,6 +76,8 @@ export const idlFactory = ({ IDL }) => {
     'is_user_vault_existing' : IDL.Func([], [IDL.Bool], ['query']),
     'remove_user_secret' : IDL.Func([IDL.Nat], [Result_2], []),
     'update_user_secret' : IDL.Func([SecretForUpdate], [Result], []),
+    'what_time_is_it' : IDL.Func([], [IDL.Nat64], ['query']),
+    'who_am_i' : IDL.Func([], [IDL.Text], ['query']),
   });
 };
 export const init = ({ IDL }) => { return []; };

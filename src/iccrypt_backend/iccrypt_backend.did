@@ -63,4 +63,6 @@ service : {
   is_user_vault_existing : () -> (bool) query;
   remove_user_secret : (nat) -> (Result_2);
   update_user_secret : (SecretForUpdate) -> (Result);
+  what_time_is_it : () -> (nat64) query;
+  who_am_i : () -> (text) query;
 }

@@ -70,4 +70,6 @@ export interface _SERVICE {
   'is_user_vault_existing' : ActorMethod<[], boolean>,
   'remove_user_secret' : ActorMethod<[bigint], Result_2>,
   'update_user_secret' : ActorMethod<[SecretForUpdate], Result>,
+  'what_time_is_it' : ActorMethod<[], bigint>,
+  'who_am_i' : ActorMethod<[], string>,
 }
