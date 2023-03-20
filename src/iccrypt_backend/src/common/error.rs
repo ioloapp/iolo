@@ -1,8 +1,8 @@
 use std::fmt::Display;
 
-use candid::CandidType;
+use candid::{CandidType, Deserialize};
 
-#[derive(Debug, CandidType, PartialEq, Eq)]
+#[derive(Debug, CandidType, PartialEq, Eq, Deserialize)]
 pub enum SmartVaultErr {
     UserAlreadyExists(String),
     UserDoesNotExist(String),
@@ -36,13 +36,13 @@ impl Display for SmartVaultErr {
             ),
             SmartVaultErr::UserVaultDoesNotExist(id) => {
                 write!(f, "Failed to read vault with the following id: {}", id)
-            },
+            }
             SmartVaultErr::SecretDoesNotExist(id) => {
                 write!(f, "Failed to read secret with the following id: {}", id)
-            },
+            }
             SmartVaultErr::SecretHasNoId => {
                 write!(f, "Secret has no id")
-            },
+            }
         }
     }
 }
