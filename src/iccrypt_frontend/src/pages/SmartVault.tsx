@@ -3,9 +3,9 @@ import { useEffect, useState } from 'react';
 
 // MUI
 import {
-    Box, Typography, List, ListItem, IconButton, ListItemText, TextField, Button, Select, MenuItem, ListItemAvatar, Avatar, Modal, Fab, ListItemButton, Backdrop, CircularProgress
+    Box, Typography, List, ListItem, IconButton, ListItemText, TextField, Button, Select, MenuItem, ListItemAvatar, Avatar, Modal, Fab, ListItemButton, Backdrop, CircularProgress, InputAdornment, FilledInput, InputLabel, FormControl
 } from '@mui/material';
-import { Delete as DeleteIcon, Key as KeyIcon, Add as AddIcon } from '@mui/icons-material';
+import { Delete as DeleteIcon, Key as KeyIcon, Add as AddIcon, Visibility, VisibilityOff } from '@mui/icons-material';
 
 // IC
 import { getActor } from '../utils/backend';
@@ -50,8 +50,13 @@ const SmartVault = () => {
     const [openModal, setOpenModal] = useState(false);
     const [loadingIconForSaveIsOpen, setLoadingIconForSave] = React.useState(false);
     const [loadingIconForDeleteIsOpen, setLoadingIconForDelete] = React.useState(false);
+    const [showPassword, setShowPassword] = React.useState(false);
+
+    const handleClickShowPassword = () => setShowPassword((show) => !show);
 
     async function saveSecret() {
+
+        // Process data
         let secretCategory: SecretCategory = null;
         if (secretInModal.category === secretCategories.Password) {
             secretCategory = { 'Password': null };
@@ -247,9 +252,7 @@ const SmartVault = () => {
                 onClose={handleCloseModal}
             >
                 <Box sx={modalStyle}>
-                    <Box>
-                        <TextField required name="name" margin="normal" fullWidth size="small" label="Name" variant="filled" value={secretInModal.name} onChange={handleEditSecretValueChange} />
-                    </Box>
+                    <TextField required name="name" margin="normal" fullWidth size="small" label="Name" variant="filled" value={secretInModal.name} onChange={handleEditSecretValueChange} />
                     <Box>
                         <Select
                             required
@@ -266,20 +269,35 @@ const SmartVault = () => {
                     </Box>
 
                     <Box>
-                        <TextField required name="username" margin="normal" fullWidth size="small" label="Username" variant="filled" value={secretInModal.username} onChange={handleEditSecretValueChange} />
+                        <TextField name="username" margin="normal" fullWidth size="small" label="Username" variant="filled" value={secretInModal.username} onChange={handleEditSecretValueChange} />
                     </Box>
-
+                    <FormControl fullWidth size='small' variant="filled" margin='normal'>
+                        <InputLabel>Password</InputLabel>
+                        <FilledInput
+                            name='password'
+                            value={secretInModal.password}
+                            onChange={handleEditSecretValueChange}
+                            type={showPassword ? 'text' : 'password'}
+                            endAdornment={
+                                <InputAdornment position="end">
+                                    <IconButton
+                                        edge="end"
+                                        onClick={handleClickShowPassword}
+                                    >
+                                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                                    </IconButton>
+                                </InputAdornment>
+                            }
+                        />
+                    </FormControl>
                     <Box>
-                        <TextField required name="password" margin="normal" fullWidth size="small" label="Password" variant="filled" value={secretInModal.password} onChange={handleEditSecretValueChange} />
+                        <TextField name="url" margin="normal" fullWidth size="small" label="Url" variant="filled" value={secretInModal.url} onChange={handleEditSecretValueChange} />
                     </Box>
                     <Box>
-                        <TextField required name="url" margin="normal" fullWidth size="small" label="Url" variant="filled" value={secretInModal.url} onChange={handleEditSecretValueChange} />
+                        <TextField name="notes" margin="normal" fullWidth size="small" label="Notes" variant="filled" value={secretInModal.notes} onChange={handleEditSecretValueChange} />
                     </Box>
                     <Box>
-                        <TextField required name="notes" margin="normal" fullWidth size="small" label="Notes" variant="filled" value={secretInModal.notes} onChange={handleEditSecretValueChange} />
-                    </Box>
-                    <Box>
-                        <Button variant="contained" type="submit" onClick={() => saveSecret()}>Save</Button>
+                        <Button variant="contained" type="submit" onClick={saveSecret}>Save</Button>
                     </Box>
                     <Backdrop
                         sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
@@ -288,6 +306,7 @@ const SmartVault = () => {
                         <CircularProgress color="inherit" />
                     </Backdrop>
                 </Box>
+
             </Modal>
         </Box>
     );
