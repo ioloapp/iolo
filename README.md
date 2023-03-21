@@ -6,6 +6,11 @@ Solving an ancient process in the new world of Web3: Inheritance! From simply gr
 
 Link to the full medium paper: https://medium.com/blockwerk/ic-crypt-6617ef2044e6
 
+## Prerequisits
+* Install rust (preferably via rustup)
+* Install dfx
+* If needed run `rustup target add wasm32-unknown-unknown`
+
 ## Running the project locally
 
 If you want to test the ic crypt project locally, you can use the following commands:
