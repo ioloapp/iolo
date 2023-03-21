@@ -1,10 +1,10 @@
 use anyhow::Result;
 use candid::{Encode, Principal};
 
-use crate::common::{get_dfx_agent, get_iccrypt_backend_canister, MY_CALLER_ID};
+use crate::common::{get_default_dfx_agent, get_iccrypt_backend_canister, MY_CALLER_ID};
 pub async fn test_key_derivation() -> Result<()> {
     let user = Principal::from_text(MY_CALLER_ID).expect("Could not decode the principal.");
-    let agent = get_dfx_agent().unwrap();
+    let agent = get_default_dfx_agent().unwrap();
     agent.fetch_root_key().await?;
     let canister = get_iccrypt_backend_canister();
 

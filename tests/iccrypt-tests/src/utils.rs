@@ -1,5 +1,5 @@
 #![allow(dead_code)]
-use crate::common::{get_dfx_agent, get_iccrypt_backend_canister};
+use crate::common::{get_default_dfx_agent, get_iccrypt_backend_canister};
 use pretty_assertions::assert_eq;
 
 use anyhow::Ok;
@@ -9,13 +9,13 @@ use candid::Encode;
 pub async fn test_utils() -> Result<()> {
     dbg!("Testing the utils function");
     dbg!(itest_utils_caller().await?);
-    dbg!(itest_utils_uuid().await?);
-    dbg!(itest_utils_time().await?);
+    // dbg!(itest_utils_uuid().await?);
+    // dbg!(itest_utils_time().await?);
     Ok(())
 }
 
 async fn itest_utils_caller() -> Result<String> {
-    let agent = get_dfx_agent().unwrap();
+    let agent = get_default_dfx_agent().unwrap();
     let canister = get_iccrypt_backend_canister();
     let res: Vec<u8> = agent
         .query(&canister, "who_am_i")
@@ -28,7 +28,7 @@ async fn itest_utils_caller() -> Result<String> {
 }
 
 async fn itest_utils_time() -> Result<u64> {
-    let agent = get_dfx_agent().unwrap();
+    let agent = get_default_dfx_agent().unwrap();
     let canister = get_iccrypt_backend_canister();
     let res: Vec<u8> = agent
         .query(&canister, "what_time_is_it")
@@ -41,7 +41,7 @@ async fn itest_utils_time() -> Result<u64> {
 }
 
 async fn itest_utils_uuid() -> Result<String> {
-    let agent = get_dfx_agent().unwrap();
+    let agent = get_default_dfx_agent().unwrap();
     agent.fetch_root_key().await?;
     let canister = get_iccrypt_backend_canister();
     let res: Vec<u8> = agent

@@ -957,6 +957,7 @@ dependencies = [
  "iccrypt_backend",
  "openssl",
  "pretty_assertions",
+ "ring",
  "serde",
  "tokio",
  "xshell",

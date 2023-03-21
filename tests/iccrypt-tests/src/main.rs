@@ -23,21 +23,21 @@ mod utils;
 #[tokio::main]
 async fn main() -> Result<()> {
     // test_utils().await?;
-    // test_smart_vaults().await?;
+    test_smart_vaults().await?;
     // test_key_derivation().await?;
 
-    let args = Arguments::parse();
+    // let args = Arguments::parse();
 
     // dbg!(&args);
 
-    if args.clean {
-        // reinstall erverything
-        cleanup();
-    }
+    // if args.clean {
+    //     // reinstall erverything
+    //     cleanup();
+    // }
 
-    if let Some(canister) = args.upgrade {
-        upgrade_canister(canister);
-    }
+    // if let Some(canister) = args.upgrade {
+    //     upgrade_canister(canister);
+    // }
 
     // println!("Hello {}!", args.name.unwrap());
 

@@ -1,10 +1,11 @@
-use crate::common::MY_CALLER_ID;
-use anyhow::Result;
+use crate::common::get_iccrypt_backend_canister;
+use crate::common::{create_identity, get_dfx_agent_with_identity};
+use anyhow::{anyhow, Result};
 use candid::{CandidType, Deserialize, Encode, Principal};
-use iccrypt_backend::smart_vaults::user_vault::UserVault;
-use pretty_assertions::{assert_eq };
-
-use crate::common::{get_dfx_agent, get_iccrypt_backend_canister};
+use ic_agent::identity::BasicIdentity;
+use ic_agent::{Agent, Identity};
+use iccrypt_backend::common::error::SmartVaultErr;
+use iccrypt_backend::common::user::User;
 
 #[derive(CandidType, Deserialize)]
 struct CreateUserArg {
@@ -25,38 +26,87 @@ pub async fn test_smart_vaults() -> Result<()> {
 }
 
 async fn test_user_lifecycle() -> anyhow::Result<()> {
-    let user = Principal::from_text(MY_CALLER_ID).expect("Could not decode the principal.");
+    // create identities (keypairs) and the corresponding senders (principals)
+    let i1: BasicIdentity = create_identity();
+    let p1: Principal = i1.sender().unwrap();
+    let i2: BasicIdentity = create_identity();
+    let p2: Principal = i2.sender().unwrap();
 
-    // create a new user.
-    let agent = get_dfx_agent().unwrap();
-    agent.fetch_root_key().await?;
-    let canister = get_iccrypt_backend_canister();
-    let _res: Vec<u8> = agent
-        .update(&canister, "create_new_user")
-        //.with_arg(&Encode!(&user)?)
-        .with_arg(&Encode!(&user)?)
-        .call_and_wait()
-        .await
-        .unwrap();
+    // the two agents will use different identities (caller)
+    let a1: Agent = get_dfx_agent_with_identity(i1).await?;
+    let a2: Agent = get_dfx_agent_with_identity(i2).await?;
 
-    // get user vault of newly created user
-    let res: Vec<u8> = agent
-        .query(&canister, "get_user_vault")
-        .with_arg(&Encode!(&user)?)
-        //.with_arg(&Encode!(&canister)?)
-        .call()
-        .await?;
-    let mut res_deserialized = candid::de::IDLDeserialize::new(&res)?;
+    // let's create a new ic crypt user
+    let new_user_1 = create_user(&a1).await?;
+    assert_eq!(new_user_1.id(), &p1);
 
-    if let Some(user_vault) = res_deserialized.get_value::<Option<UserVault>>().unwrap() {
-        // check we have the right owner
-        assert_eq!(&user_vault.owner().to_string(), MY_CALLER_ID);
+    // create the user again. this must fail
+    let new_user_again = create_user(&a1).await;
 
-        // check there are no secrets yet
-        assert!(&user_vault.secrets().is_empty());
+    if new_user_again.is_err() {
+        assert_eq!(
+            new_user_again.err().unwrap(),
+            SmartVaultErr::UserAlreadyExists(new_user_1.id().to_string())
+        );
     } else {
-        return Err(anyhow::format_err!("User Vault not found"));
+        return Err(anyhow!(format!(
+            "Error. User with following ID was created twice: {}",
+            new_user_1.id().to_string()
+        )));
+    }
+
+    // so let's delete the user 1
+    let del = delete_user(&a1).await;
+    assert!(del.is_ok());
+
+    // let's delete the user 1 again -> this must fail, because it has been deleted alreay
+    let del = delete_user(&a1).await;
+    if del.is_err() {
+        assert_eq!(
+            del.err().unwrap(),
+            SmartVaultErr::UserDoesNotExist(new_user_1.id().to_string())
+        );
+    } else {
+        return Err(anyhow!(format!(
+            "Error. The following user was deleted, even thouh it should not have existed: {}",
+            new_user_1.id().to_string()
+        )));
     }
 
     Ok(())
+}
+
+async fn create_user(agent: &Agent) -> Result<User, SmartVaultErr> {
+    let res_create_user_ser: Vec<u8> = agent
+        .update(&get_iccrypt_backend_canister(), "create_user")
+        .with_arg(&Encode!().expect("Failed encoding argument for method 'crate_user'"))
+        .call_and_wait()
+        .await
+        .unwrap_or_else(|e| {
+            dbg!(e);
+            panic!();
+        });
+
+    candid::de::IDLDeserialize::new(&res_create_user_ser)
+        .expect("Failed to deserialized candid response")
+        .get_value::<Result<User, SmartVaultErr>>()
+        .unwrap()
+}
+
+async fn delete_user(agent: &Agent) -> Result<(), SmartVaultErr> {
+    let res_delete_user_ser: Vec<u8> = agent
+        .update(&get_iccrypt_backend_canister(), "delete_user")
+        //.with_arg(&Encode!(&user)?)
+        .with_arg(&Encode!().expect("Failed encoding arguments for candid method 'delete_user'"))
+        .call_and_wait()
+        .await
+        .unwrap_or_else(|e| {
+            dbg!(e);
+            panic!();
+        });
+
+    candid::de::IDLDeserialize::new(&res_delete_user_ser)
+        .expect("Failed to deserialized candid response")
+        .get_value::<Result<(), SmartVaultErr>>()
+        .unwrap()
 }
