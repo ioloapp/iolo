@@ -1,11 +1,17 @@
+use std::borrow::BorrowMut;
+use std::sync::{Arc, Mutex};
+use std::thread;
+
 use crate::common::get_iccrypt_backend_canister;
 use crate::common::{create_identity, get_dfx_agent_with_identity};
 use anyhow::{anyhow, Result};
 use candid::{CandidType, Deserialize, Encode, Principal};
 use ic_agent::identity::BasicIdentity;
 use ic_agent::{Agent, Identity};
+
 use iccrypt_backend::common::error::SmartVaultErr;
 use iccrypt_backend::common::user::User;
+use indicatif::{ProgressBar, ProgressStyle};
 
 #[derive(CandidType, Deserialize)]
 struct CreateUserArg {
@@ -21,7 +27,8 @@ struct ExampleArgSet {
 
 pub async fn test_smart_vaults() -> Result<()> {
     dbg!("Testing smart vaults");
-    test_user_lifecycle().await?;
+    // test_user_lifecycle().await?;
+    test_mass_user_creation().await?;
     Ok(())
 }
 
@@ -72,6 +79,43 @@ async fn test_user_lifecycle() -> anyhow::Result<()> {
             new_user_1.id().to_string()
         )));
     }
+
+    Ok(())
+}
+
+async fn test_mass_user_creation() -> anyhow::Result<()> {
+    let n = 100;
+    type IdTuple = Vec<(Principal, Agent, User)>;
+    let ids = Arc::new(Mutex::new(IdTuple::new()));
+    let mut threads = vec![];
+    let bar = Arc::new(Mutex::new(ProgressBar::new(n)));
+
+    for _ in 0..n {
+        let ids = Arc::clone(&ids);
+        let bar = Arc::clone(&bar);
+        threads.push(tokio::spawn(async move {
+            let i: BasicIdentity = create_identity();
+            let p: Principal = i.sender().unwrap();
+            let a = get_dfx_agent_with_identity(i).await.unwrap();
+            let u = create_user(&a).await.unwrap();
+
+            // add the new identity tuple
+            let mut idv = ids.lock().unwrap();
+            idv.push((p, a, u));
+
+            // update progess bar
+            let mbar = bar.lock().unwrap();
+            mbar.inc(1);
+        }));
+    }
+
+    for t in threads {
+        // Wait for the thread to finish. Returns a result.
+        let x = t.await.unwrap();
+    }
+    bar.lock().unwrap().finish();
+    let z = ids.lock().unwrap();
+    dbg!(z.len());
 
     Ok(())
 }

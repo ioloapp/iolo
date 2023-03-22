@@ -20,3 +20,4 @@ iccrypt_backend = { path = "../../src/iccrypt_backend" }
 clap = { version = "4.1.6", features = ["derive"] }
 openssl = "0.10.45"
 ring = "0.16.20"
+indicatif = "0.17.3"
