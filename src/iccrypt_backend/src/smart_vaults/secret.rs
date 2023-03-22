@@ -127,7 +127,7 @@ impl SecretForUpdate {
     }
 }
 
-#[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
+#[derive(Debug, CandidType, Deserialize, Serialize, Clone, PartialEq)]
 pub struct Secret {
     id: UUID,
     date_created: u64,
@@ -232,7 +232,7 @@ mod tests {
     use std::thread;
 
     #[test]
-    fn utest_new_secret() {
+    fn utest_secret_create_secret() {
         let category: SecretCategory = SecretCategory::Password;
         let name: String = String::from("my-first-secret");
 
@@ -262,7 +262,7 @@ mod tests {
     }
 
     #[test]
-    fn utest_update_secret() {
+    fn utest_secret_update_secret() {
         // Create secret
         let category: SecretCategory = SecretCategory::Password;
         let name: String = String::from("my-first-secret");
@@ -403,7 +403,7 @@ mod tests {
     }
 
     #[test]
-    fn utest_new_secret_for_update() {
+    fn utest_secret_create_secret_for_update() {
         let id = UUID::new();
 
         // Check return of None
@@ -442,7 +442,7 @@ mod tests {
     }
 
     #[test]
-    fn utest_new_secret_for_creation() {
+    fn utest_secret_create_secret_for_creation() {
 
         let category = SecretCategory::Document;
         let name = "my-super-secret".to_string();

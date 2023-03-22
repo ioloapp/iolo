@@ -50,7 +50,7 @@ impl UserVault {
         &self.secrets
     }
 
-    pub fn get_secret(&mut self, secret_id: &UUID) -> Result<&Secret, SmartVaultErr> {     
+    pub fn get_secret(&self, secret_id: &UUID) -> Result<&Secret, SmartVaultErr> {     
         self.secrets.get(secret_id).ok_or_else(|| SmartVaultErr::SecretDoesNotExist(secret_id.to_string()))
     }
 
@@ -58,10 +58,14 @@ impl UserVault {
         self.secrets.get_mut(secret_id).ok_or_else(|| SmartVaultErr::SecretDoesNotExist(secret_id.to_string()))
     }
 
-    pub fn add_secret(&mut self, secret: Secret) {
-        
+    pub fn add_secret(&mut self, secret: Secret) -> Result<(), SmartVaultErr> {
+        if self.secrets.contains_key(secret.id()) {
+            return Err(SmartVaultErr::SecretDoesAlreadyExist(secret.id().to_string()));
+        }
+
         self.secrets.insert(*secret.id(), secret);
         self.date_modified = time::get_current_time();
+        Ok(())
     }
 
     pub fn remove_secret(&mut self, secret_id: &UUID) -> Result<(), SmartVaultErr> {
@@ -91,12 +95,13 @@ mod tests {
     use std::thread;
 
     #[test]
-    fn utest_user_vault() {
+    fn utest_user_vault_create_uservault() {
         // Create empty user_vault
         let before = time::get_current_time();
         thread::sleep(std::time::Duration::from_millis(100)); // Sleep 100 milliseconds to ensure that user_vault has a different creation date
-        let mut user_vault: UserVault = UserVault::new();
+        let user_vault: UserVault = UserVault::new();
 
+        // Check dates
         assert!(
             user_vault.date_created() > &before,
             "date_created: {} must be greater than before: {}",
@@ -117,19 +122,45 @@ mod tests {
             user_vault.secrets().len()
         );
 
-        // Add secret to user_vault
-        let mut secret: Secret =
-            Secret::new(SecretCategory::Password, String::from("my-first-secret"));
-        let mut modified_before_update = user_vault.date_modified;
-        let mut created_before_update = user_vault.date_created;
-        user_vault.add_secret(secret.clone());
-
-        assert_eq!(
-            user_vault.secrets().len(),
-            1,
-            "user_vault should have 1 secret now yet but has {}",
-            user_vault.secrets().len()
+        // Create 2nd user_vault
+        let user_vault_2: UserVault = UserVault::new();
+        assert_ne!(
+            user_vault.id(),
+            user_vault_2.id(),
+            "user_vault.id {} must not be equal to user_vault_2.id {}",
+            user_vault.id(),
+            user_vault_2.id()
         );
+    }
+
+    #[test]
+    fn utest_user_vault_add_secret() {
+        // Create empty user_vault
+        let mut user_vault: UserVault = UserVault::new();
+
+        // Create secret stuff...
+        let secret_name = String::from("my-first-secret");
+        let secret: Secret =
+            Secret::new(SecretCategory::Password, secret_name.clone());
+        let modified_before_update = user_vault.date_modified;
+        let created_before_update = user_vault.date_created;
+
+        // Add secret to user_vault
+        assert_eq!(
+            user_vault.add_secret(secret.clone()),
+            Ok(())
+        );
+        
+        // Same secret cannot be added twice
+        assert_eq!(
+            user_vault.add_secret(secret.clone()),
+            Err(SmartVaultErr::SecretDoesAlreadyExist(secret.id().to_string())),
+            "Error must be {:?} but is {:?}",
+            SmartVaultErr::SecretDoesAlreadyExist(secret.id().to_string()),
+            user_vault.add_secret(secret.clone())
+        );
+
+        // Check dates
         assert!(
             user_vault.date_modified() > user_vault.date_created(),
             "date_modified: {} must be greater than date_created: {}",
@@ -150,6 +181,64 @@ mod tests {
             modified_before_update
         );
 
+        // Check secrets() function
+        assert_eq!(
+            user_vault.secrets().len(),
+            1,
+            "user_vault should have 1 secret now yet but has {}",
+            user_vault.secrets().len()
+        );
+        assert!(
+            user_vault.secrets().get(secret.id()).is_some(),
+            "Secret with id {} is not existing in user_vault",
+            secret.id()
+        );
+
+        // Check get_secret()
+        assert_eq!(
+            user_vault.get_secret(secret.id()).unwrap().name(),
+            &secret_name,
+            "secret.name must be {:?} but is {:?}",
+            user_vault.get_secret(secret.id()).unwrap().name(),
+            &secret_name
+        ); 
+        let uuid = UUID::new();
+        assert_eq!(
+            user_vault.get_secret(&uuid),
+            Err(SmartVaultErr::SecretDoesNotExist(uuid.to_string())),
+            "Error must be {:?} but is {:?}",
+            SmartVaultErr::SecretDoesNotExist(uuid.to_string()),
+            user_vault.get_secret(&uuid)
+        );        
+
+        // Check get_secret_mut()
+        let secret_mut = user_vault.get_secret_mut(secret.id()).unwrap();
+        assert_eq!(
+            secret_mut.name(),
+            &secret_name,
+        );
+        let uuid = UUID::new();
+        assert_eq!(
+            user_vault.get_secret_mut(&uuid),
+            Err(SmartVaultErr::SecretDoesNotExist(uuid.to_string()))
+        );        
+        
+    }
+
+    #[test]
+    fn utest_user_vault_update_secret() {
+        // Create empty user_vault
+        let mut user_vault: UserVault = UserVault::new();
+
+        // Add secret to user_vault
+        let secret_name = String::from("my-first-secret");
+        let mut secret: Secret =
+            Secret::new(SecretCategory::Password, secret_name.clone());
+        let mut modified_before_update = user_vault.date_modified;
+        let mut created_before_update = user_vault.date_created;
+        user_vault.add_secret(secret.clone());
+
+        
         // Update secret
         let username = String::from("my-username");
         let password = String::from("my-password");
@@ -157,14 +246,68 @@ mod tests {
         secret.set_password(password);
         modified_before_update = user_vault.date_modified;
         created_before_update = user_vault.date_created;
-        user_vault.update_secret(secret);
-
+        assert_eq!(
+            user_vault.update_secret(secret),
+            Ok(())
+        );
         assert_eq!(
             user_vault.secrets().len(),
             1,
             "user_vault should have 1 secret now yet but has {}",
             user_vault.secrets().len()
         );
+       
+        // Check dates
+        assert!(
+            user_vault.date_created() < user_vault.date_modified(),
+            "date_modified: {} must be greater than date_created: {}",
+            user_vault.date_modified(),
+            user_vault.date_created()
+        );
+        assert_eq!(
+            user_vault.date_created(),
+            &created_before_update,
+            "date_created: {} must be equal to created_before_update: {}",
+            user_vault.date_created(),
+            created_before_update
+        );
+        assert!(
+            user_vault.date_modified() > &modified_before_update,
+            "date_modified: {} must be greater than modified_before_update: {}",
+            user_vault.date_modified(),
+            modified_before_update
+        );
+    }
+
+    #[test]
+    fn utest_user_vault_remove_secret() {
+        // Create empty user_vault
+        let mut user_vault: UserVault = UserVault::new();
+
+        // Add secret to user_vault
+        let secret_name = String::from("my-first-secret");
+        let secret: Secret =
+            Secret::new(SecretCategory::Password, secret_name.clone());
+        let mut modified_before_update = user_vault.date_modified;
+        let mut created_before_update = user_vault.date_created;
+        user_vault.add_secret(secret.clone());
+
+        
+        // Remove secret
+        modified_before_update = user_vault.date_modified;
+        created_before_update = user_vault.date_created;
+        assert_eq!(
+            user_vault.remove_secret(secret.id()),
+            Ok(())
+        );
+        assert_eq!(
+            user_vault.secrets().len(),
+            0,
+            "user_vault should have 0 secret now yet but has {}",
+            user_vault.secrets().len()
+        );
+       
+        // Check dates
         assert!(
             user_vault.date_created() < user_vault.date_modified(),
             "date_modified: {} must be greater than date_created: {}",

@@ -64,8 +64,14 @@ export interface _SERVICE {
   'add_user_secret' : ActorMethod<[SecretForCreation], Result>,
   'create_user' : ActorMethod<[], Result_1>,
   'delete_user' : ActorMethod<[], Result_2>,
-  'get_decryption_key_from' : ActorMethod<[string], [] | [Uint8Array]>,
-  'get_encryption_key_for' : ActorMethod<[string], [] | [Uint8Array]>,
+  'get_decryption_key_from' : ActorMethod<
+    [string],
+    [] | [Uint8Array | number[]]
+  >,
+  'get_encryption_key_for' : ActorMethod<
+    [string],
+    [] | [Uint8Array | number[]]
+  >,
   'get_user_vault' : ActorMethod<[], Result_3>,
   'is_user_vault_existing' : ActorMethod<[], boolean>,
   'remove_user_secret' : ActorMethod<[bigint], Result_2>,
