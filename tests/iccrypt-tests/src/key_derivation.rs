@@ -15,64 +15,65 @@ pub async fn test_key_derivation() -> Result<()> {
 
 async fn self_encryption() -> Result<()> {
     // Alice
-    let alice = "Alice";
     let identity_alice: BasicIdentity = create_identity();
     let principal_alice: Principal = identity_alice.sender().unwrap();
     let agent_alice: Agent = get_dfx_agent_with_identity(identity_alice).await?;
 
     // Bob
-    let bob = "Bob";
     let identity_bob: BasicIdentity = create_identity();
     let principal_bob: Principal = identity_bob.sender().unwrap();
     let agent_bob: Agent = get_dfx_agent_with_identity(identity_bob).await?;
 
     // Eve
-    let eve = "Eve";
     let identity_eve: BasicIdentity = create_identity();
-    let principal_eve: Principal = identity_eve.sender().unwrap();
-    let agent_eve: Agent = get_dfx_agent_with_identity(identity_eve).await?;
+    let _principal_eve: Principal = identity_eve.sender().unwrap();
+    let _agent_eve: Agent = get_dfx_agent_with_identity(identity_eve).await?;
 
-    let secret = "hey, this is my secret. how is life my dear friend?";
+    let secret = "Fom Alice to Alice: Hey, this is my personal secret";
 
     println!("The original secret: \n '{}'", &secret);
 
+    println!("\n===========================================================");
+    println!("====== Happy Flow - Self encryption");
+    println!("===========================================================");
+
     // the happy flow: self encryption for alice
-    let encrypted_secret = encrypt_secret_for(&agent_alice, alice, secret).await?;
-    let decrypted_secret = decrypt_secret_from(&agent_alice, alice, &encrypted_secret).await?;
+    let encrypted_secret = encrypt_secret_for(&agent_alice, &principal_alice, secret).await?;
+    let decrypted_secret =
+        decrypt_secret_from(&agent_alice, &principal_alice, &encrypted_secret).await?;
     println!(
         "This is what Alice sees after decryption: \n '{}'",
         &decrypted_secret
     );
 
+    println!("\n===========================================================");
+    println!("====== Happy Flow - Encrypting for Bob (heir)");
+    println!("===========================================================");
+    let secret = "From Alice to Bob: My dear Bob. This is for you.";
+    let encrypted_secret = encrypt_secret_for(&agent_alice, &principal_bob, secret).await?;
+    let decrypted_secret =
+        decrypt_secret_from(&agent_bob, &principal_alice, &encrypted_secret).await?;
+    println!(
+        "This is what Bob sees after decryption: {}",
+        &decrypted_secret
+    );
+
     // eve dropping in
-    // let decrypted_secret = decrypt_secret_from(&agent_eve, alice, &encrypted_secret).await?;
-    // println!(
-    //     "This is what Eve sees after decryption: {}",
-    //     &decrypted_secret
-    // );
-
-    println!("===========================================================");
-    println!("===========================================================");
-
-    // alice encrypts for bob
-    let encrypted_secret = encrypt_secret_for(&agent_alice, bob, secret).await?;
-    // let decrypted_secret = decrypt_secret_from(&agent_bob, alice, &encrypted_secret).await?;
-    // println!(
-    //     "This is what Bob sees after decryption: {}",
-    //     &decrypted_secret
-    // );
+    // let decrypted_secret =
+    //     decrypt_secret_from(&agent_eve, &principal_alice, &encrypted_secret).await;
+    // assert!(decrypted_secret.is_err());
 
     Ok(())
 }
 
-async fn encrypt_secret_for(agent: &Agent, recipient: &str, secret: &str) -> Result<Vec<u8>> {
+async fn encrypt_secret_for(agent: &Agent, recipient: &Principal, secret: &str) -> Result<Vec<u8>> {
     let canister = get_iccrypt_backend_canister();
 
     // get encryption key for alice
     let res: Vec<u8> = agent
         .update(&canister, "get_encryption_key_for")
         // .with_arg(&Encode!(&principal.to_string())?)
-        .with_arg(&Encode!(&recipient)?)
+        .with_arg(&Encode!(&recipient.to_string())?)
         .call_and_wait()
         .await
         .unwrap();
@@ -96,7 +97,7 @@ async fn encrypt_secret_for(agent: &Agent, recipient: &str, secret: &str) -> Res
 
 async fn decrypt_secret_from(
     agent: &Agent,
-    sender: &str,
+    sender: &Principal,
     encrypted_secret: &[u8],
 ) -> Result<String> {
     let canister = get_iccrypt_backend_canister();
@@ -104,7 +105,7 @@ async fn decrypt_secret_from(
     // get decryption key
     let res: Vec<u8> = agent
         .update(&canister, "get_decryption_key_from")
-        .with_arg(&Encode!(&sender)?)
+        .with_arg(&Encode!(&sender.to_string())?)
         .call_and_wait()
         .await
         .unwrap();
