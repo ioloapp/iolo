@@ -1,41 +1,53 @@
 use anyhow::Result;
 use candid::{Encode, Principal};
+use ic_agent::{identity::BasicIdentity, Agent, Identity};
+use openssl::{
+    encrypt::Encrypter,
+    pkey::Public,
+    rsa::{Padding, Rsa},
+};
 
-use crate::common::{get_default_dfx_agent, get_iccrypt_backend_canister, MY_CALLER_ID};
+use crate::common::{create_identity, get_dfx_agent_with_identity, get_iccrypt_backend_canister};
 pub async fn test_key_derivation() -> Result<()> {
-    let user = Principal::from_text(MY_CALLER_ID).expect("Could not decode the principal.");
-    let agent = get_default_dfx_agent().unwrap();
-    agent.fetch_root_key().await?;
     let canister = get_iccrypt_backend_canister();
+
+    // create identities (keypairs) and the corresponding senders (principals)
+    let identity: BasicIdentity = create_identity();
+    let principal: Principal = identity.sender().unwrap();
+    let agent: Agent = get_dfx_agent_with_identity(identity).await?;
 
     // get encryption key
     let res: Vec<u8> = agent
         .update(&canister, "get_encryption_key_for")
-        //.with_arg(&Encode!(&user)?)
-        .with_arg(&Encode!(&user)?)
+        // .with_arg(&Encode!(&principal.to_string())?)
+        .with_arg(&Encode!(&"Bob")?)
         .call_and_wait()
         .await
         .unwrap();
 
     let mut res_deserialized = candid::de::IDLDeserialize::new(&res)?;
 
-    let encryption_key: Vec<u8>;
+    let pk: Rsa<Public>;
     if let Some(enc_key) = res_deserialized.get_value::<Option<Vec<u8>>>().unwrap() {
-        // dbg!("yes");
-        // dbg!(&enc_key);
-        encryption_key = enc_key;
-        let pk = openssl::rsa::Rsa::public_key_from_pem(&encryption_key).unwrap();
-        // dbg!("yeah, that works: {}", &pk.public_key_to_pem());
+        let encryption_key = enc_key;
+        pk = openssl::rsa::Rsa::public_key_from_pem(&encryption_key).unwrap();
     } else {
         return Err(anyhow::format_err!("Failed getting encryption key"));
     }
-    // dbg!("okay");
-    // dbg!(&encryption_key);
+
+    // let's encrypt a message
+    let data = b"hello, bob, i hope you are doing well!";
+    //let buffer_len = encrypter.encrypt_len(data).unwrap();
+    let mut encrypted_message = vec![0; 1024];
+    let enc_res = pk.public_encrypt(data, &mut encrypted_message, Padding::PKCS1);
+
+    dbg!(enc_res);
+    dbg!(&encrypted_message);
 
     // get decryption key
     let res: Vec<u8> = agent
         .update(&canister, "get_decryption_key_from")
-        .with_arg(&Encode!(&user)?)
+        .with_arg(&Encode!(&principal.to_string())?)
         .call_and_wait()
         .await
         .unwrap();
@@ -44,14 +56,10 @@ pub async fn test_key_derivation() -> Result<()> {
 
     let decryption_key: Vec<u8>;
     if let Some(dec_key) = res_deserialized.get_value::<Option<Vec<u8>>>().unwrap() {
-        // dbg!("yes");
-        // dbg!(&dec_key);
         decryption_key = dec_key;
     } else {
         return Err(anyhow::format_err!("Failed getting decryption key"));
     }
-    // dbg!("okay, got decryption key");
-    // dbg!(&decryption_key);
 
     Ok(())
 }

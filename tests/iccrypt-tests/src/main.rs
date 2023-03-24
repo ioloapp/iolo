@@ -23,8 +23,8 @@ mod utils;
 #[tokio::main]
 async fn main() -> Result<()> {
     // test_utils().await?;
-    test_smart_vaults().await?;
-    // test_key_derivation().await?;
+    //test_smart_vaults().await?;
+    test_key_derivation().await?;
 
     // let args = Arguments::parse();
 
