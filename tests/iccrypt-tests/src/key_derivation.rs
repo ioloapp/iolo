@@ -14,34 +14,53 @@ pub async fn test_key_derivation() -> Result<()> {
 }
 
 async fn self_encryption() -> Result<()> {
-    // create identities (keypairs) and the corresponding senders (principals)
+    // Alice
     let alice = "Alice";
-    let eve = "Eve";
     let identity_alice: BasicIdentity = create_identity();
     let principal_alice: Principal = identity_alice.sender().unwrap();
     let agent_alice: Agent = get_dfx_agent_with_identity(identity_alice).await?;
+
+    // Bob
+    let bob = "Bob";
+    let identity_bob: BasicIdentity = create_identity();
+    let principal_bob: Principal = identity_bob.sender().unwrap();
+    let agent_bob: Agent = get_dfx_agent_with_identity(identity_bob).await?;
+
+    // Eve
+    let eve = "Eve";
     let identity_eve: BasicIdentity = create_identity();
     let principal_eve: Principal = identity_eve.sender().unwrap();
     let agent_eve: Agent = get_dfx_agent_with_identity(identity_eve).await?;
 
     let secret = "hey, this is my secret. how is life my dear friend?";
 
-    println!("The original secfet: {}", &secret);
+    println!("The original secret: \n '{}'", &secret);
 
     // the happy flow: self encryption for alice
     let encrypted_secret = encrypt_secret_for(&agent_alice, alice, secret).await?;
     let decrypted_secret = decrypt_secret_from(&agent_alice, alice, &encrypted_secret).await?;
     println!(
-        "This is what Alice sees after decryption: {}",
+        "This is what Alice sees after decryption: \n '{}'",
         &decrypted_secret
     );
 
     // eve dropping in
-    let decrypted_secret = decrypt_secret_from(&agent_eve, alice, &encrypted_secret).await?;
-    println!(
-        "This is what Eve sees after decryption: {}",
-        &decrypted_secret
-    );
+    // let decrypted_secret = decrypt_secret_from(&agent_eve, alice, &encrypted_secret).await?;
+    // println!(
+    //     "This is what Eve sees after decryption: {}",
+    //     &decrypted_secret
+    // );
+
+    println!("===========================================================");
+    println!("===========================================================");
+
+    // alice encrypts for bob
+    let encrypted_secret = encrypt_secret_for(&agent_alice, bob, secret).await?;
+    // let decrypted_secret = decrypt_secret_from(&agent_bob, alice, &encrypted_secret).await?;
+    // println!(
+    //     "This is what Bob sees after decryption: {}",
+    //     &decrypted_secret
+    // );
 
     Ok(())
 }
@@ -66,8 +85,6 @@ async fn encrypt_secret_for(agent: &Agent, recipient: &str, secret: &str) -> Res
     } else {
         return Err(anyhow::format_err!("Failed getting encryption key"));
     }
-
-    // dbg!(&enc_key_recipient.public_key_to_der());
 
     // let's encrypt a message
     let mut encrypted_secret: Vec<u8> = vec![0; enc_key_recipient.size() as usize];
