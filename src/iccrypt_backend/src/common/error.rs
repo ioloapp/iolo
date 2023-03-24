@@ -11,6 +11,7 @@ pub enum SmartVaultErr {
     UserVaultDoesNotExist(String),
     SecretDoesNotExist(String),
     SecretHasNoId,
+    SecretDoesAlreadyExist(String),
 }
 
 impl Display for SmartVaultErr {
@@ -42,6 +43,9 @@ impl Display for SmartVaultErr {
             }
             SmartVaultErr::SecretHasNoId => {
                 write!(f, "Secret has no id")
+            }
+            SmartVaultErr::SecretDoesAlreadyExist(id) => {
+                write!(f, "Failed to create secret with the following id: {}", id)
             }
         }
     }

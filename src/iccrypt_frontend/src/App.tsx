@@ -3,7 +3,7 @@ import * as React from 'react';
 // Components
 import SmartVault from "./pages/SmartVault";
 import Settings from "./pages/Settings";
-import Layout from "./pages/navigation/Layout";
+import Layout from "./pages/layout/Layout";
 import Home from './pages/Home';
 
 // MUI

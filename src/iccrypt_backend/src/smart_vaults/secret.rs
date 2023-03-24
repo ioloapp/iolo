@@ -48,20 +48,20 @@ impl SecretForCreation {
         &self.name
     }
 
-    pub fn username(&self) -> &Option<String> {
-        &self.username
+    pub fn username(&self) -> Option<&String> {
+        self.username.as_ref()
     }
 
-    pub fn password(&self) -> &Option<String> {
-        &self.password
+    pub fn password(&self) -> Option<&String> {
+        self.password.as_ref()
     }
 
-    pub fn url(&self) -> &Option<String> {
-        &self.url
+    pub fn url(&self) -> Option<&String> {
+        self.url.as_ref()
     }
 
-    pub fn notes(&self) -> &Option<String> {
-        &self.notes
+    pub fn notes(&self) -> Option<&String> {
+        self.notes.as_ref()
     }
 }
 
@@ -102,32 +102,32 @@ impl SecretForUpdate {
         &self.id
     }
 
-    pub fn category(&self) -> &Option<SecretCategory> {
-        &self.category
+    pub fn category(&self) -> Option<&SecretCategory> {
+        self.category.as_ref()
     }
 
-    pub fn name(&self) -> &Option<String> {
-        &self.name
+    pub fn name(&self) -> Option<&String> {
+        self.name.as_ref()
     }
 
-    pub fn username(&self) -> &Option<String> {
-        &self.username
+    pub fn username(&self) -> Option<&String> {
+        self.username.as_ref()
     }
 
-    pub fn password(&self) -> &Option<String> {
-        &self.password
+    pub fn password(&self) -> Option<&String> {
+        self.password.as_ref()
     }
 
-    pub fn url(&self) -> &Option<String> {
-        &self.url
+    pub fn url(&self) -> Option<&String> {
+        self.url.as_ref()
     }
 
-    pub fn notes(&self) -> &Option<String> {
-        &self.notes
+    pub fn notes(&self) -> Option<&String> {
+        self.notes.as_ref()
     }
 }
 
-#[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
+#[derive(Debug, CandidType, Deserialize, Serialize, Clone, PartialEq)]
 pub struct Secret {
     id: UUID,
     date_created: u64,
@@ -187,8 +187,9 @@ impl Secret {
         self.date_modified = time::get_current_time();
     }
 
-    pub fn username(&self) -> &Option<String> {
-        &self.username
+    pub fn username(&self) -> Option<&String> {
+        self.username.as_ref()
+        
     }
 
     pub fn set_username(&mut self, username: String) {
@@ -196,8 +197,8 @@ impl Secret {
         self.date_modified = time::get_current_time();
     }
 
-    pub fn password(&self) -> &Option<String> {
-        &self.password
+    pub fn password(&self) -> Option<&String> {
+        self.password.as_ref()
     }
 
     pub fn set_password(&mut self, password: String) {
@@ -205,8 +206,8 @@ impl Secret {
         self.date_modified = time::get_current_time();
     }
 
-    pub fn url(&self) -> &Option<String> {
-        &self.url
+    pub fn url(&self) -> Option<&String> {
+        self.url.as_ref()
     }
 
     pub fn set_url(&mut self, url: String) {
@@ -214,8 +215,8 @@ impl Secret {
         self.date_modified = time::get_current_time();
     }
 
-    pub fn notes(&self) -> &Option<String> {
-        &self.notes
+    pub fn notes(&self) -> Option<&String> {
+        self.notes.as_ref()
     }
 
     pub fn set_notes(&mut self, notes: String) {
@@ -232,7 +233,7 @@ mod tests {
     use std::thread;
 
     #[test]
-    fn utest_new_secret() {
+    fn utest_secret_create_secret() {
         let category: SecretCategory = SecretCategory::Password;
         let name: String = String::from("my-first-secret");
 
@@ -255,14 +256,14 @@ mod tests {
         );
         assert_eq!(secret.category(), &category);
         assert_eq!(secret.name(), &name);
-        assert_eq!(secret.username(), &Option::None);
-        assert_eq!(secret.password(), &Option::None);
-        assert_eq!(secret.url(), &Option::None);
-        assert_eq!(secret.notes(), &Option::None);
+        assert_eq!(secret.username(), Option::None);
+        assert_eq!(secret.password(), Option::None);
+        assert_eq!(secret.url(), Option::None);
+        assert_eq!(secret.notes(), Option::None);
     }
 
     #[test]
-    fn utest_update_secret() {
+    fn utest_secret_update_secret() {
         // Create secret
         let category: SecretCategory = SecretCategory::Password;
         let name: String = String::from("my-first-secret");
@@ -333,7 +334,7 @@ mod tests {
             secret.date_modified(),
             modified_before_update
         );
-        assert_eq!(secret.username(), &Option::Some(username));
+        assert_eq!(secret.username(), Option::Some(&username));
 
         // Update password
         let password = String::from("my-password");
@@ -355,7 +356,7 @@ mod tests {
             secret.date_modified(),
             modified_before_update
         );
-        assert_eq!(secret.password(), &Option::Some(password));
+        assert_eq!(secret.password(), Option::Some(&password));
 
         // Update url
         let url = String::from("my-url");
@@ -377,7 +378,7 @@ mod tests {
             secret.date_modified(),
             modified_before_update
         );
-        assert_eq!(secret.url(), &Option::Some(url));
+        assert_eq!(secret.url(), Option::Some(&url));
 
         // Updates notes
         let notes = String::from("my-notes");
@@ -399,22 +400,22 @@ mod tests {
             secret.date_modified(),
             modified_before_update
         );
-        assert_eq!(secret.notes(), &Option::Some(notes));
+        assert_eq!(secret.notes(), Option::Some(&notes));
     }
 
     #[test]
-    fn utest_new_secret_for_update() {
+    fn utest_secret_create_secret_for_update() {
         let id = UUID::new();
 
         // Check return of None
         let secret_for_update = SecretForUpdate::new(id, None, None, None, None, None, None);
         assert!(*secret_for_update.id() == id);
-        assert!(*secret_for_update.category() == None);
-        assert!(*secret_for_update.name() == None);
-        assert!(*secret_for_update.username() == None);
-        assert!(*secret_for_update.password() == None);
-        assert!(*secret_for_update.url() == None);
-        assert!(*secret_for_update.notes() == None);
+        assert!(secret_for_update.category() == None);
+        assert!(secret_for_update.name() == None);
+        assert!(secret_for_update.username() == None);
+        assert!(secret_for_update.password() == None);
+        assert!(secret_for_update.url() == None);
+        assert!(secret_for_update.notes() == None);
 
         // Check return of Some
         let category = Some(SecretCategory::Note);
@@ -422,7 +423,7 @@ mod tests {
         let username = Some("my-super-username-update".to_string());
         let password = Some("my-super-password-update".to_string());
         let url = Some("my-super-url-update".to_string());
-        let notes = Some("my-super-notes-update".to_string());
+        let notes = Some("&my-super-notes-update".to_string());
         let secret_for_update = SecretForUpdate::new(
             id,
             category.clone(),
@@ -433,16 +434,16 @@ mod tests {
             notes.clone(),
         );
         assert!(*secret_for_update.id() == id);
-        assert!(*secret_for_update.category() == category);
-        assert!(*secret_for_update.name() == name);
-        assert!(*secret_for_update.username() == username);
-        assert!(*secret_for_update.password() == password);
-        assert!(*secret_for_update.url() == url);
-        assert!(*secret_for_update.notes() == notes);
+        assert!(secret_for_update.category() == category.as_ref());
+        assert!(secret_for_update.name() == name.as_ref());
+        assert!(secret_for_update.username() == username.as_ref());
+        assert!(secret_for_update.password() == password.as_ref());
+        assert!(secret_for_update.url() == url.as_ref());
+        assert!(secret_for_update.notes() == notes.as_ref());
     }
 
     #[test]
-    fn utest_new_secret_for_creation() {
+    fn utest_secret_create_secret_for_creation() {
 
         let category = SecretCategory::Document;
         let name = "my-super-secret".to_string();
@@ -451,10 +452,10 @@ mod tests {
         let secret_for_creation = SecretForCreation::new(category.clone(), name.clone(), None, None, None, None);
         assert!(*secret_for_creation.category() == category);
         assert!(*secret_for_creation.name() == name);
-        assert!(*secret_for_creation.username() == None);
-        assert!(*secret_for_creation.password() == None);
-        assert!(*secret_for_creation.url() == None);
-        assert!(*secret_for_creation.notes() == None);
+        assert!(secret_for_creation.username() == None);
+        assert!(secret_for_creation.password() == None);
+        assert!(secret_for_creation.url() == None);
+        assert!(secret_for_creation.notes() == None);
 
         // Check return of Some
         let category = SecretCategory::Note;
@@ -473,9 +474,9 @@ mod tests {
         );
         assert!(*secret_for_update.category() == category);
         assert!(*secret_for_update.name() == name);
-        assert!(*secret_for_update.username() == username);
-        assert!(*secret_for_update.password() == password);
-        assert!(*secret_for_update.url() == url);
-        assert!(*secret_for_update.notes() == notes);
+        assert!(secret_for_update.username() == username.as_ref());
+        assert!(secret_for_update.password() == password.as_ref());
+        assert!(secret_for_update.url() == url.as_ref());
+        assert!(secret_for_update.notes() == notes.as_ref());
     }
 }

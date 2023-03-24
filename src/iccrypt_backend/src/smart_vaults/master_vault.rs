@@ -70,16 +70,16 @@ impl MasterVault {
             secret_for_creation.name().clone(),
         );
         if secret_for_creation.username().is_some() {
-            secret.set_username(secret_for_creation.username().clone().unwrap());
+            secret.set_username(secret_for_creation.username().unwrap().clone());
         }
         if secret_for_creation.password().is_some() {
-            secret.set_password(secret_for_creation.password().clone().unwrap());
+            secret.set_password(secret_for_creation.password().unwrap().clone());
         }
         if secret_for_creation.url().is_some() {
-            secret.set_url(secret_for_creation.url().clone().unwrap());
+            secret.set_url(secret_for_creation.url().unwrap().clone());
         }
         if secret_for_creation.notes().is_some() {
-            secret.set_notes(secret_for_creation.notes().clone().unwrap());
+            secret.set_notes(secret_for_creation.notes().unwrap().clone());
         }
 
         let user_vault = self.user_vaults.get_mut(vault_id).unwrap();
@@ -103,22 +103,22 @@ impl MasterVault {
         let secret: &mut Secret = user_vault.get_secret_mut(secret_for_update.id())?;
 
         if secret_for_update.name().is_some() {
-            secret.set_name(secret_for_update.name().clone().unwrap());
+            secret.set_name(secret_for_update.name().unwrap().clone());
         }
         if secret_for_update.category().is_some() {
-            secret.set_category(secret_for_update.category().clone().unwrap());
+            secret.set_category(secret_for_update.category().unwrap().clone());
         }
         if secret_for_update.password().is_some() {
-            secret.set_password(secret_for_update.password().clone().unwrap());
+            secret.set_password(secret_for_update.password().unwrap().clone());
         }
         if secret_for_update.username().is_some() {
-            secret.set_username(secret_for_update.username().clone().unwrap());
+            secret.set_username(secret_for_update.username().unwrap().clone());
         }
         if secret_for_update.url().is_some() {
-            secret.set_url(secret_for_update.url().clone().unwrap());
+            secret.set_url(secret_for_update.url().unwrap().clone());
         }
         if secret_for_update.notes().is_some() {
-            secret.set_notes(secret_for_update.notes().clone().unwrap());
+            secret.set_notes(secret_for_update.notes().unwrap().clone());
         }
         let s = secret.clone();
         Ok(s)
