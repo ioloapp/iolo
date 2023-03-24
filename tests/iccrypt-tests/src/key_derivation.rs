@@ -27,7 +27,7 @@ async fn self_encryption() -> Result<()> {
     // Eve
     let identity_eve: BasicIdentity = create_identity();
     let _principal_eve: Principal = identity_eve.sender().unwrap();
-    let _agent_eve: Agent = get_dfx_agent_with_identity(identity_eve).await?;
+    let agent_eve: Agent = get_dfx_agent_with_identity(identity_eve).await?;
 
     let secret = "Fom Alice to Alice: Hey, this is my personal secret";
 
@@ -41,6 +41,7 @@ async fn self_encryption() -> Result<()> {
     let encrypted_secret = encrypt_secret_for(&agent_alice, &principal_alice, secret).await?;
     let decrypted_secret =
         decrypt_secret_from(&agent_alice, &principal_alice, &encrypted_secret).await?;
+    assert_eq!(decrypted_secret, secret);
     println!(
         "This is what Alice sees after decryption: \n '{}'",
         &decrypted_secret
@@ -53,15 +54,16 @@ async fn self_encryption() -> Result<()> {
     let encrypted_secret = encrypt_secret_for(&agent_alice, &principal_bob, secret).await?;
     let decrypted_secret =
         decrypt_secret_from(&agent_bob, &principal_alice, &encrypted_secret).await?;
+    assert_eq!(decrypted_secret, secret);
     println!(
         "This is what Bob sees after decryption: {}",
         &decrypted_secret
     );
 
-    // eve dropping in
-    // let decrypted_secret =
-    //     decrypt_secret_from(&agent_eve, &principal_alice, &encrypted_secret).await;
-    // assert!(decrypted_secret.is_err());
+    // eve dropping in -> this must result in an error
+    let decrypted_secret =
+        decrypt_secret_from(&agent_eve, &principal_alice, &encrypted_secret).await;
+    assert!(decrypted_secret.is_err());
 
     Ok(())
 }
@@ -75,23 +77,20 @@ async fn encrypt_secret_for(agent: &Agent, recipient: &Principal, secret: &str) 
         // .with_arg(&Encode!(&principal.to_string())?)
         .with_arg(&Encode!(&recipient.to_string())?)
         .call_and_wait()
-        .await
-        .unwrap();
+        .await?;
 
     let mut res_deserialized = candid::de::IDLDeserialize::new(&res)?;
 
     let enc_key_recipient: Rsa<Public>;
-    if let Some(enc_key) = res_deserialized.get_value::<Option<Vec<u8>>>().unwrap() {
-        enc_key_recipient = openssl::rsa::Rsa::public_key_from_pem(&enc_key).unwrap();
+    if let Some(enc_key) = res_deserialized.get_value::<Option<Vec<u8>>>()? {
+        enc_key_recipient = openssl::rsa::Rsa::public_key_from_pem(&enc_key)?;
     } else {
         return Err(anyhow::format_err!("Failed getting encryption key"));
     }
 
     // let's encrypt a message
     let mut encrypted_secret: Vec<u8> = vec![0; enc_key_recipient.size() as usize];
-    enc_key_recipient
-        .public_encrypt(secret.as_bytes(), &mut encrypted_secret, Padding::PKCS1)
-        .unwrap();
+    enc_key_recipient.public_encrypt(secret.as_bytes(), &mut encrypted_secret, Padding::PKCS1)?;
     Ok(encrypted_secret)
 }
 
@@ -107,23 +106,24 @@ async fn decrypt_secret_from(
         .update(&canister, "get_decryption_key_from")
         .with_arg(&Encode!(&sender.to_string())?)
         .call_and_wait()
-        .await
-        .unwrap();
+        .await?;
 
     let mut res_deserialized = candid::de::IDLDeserialize::new(&res)?;
 
     let decryption_key: Rsa<Private>;
-    if let Some(dec_key) = res_deserialized.get_value::<Option<Vec<u8>>>().unwrap() {
-        decryption_key = openssl::rsa::Rsa::private_key_from_pem(&dec_key).unwrap();
+    if let Some(dec_key) = res_deserialized.get_value::<Option<Vec<u8>>>()? {
+        decryption_key = openssl::rsa::Rsa::private_key_from_pem(&dec_key)?;
     } else {
         return Err(anyhow::format_err!("Failed getting decryption key"));
     }
 
     // decrypt the secret
     let mut decrypted_secret: Vec<u8> = vec![0; decryption_key.size() as usize];
-    let x = decryption_key
-        .private_decrypt(&encrypted_secret, &mut decrypted_secret, Padding::PKCS1)
-        .unwrap();
+    decryption_key.private_decrypt(&encrypted_secret, &mut decrypted_secret, Padding::PKCS1)?;
 
-    Ok(String::from_utf8(decrypted_secret).unwrap())
+    let decrypted_secret_string = String::from_utf8(decrypted_secret)?;
+
+    Ok(decrypted_secret_string
+        .trim_matches(char::from(0))
+        .to_string())
 }
