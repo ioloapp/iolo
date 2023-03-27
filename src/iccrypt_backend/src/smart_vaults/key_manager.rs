@@ -22,9 +22,14 @@ const MASTER_KEY_ID: i32 = 1;
 #[ic_cdk_macros::update]
 #[candid_method(update)]
 pub async fn get_encryption_key_for(heir: String) -> Option<Vec<u8>> {
+    ic_cdk::println!("Heir: {}", heir);
     let mut derivation_id: String = get_caller().to_string();
     derivation_id.push_str(&heir.to_string());
-    derive_encryption_key(MASTER_KEY_ID, &derivation_id).await
+    let response = derive_encryption_key(MASTER_KEY_ID, &derivation_id).await;
+    let temp = response.clone().unwrap();
+    ic_cdk::println!("Returned key length: {}", &temp.len());
+    ic_cdk::println!("Returned key: {:?}", &temp);
+    response
 }
 
 // Identity based encryption using IC Threshold Key Derivation

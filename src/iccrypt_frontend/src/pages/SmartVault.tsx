@@ -42,6 +42,7 @@ const SmartVault = () => {
 
     useEffect(() => {
         getUserVault();
+        toggleEncryption();
     }, []);
 
     // State hooks
@@ -157,6 +158,28 @@ const SmartVault = () => {
         } else {
             console.error(res);
         }
+    }
+
+    async function toggleEncryption() {
+        let actor = await getActor();
+        let res = await actor.get_encryption_key_for("p67xw-6thvw-b6mjh-y6s6w-r6sgz-6n5p3-ocyp3-iyueo-55jrs-chyq4-jae");
+        console.log(res[0].length.toString());
+        console.log(res[0]);
+
+        /*let a = new Uint8Array(res[0]);
+        console.log(a)
+        const publicKey = await crypto.subtle.importKey(
+            "raw",
+            a,
+            {
+                name: "RSA-PSS",
+                hash: { name: "SHA-256" },
+            },
+            true,
+            ["encrypt"]
+        );
+        console.log(publicKey)*/
+
     }
 
     const handleOpenModal = (selectedSecret) => {
@@ -297,7 +320,8 @@ const SmartVault = () => {
                         <TextField name="notes" margin="normal" fullWidth size="small" label="Notes" variant="filled" value={secretInModal.notes} onChange={handleEditSecretValueChange} />
                     </Box>
                     <Box>
-                        <Button variant="contained" type="submit" onClick={saveSecret}>Save</Button>
+                        <Button variant="contained" onClick={saveSecret}>Save</Button>
+                        <Button sx={{ m: 2 }} variant="contained" onClick={toggleEncryption}>Decrypt/encrypt</Button>
                     </Box>
                     <Backdrop
                         sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}

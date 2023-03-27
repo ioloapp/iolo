@@ -38,6 +38,7 @@ async fn self_encryption() -> Result<()> {
     println!("===========================================================");
 
     // the happy flow: self encryption for alice
+    println!("Principal Alice: {}", &principal_alice);
     let encrypted_secret = encrypt_secret_for(&agent_alice, &principal_alice, secret).await?;
     let decrypted_secret =
         decrypt_secret_from(&agent_alice, &principal_alice, &encrypted_secret).await?;
@@ -70,7 +71,7 @@ async fn self_encryption() -> Result<()> {
 
 async fn encrypt_secret_for(agent: &Agent, recipient: &Principal, secret: &str) -> Result<Vec<u8>> {
     let canister = get_iccrypt_backend_canister();
-
+    
     // get encryption key for alice
     let res: Vec<u8> = agent
         .update(&canister, "get_encryption_key_for")
@@ -78,7 +79,8 @@ async fn encrypt_secret_for(agent: &Agent, recipient: &Principal, secret: &str) 
         .with_arg(&Encode!(&recipient.to_string())?)
         .call_and_wait()
         .await?;
-
+    println!("Lenght of key: {}", res.len());
+    println!("Key: {:?}", res);
     let mut res_deserialized = candid::de::IDLDeserialize::new(&res)?;
 
     let enc_key_recipient: Rsa<Public>;
