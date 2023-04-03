@@ -26,6 +26,7 @@ export const idlFactory = ({ IDL }) => {
   const SmartVaultErr = IDL.Variant({
     'UserAlreadyExists' : IDL.Text,
     'SecretHasNoId' : IDL.Null,
+    'SecretDoesAlreadyExist' : IDL.Text,
     'UserDeletionFailed' : IDL.Text,
     'SecretDoesNotExist' : IDL.Text,
     'UserVaultCreationFailed' : IDL.Text,
@@ -67,9 +68,19 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Opt(IDL.Vec(IDL.Nat8))],
         [],
       ),
+    'get_decryption_key_pem_from' : IDL.Func(
+        [IDL.Text],
+        [IDL.Opt(IDL.Text)],
+        [],
+      ),
     'get_encryption_key_for' : IDL.Func(
         [IDL.Text],
         [IDL.Opt(IDL.Vec(IDL.Nat8))],
+        [],
+      ),
+    'get_encryption_key_pem_for' : IDL.Func(
+        [IDL.Text],
+        [IDL.Opt(IDL.Text)],
         [],
       ),
     'get_user_vault' : IDL.Func([], [Result_3], ['query']),

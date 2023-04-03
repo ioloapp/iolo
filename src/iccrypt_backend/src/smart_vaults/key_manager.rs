@@ -2,7 +2,8 @@ use candid::candid_method;
 
 use crate::{
     utils::threshold_key_derivation::derive_encryption_key,
-    utils::{caller::get_caller, threshold_key_derivation::derive_decryption_key},
+    utils::threshold_key_derivation::derive_encryption_key_pem,
+    utils::{caller::get_caller, threshold_key_derivation::derive_decryption_key, threshold_key_derivation::derive_decryption_key_pem},
 };
 
 // TODO: move this somewhere else?
@@ -22,13 +23,9 @@ const MASTER_KEY_ID: i32 = 1;
 #[ic_cdk_macros::update]
 #[candid_method(update)]
 pub async fn get_encryption_key_for(heir: String) -> Option<Vec<u8>> {
-    ic_cdk::println!("Heir: {}", heir);
     let mut derivation_id: String = get_caller().to_string();
     derivation_id.push_str(&heir.to_string());
     let response = derive_encryption_key(MASTER_KEY_ID, &derivation_id).await;
-    let temp = response.clone().unwrap();
-    ic_cdk::println!("Returned key length: {}", &temp.len());
-    ic_cdk::println!("Returned key: {:?}", &temp);
     response
 }
 
@@ -49,4 +46,21 @@ pub async fn get_decryption_key_from(testator: String) -> Option<Vec<u8>> {
     let mut derivation_id: String = testator.to_string();
     derivation_id.push_str(&get_caller().to_string());
     derive_decryption_key(MASTER_KEY_ID, &derivation_id).await
+}
+
+#[ic_cdk_macros::update]
+#[candid_method(update)]
+pub async fn get_encryption_key_pem_for(heir: String) -> Option<String> {
+    let mut derivation_id: String = get_caller().to_string();
+    derivation_id.push_str(&heir.to_string());
+    let response = derive_encryption_key_pem(MASTER_KEY_ID, &derivation_id).await;
+    response
+}
+
+#[ic_cdk_macros::update]
+#[candid_method(update)]
+pub async fn get_decryption_key_pem_from(testator: String) -> Option<String> {
+    let mut derivation_id: String = testator.to_string();
+    derivation_id.push_str(&get_caller().to_string());
+    derive_decryption_key_pem(MASTER_KEY_ID, &derivation_id).await
 }

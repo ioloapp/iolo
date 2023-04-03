@@ -11,6 +11,7 @@ use candid::candid_method;
 use utils::caller::get_caller;
 
 use crate::helper::derivation_id_mapper::deterministically_derive_key_pair;
+use crate::helper::derivation_id_mapper::deterministically_derive_key_pair_pem;
 
 // KeyPairs file contains 10 keys which get loaded into memory
 // Derivation ID is used to deterministically derive the index (between 0 and 10)
@@ -36,6 +37,24 @@ fn derive_decryption_key(master_key_id: i32, derivation_id: String) -> Vec<u8> {
     // use helper function to get position index between 1 and 10
     let kp =
         deterministically_derive_key_pair(master_key_id, &get_caller().to_string(), &derivation_id);
+
+    kp.private_key
+}
+
+#[ic_cdk_macros::query]
+#[candid_method(query)]
+fn derive_encryption_key_pem(master_key_id: i32, derivation_id: String) -> String {
+    let kp =
+        deterministically_derive_key_pair_pem(master_key_id, &get_caller().to_string(), &derivation_id);
+    kp.public_key
+}
+
+#[ic_cdk_macros::query]
+#[candid_method(query)]
+fn derive_decryption_key_pem(master_key_id: i32, derivation_id: String) -> String {
+    // use helper function to get position index between 1 and 10
+    let kp =
+        deterministically_derive_key_pair_pem(master_key_id, &get_caller().to_string(), &derivation_id);
 
     kp.private_key
 }

@@ -1,4 +1,4 @@
-use crate::utils::key_pairs::{get_key_pairs, KeyPair};
+use crate::utils::key_pairs::{get_key_pairs, get_key_pairs_pem, KeyPair, KeyPairPem};
 
 // returns a keypair
 pub fn deterministically_derive_key_pair(
@@ -7,6 +7,27 @@ pub fn deterministically_derive_key_pair(
     derivation_id: &str,
 ) -> KeyPair {
     let kps: Vec<KeyPair> = get_key_pairs();
+    let mut index: usize = 1;
+
+    index += usize::try_from(master_key_id).unwrap();
+
+    caller.as_bytes().iter().for_each(|b: &u8| {
+        index += usize::from(*b);
+    });
+
+    derivation_id.as_bytes().iter().for_each(|b: &u8| {
+        index += usize::from(*b);
+    });
+
+    kps[(index % kps.len())].clone()
+}
+
+pub fn deterministically_derive_key_pair_pem(
+    master_key_id: i32,
+    caller: &str,
+    derivation_id: &str,
+) -> KeyPairPem {
+    let kps: Vec<KeyPairPem> = get_key_pairs_pem();
     let mut index: usize = 1;
 
     index += usize::try_from(master_key_id).unwrap();

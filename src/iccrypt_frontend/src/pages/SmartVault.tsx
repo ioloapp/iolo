@@ -1,6 +1,9 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 
+// Redux
+import { useAppSelector } from '../redux/hooks'; // for typescript
+
 // MUI
 import {
     Box, Typography, List, ListItem, IconButton, ListItemText, TextField, Button, Select, MenuItem, ListItemAvatar, Avatar, Modal, Fab, ListItemButton, Backdrop, CircularProgress, InputAdornment, FilledInput, InputLabel, FormControl
@@ -10,6 +13,9 @@ import { Delete as DeleteIcon, Key as KeyIcon, Add as AddIcon, Visibility, Visib
 // IC
 import { getActor } from '../utils/backend';
 import { SecretCategory, SecretForCreation, SecretForUpdate, Result_2, Result_3, Result, Secret } from '../../../declarations/iccrypt_backend/iccrypt_backend.did';
+
+// Various
+import { importRsaPublicKey, importRsaPrivateKey, decrypt, encrypt, ab2base64, base642ab } from '../utils/crypto';
 
 const secretCategories = {
     Password: "Password",
@@ -42,16 +48,19 @@ const SmartVault = () => {
 
     useEffect(() => {
         getUserVault();
-        toggleEncryption();
     }, []);
+
+    const principal = useAppSelector((state) => state.user.principal);  // Principal from redux store
 
     // State hooks
     const [secretList, setSecretList] = useState([]);
     const [secretInModal, setSecretInModal] = useState(secretInModalInitValues);
     const [openModal, setOpenModal] = useState(false);
-    const [loadingIconForSaveIsOpen, setLoadingIconForSave] = React.useState(false);
-    const [loadingIconForDeleteIsOpen, setLoadingIconForDelete] = React.useState(false);
-    const [showPassword, setShowPassword] = React.useState(false);
+    const [loadingIconForModalIsOpen, setLoadingIconForModal] = React.useState(false);
+    const [loadingIconForPageIsOpen, setLoadingIconForPage] = React.useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+    const [publicKey, setPublicKey] = useState(null);
+    const [privateKey, setPrivateKey] = useState(null);
 
     const handleClickShowPassword = () => setShowPassword((show) => !show);
 
@@ -67,7 +76,7 @@ const SmartVault = () => {
             secretCategory = { 'Document': null };
         }
 
-        setLoadingIconForSave(true);
+        setLoadingIconForModal(true);
         let actor = await getActor();
         if (secretInModal.id > 0) {
             // Update
@@ -87,17 +96,21 @@ const SmartVault = () => {
                 secret.username = [secretInModal.username];
             }
             if (secretInModal.password !== '') {
-                secret.password = [secretInModal.password];
+                let encryptedBuffer = await encrypt(publicKey, secretInModal.password);
+                let encryptedBase64 = ab2base64(encryptedBuffer);
+                secret.password = [encryptedBase64];
             }
             if (secretInModal.url !== '') {
                 secret.url = [secretInModal.url];
             }
             if (secretInModal.notes !== '') {
-                secret.notes = [secretInModal.notes];
+                let encryptedBuffer = await encrypt(publicKey, secretInModal.notes);
+                let encryptedBase64 = ab2base64(encryptedBuffer);
+                secret.notes = [encryptedBase64];
             }
             let res: Result = await actor.update_user_secret(secret);
             if (Object.keys(res)[0] === 'Ok') {
-                const secretsForList = secretList.map((secret, i) => {
+                const secretsForList = secretList.map((secret) => {
                     if (secret.id === secretInModal.id) {
                         return secretInModal;
                     } else {
@@ -122,13 +135,17 @@ const SmartVault = () => {
                 secret.username = [secretInModal.username];
             }
             if (secretInModal.password !== '') {
-                secret.password = [secretInModal.password];
+                let encryptedBuffer = await encrypt(publicKey, secretInModal.password);
+                let encryptedBase64 = ab2base64(encryptedBuffer);
+                secret.password = [encryptedBase64];
             }
             if (secretInModal.url !== '') {
                 secret.url = [secretInModal.url];
             }
             if (secretInModal.notes !== '') {
-                secret.notes = [secretInModal.notes];
+                let encryptedBuffer = await encrypt(publicKey, secretInModal.notes);
+                let encryptedBase64 = ab2base64(encryptedBuffer);
+                secret.notes = [encryptedBase64];
             }
             let res: Result = await actor.add_user_secret(secret);
             if (Object.keys(res)[0] === 'Ok') {
@@ -140,15 +157,15 @@ const SmartVault = () => {
                 console.error(res);
             }
         }
-        setLoadingIconForSave(false);
+        setLoadingIconForModal(false);
         handleCloseModal();
     }
 
     async function removeSecret(secretId: number) {
-        setLoadingIconForDelete(true);
+        setLoadingIconForPage(true);
         let actor = await getActor();
         let res: Result_2 = await actor.remove_user_secret(BigInt(secretId));
-        setLoadingIconForDelete(false);
+        setLoadingIconForPage(false);
         if (Object.keys(res)[0] === 'Ok') {
             setSecretList(
                 secretList.filter(s =>
@@ -160,26 +177,8 @@ const SmartVault = () => {
         }
     }
 
-    async function toggleEncryption() {
-        let actor = await getActor();
-        let res = await actor.get_encryption_key_for("p67xw-6thvw-b6mjh-y6s6w-r6sgz-6n5p3-ocyp3-iyueo-55jrs-chyq4-jae");
-        console.log(res[0].length.toString());
-        console.log(res[0]);
-
-        /*let a = new Uint8Array(res[0]);
-        console.log(a)
-        const publicKey = await crypto.subtle.importKey(
-            "raw",
-            a,
-            {
-                name: "RSA-PSS",
-                hash: { name: "SHA-256" },
-            },
-            true,
-            ["encrypt"]
-        );
-        console.log(publicKey)*/
-
+    function toggleEncryption() {
+        // not implemented yet
     }
 
     const handleOpenModal = (selectedSecret) => {
@@ -206,27 +205,51 @@ const SmartVault = () => {
     }
 
     async function getUserVault() {
+        setLoadingIconForPage(true);
         let actor = await getActor();
+        let res = await actor.get_encryption_key_pem_for(principal.toString()); // Set own principal as "heir" for encryption of the own vault
+        let pubKey = await importRsaPublicKey(res[0]);
+        setPublicKey(pubKey);
+
+        res = await actor.get_decryption_key_pem_from(principal.toString()); // Set own principal as "heir" for encryption of the own vault
+        let privKey = await importRsaPrivateKey(res[0]);
+        setPrivateKey(privKey);
+
         let userVault: Result_3 = await actor.get_user_vault();
         if (Object.keys(userVault)[0] === 'Ok') {
             let secrets: [Secret] = userVault['Ok']['secrets'];
-            let secretsForList = secrets.map((secret) => {
+            let secretsForList = await Promise.all(secrets.map(async (secret) => {
+                // Decrypt password and notes
+                let tempPassword: string | null;
+                if (secret[1].password[0]) {
+                    let tempPasswordBuffer = base642ab(secret[1].password[0]);
+                    tempPassword = await decrypt(privKey, tempPasswordBuffer); // Use privKey instead of state variable privateKey because the state variables seems not to be available here already...
+                } else {
+                    tempPassword = secret[1].password[0];
+                }
+                let tempNotes;
+                if (secret[1].notes[0]) {
+                    let tempNotesBuffer = base642ab(secret[1].notes[0]);
+                    tempNotes = await decrypt(privKey, tempNotesBuffer); // Use privKey instead of state variable privateKey because the state variables seems not to be available here already...
+                } else {
+                    tempNotes = secret[1].notes[0];
+                }
                 let mappedSecret = {
                     id: secret[1].id,
                     name: secret[1].name,
                     category: Object.keys(secret[1].category)[0],
                     username: secret[1].username[0],
-                    password: secret[1].password[0],
-                    notes: secret[1].notes[0],
+                    password: tempPassword,
+                    notes: tempNotes,
                     url: secret[1].url[0],
                 }
-
                 return mappedSecret;
-            });
+            }));
             setSecretList(secretsForList);
         } else {
             console.error(userVault['Err']);
         }
+        setLoadingIconForPage(false);
     }
 
     return (
@@ -263,7 +286,7 @@ const SmartVault = () => {
             </List>
             <Backdrop
                 sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
-                open={loadingIconForDeleteIsOpen}
+                open={loadingIconForPageIsOpen}
             >
                 <CircularProgress color="inherit" />
             </Backdrop>
@@ -321,11 +344,11 @@ const SmartVault = () => {
                     </Box>
                     <Box>
                         <Button variant="contained" onClick={saveSecret}>Save</Button>
-                        <Button sx={{ m: 2 }} variant="contained" onClick={toggleEncryption}>Decrypt/encrypt</Button>
+                        <Button disabled sx={{ m: 2 }} variant="contained" onClick={toggleEncryption}>Decrypt/encrypt</Button>
                     </Box>
                     <Backdrop
                         sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
-                        open={loadingIconForSaveIsOpen}
+                        open={loadingIconForModalIsOpen}
                     >
                         <CircularProgress color="inherit" />
                     </Backdrop>

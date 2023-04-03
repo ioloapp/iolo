@@ -42,6 +42,7 @@ export interface SecretForUpdate {
 }
 export type SmartVaultErr = { 'UserAlreadyExists' : string } |
   { 'SecretHasNoId' : null } |
+  { 'SecretDoesAlreadyExist' : string } |
   { 'UserDeletionFailed' : string } |
   { 'SecretDoesNotExist' : string } |
   { 'UserVaultCreationFailed' : string } |
@@ -68,10 +69,12 @@ export interface _SERVICE {
     [string],
     [] | [Uint8Array | number[]]
   >,
+  'get_decryption_key_pem_from' : ActorMethod<[string], [] | [string]>,
   'get_encryption_key_for' : ActorMethod<
     [string],
     [] | [Uint8Array | number[]]
   >,
+  'get_encryption_key_pem_for' : ActorMethod<[string], [] | [string]>,
   'get_user_vault' : ActorMethod<[], Result_3>,
   'is_user_vault_existing' : ActorMethod<[], boolean>,
   'remove_user_secret' : ActorMethod<[bigint], Result_2>,
