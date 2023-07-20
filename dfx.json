@@ -1,9 +1,17 @@
 {
     "canisters": {
+        "system_api": {
+            "candid": "src/system_api/vetkd_system_api.did",
+            "package": "vetkd_system_api",
+            "type": "rust"
+          },
         "iccrypt_backend": {
             "candid": "src/iccrypt_backend/iccrypt_backend.did",
             "package": "iccrypt_backend",
-            "type": "rust"
+            "type": "rust",
+            "dependencies": [
+                "system_api"
+              ]
         },
         "iccrypt_tkd": {
             "candid": "src/iccrypt_tkd/iccrypt_tkd.did",
@@ -13,6 +21,7 @@
         "iccrypt_frontend": {
             "dependencies": [
                 "iccrypt_backend",
+                "system_api",
                 "iccrypt_tkd"
             ],
             "frontend": {
@@ -26,8 +35,8 @@
         },
         "internet_identity": {
             "type": "custom",
-            "candid": "https://github.com/dfinity/internet-identity/releases/download/release-2023-01-31/internet_identity.did",
-            "wasm":   "https://github.com/dfinity/internet-identity/releases/download/release-2023-01-31/internet_identity_dev.wasm",
+            "candid": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity.did",
+            "wasm": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity_dev.wasm.gz",
             "remote": {
                 "id": {
                     "ic": "rdmx6-jaaaa-aaaaa-aaadq-cai"

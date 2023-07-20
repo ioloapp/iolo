@@ -4,3 +4,4 @@ pub mod secret;
 pub mod smart_vault;
 pub mod user_registry;
 pub mod user_vault;
+pub mod vetkd_types;

@@ -17,6 +17,7 @@ ic-stable-structures = "0.3.0"
 serde = "1.0.150"
 anyhow = "1.0.68"
 cfg-if = "1.0.0"
+hex = "0.4.3"
 
 
 [dev-dependencies]

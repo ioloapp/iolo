@@ -63,29 +63,15 @@ export const idlFactory = ({ IDL }) => {
     'add_user_secret' : IDL.Func([SecretForCreation], [Result], []),
     'create_user' : IDL.Func([], [Result_1], []),
     'delete_user' : IDL.Func([], [Result_2], []),
-    'get_decryption_key_from' : IDL.Func(
+    'get_encrypted_symmetric_key_for' : IDL.Func(
+        [IDL.Vec(IDL.Nat8)],
         [IDL.Text],
-        [IDL.Opt(IDL.Vec(IDL.Nat8))],
-        [],
-      ),
-    'get_decryption_key_pem_from' : IDL.Func(
-        [IDL.Text],
-        [IDL.Opt(IDL.Text)],
-        [],
-      ),
-    'get_encryption_key_for' : IDL.Func(
-        [IDL.Text],
-        [IDL.Opt(IDL.Vec(IDL.Nat8))],
-        [],
-      ),
-    'get_encryption_key_pem_for' : IDL.Func(
-        [IDL.Text],
-        [IDL.Opt(IDL.Text)],
         [],
       ),
     'get_user_vault' : IDL.Func([], [Result_3], ['query']),
     'is_user_vault_existing' : IDL.Func([], [IDL.Bool], ['query']),
     'remove_user_secret' : IDL.Func([IDL.Nat], [Result_2], []),
+    'symmetric_key_verification_key' : IDL.Func([], [IDL.Text], []),
     'update_user_secret' : IDL.Func([SecretForUpdate], [Result], []),
     'what_time_is_it' : IDL.Func([], [IDL.Nat64], ['query']),
     'who_am_i' : IDL.Func([], [IDL.Text], ['query']),

@@ -27,6 +27,7 @@ if [[ $ENV == "local" ]]; then
     # Start local replica
     dfx start --background --clean
     # dfx start --clean
+    dfx canister create system_api --specified-id s55qq-oqaaa-aaaaa-aaakq-cai
 fi
 
 # sometimes cargo build and dfx build is required to get the wasm modules in the destination folder

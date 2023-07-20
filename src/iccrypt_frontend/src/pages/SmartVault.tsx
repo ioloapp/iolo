@@ -16,6 +16,9 @@ import { SecretCategory, SecretForCreation, SecretForUpdate, Result_2, Result_3,
 
 // Various
 import { importRsaPublicKey, importRsaPrivateKey, decrypt, encrypt, ab2base64, base642ab } from '../utils/crypto';
+import * as vetkd from "ic-vetkd-utils";
+import { iccrypt_backend } from "../../../declarations/iccrypt_backend";
+import * as agent from "@dfinity/agent";
 
 const secretCategories = {
     Password: "Password",
@@ -44,6 +47,59 @@ const modalStyle = {
     p: 4,
 };
 
+
+// Helper methods for Dfinity mock
+const hex_decode = (hexString) =>
+  Uint8Array.from(hexString.match(/.{1,2}/g).map((byte) => parseInt(byte, 16)));
+
+const hex_encode = (bytes) =>
+  bytes.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '');
+
+async function get_aes_256_gcm_key() {
+    const seed = window.crypto.getRandomValues(new Uint8Array(32));
+    const tsk = new vetkd.TransportSecretKey(seed);
+    const ek_bytes_hex = await iccrypt_backend.get_encrypted_symmetric_key_for(tsk.public_key());
+    const pk_bytes_hex = await iccrypt_backend.symmetric_key_verification_key();
+    const app_backend_principal = (await agent.Actor.agentOf(iccrypt_backend).getPrincipal()); // default is the anonymous principal!
+    return tsk.decrypt_and_hash(
+      hex_decode(ek_bytes_hex),
+      hex_decode(pk_bytes_hex),
+      app_backend_principal.toUint8Array(),
+      32,
+      new TextEncoder().encode("aes-256-gcm")
+    );
+  }
+
+
+async function aes_gcm_decrypt(ciphertext_hex, rawKey) {
+    const iv_and_ciphertext = hex_decode(ciphertext_hex);
+    const iv = iv_and_ciphertext.subarray(0, 12); // 96-bits; unique per message
+    const ciphertext = iv_and_ciphertext.subarray(12);
+    const aes_key = await window.crypto.subtle.importKey("raw", rawKey, "AES-GCM", false, ["decrypt"]);
+    let decrypted = await window.crypto.subtle.decrypt(
+        { name: "AES-GCM", iv: iv },
+        aes_key,
+        ciphertext
+    );
+    return new TextDecoder().decode(decrypted);
+}
+
+async function aes_gcm_encrypt(message, rawKey) {
+    const iv = window.crypto.getRandomValues(new Uint8Array(12)); // 96-bits; unique per message
+    const aes_key = await window.crypto.subtle.importKey("raw", rawKey, "AES-GCM", false, ["encrypt"]);
+    const message_encoded = new TextEncoder().encode(message);
+    const ciphertext_buffer = await window.crypto.subtle.encrypt(
+      { name: "AES-GCM", iv: iv },
+      aes_key,
+      message_encoded
+    );
+    const ciphertext = new Uint8Array(ciphertext_buffer);
+    var iv_and_ciphertext = new Uint8Array(iv.length + ciphertext.length);
+    iv_and_ciphertext.set(iv, 0);
+    iv_and_ciphertext.set(ciphertext, iv.length);
+    return hex_encode(iv_and_ciphertext);
+}
+
 const SmartVault = () => {
 
     useEffect(() => {
@@ -59,8 +115,9 @@ const SmartVault = () => {
     const [loadingIconForModalIsOpen, setLoadingIconForModal] = React.useState(false);
     const [loadingIconForPageIsOpen, setLoadingIconForPage] = React.useState(false);
     const [showPassword, setShowPassword] = useState(false);
-    const [publicKey, setPublicKey] = useState(null);
-    const [privateKey, setPrivateKey] = useState(null);
+    //const [publicKey, setPublicKey] = useState(null);
+    //const [privateKey, setPrivateKey] = useState(null);
+    const [symmetricKey, setSymmetricKey] = useState(null);
 
     const handleClickShowPassword = () => setShowPassword((show) => !show);
 
@@ -96,17 +153,19 @@ const SmartVault = () => {
                 secret.username = [secretInModal.username];
             }
             if (secretInModal.password !== '') {
-                let encryptedBuffer = await encrypt(publicKey, secretInModal.password);
-                let encryptedBase64 = ab2base64(encryptedBuffer);
-                secret.password = [encryptedBase64];
+                let encryptedPassword = await aes_gcm_encrypt(secretInModal.password, symmetricKey);
+                //let encryptedBuffer = await encrypt(publicKey, secretInModal.password);
+                //let encryptedBase64 = ab2base64(encryptedBuffer);
+                secret.password = [encryptedPassword];
             }
             if (secretInModal.url !== '') {
                 secret.url = [secretInModal.url];
             }
             if (secretInModal.notes !== '') {
-                let encryptedBuffer = await encrypt(publicKey, secretInModal.notes);
-                let encryptedBase64 = ab2base64(encryptedBuffer);
-                secret.notes = [encryptedBase64];
+                let encryptedNotes = await aes_gcm_encrypt(secretInModal.notes, symmetricKey);
+                //let encryptedBuffer = await encrypt(publicKey, secretInModal.notes);
+                //let encryptedBase64 = ab2base64(encryptedBuffer);
+                secret.notes = [encryptedNotes];
             }
             let res: Result = await actor.update_user_secret(secret);
             if (Object.keys(res)[0] === 'Ok') {
@@ -135,17 +194,19 @@ const SmartVault = () => {
                 secret.username = [secretInModal.username];
             }
             if (secretInModal.password !== '') {
-                let encryptedBuffer = await encrypt(publicKey, secretInModal.password);
-                let encryptedBase64 = ab2base64(encryptedBuffer);
-                secret.password = [encryptedBase64];
+                let encryptedPassword = await aes_gcm_encrypt(secretInModal.password, symmetricKey);
+                //let encryptedBuffer = await encrypt(publicKey, secretInModal.password);
+                //let encryptedBase64 = ab2base64(encryptedBuffer);
+                secret.password = [encryptedPassword];
             }
             if (secretInModal.url !== '') {
                 secret.url = [secretInModal.url];
             }
             if (secretInModal.notes !== '') {
-                let encryptedBuffer = await encrypt(publicKey, secretInModal.notes);
-                let encryptedBase64 = ab2base64(encryptedBuffer);
-                secret.notes = [encryptedBase64];
+                let encryptedNotes = await aes_gcm_encrypt(secretInModal.notes, symmetricKey);
+                //let encryptedBuffer = await encrypt(publicKey, secretInModal.notes);
+                //let encryptedBase64 = ab2base64(encryptedBuffer);
+                secret.notes = [encryptedNotes];
             }
             let res: Result = await actor.add_user_secret(secret);
             if (Object.keys(res)[0] === 'Ok') {
@@ -207,13 +268,15 @@ const SmartVault = () => {
     async function getUserVault() {
         setLoadingIconForPage(true);
         let actor = await getActor();
-        let res = await actor.get_encryption_key_pem_for(principal.toString()); // Set own principal as "heir" for encryption of the own vault
-        let pubKey = await importRsaPublicKey(res[0]);
-        setPublicKey(pubKey);
+        const aes_256_key = await get_aes_256_gcm_key();
+        setSymmetricKey(aes_256_key);
+        //let res = await actor.get_encryption_key_pem_for(principal.toString()); // Set own principal as "heir" for encryption of the own vault
+        //let pubKey = await importRsaPublicKey(res[0]);
+        //setPublicKey(pubKey);
 
-        res = await actor.get_decryption_key_pem_from(principal.toString()); // Set own principal as "heir" for encryption of the own vault
-        let privKey = await importRsaPrivateKey(res[0]);
-        setPrivateKey(privKey);
+        //res = await actor.get_decryption_key_pem_from(principal.toString()); // Set own principal as "heir" for encryption of the own vault
+        //let privKey = await importRsaPrivateKey(res[0]);
+        //setPrivateKey(privKey);
 
         let userVault: Result_3 = await actor.get_user_vault();
         if (Object.keys(userVault)[0] === 'Ok') {
@@ -222,15 +285,17 @@ const SmartVault = () => {
                 // Decrypt password and notes
                 let tempPassword: string | null;
                 if (secret[1].password[0]) {
-                    let tempPasswordBuffer = base642ab(secret[1].password[0]);
-                    tempPassword = await decrypt(privKey, tempPasswordBuffer); // Use privKey instead of state variable privateKey because the state variables seems not to be available here already...
+                    tempPassword = await aes_gcm_decrypt(secret[1].password[0], aes_256_key); // Use aes_256_key instead of state variable symmetricKey because the state variables seems not to be available here already...
+                    //let tempPasswordBuffer = base642ab(secret[1].password[0]);
+                    //tempPassword = await decrypt(privKey, tempPasswordBuffer); // Use privKey instead of state variable privateKey because the state variables seems not to be available here already...
                 } else {
                     tempPassword = secret[1].password[0];
                 }
                 let tempNotes;
                 if (secret[1].notes[0]) {
-                    let tempNotesBuffer = base642ab(secret[1].notes[0]);
-                    tempNotes = await decrypt(privKey, tempNotesBuffer); // Use privKey instead of state variable privateKey because the state variables seems not to be available here already...
+                    tempNotes = await aes_gcm_decrypt(secret[1].notes[0], aes_256_key); // Use aes_256_key instead of state variable symmetricKey because the state variables seems not to be available here already...
+                    //let tempNotesBuffer = base642ab(secret[1].notes[0]);
+                    //tempNotes = await decrypt(privKey, tempNotesBuffer); // Use privKey instead of state variable privateKey because the state variables seems not to be available here already...
                 } else {
                     tempNotes = secret[1].notes[0];
                 }
