@@ -58,7 +58,11 @@ service : {
   add_user_secret : (SecretForCreation) -> (Result);
   create_user : () -> (Result_1);
   delete_user : () -> (Result_2);
-  get_encrypted_symmetric_key_for : (vec nat8) -> (text);
+  get_decryption_key_from : (text) -> (opt vec nat8);
+  get_decryption_key_pem_from : (text) -> (opt text);
+  get_encrypted_symmetric_key_for : (vec nat8) -> (text, vec nat8);
+  get_encryption_key_for : (text) -> (opt vec nat8);
+  get_encryption_key_pem_for : (text) -> (opt text);
   get_user_vault : () -> (Result_3) query;
   is_user_vault_existing : () -> (bool) query;
   remove_user_secret : (nat) -> (Result_2);

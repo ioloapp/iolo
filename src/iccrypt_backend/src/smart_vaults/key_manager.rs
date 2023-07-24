@@ -94,15 +94,14 @@ async fn symmetric_key_verification_key() -> String {
 
 #[ic_cdk_macros::update]
 #[candid_method(update)]
-pub async fn get_encrypted_symmetric_key_for(encryption_public_key: Vec<u8>) -> String {
-    ic_cdk::println!("Caller: {}", ic_cdk::caller());
-    let derivation_id: Vec<u8> = ic_cdk::caller().as_slice().to_vec();
-    //let addition = String::from("additionalDerivationIdString");
-    //derivation_id.extend(addition.into_bytes());
+pub async fn get_encrypted_symmetric_key_for(encryption_public_key: Vec<u8>) -> (String, Vec<u8>) {
+    let mut derivation_id: Vec<u8> = ic_cdk::caller().as_slice().to_vec();
+    let addition = String::from("additionalDerivationIdString");
+    derivation_id.extend(addition.into_bytes());
+    let derivation_id_response = derivation_id.clone();
 
     let request = VetKDEncryptedKeyRequest {
         derivation_id,
-        //derivation_id: ic_cdk::caller().as_slice().to_vec(),
         public_key_derivation_path: vec![b"symmetric_key".to_vec()],
         key_id: bls12_381_test_key_1(),
         encryption_public_key,
@@ -116,7 +115,7 @@ pub async fn get_encrypted_symmetric_key_for(encryption_public_key: Vec<u8>) -> 
     .await
     .expect("call to vetkd_encrypted_key failed");
 
-    hex::encode(response.encrypted_key)
+    (hex::encode(response.encrypted_key), derivation_id_response)
 }
 
 fn bls12_381_test_key_1() -> VetKDKeyId {
