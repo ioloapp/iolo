@@ -1,4 +1,0 @@
-service : {
-  derive_decryption_key : (int32, text) -> (vec nat8) query;
-  derive_encryption_key : (int32, text) -> (vec nat8) query;
-}

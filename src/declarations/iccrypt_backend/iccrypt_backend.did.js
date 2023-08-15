@@ -63,29 +63,9 @@ export const idlFactory = ({ IDL }) => {
     'add_user_secret' : IDL.Func([SecretForCreation], [Result], []),
     'create_user' : IDL.Func([], [Result_1], []),
     'delete_user' : IDL.Func([], [Result_2], []),
-    'get_decryption_key_from' : IDL.Func(
-        [IDL.Text],
-        [IDL.Opt(IDL.Vec(IDL.Nat8))],
-        [],
-      ),
-    'get_decryption_key_pem_from' : IDL.Func(
-        [IDL.Text],
-        [IDL.Opt(IDL.Text)],
-        [],
-      ),
     'get_encrypted_symmetric_key_for' : IDL.Func(
         [IDL.Vec(IDL.Nat8)],
         [IDL.Text, IDL.Vec(IDL.Nat8)],
-        [],
-      ),
-    'get_encryption_key_for' : IDL.Func(
-        [IDL.Text],
-        [IDL.Opt(IDL.Vec(IDL.Nat8))],
-        [],
-      ),
-    'get_encryption_key_pem_for' : IDL.Func(
-        [IDL.Text],
-        [IDL.Opt(IDL.Text)],
         [],
       ),
     'get_user_vault' : IDL.Func([], [Result_3], ['query']),

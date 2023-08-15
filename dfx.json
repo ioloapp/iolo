@@ -13,16 +13,10 @@
                 "system_api"
               ]
         },
-        "iccrypt_tkd": {
-            "candid": "src/iccrypt_tkd/iccrypt_tkd.did",
-            "package": "iccrypt_tkd",
-            "type": "rust"
-        },
         "iccrypt_frontend": {
             "dependencies": [
                 "iccrypt_backend",
-                "system_api",
-                "iccrypt_tkd"
+                "system_api"
             ],
             "frontend": {
                 "entrypoint": "src/iccrypt_frontend/src/index.html"
