@@ -65,6 +65,10 @@ export interface _SERVICE {
   'add_user_secret' : ActorMethod<[SecretForCreation], Result>,
   'create_user' : ActorMethod<[], Result_1>,
   'delete_user' : ActorMethod<[], Result_2>,
+  'encrypted_symmetric_key_for_secrets' : ActorMethod<
+    [Uint8Array | number[], Uint8Array | number[]],
+    [string, Uint8Array | number[]]
+  >,
   'get_encrypted_symmetric_key_for' : ActorMethod<
     [Uint8Array | number[]],
     [string, Uint8Array | number[]]

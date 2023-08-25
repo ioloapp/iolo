@@ -58,6 +58,7 @@ service : {
   add_user_secret : (SecretForCreation) -> (Result);
   create_user : () -> (Result_1);
   delete_user : () -> (Result_2);
+  encrypted_symmetric_key_for_secrets : (vec nat8, vec nat8) -> (text, vec nat8);
   get_encrypted_symmetric_key_for : (vec nat8) -> (text, vec nat8);
   get_user_vault : () -> (Result_3) query;
   is_user_vault_existing : () -> (bool) query;
@@ -66,4 +67,4 @@ service : {
   update_user_secret : (SecretForUpdate) -> (Result);
   what_time_is_it : () -> (nat64) query;
   who_am_i : () -> (text) query;
-}
+};

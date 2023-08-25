@@ -63,6 +63,11 @@ export const idlFactory = ({ IDL }) => {
     'add_user_secret' : IDL.Func([SecretForCreation], [Result], []),
     'create_user' : IDL.Func([], [Result_1], []),
     'delete_user' : IDL.Func([], [Result_2], []),
+    'encrypted_symmetric_key_for_secrets' : IDL.Func(
+        [IDL.Vec(IDL.Nat8), IDL.Vec(IDL.Nat8)],
+        [IDL.Text, IDL.Vec(IDL.Nat8)],
+        [],
+      ),
     'get_encrypted_symmetric_key_for' : IDL.Func(
         [IDL.Vec(IDL.Nat8)],
         [IDL.Text, IDL.Vec(IDL.Nat8)],

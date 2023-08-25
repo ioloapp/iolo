@@ -3,17 +3,24 @@ use serde::Serialize;
 
 use std::collections::BTreeMap;
 
-use super::secret::Secret;
+use super::secret::{Secret, SecretID};
 use crate::common::uuid::UUID;
 use crate::utils::time;
 use crate::SmartVaultErr;
 
+pub type UserVaultID = UUID;
+
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct UserVault {
-    id: UUID,
+    id: UserVaultID,
     date_created: u64,
     date_modified: u64,
-    secrets: BTreeMap<UUID, Secret>,
+    /// The secrets
+    secrets: BTreeMap<SecretID, Secret>,
+    /// Every secret is encrypted by using dedicated key.
+    /// This key is itself encrypted using the UserVault key,
+    /// which itself is derived by vetkd.
+    key_box: BTreeMap<SecretID, String>,
 }
 
 impl Default for UserVault {
@@ -31,6 +38,7 @@ impl UserVault {
             date_created: now,
             date_modified: now,
             secrets: BTreeMap::new(),
+            key_box: BTreeMap::new(),
         }
     }
 
@@ -50,17 +58,23 @@ impl UserVault {
         &self.secrets
     }
 
-    pub fn get_secret(&self, secret_id: &UUID) -> Result<&Secret, SmartVaultErr> {     
-        self.secrets.get(secret_id).ok_or_else(|| SmartVaultErr::SecretDoesNotExist(secret_id.to_string()))
+    pub fn get_secret(&self, secret_id: &UUID) -> Result<&Secret, SmartVaultErr> {
+        self.secrets
+            .get(secret_id)
+            .ok_or_else(|| SmartVaultErr::SecretDoesNotExist(secret_id.to_string()))
     }
 
-    pub fn get_secret_mut(&mut self, secret_id: &UUID) -> Result<&mut Secret, SmartVaultErr> {     
-        self.secrets.get_mut(secret_id).ok_or_else(|| SmartVaultErr::SecretDoesNotExist(secret_id.to_string()))
+    pub fn get_secret_mut(&mut self, secret_id: &UUID) -> Result<&mut Secret, SmartVaultErr> {
+        self.secrets
+            .get_mut(secret_id)
+            .ok_or_else(|| SmartVaultErr::SecretDoesNotExist(secret_id.to_string()))
     }
 
     pub fn add_secret(&mut self, secret: Secret) -> Result<(), SmartVaultErr> {
         if self.secrets.contains_key(secret.id()) {
-            return Err(SmartVaultErr::SecretDoesAlreadyExist(secret.id().to_string()));
+            return Err(SmartVaultErr::SecretDoesAlreadyExist(
+                secret.id().to_string(),
+            ));
         }
 
         self.secrets.insert(*secret.id(), secret);
@@ -140,21 +154,19 @@ mod tests {
 
         // Create secret stuff...
         let secret_name = String::from("my-first-secret");
-        let secret: Secret =
-            Secret::new(SecretCategory::Password, secret_name.clone());
+        let secret: Secret = Secret::new(SecretCategory::Password, secret_name.clone());
         let modified_before_update = user_vault.date_modified;
         let created_before_update = user_vault.date_created;
 
         // Add secret to user_vault
-        assert_eq!(
-            user_vault.add_secret(secret.clone()),
-            Ok(())
-        );
-        
+        assert_eq!(user_vault.add_secret(secret.clone()), Ok(()));
+
         // Same secret cannot be added twice
         assert_eq!(
             user_vault.add_secret(secret.clone()),
-            Err(SmartVaultErr::SecretDoesAlreadyExist(secret.id().to_string())),
+            Err(SmartVaultErr::SecretDoesAlreadyExist(
+                secret.id().to_string()
+            )),
             "Error must be {:?} but is {:?}",
             SmartVaultErr::SecretDoesAlreadyExist(secret.id().to_string()),
             user_vault.add_secret(secret.clone())
@@ -201,7 +213,7 @@ mod tests {
             "secret.name must be {:?} but is {:?}",
             user_vault.get_secret(secret.id()).unwrap().name(),
             &secret_name
-        ); 
+        );
         let uuid = UUID::new();
         assert_eq!(
             user_vault.get_secret(&uuid),
@@ -209,20 +221,16 @@ mod tests {
             "Error must be {:?} but is {:?}",
             SmartVaultErr::SecretDoesNotExist(uuid.to_string()),
             user_vault.get_secret(&uuid)
-        );        
+        );
 
         // Check get_secret_mut()
         let secret_mut = user_vault.get_secret_mut(secret.id()).unwrap();
-        assert_eq!(
-            secret_mut.name(),
-            &secret_name,
-        );
+        assert_eq!(secret_mut.name(), &secret_name,);
         let uuid = UUID::new();
         assert_eq!(
             user_vault.get_secret_mut(&uuid),
             Err(SmartVaultErr::SecretDoesNotExist(uuid.to_string()))
-        );        
-        
+        );
     }
 
     #[test]
@@ -232,13 +240,11 @@ mod tests {
 
         // Add secret to user_vault
         let secret_name = String::from("my-first-secret");
-        let mut secret: Secret =
-            Secret::new(SecretCategory::Password, secret_name.clone());
+        let mut secret: Secret = Secret::new(SecretCategory::Password, secret_name.clone());
         let mut modified_before_update = user_vault.date_modified;
         let mut created_before_update = user_vault.date_created;
         user_vault.add_secret(secret.clone());
 
-        
         // Update secret
         let username = String::from("my-username");
         let password = String::from("my-password");
@@ -246,17 +252,14 @@ mod tests {
         secret.set_password(password);
         modified_before_update = user_vault.date_modified;
         created_before_update = user_vault.date_created;
-        assert_eq!(
-            user_vault.update_secret(secret),
-            Ok(())
-        );
+        assert_eq!(user_vault.update_secret(secret), Ok(()));
         assert_eq!(
             user_vault.secrets().len(),
             1,
             "user_vault should have 1 secret now yet but has {}",
             user_vault.secrets().len()
         );
-       
+
         // Check dates
         assert!(
             user_vault.date_created() < user_vault.date_modified(),
@@ -286,27 +289,22 @@ mod tests {
 
         // Add secret to user_vault
         let secret_name = String::from("my-first-secret");
-        let secret: Secret =
-            Secret::new(SecretCategory::Password, secret_name.clone());
+        let secret: Secret = Secret::new(SecretCategory::Password, secret_name.clone());
         let mut modified_before_update = user_vault.date_modified;
         let mut created_before_update = user_vault.date_created;
         user_vault.add_secret(secret.clone());
 
-        
         // Remove secret
         modified_before_update = user_vault.date_modified;
         created_before_update = user_vault.date_created;
-        assert_eq!(
-            user_vault.remove_secret(secret.id()),
-            Ok(())
-        );
+        assert_eq!(user_vault.remove_secret(secret.id()), Ok(()));
         assert_eq!(
             user_vault.secrets().len(),
             0,
             "user_vault should have 0 secret now yet but has {}",
             user_vault.secrets().len()
         );
-       
+
         // Check dates
         assert!(
             user_vault.date_created() < user_vault.date_modified(),

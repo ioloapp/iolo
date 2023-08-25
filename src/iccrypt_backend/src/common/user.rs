@@ -1,4 +1,4 @@
-use crate::utils::time;
+use crate::{smart_vaults::user_vault::UserVaultID, utils::time};
 use candid::{CandidType, Deserialize, Principal};
 use serde::Serialize;
 
@@ -30,11 +30,11 @@ impl User {
         &self.id
     }
 
-    pub fn user_vault_id(&self) -> &UUID {
+    pub fn user_vault_id(&self) -> &UserVaultID {
         &self.user_vault_id
     }
 
-    pub fn set_user_vault(&mut self, user_vault_id: UUID) {
+    pub fn set_user_vault(&mut self, user_vault_id: UserVaultID) {
         self.user_vault_id = user_vault_id;
     }
 

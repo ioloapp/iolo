@@ -66,7 +66,7 @@ impl MasterVault {
         }
 
         let mut secret: Secret = Secret::new(
-            secret_for_creation.category().clone(),
+            *secret_for_creation.category(),
             secret_for_creation.name().clone(),
         );
         if secret_for_creation.username().is_some() {
@@ -83,7 +83,7 @@ impl MasterVault {
         }
 
         let user_vault = self.user_vaults.get_mut(vault_id).unwrap();
-        let secret_id = secret.id().clone();
+        let secret_id = *secret.id();
         user_vault.add_secret(secret);
 
         Ok(user_vault.get_secret(&secret_id).unwrap().clone())
@@ -106,7 +106,7 @@ impl MasterVault {
             secret.set_name(secret_for_update.name().unwrap().clone());
         }
         if secret_for_update.category().is_some() {
-            secret.set_category(secret_for_update.category().unwrap().clone());
+            secret.set_category(*secret_for_update.category().unwrap());
         }
         if secret_for_update.password().is_some() {
             secret.set_password(secret_for_update.password().unwrap().clone());

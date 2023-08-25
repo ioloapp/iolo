@@ -21,6 +21,8 @@ pub struct SecretForCreation {
     notes: Option<String>,
 }
 
+pub type SecretID = UUID;
+
 impl SecretForCreation {
     // new() only needed for unit tests in master_vault.rs!
     pub fn new(
@@ -29,7 +31,8 @@ impl SecretForCreation {
         username: Option<String>,
         password: Option<String>,
         url: Option<String>,
-        notes: Option<String>,) -> Self {
+        notes: Option<String>,
+    ) -> Self {
         Self {
             name,
             category,
@@ -157,7 +160,7 @@ impl Secret {
         }
     }
 
-    pub fn id(&self) -> &UUID {
+    pub fn id(&self) -> &SecretID {
         &self.id
     }
 
@@ -189,7 +192,6 @@ impl Secret {
 
     pub fn username(&self) -> Option<&String> {
         self.username.as_ref()
-        
     }
 
     pub fn set_username(&mut self, username: String) {
@@ -444,12 +446,12 @@ mod tests {
 
     #[test]
     fn utest_secret_create_secret_for_creation() {
-
         let category = SecretCategory::Document;
         let name = "my-super-secret".to_string();
 
         // Check return of None
-        let secret_for_creation = SecretForCreation::new(category.clone(), name.clone(), None, None, None, None);
+        let secret_for_creation =
+            SecretForCreation::new(category.clone(), name.clone(), None, None, None, None);
         assert!(*secret_for_creation.category() == category);
         assert!(*secret_for_creation.name() == name);
         assert!(secret_for_creation.username() == None);
