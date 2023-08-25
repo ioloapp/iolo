@@ -1,2 +1,2 @@
 [workspace]
-members = ["src/iccrypt_backend", "tests/iccrypt-tests", "src/system_api"]
+members = ["src/iccrypt_backend", "tests/iccrypt-tests-rust", "src/system_api"]
