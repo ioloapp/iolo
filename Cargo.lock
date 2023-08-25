@@ -1130,7 +1130,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "iccrypt-tests"
+name = "iccrypt-tests-rust"
 version = "0.1.0"
 dependencies = [
  "anyhow",
