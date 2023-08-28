@@ -1,33 +1,17 @@
+import {CssBaseline, ThemeProvider} from '@mui/material';
+import theme from './components/theme/theme';
+import Layout from './components/layout/layout';
+import './App.css';
+import { useAppSelector } from './redux/hooks';
 import * as React from 'react';
 
-// Components
-import SmartVault from "./pages/SmartVault";
-import Settings from "./pages/Settings";
-import Layout from "./pages/layout/Layout";
-import Home from './pages/Home';
-
-// MUI
-import {
-    createBrowserRouter,
-    createRoutesFromElements,
-    Route,
-    RouterProvider,
-} from "react-router-dom";
-
-const router = createBrowserRouter(
-    createRoutesFromElements(
-        <Route path="/" element={<Layout />}>
-            <Route index element={<Home />} />
-            <Route path="/home" element={<Home />} />
-            <Route path="/vault" element={<SmartVault />} />
-            <Route path="/settings" element={<Settings />} />
-        </Route>
-    )
-);
-
 function App() {
+
     return (
-        <RouterProvider router={router} />
+        <ThemeProvider theme={theme}>
+            <CssBaseline/>
+            <Layout/>
+        </ThemeProvider>
     );
 }
 

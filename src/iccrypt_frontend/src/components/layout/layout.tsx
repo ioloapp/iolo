@@ -7,9 +7,15 @@ import {Wallets} from '../../pages/wallets/wallets';
 import {Testaments} from '../../pages/testaments/testaments';
 import {Heires} from '../../pages/heires/heires';
 import { Settings } from '../../pages/settings/settings';
-
+import { Login } from '../../pages/login/login';
+import * as React from 'react';
+import { useAppSelector } from '../../redux/hooks';
+import { Onboarding } from '../../pages/onboarding/onboarding';
 
 function Layout() {
+
+    const isLoggedIn = useAppSelector((state) => state.user.isLoggedIn);
+    const isAccountExisting = useAppSelector((state) => state.user.hasAccount);
 
     const StyledAppBar = styled(AppBar)(() => ({
         position: 'fixed',
@@ -23,6 +29,14 @@ function Layout() {
     const SearchField = styled(TextField)(() => ({
         width: '100%'
     }));
+
+    if(!isLoggedIn){
+        return <Login/>
+    }
+
+    if(!isAccountExisting){
+        return <Onboarding/>
+    }
 
     return (
         <Router>
