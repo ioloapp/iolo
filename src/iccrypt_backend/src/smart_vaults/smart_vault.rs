@@ -10,7 +10,7 @@ use crate::smart_vaults::user_registry::UserRegistry;
 use crate::utils::caller::get_caller;
 
 use super::master_vault::MasterVault;
-use super::secret::{SecretForCreation, SecretForUpdate, Secret};
+use super::secret::{CreateSecretArgs, Secret, SecretForUpdate};
 use super::user_vault::UserVault;
 
 thread_local! {
@@ -89,15 +89,16 @@ pub fn delete_user() -> Result<(), SmartVaultErr> {
 
 #[ic_cdk_macros::update]
 #[candid_method(update)]
-pub fn add_user_secret(secret_for_creation: SecretForCreation) -> Result<Secret, SmartVaultErr> {
+pub fn add_user_secret(args: CreateSecretArgs) -> Result<Secret, SmartVaultErr> {
     let principal = get_caller();
 
-    let user_vault_id: UUID = get_vault_id_for(principal)?;   
-    MASTERVAULT.with(|ms: &RefCell<MasterVault>| -> Result<Secret, SmartVaultErr> {
-        let mut master_vault = ms.borrow_mut();
-        master_vault.add_secret(&user_vault_id, &secret_for_creation)
-    })
-    
+    let user_vault_id: UUID = get_vault_id_for(principal)?;
+    MASTERVAULT.with(
+        |ms: &RefCell<MasterVault>| -> Result<Secret, SmartVaultErr> {
+            let mut master_vault = ms.borrow_mut();
+            master_vault.add_secret(&user_vault_id, args)
+        },
+    )
 }
 
 #[ic_cdk_macros::update]
@@ -107,10 +108,12 @@ pub fn update_user_secret(secret_for_update: SecretForUpdate) -> Result<Secret, 
 
     let user_vault_id: UUID = get_vault_id_for(principal)?;
 
-    MASTERVAULT.with(|ms: &RefCell<MasterVault>| -> Result<Secret, SmartVaultErr> {
-        let mut master_vault = ms.borrow_mut();
-        master_vault.update_secret(&user_vault_id, &secret_for_update) 
-    })
+    MASTERVAULT.with(
+        |ms: &RefCell<MasterVault>| -> Result<Secret, SmartVaultErr> {
+            let mut master_vault = ms.borrow_mut();
+            master_vault.update_secret(&user_vault_id, &secret_for_update)
+        },
+    )
 }
 
 #[ic_cdk_macros::update]
@@ -122,7 +125,7 @@ pub fn remove_user_secret(secret_id: UUID) -> Result<(), SmartVaultErr> {
 
     MASTERVAULT.with(|ms: &RefCell<MasterVault>| -> Result<(), SmartVaultErr> {
         let mut master_vault = ms.borrow_mut();
-        master_vault.remove_secret(&user_vault_id, &secret_id) 
+        master_vault.remove_secret(&user_vault_id, &secret_id)
     })
 }
 

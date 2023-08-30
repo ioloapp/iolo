@@ -10,7 +10,7 @@ use crate::common::error::SmartVaultErr;
 use crate::common::user::User;
 use crate::common::uuid::UUID;
 
-use crate::smart_vaults::secret::{Secret, SecretForCreation, SecretForUpdate};
+use crate::smart_vaults::secret::{CreateSecretArgs, Secret, SecretForUpdate};
 use crate::smart_vaults::user_vault::UserVault;
 
 #[ic_cdk_macros::init]

@@ -5,7 +5,7 @@ use candid::{CandidType, Deserialize};
 use crate::common::{error::SmartVaultErr, uuid::UUID};
 
 use super::{
-    secret::{Secret, SecretForCreation, SecretForUpdate},
+    secret::{CreateSecretArgs, Secret, SecretForUpdate},
     user_vault::UserVault,
 };
 
@@ -59,32 +59,32 @@ impl MasterVault {
     pub fn add_secret(
         &mut self,
         vault_id: &UUID,
-        secret_for_creation: &SecretForCreation,
+        secret_for_creation: CreateSecretArgs,
     ) -> Result<Secret, SmartVaultErr> {
         if !self.user_vaults.contains_key(vault_id) {
             return Err(SmartVaultErr::UserVaultDoesNotExist(vault_id.to_string()));
         }
 
         let mut secret: Secret = Secret::new(
-            *secret_for_creation.category(),
-            secret_for_creation.name().clone(),
+            secret_for_creation.category,
+            secret_for_creation.name.clone(),
         );
-        if secret_for_creation.username().is_some() {
-            secret.set_username(secret_for_creation.username().unwrap().clone());
+        if secret_for_creation.username.is_some() {
+            secret.set_username(secret_for_creation.username.unwrap().clone());
         }
-        if secret_for_creation.password().is_some() {
-            secret.set_password(secret_for_creation.password().unwrap().clone());
+        if secret_for_creation.password.is_some() {
+            secret.set_password(secret_for_creation.password.unwrap().clone());
         }
-        if secret_for_creation.url().is_some() {
-            secret.set_url(secret_for_creation.url().unwrap().clone());
+        if secret_for_creation.url.is_some() {
+            secret.set_url(secret_for_creation.url.unwrap().clone());
         }
-        if secret_for_creation.notes().is_some() {
-            secret.set_notes(secret_for_creation.notes().unwrap().clone());
+        if secret_for_creation.notes.is_some() {
+            secret.set_notes(secret_for_creation.notes.unwrap().clone());
         }
 
         let user_vault = self.user_vaults.get_mut(vault_id).unwrap();
         let secret_id = *secret.id();
-        user_vault.add_secret(secret);
+        user_vault.add_secret(secret)?;
 
         Ok(user_vault.get_secret(&secret_id).unwrap().clone())
     }
@@ -238,7 +238,7 @@ mod tests {
             0
         );
 
-        let secret_for_creation = SecretForCreation::new(
+        let secret_for_creation = CreateSecretArgs::new(
             SecretCategory::Password,
             String::from("my-super-secret"),
             None,
@@ -247,7 +247,7 @@ mod tests {
             None,
         );
         let secret = master_vault
-            .add_secret(&new_uv_id, &secret_for_creation)
+            .add_secret(&new_uv_id, secret_for_creation)
             .unwrap();
         assert_eq!(
             master_vault

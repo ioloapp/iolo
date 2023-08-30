@@ -12,18 +12,18 @@ pub enum SecretCategory {
 }
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
-pub struct SecretForCreation {
-    category: SecretCategory,
-    name: String,
-    username: Option<String>,
-    password: Option<String>,
-    url: Option<String>,
-    notes: Option<String>,
+pub struct CreateSecretArgs {
+    pub category: SecretCategory,
+    pub name: String,
+    pub username: Option<String>,
+    pub password: Option<String>,
+    pub url: Option<String>,
+    pub notes: Option<String>,
 }
 
 pub type SecretID = UUID;
 
-impl SecretForCreation {
+impl CreateSecretArgs {
     // new() only needed for unit tests in master_vault.rs!
     pub fn new(
         category: SecretCategory,
@@ -41,30 +41,6 @@ impl SecretForCreation {
             url,
             notes,
         }
-    }
-
-    pub fn category(&self) -> &SecretCategory {
-        &self.category
-    }
-
-    pub fn name(&self) -> &String {
-        &self.name
-    }
-
-    pub fn username(&self) -> Option<&String> {
-        self.username.as_ref()
-    }
-
-    pub fn password(&self) -> Option<&String> {
-        self.password.as_ref()
-    }
-
-    pub fn url(&self) -> Option<&String> {
-        self.url.as_ref()
-    }
-
-    pub fn notes(&self) -> Option<&String> {
-        self.notes.as_ref()
     }
 }
 
@@ -451,13 +427,13 @@ mod tests {
 
         // Check return of None
         let secret_for_creation =
-            SecretForCreation::new(category.clone(), name.clone(), None, None, None, None);
-        assert!(*secret_for_creation.category() == category);
-        assert!(*secret_for_creation.name() == name);
-        assert!(secret_for_creation.username() == None);
-        assert!(secret_for_creation.password() == None);
-        assert!(secret_for_creation.url() == None);
-        assert!(secret_for_creation.notes() == None);
+            CreateSecretArgs::new(category.clone(), name.clone(), None, None, None, None);
+        assert!(secret_for_creation.category == category);
+        assert!(secret_for_creation.name == name);
+        assert!(secret_for_creation.username == None);
+        assert!(secret_for_creation.password == None);
+        assert!(secret_for_creation.url == None);
+        assert!(secret_for_creation.notes == None);
 
         // Check return of Some
         let category = SecretCategory::Note;
@@ -466,7 +442,7 @@ mod tests {
         let password = Some("my-super-password-update".to_string());
         let url = Some("my-super-url-update".to_string());
         let notes = Some("my-super-notes-update".to_string());
-        let secret_for_update = SecretForCreation::new(
+        let secret_for_update = CreateSecretArgs::new(
             category.clone(),
             name.clone(),
             username.clone(),
@@ -474,11 +450,11 @@ mod tests {
             url.clone(),
             notes.clone(),
         );
-        assert!(*secret_for_update.category() == category);
-        assert!(*secret_for_update.name() == name);
-        assert!(secret_for_update.username() == username.as_ref());
-        assert!(secret_for_update.password() == password.as_ref());
-        assert!(secret_for_update.url() == url.as_ref());
-        assert!(secret_for_update.notes() == notes.as_ref());
+        assert!(secret_for_update.category == category);
+        assert!(secret_for_update.name == name);
+        assert!(secret_for_update.username == username);
+        assert!(secret_for_update.password == password);
+        assert!(secret_for_update.url == url);
+        assert!(secret_for_update.notes == notes);
     }
 }
