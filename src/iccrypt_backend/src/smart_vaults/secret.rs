@@ -4,6 +4,8 @@ use serde::Serialize;
 use crate::common::uuid::UUID;
 use crate::utils::time;
 
+pub type SecretID = UUID;
+
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone, Copy, PartialEq, Eq)]
 pub enum SecretCategory {
     Password,
@@ -19,29 +21,6 @@ pub struct CreateSecretArgs {
     pub password: Option<String>,
     pub url: Option<String>,
     pub notes: Option<String>,
-}
-
-pub type SecretID = UUID;
-
-impl CreateSecretArgs {
-    // new() only needed for unit tests in master_vault.rs!
-    pub fn new(
-        category: SecretCategory,
-        name: String,
-        username: Option<String>,
-        password: Option<String>,
-        url: Option<String>,
-        notes: Option<String>,
-    ) -> Self {
-        Self {
-            name,
-            category,
-            username,
-            password,
-            url,
-            notes,
-        }
-    }
 }
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
@@ -426,8 +405,14 @@ mod tests {
         let name = "my-super-secret".to_string();
 
         // Check return of None
-        let secret_for_creation =
-            CreateSecretArgs::new(category.clone(), name.clone(), None, None, None, None);
+        let secret_for_creation = CreateSecretArgs {
+            category: category.clone(),
+            name: name.clone(),
+            username: None,
+            password: None,
+            url: None,
+            notes: None,
+        };
         assert!(secret_for_creation.category == category);
         assert!(secret_for_creation.name == name);
         assert!(secret_for_creation.username == None);
@@ -442,14 +427,16 @@ mod tests {
         let password = Some("my-super-password-update".to_string());
         let url = Some("my-super-url-update".to_string());
         let notes = Some("my-super-notes-update".to_string());
-        let secret_for_update = CreateSecretArgs::new(
-            category.clone(),
-            name.clone(),
-            username.clone(),
-            password.clone(),
-            url.clone(),
-            notes.clone(),
-        );
+
+        let secret_for_update = CreateSecretArgs {
+            category: category.clone(),
+            name: name.clone(),
+            username: username.clone(),
+            password: password.clone(),
+            url: url.clone(),
+            notes: notes.clone(),
+        };
+
         assert!(secret_for_update.category == category);
         assert!(secret_for_update.name == name);
         assert!(secret_for_update.username == username);

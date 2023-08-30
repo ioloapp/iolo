@@ -69,21 +69,13 @@ impl MasterVault {
             secret_for_creation.category,
             secret_for_creation.name.clone(),
         );
-        if secret_for_creation.username.is_some() {
-            secret.set_username(secret_for_creation.username.unwrap().clone());
-        }
-        if secret_for_creation.password.is_some() {
-            secret.set_password(secret_for_creation.password.unwrap().clone());
-        }
-        if secret_for_creation.url.is_some() {
-            secret.set_url(secret_for_creation.url.unwrap().clone());
-        }
-        if secret_for_creation.notes.is_some() {
-            secret.set_notes(secret_for_creation.notes.unwrap().clone());
-        }
+        secret_for_creation.username.map(|u| secret.set_username(u));
+        secret_for_creation.password.map(|p| secret.set_password(p));
+        secret_for_creation.url.map(|u| secret.set_url(u));
+        secret_for_creation.notes.map(|n| secret.set_notes(n));
 
-        let user_vault = self.user_vaults.get_mut(vault_id).unwrap();
         let secret_id = *secret.id();
+        let user_vault = self.user_vaults.get_mut(vault_id).unwrap();
         user_vault.add_secret(secret)?;
 
         Ok(user_vault.get_secret(&secret_id).unwrap().clone())
@@ -238,14 +230,15 @@ mod tests {
             0
         );
 
-        let secret_for_creation = CreateSecretArgs::new(
-            SecretCategory::Password,
-            String::from("my-super-secret"),
-            None,
-            None,
-            None,
-            None,
-        );
+        let secret_for_creation = CreateSecretArgs {
+            category: SecretCategory::Password,
+            name: String::from("my-super-secret"),
+            username: None,
+            password: None,
+            url: None,
+            notes: None,
+        };
+
         let secret = master_vault
             .add_secret(&new_uv_id, secret_for_creation)
             .unwrap();
