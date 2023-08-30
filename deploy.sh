@@ -10,7 +10,7 @@ fi
 
 ENV=$1
 
-bash ./cleanup.sh $ENV
+# bash ./cleanup.sh $ENV
 
 # cargo install cargo-audit
 npm install

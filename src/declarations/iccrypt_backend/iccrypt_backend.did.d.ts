@@ -65,19 +65,24 @@ export interface _SERVICE {
   'add_user_secret' : ActorMethod<[SecretForCreation], Result>,
   'create_user' : ActorMethod<[], Result_1>,
   'delete_user' : ActorMethod<[], Result_2>,
-  'encrypted_symmetric_key_for_secrets' : ActorMethod<
-    [Uint8Array | number[], Uint8Array | number[]],
-    [string, Uint8Array | number[]]
+  'encrypted_ibe_decryption_key_for_caller' : ActorMethod<
+    [Uint8Array | number[]],
+    string
+  >,
+  'encrypted_symmetric_key_for_caller' : ActorMethod<
+    [Uint8Array | number[]],
+    string
   >,
   'get_encrypted_symmetric_key_for' : ActorMethod<
     [Uint8Array | number[]],
     [string, Uint8Array | number[]]
   >,
   'get_user_vault' : ActorMethod<[], Result_3>,
+  'ibe_encryption_key' : ActorMethod<[], string>,
   'is_user_vault_existing' : ActorMethod<[], boolean>,
   'remove_user_secret' : ActorMethod<[bigint], Result_2>,
   'symmetric_key_verification_key' : ActorMethod<[], string>,
   'update_user_secret' : ActorMethod<[SecretForUpdate], Result>,
   'what_time_is_it' : ActorMethod<[], bigint>,
-  'who_am_i' : ActorMethod<[], string>,
+  'who_am_i' : ActorMethod<[string, string], string>,
 }

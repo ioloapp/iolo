@@ -58,13 +58,15 @@ service : {
   add_user_secret : (SecretForCreation) -> (Result);
   create_user : () -> (Result_1);
   delete_user : () -> (Result_2);
-  encrypted_symmetric_key_for_secrets : (vec nat8, vec nat8) -> (text, vec nat8);
+  encrypted_ibe_decryption_key_for_caller : (vec nat8) -> (text);
+  encrypted_symmetric_key_for_caller : (vec nat8) -> (text);
   get_encrypted_symmetric_key_for : (vec nat8) -> (text, vec nat8);
   get_user_vault : () -> (Result_3) query;
+  ibe_encryption_key : () -> (text);
   is_user_vault_existing : () -> (bool) query;
   remove_user_secret : (nat) -> (Result_2);
   symmetric_key_verification_key : () -> (text);
   update_user_secret : (SecretForUpdate) -> (Result);
   what_time_is_it : () -> (nat64) query;
-  who_am_i : () -> (text) query;
+  who_am_i : (text, text) -> (text) query;
 };
