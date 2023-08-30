@@ -59,29 +59,13 @@ impl MasterVault {
     pub fn add_secret(
         &mut self,
         vault_id: &UUID,
-        secret_for_creation: CreateSecretArgs,
+        csa: CreateSecretArgs,
     ) -> Result<Secret, SmartVaultErr> {
         if !self.user_vaults.contains_key(vault_id) {
             return Err(SmartVaultErr::UserVaultDoesNotExist(vault_id.to_string()));
         }
 
-        let mut secret: Secret = Secret::new(
-            secret_for_creation.category,
-            secret_for_creation.name.clone(),
-        );
-
-        if secret_for_creation.username.is_some() {
-            secret.set_username(secret_for_creation.username.unwrap().clone());
-        }
-        if secret_for_creation.password.is_some() {
-            secret.set_password(secret_for_creation.password.unwrap().clone());
-        }
-        if secret_for_creation.url.is_some() {
-            secret.set_url(secret_for_creation.url.unwrap().clone());
-        }
-        if secret_for_creation.notes.is_some() {
-            secret.set_notes(secret_for_creation.notes.unwrap().clone());
-        }
+        let secret = Secret::from(csa);
 
         let user_vault = self.user_vaults.get_mut(vault_id).unwrap();
         let secret_id = *secret.id();

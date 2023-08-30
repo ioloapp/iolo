@@ -13,78 +13,6 @@ pub enum SecretCategory {
     Document,
 }
 
-#[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
-pub struct CreateSecretArgs {
-    pub category: SecretCategory,
-    pub name: String,
-    pub username: Option<String>,
-    pub password: Option<String>,
-    pub url: Option<String>,
-    pub notes: Option<String>,
-}
-
-#[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
-pub struct SecretForUpdate {
-    id: UUID,
-    category: Option<SecretCategory>,
-    name: Option<String>,
-    username: Option<String>,
-    password: Option<String>,
-    url: Option<String>,
-    notes: Option<String>,
-}
-
-impl SecretForUpdate {
-    // new() only needed for unit tests in master_vault.rs!
-    pub fn new(
-        id: UUID,
-        category: Option<SecretCategory>,
-        name: Option<String>,
-        username: Option<String>,
-        password: Option<String>,
-        url: Option<String>,
-        notes: Option<String>,
-    ) -> Self {
-        Self {
-            id,
-            name,
-            category,
-            username,
-            password,
-            url,
-            notes,
-        }
-    }
-
-    pub fn id(&self) -> &UUID {
-        &self.id
-    }
-
-    pub fn category(&self) -> Option<&SecretCategory> {
-        self.category.as_ref()
-    }
-
-    pub fn name(&self) -> Option<&String> {
-        self.name.as_ref()
-    }
-
-    pub fn username(&self) -> Option<&String> {
-        self.username.as_ref()
-    }
-
-    pub fn password(&self) -> Option<&String> {
-        self.password.as_ref()
-    }
-
-    pub fn url(&self) -> Option<&String> {
-        self.url.as_ref()
-    }
-
-    pub fn notes(&self) -> Option<&String> {
-        self.notes.as_ref()
-    }
-}
-
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone, PartialEq)]
 pub struct Secret {
     id: UUID,
@@ -179,6 +107,98 @@ impl Secret {
     pub fn set_notes(&mut self, notes: String) {
         self.notes = Some(notes);
         self.date_modified = time::get_current_time();
+    }
+}
+
+#[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
+pub struct CreateSecretArgs {
+    pub category: SecretCategory,
+    pub name: String,
+    pub username: Option<String>,
+    pub password: Option<String>,
+    pub url: Option<String>,
+    pub notes: Option<String>,
+}
+
+impl From<CreateSecretArgs> for Secret {
+    fn from(csa: CreateSecretArgs) -> Self {
+        let mut secret: Secret = Secret::new(csa.category, csa.name);
+
+        if csa.username.is_some() {
+            secret.set_username(csa.username.unwrap());
+        }
+        if csa.password.is_some() {
+            secret.set_password(csa.password.unwrap());
+        }
+        if csa.url.is_some() {
+            secret.set_url(csa.url.unwrap());
+        }
+        if csa.notes.is_some() {
+            secret.set_notes(csa.notes.unwrap());
+        }
+        secret
+    }
+}
+
+#[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
+pub struct SecretForUpdate {
+    id: UUID,
+    category: Option<SecretCategory>,
+    name: Option<String>,
+    username: Option<String>,
+    password: Option<String>,
+    url: Option<String>,
+    notes: Option<String>,
+}
+
+impl SecretForUpdate {
+    // new() only needed for unit tests in master_vault.rs!
+    pub fn new(
+        id: UUID,
+        category: Option<SecretCategory>,
+        name: Option<String>,
+        username: Option<String>,
+        password: Option<String>,
+        url: Option<String>,
+        notes: Option<String>,
+    ) -> Self {
+        Self {
+            id,
+            name,
+            category,
+            username,
+            password,
+            url,
+            notes,
+        }
+    }
+
+    pub fn id(&self) -> &UUID {
+        &self.id
+    }
+
+    pub fn category(&self) -> Option<&SecretCategory> {
+        self.category.as_ref()
+    }
+
+    pub fn name(&self) -> Option<&String> {
+        self.name.as_ref()
+    }
+
+    pub fn username(&self) -> Option<&String> {
+        self.username.as_ref()
+    }
+
+    pub fn password(&self) -> Option<&String> {
+        self.password.as_ref()
+    }
+
+    pub fn url(&self) -> Option<&String> {
+        self.url.as_ref()
+    }
+
+    pub fn notes(&self) -> Option<&String> {
+        self.notes.as_ref()
     }
 }
 
