@@ -4,7 +4,11 @@ use colored::Colorize;
 use ic_agent::{identity::BasicIdentity, Agent, Identity};
 
 use crate::{
-    types::{smart_vault_err::SmartVaultErr, user::User},
+    types::{
+        secret::{CreateSecretArgs, Secret, SecretCategory},
+        smart_vault_err::SmartVaultErr,
+        user::User,
+    },
     utils::agent::{create_identity, get_dfx_agent_with_identity, make_call_with_agent, CallType},
 };
 
@@ -57,6 +61,21 @@ async fn test_user_lifecycle() -> anyhow::Result<()> {
     }
 
     // let's add a secret
+    let create_secret_args = CreateSecretArgs {
+        category: SecretCategory::Password,
+        name: "Goolge".to_string(),
+        username: Some("Tobias".to_string()),
+        password: Some("123".to_string()),
+        url: Some("www.google.com".to_string()),
+        notes: None,
+    };
+
+    dbg!("okay, probably not: ");
+
+    let s = add_user_secret(&a1, &create_secret_args).await;
+    dbg!(&s);
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // so let's delete the user 1
     delete_user(&a1, new_user_1.id).await?;
@@ -101,4 +120,19 @@ async fn create_user(agent: &Agent) -> anyhow::Result<User, SmartVaultErr> {
     .unwrap();
 
     user
+}
+
+async fn add_user_secret(
+    agent: &Agent,
+    args: &CreateSecretArgs,
+) -> anyhow::Result<Secret, SmartVaultErr> {
+    let s: Result<Secret, SmartVaultErr> = make_call_with_agent(
+        agent,
+        CallType::Update("add_user_secret".into()),
+        Some(args),
+    )
+    .await
+    .unwrap();
+
+    s
 }

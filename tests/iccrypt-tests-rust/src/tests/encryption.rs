@@ -12,9 +12,8 @@ use crate::utils::{
 };
 
 pub async fn test_encryption() -> Result<()> {
-    // simple_aes_gcm_encryption().await?;
-    // double_aes_gcm_encryption().await?;
-
+    simple_aes_gcm_encryption().await?;
+    double_aes_gcm_encryption().await?;
     inheritance_aes_gcm_encryption().await?;
     Ok(())
 }

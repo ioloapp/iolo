@@ -68,5 +68,5 @@ service : {
   symmetric_key_verification_key : () -> (text);
   update_user_secret : (SecretForUpdate) -> (Result);
   what_time_is_it : () -> (nat64) query;
-  who_am_i : (text, text) -> (text) query;
+  who_am_i : () -> (text) query;
 };

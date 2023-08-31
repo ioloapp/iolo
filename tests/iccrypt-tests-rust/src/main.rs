@@ -49,7 +49,7 @@ async fn main() -> Result<()> {
         "vetkd" => {
             test_encryption().await?;
         }
-        "sm" => {
+        "sv" => {
             test_smart_vaults().await?;
         }
         _ => {

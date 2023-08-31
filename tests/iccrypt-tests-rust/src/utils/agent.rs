@@ -18,7 +18,7 @@ pub enum CallType {
 pub async fn make_call_with_default_agent<T, A>(ct: CallType, arg: Option<A>) -> Result<T>
 where
     T: for<'de> de::Deserialize<'de> + CandidType,
-    A: Into<Vec<u8>> + CandidType,
+    A: CandidType,
 {
     let agent = get_default_dfx_agent().await.unwrap();
     make_call_with_agent(&agent, ct, arg).await
@@ -28,28 +28,30 @@ where
 pub async fn make_call_with_agent<T, A>(agent: &Agent, ct: CallType, arg: Option<A>) -> Result<T>
 where
     T: for<'de> de::Deserialize<'de> + CandidType,
-    A: Into<Vec<u8>> + CandidType,
+    A: CandidType,
 {
     // let agent = get_default_dfx_agent().await.unwrap();
     let canister = get_iccrypt_backend_canister();
 
-    let a: Vec<u8> = match arg {
-        Some(a) => a.into(),
-        None => vec![],
+    let a: Vec<u8>;
+
+    a = match arg {
+        Some(v) => Encode!(&v)?,
+        None => Encode!()?,
     };
 
     let res: Vec<u8> = match ct {
         CallType::Query(method_name) => {
             agent
                 .query(&canister, method_name)
-                .with_arg(Encode!(&a)?)
+                .with_arg(a)
                 .call()
                 .await?
         }
         CallType::Update(method_name) => {
             agent
                 .update(&canister, method_name)
-                .with_arg(Encode!(&a)?)
+                .with_arg(a)
                 .call_and_wait()
                 .await
                 .unwrap_or_else(|err| {
