@@ -18,18 +18,28 @@ pub struct Secret {
     date_modified: u64,
     category: SecretCategory,
     name: String,
-    username: Option<String>,
-    password: Option<String>,
+    username: Option<Vec<u8>>,
+    password: Option<Vec<u8>>,
     url: Option<String>,
-    notes: Option<String>,
+    notes: Option<Vec<u8>>,
 }
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct CreateSecretArgs {
     pub category: SecretCategory,
     pub name: String,
-    pub username: Option<String>,
-    pub password: Option<String>,
+    pub username: Option<Vec<u8>>,
+    pub password: Option<Vec<u8>>,
     pub url: Option<String>,
-    pub notes: Option<String>,
+    pub notes: Option<Vec<u8>>,
+    pub decryption_material: SecretDecryptionMaterial,
+}
+
+#[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
+pub struct SecretDecryptionMaterial {
+    pub encrypted_decryption_key: Vec<u8>,
+    pub iv: Vec<u8>, // the initialization vector
+    pub username_decryption_nonce: Option<Vec<u8>>,
+    pub password_decryption_nonce: Option<Vec<u8>>,
+    pub notes_decryption_nonce: Option<Vec<u8>>,
 }

@@ -1,3 +1,12 @@
+type CreateSecretArgs = record {
+  url : opt text;
+  username : opt vec nat8;
+  password : opt vec nat8;
+  name : text;
+  decryption_material : SecretDecryptionMaterial;
+  notes : opt vec nat8;
+  category : SecretCategory;
+};
 type Result = variant { Ok : Secret; Err : SmartVaultErr };
 type Result_1 = variant { Ok : User; Err : SmartVaultErr };
 type Result_2 = variant { Ok; Err : SmartVaultErr };
@@ -5,22 +14,21 @@ type Result_3 = variant { Ok : UserVault; Err : SmartVaultErr };
 type Secret = record {
   id : nat;
   url : opt text;
-  username : opt text;
+  username : opt vec nat8;
   date_created : nat64;
-  password : opt text;
+  password : opt vec nat8;
   name : text;
-  notes : opt text;
+  notes : opt vec nat8;
   category : SecretCategory;
   date_modified : nat64;
 };
 type SecretCategory = variant { Password; Note; Document };
-type SecretForCreation = record {
-  url : opt text;
-  username : opt text;
-  password : opt text;
-  name : text;
-  notes : opt text;
-  category : SecretCategory;
+type SecretDecryptionMaterial = record {
+  iv : vec nat8;
+  password_decryption_nonce : opt vec nat8;
+  notes_decryption_nonce : opt vec nat8;
+  encrypted_decryption_key : vec nat8;
+  username_decryption_nonce : opt vec nat8;
 };
 type SecretForUpdate = record {
   id : nat;
@@ -52,10 +60,11 @@ type UserVault = record {
   id : nat;
   date_created : nat64;
   secrets : vec record { nat; Secret };
+  key_box : vec record { nat; SecretDecryptionMaterial };
   date_modified : nat64;
 };
 service : {
-  add_user_secret : (SecretForCreation) -> (Result);
+  add_user_secret : (CreateSecretArgs) -> (Result);
   create_user : () -> (Result_1);
   delete_user : () -> (Result_2);
   encrypted_ibe_decryption_key_for_caller : (vec nat8) -> (text);
@@ -69,4 +78,4 @@ service : {
   update_user_secret : (SecretForUpdate) -> (Result);
   what_time_is_it : () -> (nat64) query;
   who_am_i : () -> (text) query;
-};
+}

@@ -3,7 +3,7 @@ use serde::Serialize;
 
 use std::collections::BTreeMap;
 
-use super::secret::{Secret, SecretID};
+use super::secret::{Secret, SecretDecryptionMaterial, SecretID};
 use crate::common::uuid::UUID;
 use crate::utils::time;
 use crate::SmartVaultErr;
@@ -20,7 +20,7 @@ pub struct UserVault {
     /// Every secret is encrypted by using dedicated key.
     /// This key is itself encrypted using the UserVault key,
     /// which itself is derived by vetkd.
-    key_box: BTreeMap<SecretID, String>,
+    pub key_box: BTreeMap<SecretID, SecretDecryptionMaterial>, // TODO: make getter and setter
 }
 
 impl Default for UserVault {
@@ -248,8 +248,8 @@ mod tests {
         // Update secret
         let username = String::from("my-username");
         let password = String::from("my-password");
-        secret.set_username(username);
-        secret.set_password(password);
+        secret.set_username(username.as_bytes().to_vec());
+        secret.set_password(password.as_bytes().to_vec());
         modified_before_update = user_vault.date_modified;
         created_before_update = user_vault.date_created;
         assert_eq!(user_vault.update_secret(secret), Ok(()));

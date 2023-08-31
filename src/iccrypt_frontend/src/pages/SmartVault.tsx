@@ -12,7 +12,7 @@ import { Delete as DeleteIcon, Key as KeyIcon, Add as AddIcon, Visibility, Visib
 
 // IC
 import { getActor } from '../utils/backend';
-import { SecretCategory, SecretForCreation, SecretForUpdate, Result_2, Result_3, Result, Secret } from '../../../declarations/iccrypt_backend/iccrypt_backend.did';
+import { SecretCategory, CreateSecretArgs, SecretForUpdate, Result_2, Result_3, Result, Secret } from '../../../declarations/iccrypt_backend/iccrypt_backend.did';
 
 // Various
 import { importRsaPublicKey, importRsaPrivateKey, decrypt, encrypt, ab2base64, base642ab } from '../utils/crypto';
@@ -50,10 +50,10 @@ const modalStyle = {
 
 // Helper methods for Dfinity mock
 const hex_decode = (hexString) =>
-  Uint8Array.from(hexString.match(/.{1,2}/g).map((byte) => parseInt(byte, 16)));
+    Uint8Array.from(hexString.match(/.{1,2}/g).map((byte) => parseInt(byte, 16)));
 
 const hex_encode = (bytes) =>
-  bytes.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '');
+    bytes.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '');
 
 async function get_aes_256_gcm_key() {
     const seed = window.crypto.getRandomValues(new Uint8Array(32));
@@ -62,7 +62,7 @@ async function get_aes_256_gcm_key() {
     const EncryptedKeyHexAndDerivationId = await iccrypt_backend.get_encrypted_symmetric_key_for(tsk.public_key());
     const pk_bytes_hex = await iccrypt_backend.symmetric_key_verification_key();
     //const app_backend_principal = (await agent.Actor.agentOf(iccrypt_backend).getPrincipal()); // default is the anonymous principal!
-    
+
     let derivationId: Uint8Array;
     let ek_bytes_hex: String = EncryptedKeyHexAndDerivationId[0];
 
@@ -77,7 +77,7 @@ async function get_aes_256_gcm_key() {
         32,
         new TextEncoder().encode("aes-256-gcm")
     );
-  }
+}
 
 
 async function aes_gcm_decrypt(ciphertext_hex, rawKey) {
@@ -98,9 +98,9 @@ async function aes_gcm_encrypt(message, rawKey) {
     const aes_key = await window.crypto.subtle.importKey("raw", rawKey, "AES-GCM", false, ["encrypt"]);
     const message_encoded = new TextEncoder().encode(message);
     const ciphertext_buffer = await window.crypto.subtle.encrypt(
-      { name: "AES-GCM", iv: iv },
-      aes_key,
-      message_encoded
+        { name: "AES-GCM", iv: iv },
+        aes_key,
+        message_encoded
     );
     const ciphertext = new Uint8Array(ciphertext_buffer);
     var iv_and_ciphertext = new Uint8Array(iv.length + ciphertext.length);
@@ -191,7 +191,7 @@ const SmartVault = () => {
             }
         } else {
             // Create
-            let secret: SecretForCreation = {
+            let secret: CreateSecretArgs = {
                 name: secretInModal.name,
                 category: secretCategory,
                 username: [],

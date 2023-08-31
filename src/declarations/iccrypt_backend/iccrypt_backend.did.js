@@ -4,22 +4,22 @@ export const idlFactory = ({ IDL }) => {
     'Note' : IDL.Null,
     'Document' : IDL.Null,
   });
-  const SecretForCreation = IDL.Record({
+  const CreateSecretArgs = IDL.Record({
     'url' : IDL.Opt(IDL.Text),
-    'username' : IDL.Opt(IDL.Text),
-    'password' : IDL.Opt(IDL.Text),
+    'username' : IDL.Opt(IDL.Vec(IDL.Nat8)),
+    'password' : IDL.Opt(IDL.Vec(IDL.Nat8)),
     'name' : IDL.Text,
-    'notes' : IDL.Opt(IDL.Text),
+    'notes' : IDL.Opt(IDL.Vec(IDL.Nat8)),
     'category' : SecretCategory,
   });
   const Secret = IDL.Record({
     'id' : IDL.Nat,
     'url' : IDL.Opt(IDL.Text),
-    'username' : IDL.Opt(IDL.Text),
+    'username' : IDL.Opt(IDL.Vec(IDL.Nat8)),
     'date_created' : IDL.Nat64,
-    'password' : IDL.Opt(IDL.Text),
+    'password' : IDL.Opt(IDL.Vec(IDL.Nat8)),
     'name' : IDL.Text,
-    'notes' : IDL.Opt(IDL.Text),
+    'notes' : IDL.Opt(IDL.Vec(IDL.Nat8)),
     'category' : SecretCategory,
     'date_modified' : IDL.Nat64,
   });
@@ -47,6 +47,7 @@ export const idlFactory = ({ IDL }) => {
     'id' : IDL.Nat,
     'date_created' : IDL.Nat64,
     'secrets' : IDL.Vec(IDL.Tuple(IDL.Nat, Secret)),
+    'key_box' : IDL.Vec(IDL.Tuple(IDL.Nat, IDL.Text)),
     'date_modified' : IDL.Nat64,
   });
   const Result_3 = IDL.Variant({ 'Ok' : UserVault, 'Err' : SmartVaultErr });
@@ -60,7 +61,7 @@ export const idlFactory = ({ IDL }) => {
     'category' : IDL.Opt(SecretCategory),
   });
   return IDL.Service({
-    'add_user_secret' : IDL.Func([SecretForCreation], [Result], []),
+    'add_user_secret' : IDL.Func([CreateSecretArgs], [Result], []),
     'create_user' : IDL.Func([], [Result_1], []),
     'delete_user' : IDL.Func([], [Result_2], []),
     'encrypted_ibe_decryption_key_for_caller' : IDL.Func(
@@ -85,7 +86,7 @@ export const idlFactory = ({ IDL }) => {
     'symmetric_key_verification_key' : IDL.Func([], [IDL.Text], []),
     'update_user_secret' : IDL.Func([SecretForUpdate], [Result], []),
     'what_time_is_it' : IDL.Func([], [IDL.Nat64], ['query']),
-    'who_am_i' : IDL.Func([IDL.Text, IDL.Text], [IDL.Text], ['query']),
+    'who_am_i' : IDL.Func([], [IDL.Text], ['query']),
   });
 };
 export const init = ({ IDL }) => { return []; };

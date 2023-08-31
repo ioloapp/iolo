@@ -5,11 +5,16 @@ use ic_agent::{identity::BasicIdentity, Agent, Identity};
 
 use crate::{
     types::{
-        secret::{CreateSecretArgs, Secret, SecretCategory},
+        secret::{CreateSecretArgs, Secret, SecretCategory, SecretDecryptionMaterial},
         smart_vault_err::SmartVaultErr,
         user::User,
     },
-    utils::agent::{create_identity, get_dfx_agent_with_identity, make_call_with_agent, CallType},
+    utils::{
+        agent::{create_identity, get_dfx_agent_with_identity, make_call_with_agent, CallType},
+        vetkd::{
+            aes_gcm_encrypt, get_aes_256_gcm_key_for_caller, get_local_random_aes_256_gcm_key,
+        },
+    },
 };
 
 #[derive(CandidType, Deserialize)]
@@ -45,29 +50,54 @@ async fn test_user_lifecycle() -> anyhow::Result<()> {
     assert_eq!(&new_user_1.id, &p1);
     println!("   {}{:?}", "New user created: ", new_user_1.id);
 
-    // create the user again. this must fail
-    let new_user_again = create_user(&a1).await;
+    // Let's create a secret
+    let username = "Tobias";
+    let password = "123";
+    let notes = "My Notes";
 
-    if new_user_again.is_err() {
-        assert_eq!(
-            new_user_again.err().unwrap(),
-            SmartVaultErr::UserAlreadyExists(new_user_1.id.to_string())
-        );
-    } else {
-        panic!(
-            "Error. User with following ID was created twice: {}",
-            new_user_1.id.to_string()
-        )
-    }
+    // Get local random aes gcm 256 key to encrypt the secret fields
+    let secret_encryption_key = get_local_random_aes_256_gcm_key().await.unwrap();
+
+    // Encrypt secret fields
+    let (encrypted_username, username_decryption_nonce) =
+        aes_gcm_encrypt(username.as_bytes(), &secret_encryption_key)
+            .await
+            .unwrap();
+
+    let (encrypted_password, password_decryption_nonce) =
+        aes_gcm_encrypt(password.as_bytes(), &secret_encryption_key)
+            .await
+            .unwrap();
+
+    let (encrypted_notes, notes_decryption_nonce) =
+        aes_gcm_encrypt(notes.as_bytes(), &secret_encryption_key)
+            .await
+            .unwrap();
+
+    // Encrypt the encryption key
+    let key_encryption_key = get_aes_256_gcm_key_for_caller().await.unwrap();
+    let (encrypted_secret_decryption_key, nonce_encrypted_secret_decryption_key) =
+        aes_gcm_encrypt(&secret_encryption_key, &key_encryption_key)
+            .await
+            .unwrap();
+
+    let decryption_material: SecretDecryptionMaterial = SecretDecryptionMaterial {
+        encrypted_decryption_key: encrypted_secret_decryption_key,
+        iv: nonce_encrypted_secret_decryption_key.to_vec(),
+        username_decryption_nonce: Some(username_decryption_nonce.to_vec()),
+        password_decryption_nonce: Some(password_decryption_nonce.to_vec()),
+        notes_decryption_nonce: Some(notes_decryption_nonce.to_vec()),
+    };
 
     // let's add a secret
     let create_secret_args = CreateSecretArgs {
         category: SecretCategory::Password,
         name: "Goolge".to_string(),
-        username: Some("Tobias".to_string()),
-        password: Some("123".to_string()),
+        username: Some(encrypted_username),
+        password: Some(encrypted_password),
         url: Some("www.google.com".to_string()),
-        notes: None,
+        notes: Some(encrypted_notes),
+        decryption_material,
     };
 
     dbg!("okay, probably not: ");

@@ -15,8 +15,12 @@ if [[ $ENV == "local" ]]; then
     # Stop local replica
     dfx stop
 
-    # Remove .dfx folder
-    rm -rf .dfx
+    # Remove some build folders
+    rm -rf .dfx/
+    rm -rf target/
+    rm -rf dist/
+    rm -rf node_modules/
+
 fi
 
 # Sometimes it is required to really clean up. E.g. because of some strange errors in the cargo.lock file

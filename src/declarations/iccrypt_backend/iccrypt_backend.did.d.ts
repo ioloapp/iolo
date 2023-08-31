@@ -1,6 +1,14 @@
 import type { Principal } from '@dfinity/principal';
 import type { ActorMethod } from '@dfinity/agent';
 
+export interface CreateSecretArgs {
+  'url' : [] | [string],
+  'username' : [] | [Uint8Array | number[]],
+  'password' : [] | [Uint8Array | number[]],
+  'name' : string,
+  'notes' : [] | [Uint8Array | number[]],
+  'category' : SecretCategory,
+}
 export type Result = { 'Ok' : Secret } |
   { 'Err' : SmartVaultErr };
 export type Result_1 = { 'Ok' : User } |
@@ -12,25 +20,17 @@ export type Result_3 = { 'Ok' : UserVault } |
 export interface Secret {
   'id' : bigint,
   'url' : [] | [string],
-  'username' : [] | [string],
+  'username' : [] | [Uint8Array | number[]],
   'date_created' : bigint,
-  'password' : [] | [string],
+  'password' : [] | [Uint8Array | number[]],
   'name' : string,
-  'notes' : [] | [string],
+  'notes' : [] | [Uint8Array | number[]],
   'category' : SecretCategory,
   'date_modified' : bigint,
 }
 export type SecretCategory = { 'Password' : null } |
   { 'Note' : null } |
   { 'Document' : null };
-export interface SecretForCreation {
-  'url' : [] | [string],
-  'username' : [] | [string],
-  'password' : [] | [string],
-  'name' : string,
-  'notes' : [] | [string],
-  'category' : SecretCategory,
-}
 export interface SecretForUpdate {
   'id' : bigint,
   'url' : [] | [string],
@@ -59,10 +59,11 @@ export interface UserVault {
   'id' : bigint,
   'date_created' : bigint,
   'secrets' : Array<[bigint, Secret]>,
+  'key_box' : Array<[bigint, string]>,
   'date_modified' : bigint,
 }
 export interface _SERVICE {
-  'add_user_secret' : ActorMethod<[SecretForCreation], Result>,
+  'add_user_secret' : ActorMethod<[CreateSecretArgs], Result>,
   'create_user' : ActorMethod<[], Result_1>,
   'delete_user' : ActorMethod<[], Result_2>,
   'encrypted_ibe_decryption_key_for_caller' : ActorMethod<
@@ -84,5 +85,5 @@ export interface _SERVICE {
   'symmetric_key_verification_key' : ActorMethod<[], string>,
   'update_user_secret' : ActorMethod<[SecretForUpdate], Result>,
   'what_time_is_it' : ActorMethod<[], bigint>,
-  'who_am_i' : ActorMethod<[string, string], string>,
+  'who_am_i' : ActorMethod<[], string>,
 }

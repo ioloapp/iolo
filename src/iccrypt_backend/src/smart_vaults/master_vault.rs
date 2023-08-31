@@ -65,11 +65,13 @@ impl MasterVault {
             return Err(SmartVaultErr::UserVaultDoesNotExist(vault_id.to_string()));
         }
 
+        let decryption_material = csa.decryption_material.clone();
         let secret = Secret::from(csa);
 
         let user_vault = self.user_vaults.get_mut(vault_id).unwrap();
         let secret_id = *secret.id();
         user_vault.add_secret(secret)?;
+        user_vault.key_box.insert(secret_id, decryption_material);
 
         Ok(user_vault.get_secret(&secret_id).unwrap().clone())
     }
@@ -94,16 +96,16 @@ impl MasterVault {
             secret.set_category(*secret_for_update.category().unwrap());
         }
         if secret_for_update.password().is_some() {
-            secret.set_password(secret_for_update.password().unwrap().clone());
+            secret.set_password(secret_for_update.password().unwrap().as_bytes().to_vec());
         }
         if secret_for_update.username().is_some() {
-            secret.set_username(secret_for_update.username().unwrap().clone());
+            secret.set_username(secret_for_update.username().unwrap().as_bytes().to_vec());
         }
         if secret_for_update.url().is_some() {
             secret.set_url(secret_for_update.url().unwrap().clone());
         }
         if secret_for_update.notes().is_some() {
-            secret.set_notes(secret_for_update.notes().unwrap().clone());
+            secret.set_notes(secret_for_update.notes().unwrap().as_bytes().to_vec());
         }
         let s = secret.clone();
         Ok(s)
@@ -128,7 +130,7 @@ impl MasterVault {
 mod tests {
 
     use super::*;
-    use crate::smart_vaults::secret::SecretCategory;
+    use crate::smart_vaults::secret::{SecretCategory, SecretDecryptionMaterial};
 
     #[test]
     fn utest_new_master_vault() {
@@ -230,6 +232,7 @@ mod tests {
             password: None,
             url: None,
             notes: None,
+            decryption_material: SecretDecryptionMaterial::default(),
         };
 
         let secret = master_vault
