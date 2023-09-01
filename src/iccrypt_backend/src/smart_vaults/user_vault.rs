@@ -9,6 +9,7 @@ use crate::utils::time;
 use crate::SmartVaultErr;
 
 pub type UserVaultID = UUID;
+pub type KeyBox = BTreeMap<SecretID, SecretDecryptionMaterial>;
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct UserVault {
@@ -20,7 +21,7 @@ pub struct UserVault {
     /// Every secret is encrypted by using dedicated key.
     /// This key is itself encrypted using the UserVault key,
     /// which itself is derived by vetkd.
-    pub key_box: BTreeMap<SecretID, SecretDecryptionMaterial>, // TODO: make getter and setter
+    key_box: KeyBox, // TODO: make getter and setter
 }
 
 impl Default for UserVault {
@@ -56,6 +57,15 @@ impl UserVault {
 
     pub fn secrets(&self) -> &BTreeMap<UUID, Secret> {
         &self.secrets
+    }
+
+    // TODO: make proper CRUD functions
+    pub fn key_box_mut(&mut self) -> &mut KeyBox {
+        &mut self.key_box
+    }
+
+    pub fn key_box(&self) -> &KeyBox {
+        &self.key_box
     }
 
     pub fn get_secret(&self, secret_id: &UUID) -> Result<&Secret, SmartVaultErr> {

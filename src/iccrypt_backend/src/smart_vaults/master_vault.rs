@@ -42,7 +42,7 @@ impl MasterVault {
         new_user_vault_id
     }
 
-    pub fn get_user_vault(&mut self, vault_id: &UUID) -> Result<&UserVault, SmartVaultErr> {
+    pub fn get_user_vault(&self, vault_id: &UUID) -> Result<&UserVault, SmartVaultErr> {
         if !self.user_vaults.contains_key(vault_id) {
             return Err(SmartVaultErr::UserVaultDoesNotExist(vault_id.to_string()));
         }
@@ -71,7 +71,9 @@ impl MasterVault {
         let user_vault = self.user_vaults.get_mut(vault_id).unwrap();
         let secret_id = *secret.id();
         user_vault.add_secret(secret)?;
-        user_vault.key_box.insert(secret_id, decryption_material);
+        user_vault
+            .key_box_mut()
+            .insert(secret_id, decryption_material);
 
         Ok(user_vault.get_secret(&secret_id).unwrap().clone())
     }

@@ -10,8 +10,10 @@ use crate::smart_vaults::user_registry::UserRegistry;
 use crate::utils::caller::get_caller;
 
 use super::master_vault::MasterVault;
-use super::secret::{CreateSecretArgs, Secret, SecretForUpdate};
-use super::user_vault::UserVault;
+use super::secret::{
+    CreateSecretArgs, Secret, SecretDecryptionMaterial, SecretForUpdate, SecretID,
+};
+use super::user_vault::{KeyBox, UserVault};
 
 thread_local! {
     // Master_vault holding all the user vaults
@@ -65,6 +67,22 @@ pub fn get_user_vault() -> Result<UserVault, SmartVaultErr> {
         .with(|mv: &RefCell<MasterVault>| mv.borrow_mut().get_user_vault(&user_vault_id).cloned())
 }
 
+#[ic_cdk_macros::query]
+#[candid_method(query)]
+pub fn get_secret_decryption_material(
+    sid: SecretID,
+) -> Result<SecretDecryptionMaterial, SmartVaultErr> {
+    let principal = get_caller();
+    let user_vault_id: UUID = get_vault_id_for(principal)?;
+
+    MASTERVAULT.with(|mv: &RefCell<MasterVault>| {
+        let mv: &MasterVault = &mv.borrow();
+        let uv = mv.get_user_vault(&user_vault_id)?;
+        let sdm: &SecretDecryptionMaterial = uv.key_box().get(&sid).unwrap();
+        Ok(sdm.clone())
+    })
+}
+
 #[ic_cdk_macros::update]
 #[candid_method(update)]
 pub fn delete_user() -> Result<(), SmartVaultErr> {
@@ -90,6 +108,7 @@ pub fn delete_user() -> Result<(), SmartVaultErr> {
 #[ic_cdk_macros::update]
 #[candid_method(update)]
 pub fn add_user_secret(args: CreateSecretArgs) -> Result<Secret, SmartVaultErr> {
+    ic_cdk::println!("{:?}", &args);
     let principal = get_caller();
 
     let user_vault_id: UUID = get_vault_id_for(principal)?;
@@ -139,9 +158,6 @@ pub fn is_user_vault_existing() -> bool {
     false
 }
 
-// #[ic_cdk_macros::query]
-// #[candid_method(query)]
-// pub
 fn get_vault_id_for(principal: Principal) -> Result<UUID, SmartVaultErr> {
     USER_REGISTRY.with(
         |ur: &RefCell<UserRegistry>| -> Result<UUID, SmartVaultErr> {

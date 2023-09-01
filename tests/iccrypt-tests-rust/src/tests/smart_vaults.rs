@@ -12,7 +12,8 @@ use crate::{
     utils::{
         agent::{create_identity, get_dfx_agent_with_identity, make_call_with_agent, CallType},
         vetkd::{
-            aes_gcm_encrypt, get_aes_256_gcm_key_for_caller, get_local_random_aes_256_gcm_key,
+            aes_gcm_decrypt, aes_gcm_encrypt, get_aes_256_gcm_key_for_caller,
+            get_local_random_aes_256_gcm_key,
         },
     },
 };
@@ -31,19 +32,16 @@ struct ExampleArgSet {
 
 pub async fn test_smart_vaults() -> Result<()> {
     println!("\n{}", "Testing smart vaults".yellow().bold());
-    test_user_lifecycle().await?;
-    // test_mass_user_creation().await?;
+    // test_user_lifecycle().await?;
+    test_secret_lifecycle().await?;
     Ok(())
 }
 
-async fn test_user_lifecycle() -> anyhow::Result<()> {
+async fn test_secret_lifecycle() -> anyhow::Result<()> {
     // create identities (keypairs) and the corresponding senders (principals)
     let i1: BasicIdentity = create_identity();
     let p1: Principal = i1.sender().unwrap();
     let a1: Agent = get_dfx_agent_with_identity(i1).await?;
-    let i2: BasicIdentity = create_identity();
-    let _p2: Principal = i2.sender().unwrap();
-    let _a2: Agent = get_dfx_agent_with_identity(i2).await?;
 
     // let's create a new ic crypt user
     let new_user_1 = create_user(&a1).await?;
@@ -89,7 +87,7 @@ async fn test_user_lifecycle() -> anyhow::Result<()> {
         notes_decryption_nonce: Some(notes_decryption_nonce.to_vec()),
     };
 
-    // let's add a secret
+    // let's add the secret
     let create_secret_args = CreateSecretArgs {
         category: SecretCategory::Password,
         name: "Goolge".to_string(),
@@ -100,14 +98,86 @@ async fn test_user_lifecycle() -> anyhow::Result<()> {
         decryption_material,
     };
 
-    dbg!("okay, probably not: ");
-
-    let s = add_user_secret(&a1, &create_secret_args).await;
-    dbg!(&s);
+    let secret: Secret = add_user_secret(&a1, &create_secret_args).await.unwrap();
+    // dbg!(&s);
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////
+    ////  some time later: user comes back and retrieves secret.
+    ////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    // so let's delete the user 1
+    // 1) Get the cryptographic decryption material (dm) for that particular secret,
+    // which can be found in the user's UserVault KeyBox.
+    let dmr: Result<SecretDecryptionMaterial, SmartVaultErr> = make_call_with_agent(
+        &a1,
+        CallType::Query("get_secret_decryption_material".into()),
+        Some(secret.id),
+    )
+    .await
+    .unwrap();
+
+    let dm: SecretDecryptionMaterial = dmr.unwrap();
+
+    // the dm (decryption material) contains the "encrypted decryption key".
+    // so first, let's get the key to decrypt this "encrypted decryption key" -> vetkd
+    let aes_256_key_decryption_key = get_aes_256_gcm_key_for_caller().await.unwrap();
+    let decrypted_decryption_key = aes_gcm_decrypt(
+        &dm.encrypted_decryption_key,
+        &aes_256_key_decryption_key,
+        dm.iv.as_slice().try_into().unwrap(),
+    )
+    .await
+    .unwrap();
+
+    dbg!(&decrypted_decryption_key);
+
+    let decrypted_username = aes_gcm_decrypt(
+        &secret.username.unwrap(),
+        &decrypted_decryption_key,
+        dm.username_decryption_nonce.unwrap().try_into().unwrap(),
+    )
+    .await
+    .unwrap();
+
+    dbg!(&decrypted_username);
+    let uname: String = String::from_utf8(decrypted_username).unwrap();
+    assert_eq!(uname, username);
+    dbg!(uname);
+
+    // Cleanup
+    delete_user(&a1, new_user_1.id).await?;
+    println!("   User successfully deleted");
+    Ok(())
+}
+
+async fn test_user_lifecycle() -> anyhow::Result<()> {
+    // create identities (keypairs) and the corresponding senders (principals)
+    let i1: BasicIdentity = create_identity();
+    let p1: Principal = i1.sender().unwrap();
+    let a1: Agent = get_dfx_agent_with_identity(i1).await?;
+
+    // let's create a new ic crypt user
+    let new_user_1 = create_user(&a1).await?;
+    assert_eq!(&new_user_1.id, &p1);
+    println!("   {}{:?}", "New user created: ", new_user_1.id);
+
+    // create the user again. this must fail
+    let new_user_again = create_user(&a1).await;
+
+    if new_user_again.is_err() {
+        assert_eq!(
+            new_user_again.err().unwrap(),
+            SmartVaultErr::UserAlreadyExists(new_user_1.id.to_string())
+        );
+    } else {
+        panic!(
+            "Error. User with following ID was created twice: {}",
+            new_user_1.id.to_string()
+        )
+    }
+
+    // Cleanup
     delete_user(&a1, new_user_1.id).await?;
     println!("   User successfully deleted");
 
