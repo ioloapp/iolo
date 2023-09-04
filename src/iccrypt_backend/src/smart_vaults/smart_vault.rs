@@ -74,23 +74,19 @@ pub fn get_secret_list() -> Result<Vec<SecretListEntry>, SmartVaultErr> {
 
     let user_vault_id: UUID = get_vault_id_for(principal)?;
 
-    let mut res: Vec<SecretListEntry> = vec![];
-
-    let uv: UserVault = MASTERVAULT.with(|mv: &RefCell<MasterVault>| {
-        mv.borrow_mut().get_user_vault(&user_vault_id).cloned()
-    })?;
-
-    // Iterate over key-value pairs
-    for (secret_id, secret) in uv.secrets() {
-        res.push(SecretListEntry {
-            id: *secret_id,
-            category: *secret.category(),
-            name: secret.name().to_string(),
-        });
-    }
-
-    // SecretListEntry
-    Ok(res)
+    MASTERVAULT.with(|mv: &RefCell<MasterVault>| {
+        let secrets_flat: Vec<Secret> = mv
+            .borrow()
+            .get_user_vault(&user_vault_id)?
+            .secrets()
+            .clone()
+            .into_values()
+            .collect();
+        Ok(secrets_flat
+            .into_iter()
+            .map(SecretListEntry::from)
+            .collect())
+    })
 }
 
 #[ic_cdk_macros::query]

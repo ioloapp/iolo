@@ -47,6 +47,16 @@ pub struct SecretListEntry {
     pub name: String,
 }
 
+impl From<Secret> for SecretListEntry {
+    fn from(s: Secret) -> Self {
+        SecretListEntry {
+            id: *s.id(),
+            category: *s.category(),
+            name: s.name().to_string(),
+        }
+    }
+}
+
 /// SecretDecryptionMaterial contains all the information required to
 /// decrypt a secret:
 /// 1) The aes gcm decryption key encrypted with the uservault's vetkd key
