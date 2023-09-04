@@ -1,4 +1,11 @@
 export const idlFactory = ({ IDL }) => {
+  const SecretDecryptionMaterial = IDL.Record({
+    'iv' : IDL.Vec(IDL.Nat8),
+    'password_decryption_nonce' : IDL.Opt(IDL.Vec(IDL.Nat8)),
+    'notes_decryption_nonce' : IDL.Opt(IDL.Vec(IDL.Nat8)),
+    'encrypted_decryption_key' : IDL.Vec(IDL.Nat8),
+    'username_decryption_nonce' : IDL.Opt(IDL.Vec(IDL.Nat8)),
+  });
   const SecretCategory = IDL.Variant({
     'Password' : IDL.Null,
     'Note' : IDL.Null,
@@ -9,6 +16,7 @@ export const idlFactory = ({ IDL }) => {
     'username' : IDL.Opt(IDL.Vec(IDL.Nat8)),
     'password' : IDL.Opt(IDL.Vec(IDL.Nat8)),
     'name' : IDL.Text,
+    'decryption_material' : SecretDecryptionMaterial,
     'notes' : IDL.Opt(IDL.Vec(IDL.Nat8)),
     'category' : SecretCategory,
   });
@@ -43,14 +51,19 @@ export const idlFactory = ({ IDL }) => {
   });
   const Result_1 = IDL.Variant({ 'Ok' : User, 'Err' : SmartVaultErr });
   const Result_2 = IDL.Variant({ 'Ok' : IDL.Null, 'Err' : SmartVaultErr });
-  const UserVault = IDL.Record({
-    'id' : IDL.Nat,
-    'date_created' : IDL.Nat64,
-    'secrets' : IDL.Vec(IDL.Tuple(IDL.Nat, Secret)),
-    'key_box' : IDL.Vec(IDL.Tuple(IDL.Nat, IDL.Text)),
-    'date_modified' : IDL.Nat64,
+  const Result_3 = IDL.Variant({
+    'Ok' : SecretDecryptionMaterial,
+    'Err' : SmartVaultErr,
   });
-  const Result_3 = IDL.Variant({ 'Ok' : UserVault, 'Err' : SmartVaultErr });
+  const SecretListEntry = IDL.Record({
+    'id' : IDL.Nat,
+    'name' : IDL.Text,
+    'category' : SecretCategory,
+  });
+  const Result_4 = IDL.Variant({
+    'Ok' : IDL.Vec(SecretListEntry),
+    'Err' : SmartVaultErr,
+  });
   const SecretForUpdate = IDL.Record({
     'id' : IDL.Nat,
     'url' : IDL.Opt(IDL.Text),
@@ -79,7 +92,12 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Text, IDL.Vec(IDL.Nat8)],
         [],
       ),
-    'get_user_vault' : IDL.Func([], [Result_3], ['query']),
+    'get_secret_decryption_material' : IDL.Func(
+        [IDL.Nat],
+        [Result_3],
+        ['query'],
+      ),
+    'get_secret_list' : IDL.Func([], [Result_4], ['query']),
     'ibe_encryption_key' : IDL.Func([], [IDL.Text], []),
     'is_user_vault_existing' : IDL.Func([], [IDL.Bool], ['query']),
     'remove_user_secret' : IDL.Func([IDL.Nat], [Result_2], []),

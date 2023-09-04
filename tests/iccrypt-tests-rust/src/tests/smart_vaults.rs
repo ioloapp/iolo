@@ -5,7 +5,9 @@ use ic_agent::{identity::BasicIdentity, Agent, Identity};
 
 use crate::{
     types::{
-        secret::{CreateSecretArgs, Secret, SecretCategory, SecretDecryptionMaterial},
+        secret::{
+            CreateSecretArgs, Secret, SecretCategory, SecretDecryptionMaterial, SecretListEntry,
+        },
         smart_vault_err::SmartVaultErr,
         user::User,
     },
@@ -91,6 +93,21 @@ async fn test_secret_lifecycle() -> anyhow::Result<()> {
     let create_secret_args = CreateSecretArgs {
         category: SecretCategory::Password,
         name: "Goolge".to_string(),
+        username: Some(encrypted_username.clone()),
+        password: Some(encrypted_password.clone()),
+        url: Some("www.google.com".to_string()),
+        notes: Some(encrypted_notes.clone()),
+        decryption_material: decryption_material.clone(),
+    };
+
+    let secret: Secret = add_user_secret(&a1, &create_secret_args).await.unwrap();
+    // dbg!(&s);
+
+    // just for fun: let's add another one:
+    // let's add the secret
+    let create_secret_args2 = CreateSecretArgs {
+        category: SecretCategory::Password,
+        name: "Amazon".to_string(),
         username: Some(encrypted_username),
         password: Some(encrypted_password),
         url: Some("www.google.com".to_string()),
@@ -98,8 +115,19 @@ async fn test_secret_lifecycle() -> anyhow::Result<()> {
         decryption_material,
     };
 
-    let secret: Secret = add_user_secret(&a1, &create_secret_args).await.unwrap();
-    // dbg!(&s);
+    let _secret2: Secret = add_user_secret(&a1, &create_secret_args2).await.unwrap();
+
+    // get list of all secrets:
+    dbg!("let's check whether new secret gets returned by: get_secret_list");
+
+    let secret_list: Result<Vec<SecretListEntry>, SmartVaultErr> = make_call_with_agent(
+        &a1,
+        CallType::Query("get_secret_list".into()),
+        Option::<Vec<u8>>::None,
+    )
+    .await
+    .unwrap();
+    dbg!(secret_list.unwrap());
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     ////
@@ -130,7 +158,7 @@ async fn test_secret_lifecycle() -> anyhow::Result<()> {
     .await
     .unwrap();
 
-    dbg!(&decrypted_decryption_key);
+    // dbg!(&decrypted_decryption_key);
 
     let decrypted_username = aes_gcm_decrypt(
         &secret.username.unwrap(),
@@ -142,7 +170,7 @@ async fn test_secret_lifecycle() -> anyhow::Result<()> {
 
     let uname: String = String::from_utf8(decrypted_username).unwrap();
     assert_eq!(uname, username);
-    dbg!(uname);
+    // dbg!(uname);
 
     let decrypted_password = aes_gcm_decrypt(
         &secret.password.unwrap(),

@@ -44,3 +44,10 @@ pub struct SecretDecryptionMaterial {
     pub password_decryption_nonce: Option<Vec<u8>>,
     pub notes_decryption_nonce: Option<Vec<u8>>,
 }
+
+#[derive(Debug, CandidType, Deserialize, Serialize, Clone, PartialEq)]
+pub struct SecretListEntry {
+    pub id: SecretID,
+    pub category: SecretCategory,
+    pub name: String,
+}

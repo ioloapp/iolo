@@ -11,7 +11,7 @@ type Result = variant { Ok : Secret; Err : SmartVaultErr };
 type Result_1 = variant { Ok : User; Err : SmartVaultErr };
 type Result_2 = variant { Ok; Err : SmartVaultErr };
 type Result_3 = variant { Ok : SecretDecryptionMaterial; Err : SmartVaultErr };
-type Result_4 = variant { Ok : UserVault; Err : SmartVaultErr };
+type Result_4 = variant { Ok : vec SecretListEntry; Err : SmartVaultErr };
 type Secret = record {
   id : nat;
   url : opt text;
@@ -40,6 +40,11 @@ type SecretForUpdate = record {
   notes : opt text;
   category : opt SecretCategory;
 };
+type SecretListEntry = record {
+  id : nat;
+  name : text;
+  category : SecretCategory;
+};
 type SmartVaultErr = variant {
   UserAlreadyExists : text;
   SecretHasNoId;
@@ -57,13 +62,6 @@ type User = record {
   user_vault_id : nat;
   date_modified : nat64;
 };
-type UserVault = record {
-  id : nat;
-  date_created : nat64;
-  secrets : vec record { nat; Secret };
-  key_box : vec record { nat; SecretDecryptionMaterial };
-  date_modified : nat64;
-};
 service : {
   add_user_secret : (CreateSecretArgs) -> (Result);
   create_user : () -> (Result_1);
@@ -72,7 +70,7 @@ service : {
   encrypted_symmetric_key_for_caller : (vec nat8) -> (text);
   get_encrypted_symmetric_key_for : (vec nat8) -> (text, vec nat8);
   get_secret_decryption_material : (nat) -> (Result_3) query;
-  get_user_vault : () -> (Result_4) query;
+  get_secret_list : () -> (Result_4) query;
   ibe_encryption_key : () -> (text);
   is_user_vault_existing : () -> (bool) query;
   remove_user_secret : (nat) -> (Result_2);

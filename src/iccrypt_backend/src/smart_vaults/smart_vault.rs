@@ -11,7 +11,7 @@ use crate::utils::caller::get_caller;
 
 use super::master_vault::MasterVault;
 use super::secret::{
-    CreateSecretArgs, Secret, SecretDecryptionMaterial, SecretForUpdate, SecretID,
+    CreateSecretArgs, Secret, SecretDecryptionMaterial, SecretForUpdate, SecretID, SecretListEntry,
 };
 use super::user_vault::{KeyBox, UserVault};
 
@@ -56,15 +56,41 @@ pub fn create_user() -> Result<User, SmartVaultErr> {
     Ok(new_user)
 }
 
+// #[ic_cdk_macros::query]
+// #[candid_method(query)]
+// pub fn get_user_vault() -> Result<UserVault, SmartVaultErr> {
+//     let principal = get_caller();
+
+//     let user_vault_id: UUID = get_vault_id_for(principal)?;
+
+//     MASTERVAULT
+//         .with(|mv: &RefCell<MasterVault>| mv.borrow_mut().get_user_vault(&user_vault_id).cloned())
+// }
+
 #[ic_cdk_macros::query]
 #[candid_method(query)]
-pub fn get_user_vault() -> Result<UserVault, SmartVaultErr> {
+pub fn get_secret_list() -> Result<Vec<SecretListEntry>, SmartVaultErr> {
     let principal = get_caller();
 
     let user_vault_id: UUID = get_vault_id_for(principal)?;
 
-    MASTERVAULT
-        .with(|mv: &RefCell<MasterVault>| mv.borrow_mut().get_user_vault(&user_vault_id).cloned())
+    let mut res: Vec<SecretListEntry> = vec![];
+
+    let uv: UserVault = MASTERVAULT.with(|mv: &RefCell<MasterVault>| {
+        mv.borrow_mut().get_user_vault(&user_vault_id).cloned()
+    })?;
+
+    // Iterate over key-value pairs
+    for (secret_id, secret) in uv.secrets() {
+        res.push(SecretListEntry {
+            id: *secret_id,
+            category: *secret.category(),
+            name: secret.name().to_string(),
+        });
+    }
+
+    // SecretListEntry
+    Ok(res)
 }
 
 #[ic_cdk_macros::query]

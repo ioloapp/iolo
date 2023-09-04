@@ -40,6 +40,13 @@ pub struct CreateSecretArgs {
     pub decryption_material: SecretDecryptionMaterial,
 }
 
+#[derive(Debug, CandidType, Deserialize, Serialize, Clone, PartialEq)]
+pub struct SecretListEntry {
+    pub id: SecretID,
+    pub category: SecretCategory,
+    pub name: String,
+}
+
 /// SecretDecryptionMaterial contains all the information required to
 /// decrypt a secret:
 /// 1) The aes gcm decryption key encrypted with the uservault's vetkd key

@@ -55,7 +55,7 @@ impl UserVault {
         &self.date_modified
     }
 
-    pub fn secrets(&self) -> &BTreeMap<UUID, Secret> {
+    pub fn secrets(&self) -> &BTreeMap<SecretID, Secret> {
         &self.secrets
     }
 

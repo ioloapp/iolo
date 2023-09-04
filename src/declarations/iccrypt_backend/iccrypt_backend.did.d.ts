@@ -6,6 +6,7 @@ export interface CreateSecretArgs {
   'username' : [] | [Uint8Array | number[]],
   'password' : [] | [Uint8Array | number[]],
   'name' : string,
+  'decryption_material' : SecretDecryptionMaterial,
   'notes' : [] | [Uint8Array | number[]],
   'category' : SecretCategory,
 }
@@ -15,7 +16,9 @@ export type Result_1 = { 'Ok' : User } |
   { 'Err' : SmartVaultErr };
 export type Result_2 = { 'Ok' : null } |
   { 'Err' : SmartVaultErr };
-export type Result_3 = { 'Ok' : UserVault } |
+export type Result_3 = { 'Ok' : SecretDecryptionMaterial } |
+  { 'Err' : SmartVaultErr };
+export type Result_4 = { 'Ok' : Array<SecretListEntry> } |
   { 'Err' : SmartVaultErr };
 export interface Secret {
   'id' : bigint,
@@ -31,6 +34,13 @@ export interface Secret {
 export type SecretCategory = { 'Password' : null } |
   { 'Note' : null } |
   { 'Document' : null };
+export interface SecretDecryptionMaterial {
+  'iv' : Uint8Array | number[],
+  'password_decryption_nonce' : [] | [Uint8Array | number[]],
+  'notes_decryption_nonce' : [] | [Uint8Array | number[]],
+  'encrypted_decryption_key' : Uint8Array | number[],
+  'username_decryption_nonce' : [] | [Uint8Array | number[]],
+}
 export interface SecretForUpdate {
   'id' : bigint,
   'url' : [] | [string],
@@ -39,6 +49,11 @@ export interface SecretForUpdate {
   'name' : [] | [string],
   'notes' : [] | [string],
   'category' : [] | [SecretCategory],
+}
+export interface SecretListEntry {
+  'id' : bigint,
+  'name' : string,
+  'category' : SecretCategory,
 }
 export type SmartVaultErr = { 'UserAlreadyExists' : string } |
   { 'SecretHasNoId' : null } |
@@ -53,13 +68,6 @@ export interface User {
   'date_created' : bigint,
   'date_last_login' : [] | [bigint],
   'user_vault_id' : bigint,
-  'date_modified' : bigint,
-}
-export interface UserVault {
-  'id' : bigint,
-  'date_created' : bigint,
-  'secrets' : Array<[bigint, Secret]>,
-  'key_box' : Array<[bigint, string]>,
   'date_modified' : bigint,
 }
 export interface _SERVICE {
@@ -78,7 +86,8 @@ export interface _SERVICE {
     [Uint8Array | number[]],
     [string, Uint8Array | number[]]
   >,
-  'get_user_vault' : ActorMethod<[], Result_3>,
+  'get_secret_decryption_material' : ActorMethod<[bigint], Result_3>,
+  'get_secret_list' : ActorMethod<[], Result_4>,
   'ibe_encryption_key' : ActorMethod<[], string>,
   'is_user_vault_existing' : ActorMethod<[], boolean>,
   'remove_user_secret' : ActorMethod<[bigint], Result_2>,
