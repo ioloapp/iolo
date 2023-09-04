@@ -140,10 +140,33 @@ async fn test_secret_lifecycle() -> anyhow::Result<()> {
     .await
     .unwrap();
 
-    dbg!(&decrypted_username);
     let uname: String = String::from_utf8(decrypted_username).unwrap();
     assert_eq!(uname, username);
     dbg!(uname);
+
+    let decrypted_password = aes_gcm_decrypt(
+        &secret.password.unwrap(),
+        &decrypted_decryption_key,
+        dm.password_decryption_nonce.unwrap().try_into().unwrap(),
+    )
+    .await
+    .unwrap();
+
+    let pwd: String = String::from_utf8(decrypted_password).unwrap();
+    assert_eq!(pwd, password);
+    dbg!(pwd);
+
+    let decrypted_notes = aes_gcm_decrypt(
+        &secret.notes.unwrap(),
+        &decrypted_decryption_key,
+        dm.notes_decryption_nonce.unwrap().try_into().unwrap(),
+    )
+    .await
+    .unwrap();
+
+    let nts: String = String::from_utf8(decrypted_notes).unwrap();
+    assert_eq!(nts, notes);
+    dbg!(nts);
 
     // Cleanup
     delete_user(&a1, new_user_1.id).await?;

@@ -15,7 +15,7 @@ pub enum SecretCategory {
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone, PartialEq)]
 pub struct Secret {
-    id: UUID,
+    id: SecretID,
     date_created: u64,
     date_modified: u64,
     category: SecretCategory,
