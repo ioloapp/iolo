@@ -13,8 +13,8 @@ use crate::utils::{
 
 pub async fn test_encryption() -> Result<()> {
     simple_aes_gcm_encryption().await?;
-    double_aes_gcm_encryption().await?;
-    inheritance_aes_gcm_encryption().await?;
+    uservault_aes_gcm_encryption().await?;
+    ibe_aes_gcm_encryption().await?;
     Ok(())
 }
 
@@ -22,7 +22,7 @@ pub async fn test_encryption() -> Result<()> {
 /// - User creates new secret
 /// - Secret is encrypted using locally generated AES GCM 256 Key
 /// - This locally generated key is then encrypted using a VETKD key provided by the Internet Computer
-async fn double_aes_gcm_encryption() -> Result<()> {
+async fn uservault_aes_gcm_encryption() -> Result<()> {
     println!(
         "\n{}\n",
         "Double Encryption VETKD Tests".yellow().bold().underline()
@@ -190,7 +190,7 @@ async fn simple_aes_gcm_encryption() -> Result<()> {
     Ok(())
 }
 
-async fn inheritance_aes_gcm_encryption() -> Result<()> {
+async fn ibe_aes_gcm_encryption() -> Result<()> {
     println!(
         "\n{}\n",
         "Inheritance Encryption VETKD Tests"
