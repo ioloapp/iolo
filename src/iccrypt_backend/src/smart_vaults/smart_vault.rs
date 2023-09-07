@@ -12,7 +12,7 @@ use crate::utils::caller::get_caller;
 
 use super::master_vault::MasterVault;
 use super::secret::{
-    CreateSecretArgs, Secret, SecretDecryptionMaterial, SecretForUpdate, SecretID, SecretListEntry,
+    CreateSecretArgs, Secret, SecretDecryptionMaterial, SecretID, SecretListEntry,
 };
 use super::testament::{CreateTestamentArgs, Testament};
 use super::user_vault::{KeyBox, UserVault};
@@ -145,7 +145,7 @@ pub fn create_secret(args: CreateSecretArgs) -> Result<Secret, SmartVaultErr> {
 
 #[ic_cdk_macros::update]
 #[candid_method(update)]
-pub fn update_user_secret(secret_for_update: SecretForUpdate) -> Result<Secret, SmartVaultErr> {
+pub fn update_secret(s: Secret) -> Result<Secret, SmartVaultErr> {
     let principal = get_caller();
 
     let user_vault_id: UUID = get_vault_id_for(principal)?;
@@ -153,7 +153,7 @@ pub fn update_user_secret(secret_for_update: SecretForUpdate) -> Result<Secret, 
     MASTERVAULT.with(
         |ms: &RefCell<MasterVault>| -> Result<Secret, SmartVaultErr> {
             let mut master_vault = ms.borrow_mut();
-            master_vault.update_secret(&user_vault_id, &secret_for_update)
+            master_vault.update_user_secret(&user_vault_id, s)
         },
     )
 }

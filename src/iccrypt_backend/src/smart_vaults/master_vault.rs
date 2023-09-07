@@ -8,7 +8,7 @@ use crate::{
 };
 
 use super::{
-    secret::{CreateSecretArgs, Secret, SecretForUpdate},
+    secret::{CreateSecretArgs, Secret},
     testament::{CreateTestamentArgs, Testament},
     user_vault::UserVault,
 };
@@ -101,39 +101,17 @@ impl MasterVault {
         Ok(user_vault.get_testament(&testament_id).unwrap().clone())
     }
 
-    // Replace a secret
-    pub fn update_secret(
+    pub fn update_user_secret(
         &mut self,
         vault_id: &UUID,
-        secret_for_update: &SecretForUpdate,
+        s: Secret,
     ) -> Result<Secret, SmartVaultErr> {
         if !self.user_vaults.contains_key(vault_id) {
             return Err(SmartVaultErr::UserVaultDoesNotExist(vault_id.to_string()));
         }
 
         let user_vault = self.user_vaults.get_mut(vault_id).unwrap();
-        let secret: &mut Secret = user_vault.get_secret_mut(secret_for_update.id())?;
-
-        if secret_for_update.name().is_some() {
-            secret.set_name(secret_for_update.name().unwrap().clone());
-        }
-        // if secret_for_update.category().is_some() {
-        //     secret.set_category(*secret_for_update.category().unwrap());
-        // }
-        if secret_for_update.password().is_some() {
-            secret.set_password(secret_for_update.password().unwrap().as_bytes().to_vec());
-        }
-        if secret_for_update.username().is_some() {
-            secret.set_username(secret_for_update.username().unwrap().as_bytes().to_vec());
-        }
-        if secret_for_update.url().is_some() {
-            secret.set_url(secret_for_update.url().unwrap().clone());
-        }
-        if secret_for_update.notes().is_some() {
-            secret.set_notes(secret_for_update.notes().unwrap().as_bytes().to_vec());
-        }
-        let s = secret.clone();
-        Ok(s)
+        user_vault.update_secret(s.clone())
     }
 
     // Remove a secret
@@ -155,7 +133,7 @@ impl MasterVault {
 mod tests {
 
     use super::*;
-    use crate::smart_vaults::secret::{SecretCategory, SecretDecryptionMaterial};
+    use crate::smart_vaults::secret::SecretDecryptionMaterial;
 
     #[test]
     fn utest_new_master_vault() {
@@ -279,16 +257,16 @@ mod tests {
             secret_name
         );
 
-        let mut secret_to_update = SecretForUpdate::new(
-            *secret.id(),
-            None,
-            Some("my-super-secret-new".to_string()),
-            None,
-            None,
-            None,
-            None,
-        );
-        master_vault.update_secret(&new_uv_id, &secret_to_update);
+        // let mut secret_to_update = SecretForUpdate::new(
+        //     *secret.id(),
+        //     None,
+        //     Some("my-super-secret-new".to_string()),
+        //     None,
+        //     None,
+        //     None,
+        //     None,
+        // );
+        // master_vault.update_secret(&new_uv_id, &secret_to_update);
         let secret_name = master_vault
             .get_user_vault(&new_uv_id)
             .unwrap()

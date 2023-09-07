@@ -29,13 +29,6 @@ pub struct Secret {
 /// The struct provided by the backend when calling "create_secret". It contains:
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct CreateSecretArgs {
-    // pub category: SecretCategory,
-    // pub name: String,
-    // pub username: Option<Vec<u8>>,
-    // pub password: Option<Vec<u8>>,
-    // pub url: Option<String>,
-    // pub notes: Option<Vec<u8>>,
-
     // All the information required to decrypt the secret.
     // This material will be stored in the uservault's key box
     pub decryption_material: SecretDecryptionMaterial,
@@ -86,7 +79,7 @@ impl Secret {
             date_created: now,
             date_modified: now,
             category: None,
-            name: Some(String::from("")),
+            name: None,
             username: Option::None,
             password: Option::None,
             url: Option::None,
@@ -153,68 +146,6 @@ impl Secret {
     pub fn set_notes(&mut self, notes: Vec<u8>) {
         self.notes = Some(notes);
         self.date_modified = time::get_current_time();
-    }
-}
-
-#[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
-pub struct SecretForUpdate {
-    id: UUID,
-    category: Option<SecretCategory>,
-    name: Option<String>,
-    username: Option<String>,
-    password: Option<String>,
-    url: Option<String>,
-    notes: Option<String>,
-}
-
-impl SecretForUpdate {
-    // new() only needed for unit tests in master_vault.rs!
-    pub fn new(
-        id: UUID,
-        category: Option<SecretCategory>,
-        name: Option<String>,
-        username: Option<String>,
-        password: Option<String>,
-        url: Option<String>,
-        notes: Option<String>,
-    ) -> Self {
-        Self {
-            id,
-            name,
-            category,
-            username,
-            password,
-            url,
-            notes,
-        }
-    }
-
-    pub fn id(&self) -> &UUID {
-        &self.id
-    }
-
-    pub fn category(&self) -> Option<&SecretCategory> {
-        self.category.as_ref()
-    }
-
-    pub fn name(&self) -> Option<&String> {
-        self.name.as_ref()
-    }
-
-    pub fn username(&self) -> Option<&String> {
-        self.username.as_ref()
-    }
-
-    pub fn password(&self) -> Option<&String> {
-        self.password.as_ref()
-    }
-
-    pub fn url(&self) -> Option<&String> {
-        self.url.as_ref()
-    }
-
-    pub fn notes(&self) -> Option<&String> {
-        self.notes.as_ref()
     }
 }
 
@@ -385,14 +316,14 @@ mod tests {
         let id = UUID::new();
 
         // Check return of None
-        let secret_for_update = SecretForUpdate::new(id, None, None, None, None, None, None);
-        assert!(*secret_for_update.id() == id);
-        assert!(secret_for_update.category() == None);
-        assert!(secret_for_update.name() == None);
-        assert!(secret_for_update.username() == None);
-        assert!(secret_for_update.password() == None);
-        assert!(secret_for_update.url() == None);
-        assert!(secret_for_update.notes() == None);
+        // let secret_for_update = SecretForUpdate::new(id, None, None, None, None, None, None);
+        // assert!(*secret_for_update.id() == id);
+        // assert!(secret_for_update.category() == None);
+        // assert!(secret_for_update.name() == None);
+        // assert!(secret_for_update.username() == None);
+        // assert!(secret_for_update.password() == None);
+        // assert!(secret_for_update.url() == None);
+        // assert!(secret_for_update.notes() == None);
 
         // Check return of Some
         let category = Some(SecretCategory::Note);
@@ -401,22 +332,22 @@ mod tests {
         let password = Some("my-super-password-update".to_string());
         let url = Some("my-super-url-update".to_string());
         let notes = Some("&my-super-notes-update".to_string());
-        let secret_for_update = SecretForUpdate::new(
-            id,
-            category.clone(),
-            name.clone(),
-            username.clone(),
-            password.clone(),
-            url.clone(),
-            notes.clone(),
-        );
-        assert!(*secret_for_update.id() == id);
-        assert!(secret_for_update.category() == category.as_ref());
-        assert!(secret_for_update.name() == name.as_ref());
-        assert!(secret_for_update.username() == username.as_ref());
-        assert!(secret_for_update.password() == password.as_ref());
-        assert!(secret_for_update.url() == url.as_ref());
-        assert!(secret_for_update.notes() == notes.as_ref());
+        // let secret_for_update = SecretForUpdate::new(
+        //     id,
+        //     category.clone(),
+        //     name.clone(),
+        //     username.clone(),
+        //     password.clone(),
+        //     url.clone(),
+        //     notes.clone(),
+        // );
+        // assert!(*secret_for_update.id() == id);
+        // assert!(secret_for_update.category() == category.as_ref());
+        // assert!(secret_for_update.name() == name.as_ref());
+        // assert!(secret_for_update.username() == username.as_ref());
+        // assert!(secret_for_update.password() == password.as_ref());
+        // assert!(secret_for_update.url() == url.as_ref());
+        // assert!(secret_for_update.notes() == notes.as_ref());
     }
 
     #[test]

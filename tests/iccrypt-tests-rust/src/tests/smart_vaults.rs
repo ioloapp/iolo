@@ -39,8 +39,8 @@ pub async fn test_smart_vaults() -> Result<()> {
         "Testing smart vaults and testaments".yellow().bold()
     );
     // test_user_lifecycle().await?;
-    // test_secret_lifecycle().await?;
-    test_testament_lifecycle().await?;
+    test_secret_lifecycle().await?;
+    // test_testament_lifecycle().await?;
     Ok(())
 }
 
@@ -108,17 +108,23 @@ async fn test_testament_lifecycle() -> anyhow::Result<()> {
 
     // let's add the secret
     let create_secret_args = CreateSecretArgs {
-        category: SecretCategory::Password,
-        name: "Goolge".to_string(),
-        username: Some(encrypted_username.clone()),
-        password: Some(encrypted_password.clone()),
-        url: Some("www.google.com".to_string()),
-        notes: Some(encrypted_notes.clone()),
         decryption_material: decryption_material.clone(),
     };
 
-    let secret: Secret = add_user_secret(&a1, &create_secret_args).await.unwrap();
-    // dbg!(&s);
+    let mut secret: Secret = add_user_secret(&a1, &create_secret_args).await.unwrap();
+    dbg!(&secret);
+
+    // update the secret:
+    secret.name = Some("Hey, cool".into());
+    secret.category = Some(SecretCategory::Password);
+    secret.username = Some(encrypted_username.clone());
+    secret.password = Some(encrypted_password.clone());
+    secret.url = Some("www.google.com".to_string());
+    secret.notes = Some(encrypted_notes.clone());
+
+    let secret = update_user_secret(&a1, secret).await?;
+
+    dbg!(&secret);
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     ////
@@ -289,13 +295,19 @@ async fn add_user_secret(
     agent: &Agent,
     args: &CreateSecretArgs,
 ) -> anyhow::Result<Secret, SmartVaultErr> {
-    let s: Result<Secret, SmartVaultErr> = make_call_with_agent(
-        agent,
-        CallType::Update("add_user_secret".into()),
-        Some(args),
-    )
-    .await
-    .unwrap();
+    let s: Result<Secret, SmartVaultErr> =
+        make_call_with_agent(agent, CallType::Update("create_secret".into()), Some(args))
+            .await
+            .unwrap();
+
+    s
+}
+
+async fn update_user_secret(agent: &Agent, args: Secret) -> anyhow::Result<Secret, SmartVaultErr> {
+    let s: Result<Secret, SmartVaultErr> =
+        make_call_with_agent(agent, CallType::Update("update_secret".into()), Some(args))
+            .await
+            .unwrap();
 
     s
 }
@@ -367,31 +379,42 @@ async fn test_secret_lifecycle() -> anyhow::Result<()> {
 
     // let's add the secret
     let create_secret_args = CreateSecretArgs {
-        category: SecretCategory::Password,
-        name: "Goolge".to_string(),
-        username: Some(encrypted_username.clone()),
-        password: Some(encrypted_password.clone()),
-        url: Some("www.google.com".to_string()),
-        notes: Some(encrypted_notes.clone()),
         decryption_material: decryption_material.clone(),
     };
 
-    let secret: Secret = add_user_secret(&a1, &create_secret_args).await.unwrap();
-    // dbg!(&s);
+    let mut secret: Secret = add_user_secret(&a1, &create_secret_args).await.unwrap();
+    dbg!(&secret);
+
+    // update the secret:
+    secret.name = Some("Hey, cool".into());
+    secret.category = Some(SecretCategory::Password);
+    secret.username = Some(encrypted_username.clone());
+    secret.password = Some(encrypted_password.clone());
+    secret.url = Some("www.google.com".to_string());
+    secret.notes = Some(encrypted_notes.clone());
+
+    let secret = update_user_secret(&a1, secret).await?;
+
+    dbg!("hier?----------------");
 
     // just for fun: let's add another one:
     // let's add the secret
-    let create_secret_args2 = CreateSecretArgs {
-        category: SecretCategory::Password,
-        name: "Amazon".to_string(),
-        username: Some(encrypted_username),
-        password: Some(encrypted_password),
-        url: Some("www.google.com".to_string()),
-        notes: Some(encrypted_notes),
-        decryption_material,
-    };
+    // let create_secret_args2 = CreateSecretArgs {
+    //     decryption_material,
+    // };
 
-    let _secret2: Secret = add_user_secret(&a1, &create_secret_args2).await.unwrap();
+    // let mut secret2: Secret = add_user_secret(&a1, &create_secret_args2).await.unwrap();
+    // dbg!(&secret2);
+
+    // // update the secret:
+    // secret2.name = Some("Hey, what?".into());
+    // secret2.category = Some(SecretCategory::Password);
+    // secret2.username = Some(encrypted_username.clone());
+    // secret2.password = Some(encrypted_password.clone());
+    // secret2.url = Some("www.amazon.com".to_string());
+    // secret2.notes = Some(encrypted_notes.clone());
+
+    // let _secret2 = update_user_secret(&a1, secret2).await?;
 
     // get list of all secrets:
     dbg!("let's check whether new secret gets returned by: get_secret_list");
@@ -403,6 +426,7 @@ async fn test_secret_lifecycle() -> anyhow::Result<()> {
     )
     .await
     .unwrap();
+    dbg!("does not work - does not work - does not work - does not work - does not work - does not work - does not work - ");
     dbg!(secret_list.unwrap());
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -28,15 +28,6 @@ type SecretDecryptionMaterial = record {
   encrypted_decryption_key : vec nat8;
   username_decryption_nonce : opt vec nat8;
 };
-type SecretForUpdate = record {
-  id : nat;
-  url : opt text;
-  username : opt text;
-  password : opt text;
-  name : opt text;
-  notes : opt text;
-  category : opt SecretCategory;
-};
 type SecretListEntry = record {
   id : nat;
   name : opt text;
@@ -87,7 +78,7 @@ service : {
   is_user_vault_existing : () -> (bool) query;
   remove_user_secret : (nat) -> (Result_3);
   symmetric_key_verification_key : () -> (text);
-  update_user_secret : (SecretForUpdate) -> (Result_1);
+  update_secret : (Secret) -> (Result_1);
   what_time_is_it : () -> (nat64) query;
   who_am_i : () -> (text) query;
 };

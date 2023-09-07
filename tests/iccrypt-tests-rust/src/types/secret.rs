@@ -16,25 +16,19 @@ pub enum SecretCategory {
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone, PartialEq)]
 pub struct Secret {
-    pub id: UUID,
-    date_created: u64,
-    date_modified: u64,
-    category: SecretCategory,
-    name: String,
+    pub id: SecretID,
+    pub date_created: u64,
+    pub date_modified: u64,
+    pub category: Option<SecretCategory>,
+    pub name: Option<String>,
     pub username: Option<Vec<u8>>,
     pub password: Option<Vec<u8>>,
-    url: Option<String>,
+    pub url: Option<String>,
     pub notes: Option<Vec<u8>>,
 }
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct CreateSecretArgs {
-    pub category: SecretCategory,
-    pub name: String,
-    pub username: Option<Vec<u8>>,
-    pub password: Option<Vec<u8>>,
-    pub url: Option<String>,
-    pub notes: Option<Vec<u8>>,
     pub decryption_material: SecretDecryptionMaterial,
 }
 
@@ -50,6 +44,6 @@ pub struct SecretDecryptionMaterial {
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone, PartialEq)]
 pub struct SecretListEntry {
     pub id: SecretID,
-    pub category: SecretCategory,
-    pub name: String,
+    pub category: Option<SecretCategory>,
+    pub name: Option<String>,
 }
