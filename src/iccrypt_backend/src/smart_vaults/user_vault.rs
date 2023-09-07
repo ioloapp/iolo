@@ -115,6 +115,16 @@ impl UserVault {
         Ok(self.secrets.get(&sid).unwrap().clone())
     }
 
+    pub fn update_testament(&mut self, t: Testament) -> Result<Testament, SmartVaultErr> {
+        if !self.secrets.contains_key(t.id()) {
+            return Err(SmartVaultErr::SecretDoesNotExist(t.id().to_string()));
+        }
+        let tid = *t.id();
+        self.testaments.insert(tid, t);
+        self.date_modified = time::get_current_time();
+        Ok(self.testaments.get(&tid).unwrap().clone())
+    }
+
     pub fn testaments(&self) -> &BTreeMap<TestamentID, Testament> {
         &self.testaments
     }

@@ -1,6 +1,5 @@
 use std::cell::RefCell;
 
-use candid::parser::test::Test;
 use candid::{candid_method, Principal};
 use ic_cdk::{post_upgrade, pre_upgrade, storage};
 
@@ -15,7 +14,6 @@ use super::secret::{
     CreateSecretArgs, Secret, SecretDecryptionMaterial, SecretID, SecretListEntry,
 };
 use super::testament::{CreateTestamentArgs, Testament};
-use super::user_vault::{KeyBox, UserVault};
 
 thread_local! {
     // Master_vault holding all the user vaults
@@ -58,16 +56,27 @@ pub fn create_user() -> Result<User, SmartVaultErr> {
     Ok(new_user)
 }
 
-// #[ic_cdk_macros::query]
-// #[candid_method(query)]
-// pub fn get_user_vault() -> Result<UserVault, SmartVaultErr> {
-//     let principal = get_caller();
+#[ic_cdk_macros::update]
+#[candid_method(update)]
+pub fn delete_user() -> Result<(), SmartVaultErr> {
+    let principal = get_caller();
 
-//     let user_vault_id: UUID = get_vault_id_for(principal)?;
+    let user_vault_id: UUID = get_vault_id_for(principal)?;
 
-//     MASTERVAULT
-//         .with(|mv: &RefCell<MasterVault>| mv.borrow_mut().get_user_vault(&user_vault_id).cloned())
-// }
+    MASTERVAULT.with(|ms: &RefCell<MasterVault>| {
+        let mut master_vault = ms.borrow_mut();
+        master_vault.remove_user_vault(&user_vault_id);
+    });
+
+    // delete the user
+    USER_REGISTRY.with(
+        |ur: &RefCell<UserRegistry>| -> Result<User, SmartVaultErr> {
+            let mut user_registry = ur.borrow_mut();
+            user_registry.delete_user(&principal)
+        },
+    )?;
+    Ok(())
+}
 
 #[ic_cdk_macros::query]
 #[candid_method(query)]
@@ -104,28 +113,6 @@ pub fn get_secret_decryption_material(
         let sdm: &SecretDecryptionMaterial = uv.key_box().get(&sid).unwrap();
         Ok(sdm.clone())
     })
-}
-
-#[ic_cdk_macros::update]
-#[candid_method(update)]
-pub fn delete_user() -> Result<(), SmartVaultErr> {
-    let principal = get_caller();
-
-    let user_vault_id: UUID = get_vault_id_for(principal)?;
-
-    MASTERVAULT.with(|ms: &RefCell<MasterVault>| {
-        let mut master_vault = ms.borrow_mut();
-        master_vault.remove_user_vault(&user_vault_id);
-    });
-
-    // delete the user
-    USER_REGISTRY.with(
-        |ur: &RefCell<UserRegistry>| -> Result<User, SmartVaultErr> {
-            let mut user_registry = ur.borrow_mut();
-            user_registry.delete_user(&principal)
-        },
-    )?;
-    Ok(())
 }
 
 #[ic_cdk_macros::update]
@@ -173,7 +160,7 @@ pub fn remove_user_secret(secret_id: UUID) -> Result<(), SmartVaultErr> {
 
 #[ic_cdk_macros::update]
 #[candid_method(update)]
-pub fn add_user_testament(args: CreateTestamentArgs) -> Result<Testament, SmartVaultErr> {
+pub fn create_testament(args: CreateTestamentArgs) -> Result<Testament, SmartVaultErr> {
     ic_cdk::println!("add user testament: {:?}", &args);
     let principal = get_caller();
 
@@ -181,7 +168,22 @@ pub fn add_user_testament(args: CreateTestamentArgs) -> Result<Testament, SmartV
     MASTERVAULT.with(
         |ms: &RefCell<MasterVault>| -> Result<Testament, SmartVaultErr> {
             let mut master_vault = ms.borrow_mut();
-            master_vault.add_testament(&user_vault_id, args)
+            master_vault.create_user_testament(&user_vault_id, args)
+        },
+    )
+}
+
+#[ic_cdk_macros::update]
+#[candid_method(update)]
+pub fn update_testament(t: Testament) -> Result<Testament, SmartVaultErr> {
+    let principal = get_caller();
+
+    let user_vault_id: UUID = get_vault_id_for(principal)?;
+
+    MASTERVAULT.with(
+        |ms: &RefCell<MasterVault>| -> Result<Testament, SmartVaultErr> {
+            let mut master_vault = ms.borrow_mut();
+            master_vault.update_user_testament(&user_vault_id, t)
         },
     )
 }

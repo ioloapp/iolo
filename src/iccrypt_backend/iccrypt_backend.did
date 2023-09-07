@@ -1,9 +1,8 @@
 type CreateSecretArgs = record {
   decryption_material : SecretDecryptionMaterial;
 };
-type CreateTestamentArgs = record { name : text };
-type Result = variant { Ok : Testament; Err : SmartVaultErr };
-type Result_1 = variant { Ok : Secret; Err : SmartVaultErr };
+type Result = variant { Ok : Secret; Err : SmartVaultErr };
+type Result_1 = variant { Ok : Testament; Err : SmartVaultErr };
 type Result_2 = variant { Ok : User; Err : SmartVaultErr };
 type Result_3 = variant { Ok; Err : SmartVaultErr };
 type Result_4 = variant { Ok : SecretDecryptionMaterial; Err : SmartVaultErr };
@@ -49,7 +48,7 @@ type Testament = record {
   id : nat;
   heirs : vec principal;
   date_created : nat64;
-  name : text;
+  name : opt text;
   testator : principal;
   secrets : vec nat;
   key_box : vec record { nat; SecretDecryptionMaterial };
@@ -63,8 +62,8 @@ type User = record {
   date_modified : nat64;
 };
 service : {
-  add_user_testament : (CreateTestamentArgs) -> (Result);
-  create_secret : (CreateSecretArgs) -> (Result_1);
+  create_secret : (CreateSecretArgs) -> (Result);
+  create_testament : (record {}) -> (Result_1);
   create_user : () -> (Result_2);
   delete_user : () -> (Result_3);
   encrypted_ibe_decryption_key_for_caller : (vec nat8) -> (text);
@@ -78,7 +77,8 @@ service : {
   is_user_vault_existing : () -> (bool) query;
   remove_user_secret : (nat) -> (Result_3);
   symmetric_key_verification_key : () -> (text);
-  update_secret : (Secret) -> (Result_1);
+  update_secret : (Secret) -> (Result);
+  update_testament : (Testament) -> (Result_1);
   what_time_is_it : () -> (nat64) query;
   who_am_i : () -> (text) query;
 };

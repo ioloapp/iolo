@@ -1,5 +1,7 @@
+#![allow(dead_code)]
+
 use anyhow::Result;
-use candid::{CandidType, Deserialize, Principal};
+use candid::Principal;
 use colored::Colorize;
 use ic_agent::{identity::BasicIdentity, Agent, Identity};
 
@@ -21,26 +23,14 @@ use crate::{
     },
 };
 
-#[derive(CandidType, Deserialize)]
-struct CreateUserArg {
-    user_id: Principal,
-}
-
-#[derive(CandidType, Deserialize)]
-struct ExampleArgSet {
-    canister_id: Principal,
-    controllers: Option<Vec<Principal>>,
-    amount: Option<candid::Nat>,
-}
-
 pub async fn test_smart_vaults() -> Result<()> {
     println!(
         "\n{}",
         "Testing smart vaults and testaments".yellow().bold()
     );
     // test_user_lifecycle().await?;
-    test_secret_lifecycle().await?;
-    // test_testament_lifecycle().await?;
+    // test_secret_lifecycle().await?;
+    test_testament_lifecycle().await?;
     Ok(())
 }
 
@@ -54,12 +44,12 @@ async fn test_testament_lifecycle() -> anyhow::Result<()> {
 
     // Bob
     let identity_bob: BasicIdentity = create_identity();
-    let principal_bob: Principal = identity_bob.sender().unwrap();
+    // let principal_bob: Principal = identity_bob.sender().unwrap();
     let _agent_bob: Agent = get_dfx_agent_with_identity(identity_bob).await?;
 
     // Eve
     let identity_eve: BasicIdentity = create_identity();
-    let principal_eve: Principal = identity_eve.sender().unwrap();
+    // let principal_eve: Principal = identity_eve.sender().unwrap();
     let _agent_eve: Agent = get_dfx_agent_with_identity(identity_eve).await?;
 
     // let's create a new ic crypt user
@@ -112,7 +102,7 @@ async fn test_testament_lifecycle() -> anyhow::Result<()> {
     };
 
     let mut secret: Secret = add_user_secret(&a1, &create_secret_args).await.unwrap();
-    dbg!(&secret);
+    // dbg!(&secret);
 
     // update the secret:
     secret.name = Some("Hey, cool".into());
@@ -124,7 +114,7 @@ async fn test_testament_lifecycle() -> anyhow::Result<()> {
 
     let secret = update_user_secret(&a1, secret).await?;
 
-    dbg!(&secret);
+    // dbg!(&secret);
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     ////
@@ -132,11 +122,11 @@ async fn test_testament_lifecycle() -> anyhow::Result<()> {
     ////
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    println!("{}", "Let's create a testament".yellow().bold());
-    let testament_create_args: CreateTestamentArgs = CreateTestamentArgs {
-        name: "Mein Testament".to_string(),
-    };
-    let testament: Testament = add_testament(&a1, &testament_create_args).await.unwrap();
+    println!("{}", "Let's create a testament - yeah".yellow().bold());
+    let testament_create_args: CreateTestamentArgs = CreateTestamentArgs {};
+    let mut testament: Testament = create_user_testament(&a1, &testament_create_args)
+        .await
+        .unwrap();
 
     // get all testaments
     let testament_list: Result<Vec<Testament>, SmartVaultErr> = make_call_with_agent(
@@ -146,6 +136,25 @@ async fn test_testament_lifecycle() -> anyhow::Result<()> {
     )
     .await
     .unwrap();
+
+    dbg!(&testament_list);
+
+    dbg!("Chaning the name of my testament");
+    testament.name = Some("Mein Testament".into());
+    let testament = update_user_testament(&a1, testament).await?;
+    dbg!("Did this work?");
+    dbg!(&testament);
+
+    // get all testaments
+    let testament_list: Result<Vec<Testament>, SmartVaultErr> = make_call_with_agent(
+        &a1,
+        CallType::Query("get_testament_list".into()),
+        Option::<Vec<u8>>::None,
+    )
+    .await
+    .unwrap();
+
+    dbg!(&testament_list);
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     ////
@@ -312,13 +321,28 @@ async fn update_user_secret(agent: &Agent, args: Secret) -> anyhow::Result<Secre
     s
 }
 
-async fn add_testament(
+async fn update_user_testament(
+    agent: &Agent,
+    args: Testament,
+) -> anyhow::Result<Testament, SmartVaultErr> {
+    let t: Result<Testament, SmartVaultErr> = make_call_with_agent(
+        agent,
+        CallType::Update("update_testament".into()),
+        Some(args),
+    )
+    .await
+    .unwrap();
+
+    t
+}
+
+async fn create_user_testament(
     agent: &Agent,
     args: &CreateTestamentArgs,
 ) -> anyhow::Result<Testament, SmartVaultErr> {
     let t: Result<Testament, SmartVaultErr> = make_call_with_agent(
         agent,
-        CallType::Update("add_user_testament".into()),
+        CallType::Update("create_testament".into()),
         Some(args),
     )
     .await
@@ -394,27 +418,6 @@ async fn test_secret_lifecycle() -> anyhow::Result<()> {
     secret.notes = Some(encrypted_notes.clone());
 
     let secret = update_user_secret(&a1, secret).await?;
-
-    dbg!("hier?----------------");
-
-    // just for fun: let's add another one:
-    // let's add the secret
-    // let create_secret_args2 = CreateSecretArgs {
-    //     decryption_material,
-    // };
-
-    // let mut secret2: Secret = add_user_secret(&a1, &create_secret_args2).await.unwrap();
-    // dbg!(&secret2);
-
-    // // update the secret:
-    // secret2.name = Some("Hey, what?".into());
-    // secret2.category = Some(SecretCategory::Password);
-    // secret2.username = Some(encrypted_username.clone());
-    // secret2.password = Some(encrypted_password.clone());
-    // secret2.url = Some("www.amazon.com".to_string());
-    // secret2.notes = Some(encrypted_notes.clone());
-
-    // let _secret2 = update_user_secret(&a1, secret2).await?;
 
     // get list of all secrets:
     dbg!("let's check whether new secret gets returned by: get_secret_list");

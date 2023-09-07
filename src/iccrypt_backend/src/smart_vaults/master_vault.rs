@@ -83,22 +83,35 @@ impl MasterVault {
     }
 
     // Inserts a testament into a user's vault.
-    pub fn add_testament(
+    pub fn create_user_testament(
         &mut self,
         vault_id: &UUID,
-        cta: CreateTestamentArgs,
+        _cta: CreateTestamentArgs, // might be required later
     ) -> Result<Testament, SmartVaultErr> {
         if !self.user_vaults.contains_key(vault_id) {
             return Err(SmartVaultErr::UserVaultDoesNotExist(vault_id.to_string()));
         }
 
-        let testament: Testament = Testament::new(get_caller(), cta.name);
+        let testament: Testament = Testament::new(get_caller());
         let testament_id = *testament.id();
 
         let user_vault = self.user_vaults.get_mut(vault_id).unwrap();
         user_vault.add_testament(testament)?;
 
         Ok(user_vault.get_testament(&testament_id).unwrap().clone())
+    }
+
+    pub fn update_user_testament(
+        &mut self,
+        vault_id: &UUID,
+        t: Testament,
+    ) -> Result<Testament, SmartVaultErr> {
+        if !self.user_vaults.contains_key(vault_id) {
+            return Err(SmartVaultErr::UserVaultDoesNotExist(vault_id.to_string()));
+        }
+
+        let user_vault = self.user_vaults.get_mut(vault_id).unwrap();
+        user_vault.update_testament(t)
     }
 
     pub fn update_user_secret(
@@ -111,7 +124,7 @@ impl MasterVault {
         }
 
         let user_vault = self.user_vaults.get_mut(vault_id).unwrap();
-        user_vault.update_secret(s.clone())
+        user_vault.update_secret(s)
     }
 
     // Remove a secret
