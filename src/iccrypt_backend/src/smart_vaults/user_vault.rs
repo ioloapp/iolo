@@ -4,6 +4,7 @@ use serde::Serialize;
 use std::collections::BTreeMap;
 
 use super::secret::{Secret, SecretDecryptionMaterial, SecretID};
+use super::testament::{Testament, TestamentID};
 use crate::common::uuid::UUID;
 use crate::utils::time;
 use crate::SmartVaultErr;
@@ -23,6 +24,7 @@ pub struct UserVault {
     /// This key is itself encrypted using the UserVault decryption key,
     /// which itself is derived by vetkd.
     key_box: KeyBox, // TODO: make getter and setter
+    testaments: BTreeMap<TestamentID, Testament>,
 }
 
 impl Default for UserVault {
@@ -41,10 +43,11 @@ impl UserVault {
             date_modified: now,
             secrets: BTreeMap::new(),
             key_box: BTreeMap::new(),
+            testaments: BTreeMap::new(),
         }
     }
 
-    pub fn id(&self) -> &UUID {
+    pub fn id(&self) -> &UserVaultID {
         &self.id
     }
 
@@ -110,6 +113,28 @@ impl UserVault {
         self.date_modified = time::get_current_time();
         Ok(())
     }
+
+    pub fn testaments(&self) -> &BTreeMap<TestamentID, Testament> {
+        &self.testaments
+    }
+
+    pub fn add_testament(&mut self, testament: Testament) -> Result<(), SmartVaultErr> {
+        if self.testaments.contains_key(testament.id()) {
+            return Err(SmartVaultErr::SecretDoesAlreadyExist(
+                testament.id().to_string(),
+            ));
+        }
+
+        self.testaments.insert(*testament.id(), testament);
+        self.date_modified = time::get_current_time();
+        Ok(())
+    }
+
+    pub fn get_testament(&self, testament_id: &TestamentID) -> Result<&Testament, SmartVaultErr> {
+        self.testaments
+            .get(testament_id)
+            .ok_or_else(|| SmartVaultErr::TestamentDoesNotExist(testament_id.to_string()))
+    }
 }
 
 #[cfg(test)]
@@ -165,7 +190,7 @@ mod tests {
 
         // Create secret stuff...
         let secret_name = String::from("my-first-secret");
-        let secret: Secret = Secret::new(SecretCategory::Password, secret_name.clone());
+        let secret: Secret = Secret::new();
         let modified_before_update = user_vault.date_modified;
         let created_before_update = user_vault.date_created;
 
@@ -220,10 +245,10 @@ mod tests {
         // Check get_secret()
         assert_eq!(
             user_vault.get_secret(secret.id()).unwrap().name(),
-            &secret_name,
+            Some(secret_name.clone()),
             "secret.name must be {:?} but is {:?}",
             user_vault.get_secret(secret.id()).unwrap().name(),
-            &secret_name
+            secret_name
         );
         let uuid = UUID::new();
         assert_eq!(
@@ -236,7 +261,7 @@ mod tests {
 
         // Check get_secret_mut()
         let secret_mut = user_vault.get_secret_mut(secret.id()).unwrap();
-        assert_eq!(secret_mut.name(), &secret_name,);
+        assert_eq!(secret_mut.name(), Some(secret_name),);
         let uuid = UUID::new();
         assert_eq!(
             user_vault.get_secret_mut(&uuid),
@@ -251,7 +276,7 @@ mod tests {
 
         // Add secret to user_vault
         let secret_name = String::from("my-first-secret");
-        let mut secret: Secret = Secret::new(SecretCategory::Password, secret_name.clone());
+        let mut secret: Secret = Secret::new();
         let mut modified_before_update = user_vault.date_modified;
         let mut created_before_update = user_vault.date_created;
         user_vault.add_secret(secret.clone());
@@ -300,7 +325,7 @@ mod tests {
 
         // Add secret to user_vault
         let secret_name = String::from("my-first-secret");
-        let secret: Secret = Secret::new(SecretCategory::Password, secret_name.clone());
+        let secret: Secret = Secret::new();
         let mut modified_before_update = user_vault.date_modified;
         let mut created_before_update = user_vault.date_created;
         user_vault.add_secret(secret.clone());

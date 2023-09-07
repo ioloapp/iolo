@@ -18,8 +18,8 @@ pub struct Secret {
     id: SecretID,
     date_created: u64,
     date_modified: u64,
-    category: SecretCategory,
-    name: String,
+    category: Option<SecretCategory>,
+    name: Option<String>,
     username: Option<Vec<u8>>,
     password: Option<Vec<u8>>,
     url: Option<String>,
@@ -29,12 +29,13 @@ pub struct Secret {
 /// The struct provided by the backend when calling "create_secret". It contains:
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct CreateSecretArgs {
-    pub category: SecretCategory,
-    pub name: String,
-    pub username: Option<Vec<u8>>,
-    pub password: Option<Vec<u8>>,
-    pub url: Option<String>,
-    pub notes: Option<Vec<u8>>,
+    // pub category: SecretCategory,
+    // pub name: String,
+    // pub username: Option<Vec<u8>>,
+    // pub password: Option<Vec<u8>>,
+    // pub url: Option<String>,
+    // pub notes: Option<Vec<u8>>,
+
     // All the information required to decrypt the secret.
     // This material will be stored in the uservault's key box
     pub decryption_material: SecretDecryptionMaterial,
@@ -43,16 +44,16 @@ pub struct CreateSecretArgs {
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone, PartialEq)]
 pub struct SecretListEntry {
     pub id: SecretID,
-    pub category: SecretCategory,
-    pub name: String,
+    pub category: Option<SecretCategory>,
+    pub name: Option<String>,
 }
 
 impl From<Secret> for SecretListEntry {
     fn from(s: Secret) -> Self {
         SecretListEntry {
             id: *s.id(),
-            category: *s.category(),
-            name: s.name().to_string(),
+            category: s.category(),
+            name: s.name(),
         }
     }
 }
@@ -77,15 +78,15 @@ pub struct SecretDecryptionMaterial {
 }
 
 impl Secret {
-    pub fn new(category: SecretCategory, name: String) -> Self {
+    pub fn new() -> Self {
         let id = UUID::new();
         let now: u64 = time::get_current_time();
         Self {
             id,
             date_created: now,
             date_modified: now,
-            category,
-            name,
+            category: None,
+            name: Some(String::from("")),
             username: Option::None,
             password: Option::None,
             url: Option::None,
@@ -105,21 +106,16 @@ impl Secret {
         &self.date_modified
     }
 
-    pub fn category(&self) -> &SecretCategory {
-        &self.category
+    pub fn category(&self) -> Option<SecretCategory> {
+        self.category
     }
 
-    pub fn set_category(&mut self, category: SecretCategory) {
-        self.category = category;
-        self.date_modified = time::get_current_time();
-    }
-
-    pub fn name(&self) -> &String {
-        &self.name
+    pub fn name(&self) -> Option<String> {
+        self.name.clone()
     }
 
     pub fn set_name(&mut self, name: String) {
-        self.name = name;
+        self.name = Some(name);
         self.date_modified = time::get_current_time();
     }
 
@@ -157,26 +153,6 @@ impl Secret {
     pub fn set_notes(&mut self, notes: Vec<u8>) {
         self.notes = Some(notes);
         self.date_modified = time::get_current_time();
-    }
-}
-
-impl From<CreateSecretArgs> for Secret {
-    fn from(csa: CreateSecretArgs) -> Self {
-        let mut secret: Secret = Secret::new(csa.category, csa.name);
-
-        if csa.username.is_some() {
-            secret.set_username(csa.username.unwrap());
-        }
-        if csa.password.is_some() {
-            secret.set_password(csa.password.unwrap());
-        }
-        if csa.url.is_some() {
-            secret.set_url(csa.url.unwrap());
-        }
-        if csa.notes.is_some() {
-            secret.set_notes(csa.notes.unwrap());
-        }
-        secret
     }
 }
 
@@ -256,7 +232,7 @@ mod tests {
 
         let before = time::get_current_time();
         thread::sleep(std::time::Duration::from_millis(10)); // Sleep 10 milliseconds to ensure that secret has a different creation date
-        let secret: Secret = Secret::new(category, name.clone());
+        let secret: Secret = Secret::new();
 
         assert!(
             secret.date_created() > &before,
@@ -271,8 +247,8 @@ mod tests {
             secret.date_created(),
             secret.date_modified()
         );
-        assert_eq!(secret.category(), &category);
-        assert_eq!(secret.name(), &name);
+
+        assert_eq!(secret.name(), Some(name));
         assert_eq!(secret.username(), Option::None);
         assert_eq!(secret.password(), Option::None);
         assert_eq!(secret.url(), Option::None);
@@ -285,29 +261,13 @@ mod tests {
         let category: SecretCategory = SecretCategory::Password;
         let name: String = String::from("my-first-secret");
 
-        let mut secret: Secret = Secret::new(category, name);
+        let mut secret: Secret = Secret::new();
 
         // Update category
         let category_updated = SecretCategory::Note;
         let mut created_before_update = secret.date_created;
         let mut modified_before_update = secret.date_modified;
         thread::sleep(std::time::Duration::from_millis(10)); // Sleep 10 milliseconds to ensure that secret has a different update date
-
-        secret.set_category(category_updated);
-        assert_eq!(
-            secret.date_created(),
-            &created_before_update,
-            "Category: date_created {} must be equal to created_before_update {}",
-            secret.date_created(),
-            created_before_update
-        );
-        assert!(
-            secret.date_modified() > &modified_before_update,
-            "Category: date_modified {} must be greater than modified_before_update {}",
-            secret.date_modified(),
-            modified_before_update
-        );
-        assert_eq!(secret.category(), &category_updated);
 
         // Update name
         let name_updated = String::from("my-first-secret-updated");
@@ -329,7 +289,7 @@ mod tests {
             secret.date_modified(),
             modified_before_update
         );
-        assert_eq!(secret.name(), &name_updated);
+        assert_eq!(secret.name(), Some(name_updated));
 
         // Update username
         let encrypted_username = vec![1, 2, 3];
@@ -466,20 +426,8 @@ mod tests {
 
         // Check return of None
         let secret_for_creation = CreateSecretArgs {
-            category: category.clone(),
-            name: name.clone(),
-            username: None,
-            password: None,
-            url: None,
-            notes: None,
             decryption_material: SecretDecryptionMaterial::default(),
         };
-        assert!(secret_for_creation.category == category);
-        assert!(secret_for_creation.name == name);
-        assert!(secret_for_creation.username == None);
-        assert!(secret_for_creation.password == None);
-        assert!(secret_for_creation.url == None);
-        assert!(secret_for_creation.notes == None);
 
         // Check return of Some
         let category = SecretCategory::Note;
@@ -490,20 +438,7 @@ mod tests {
         let encrypted_notes = Some(vec![1, 2, 3]);
 
         let secret_for_update = CreateSecretArgs {
-            category: category.clone(),
-            name: name.clone(),
-            username: encrypted_username.clone(),
-            password: encrypted_password.clone(),
-            url: url.clone(),
-            notes: encrypted_notes.clone(),
             decryption_material: SecretDecryptionMaterial::default(),
         };
-
-        assert!(secret_for_update.category == category);
-        assert!(secret_for_update.name == name);
-        assert!(secret_for_update.username == encrypted_username);
-        assert!(secret_for_update.password == encrypted_password);
-        assert!(secret_for_update.url == url);
-        assert!(secret_for_update.notes == encrypted_notes);
     }
 }

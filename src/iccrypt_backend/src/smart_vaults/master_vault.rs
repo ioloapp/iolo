@@ -2,10 +2,14 @@ use std::collections::BTreeMap;
 
 use candid::{CandidType, Deserialize};
 
-use crate::common::{error::SmartVaultErr, uuid::UUID};
+use crate::{
+    common::{error::SmartVaultErr, uuid::UUID},
+    utils::caller::get_caller,
+};
 
 use super::{
     secret::{CreateSecretArgs, Secret, SecretForUpdate},
+    testament::{CreateTestamentArgs, Testament},
     user_vault::UserVault,
 };
 
@@ -56,7 +60,7 @@ impl MasterVault {
     }
 
     // Inserts a secret into a user's vault.
-    pub fn add_secret(
+    pub fn create_user_secret(
         &mut self,
         vault_id: &UUID,
         csa: CreateSecretArgs,
@@ -66,7 +70,7 @@ impl MasterVault {
         }
 
         let decryption_material = csa.decryption_material.clone();
-        let secret = Secret::from(csa);
+        let secret = Secret::new();
 
         let user_vault = self.user_vaults.get_mut(vault_id).unwrap();
         let secret_id = *secret.id();
@@ -76,6 +80,25 @@ impl MasterVault {
             .insert(secret_id, decryption_material);
 
         Ok(user_vault.get_secret(&secret_id).unwrap().clone())
+    }
+
+    // Inserts a testament into a user's vault.
+    pub fn add_testament(
+        &mut self,
+        vault_id: &UUID,
+        cta: CreateTestamentArgs,
+    ) -> Result<Testament, SmartVaultErr> {
+        if !self.user_vaults.contains_key(vault_id) {
+            return Err(SmartVaultErr::UserVaultDoesNotExist(vault_id.to_string()));
+        }
+
+        let testament: Testament = Testament::new(get_caller(), cta.name);
+        let testament_id = *testament.id();
+
+        let user_vault = self.user_vaults.get_mut(vault_id).unwrap();
+        user_vault.add_testament(testament)?;
+
+        Ok(user_vault.get_testament(&testament_id).unwrap().clone())
     }
 
     // Replace a secret
@@ -94,9 +117,9 @@ impl MasterVault {
         if secret_for_update.name().is_some() {
             secret.set_name(secret_for_update.name().unwrap().clone());
         }
-        if secret_for_update.category().is_some() {
-            secret.set_category(*secret_for_update.category().unwrap());
-        }
+        // if secret_for_update.category().is_some() {
+        //     secret.set_category(*secret_for_update.category().unwrap());
+        // }
         if secret_for_update.password().is_some() {
             secret.set_password(secret_for_update.password().unwrap().as_bytes().to_vec());
         }
@@ -228,17 +251,11 @@ mod tests {
         );
 
         let secret_for_creation = CreateSecretArgs {
-            category: SecretCategory::Password,
-            name: String::from("my-super-secret"),
-            username: None,
-            password: None,
-            url: None,
-            notes: None,
             decryption_material: SecretDecryptionMaterial::default(),
         };
 
         let secret = master_vault
-            .add_secret(&new_uv_id, secret_for_creation)
+            .create_user_secret(&new_uv_id, secret_for_creation)
             .unwrap();
         assert_eq!(
             master_vault
@@ -257,8 +274,8 @@ mod tests {
             .name();
         assert_eq!(
             secret_name,
-            &String::from("my-super-secret"),
-            "secret should have name my-super-secret but has {}",
+            Some(String::from("my-super-secret")),
+            "secret should have name my-super-secret but has {:?}",
             secret_name
         );
 
@@ -280,8 +297,9 @@ mod tests {
             .unwrap()
             .name();
         assert_eq!(
-            secret_name, "my-super-secret-new",
-            "secret should have name my-super-secret-new but has {}",
+            secret_name,
+            Some("my-super-secret-new".to_string()),
+            "secret should have name my-super-secret-new but has {:?}",
             secret_name
         );
 

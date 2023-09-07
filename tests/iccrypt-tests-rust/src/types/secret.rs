@@ -1,7 +1,9 @@
 use candid::CandidType;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, CandidType, Deserialize, Serialize, Clone, PartialEq)]
+#[derive(
+    Debug, CandidType, Deserialize, Serialize, Clone, PartialEq, PartialOrd, Ord, Eq, Hash,
+)]
 pub struct UUID(u128);
 pub type SecretID = UUID;
 

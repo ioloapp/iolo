@@ -1,5 +1,6 @@
 use std::cell::RefCell;
 
+use candid::parser::test::Test;
 use candid::{candid_method, Principal};
 use ic_cdk::{post_upgrade, pre_upgrade, storage};
 
@@ -13,6 +14,7 @@ use super::master_vault::MasterVault;
 use super::secret::{
     CreateSecretArgs, Secret, SecretDecryptionMaterial, SecretForUpdate, SecretID, SecretListEntry,
 };
+use super::testament::{CreateTestamentArgs, Testament};
 use super::user_vault::{KeyBox, UserVault};
 
 thread_local! {
@@ -71,7 +73,6 @@ pub fn create_user() -> Result<User, SmartVaultErr> {
 #[candid_method(query)]
 pub fn get_secret_list() -> Result<Vec<SecretListEntry>, SmartVaultErr> {
     let principal = get_caller();
-
     let user_vault_id: UUID = get_vault_id_for(principal)?;
 
     MASTERVAULT.with(|mv: &RefCell<MasterVault>| {
@@ -129,15 +130,15 @@ pub fn delete_user() -> Result<(), SmartVaultErr> {
 
 #[ic_cdk_macros::update]
 #[candid_method(update)]
-pub fn add_user_secret(args: CreateSecretArgs) -> Result<Secret, SmartVaultErr> {
-    ic_cdk::println!("{:?}", &args);
+pub fn create_secret(args: CreateSecretArgs) -> Result<Secret, SmartVaultErr> {
+    // ic_cdk::println!("{:?}", &args);
     let principal = get_caller();
 
     let user_vault_id: UUID = get_vault_id_for(principal)?;
     MASTERVAULT.with(
         |ms: &RefCell<MasterVault>| -> Result<Secret, SmartVaultErr> {
             let mut master_vault = ms.borrow_mut();
-            master_vault.add_secret(&user_vault_id, args)
+            master_vault.create_user_secret(&user_vault_id, args)
         },
     )
 }
@@ -167,6 +168,39 @@ pub fn remove_user_secret(secret_id: UUID) -> Result<(), SmartVaultErr> {
     MASTERVAULT.with(|ms: &RefCell<MasterVault>| -> Result<(), SmartVaultErr> {
         let mut master_vault = ms.borrow_mut();
         master_vault.remove_secret(&user_vault_id, &secret_id)
+    })
+}
+
+#[ic_cdk_macros::update]
+#[candid_method(update)]
+pub fn add_user_testament(args: CreateTestamentArgs) -> Result<Testament, SmartVaultErr> {
+    ic_cdk::println!("add user testament: {:?}", &args);
+    let principal = get_caller();
+
+    let user_vault_id: UUID = get_vault_id_for(principal)?;
+    MASTERVAULT.with(
+        |ms: &RefCell<MasterVault>| -> Result<Testament, SmartVaultErr> {
+            let mut master_vault = ms.borrow_mut();
+            master_vault.add_testament(&user_vault_id, args)
+        },
+    )
+}
+
+#[ic_cdk_macros::query]
+#[candid_method(query)]
+pub fn get_testament_list() -> Result<Vec<Testament>, SmartVaultErr> {
+    let principal = get_caller();
+    let user_vault_id: UUID = get_vault_id_for(principal)?;
+
+    MASTERVAULT.with(|mv: &RefCell<MasterVault>| {
+        let testaments: Vec<Testament> = mv
+            .borrow()
+            .get_user_vault(&user_vault_id)?
+            .testaments()
+            .clone()
+            .into_values()
+            .collect();
+        Ok(testaments)
     })
 }
 

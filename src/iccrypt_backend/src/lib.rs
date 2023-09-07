@@ -10,6 +10,8 @@ use crate::common::uuid::UUID;
 use crate::smart_vaults::secret::SecretDecryptionMaterial;
 use crate::smart_vaults::secret::SecretID;
 use crate::smart_vaults::secret::SecretListEntry;
+use crate::smart_vaults::testament::CreateTestamentArgs;
+use crate::smart_vaults::testament::Testament;
 use candid::candid_method;
 
 use crate::smart_vaults::secret::{CreateSecretArgs, Secret, SecretForUpdate};

@@ -15,6 +15,7 @@ pub type TestamentID = UUID;
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct Testament {
     id: TestamentID,
+    name: String,
     date_created: u64,
     date_modified: u64,
     testator: Principal,
@@ -29,12 +30,19 @@ pub struct Testament {
     key_box: KeyBox,
 }
 
+/// The struct provided by the backend when calling "create_secret". It contains:
+#[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
+pub struct CreateTestamentArgs {
+    pub name: String,
+}
+
 impl Testament {
-    pub fn new(testator: Principal) -> Self {
+    pub fn new(testator: Principal, name: String) -> Self {
         let now: u64 = time::get_current_time();
         let uuid = UUID::new();
         Self {
             id: uuid,
+            name,
             date_created: now,
             date_modified: now,
             testator,
