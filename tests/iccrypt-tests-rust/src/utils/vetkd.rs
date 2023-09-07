@@ -37,7 +37,7 @@ pub async fn aes_gcm_decrypt(
 }
 
 /// Get a new key from the VETKD api using the caller as the derivation ID
-pub async fn get_aes_256_gcm_key_for_caller() -> Result<Vec<u8>> {
+pub async fn get_aes_256_gcm_key_for_uservault() -> Result<Vec<u8>> {
     let rng = SystemRandom::new();
     let mut seed = [0u8; 32]; // An array of 8-bit unsigned integers, length 32
     rng.fill(&mut seed)?;
@@ -47,7 +47,7 @@ pub async fn get_aes_256_gcm_key_for_caller() -> Result<Vec<u8>> {
 
     // We ask the backend for a new symmetric key and also ask it to encrypt it using the public key of our transport secret key
     let ek_bytes_hex: String = make_call_with_default_agent(
-        CallType::Update("encrypted_symmetric_key_for_caller".to_string()),
+        CallType::Update("encrypted_symmetric_key_for_uservault".to_string()),
         Some(tsk.public_key()),
     )
     .await?;

@@ -6,7 +6,7 @@ use ic_agent::{identity::BasicIdentity, Agent, Identity};
 use crate::utils::{
     agent::{create_identity, get_dfx_agent_with_identity},
     vetkd::{
-        aes_gcm_decrypt, aes_gcm_encrypt, get_aes_256_gcm_key_for_caller,
+        aes_gcm_decrypt, aes_gcm_encrypt, get_aes_256_gcm_key_for_uservault,
         get_local_random_aes_256_gcm_key, ibe_decrypt, ibe_encrypt_for_heir,
     },
 };
@@ -79,7 +79,7 @@ async fn double_aes_gcm_encryption() -> Result<()> {
     );
 
     // Step 3: Encrypt aes_256_key
-    let aes_256_key_encryption_key = get_aes_256_gcm_key_for_caller().await.unwrap();
+    let aes_256_key_encryption_key = get_aes_256_gcm_key_for_uservault().await.unwrap();
     let (encrypted_encryption_key, nonce2) =
         aes_gcm_encrypt(&aes_256_key, &aes_256_key_encryption_key)
             .await
@@ -94,7 +94,7 @@ async fn double_aes_gcm_encryption() -> Result<()> {
     // ---------------- Some time is passing ----------------
     println!("  ...After some time...");
     // Step 4: Get key to decrypt decryption key
-    let aes_256_key_decryption_key = get_aes_256_gcm_key_for_caller().await.unwrap();
+    let aes_256_key_decryption_key = get_aes_256_gcm_key_for_uservault().await.unwrap();
     assert_eq!(aes_256_key_encryption_key, aes_256_key_decryption_key);
 
     let decrypted_decryption_key = aes_gcm_decrypt(

@@ -9,17 +9,18 @@ use super::vetkd_types::{
 
 const VETKD_SYSTEM_API_CANISTER_ID: &str = "s55qq-oqaaa-aaaaa-aaakq-cai";
 
-/// Peter's method. Currently used by Front-End.
+/// Computes a fresh vetkd symmetric key to encrypt the secrets in a user vault.
+///
+/// It uses the caller and a random Nonce value provided by the front-end.
+///
+/// The key is encrypted using the provided encryption_publi_key.
 #[ic_cdk_macros::update]
 #[candid_method(update)]
-pub async fn get_encrypted_symmetric_key_for(encryption_public_key: Vec<u8>) -> (String, Vec<u8>) {
-    let mut derivation_id: Vec<u8> = ic_cdk::caller().as_slice().to_vec();
-    let addition = String::from("additionalDerivationIdString");
-    derivation_id.extend(addition.into_bytes());
-    let derivation_id_response = derivation_id.clone();
+async fn encrypted_symmetric_key_for_uservault(encryption_public_key: Vec<u8>) -> String {
+    debug_println_caller("encrypted_symmetric_key_for_caller");
 
     let request = VetKDEncryptedKeyRequest {
-        derivation_id,
+        derivation_id: ic_cdk::caller().as_slice().to_vec(),
         public_key_derivation_path: vec![b"symmetric_key".to_vec()],
         key_id: bls12_381_test_key_1(),
         encryption_public_key,
@@ -33,7 +34,36 @@ pub async fn get_encrypted_symmetric_key_for(encryption_public_key: Vec<u8>) -> 
     .await
     .expect("call to vetkd_encrypted_key failed");
 
-    (hex::encode(response.encrypted_key), derivation_id_response)
+    hex::encode(response.encrypted_key)
+}
+
+/// Computes a fresh vetkd symmetric key to encrypt the secrets in a testament.
+///
+/// The key is encrypted using the provided encryption_publi_key.
+#[ic_cdk_macros::update]
+#[candid_method(update)]
+async fn encrypted_symmetric_key_for_testament(
+    encryption_public_key: Vec<u8>,
+    testament_id: Vec<u8>,
+) -> String {
+    debug_println_caller("encrypted_symmetric_key_for_caller");
+
+    let request = VetKDEncryptedKeyRequest {
+        derivation_id: ic_cdk::caller().as_slice().to_vec(),
+        public_key_derivation_path: vec![b"symmetric_key".to_vec()],
+        key_id: bls12_381_test_key_1(),
+        encryption_public_key,
+    };
+
+    let (response,): (VetKDEncryptedKeyReply,) = ic_cdk::api::call::call(
+        vetkd_system_api_canister_id(),
+        "vetkd_encrypted_key",
+        (request,),
+    )
+    .await
+    .expect("call to vetkd_encrypted_key failed");
+
+    hex::encode(response.encrypted_key)
 }
 
 /*
@@ -63,10 +93,6 @@ async fn symmetric_key_verification_key() -> String {
     hex::encode(response.public_key)
 }
 
-/// Computes a fresh vetkd symmetric key to encrypt a secret.
-///
-/// It uses the caller and a random Nonce value provided by the front-end.
-///
 /// The key is encrypted using the provided encryption_publi_key.
 #[ic_cdk_macros::update]
 #[candid_method(update)]
@@ -152,4 +178,5 @@ fn debug_println_caller(method_name: &str) {
         ic_cdk::caller().to_text(),
         ic_cdk::caller() == candid::Principal::anonymous()
     );
+    ic_cdk::println!("And i am: {}", ic_cdk::id());
 }

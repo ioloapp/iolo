@@ -14,7 +14,7 @@ use crate::{
     utils::{
         agent::{create_identity, get_dfx_agent_with_identity, make_call_with_agent, CallType},
         vetkd::{
-            aes_gcm_decrypt, aes_gcm_encrypt, get_aes_256_gcm_key_for_caller,
+            aes_gcm_decrypt, aes_gcm_encrypt, get_aes_256_gcm_key_for_uservault,
             get_local_random_aes_256_gcm_key,
         },
     },
@@ -75,7 +75,7 @@ async fn test_secret_lifecycle() -> anyhow::Result<()> {
             .unwrap();
 
     // Encrypt the encryption key
-    let key_encryption_key = get_aes_256_gcm_key_for_caller().await.unwrap();
+    let key_encryption_key = get_aes_256_gcm_key_for_uservault().await.unwrap();
     let (encrypted_secret_decryption_key, nonce_encrypted_secret_decryption_key) =
         aes_gcm_encrypt(&secret_encryption_key, &key_encryption_key)
             .await
@@ -149,7 +149,7 @@ async fn test_secret_lifecycle() -> anyhow::Result<()> {
 
     // the dm (decryption material) contains the "encrypted decryption key".
     // so first, let's get the key to decrypt this "encrypted decryption key" -> vetkd
-    let aes_256_key_decryption_key = get_aes_256_gcm_key_for_caller().await.unwrap();
+    let aes_256_key_decryption_key = get_aes_256_gcm_key_for_uservault().await.unwrap();
     let decrypted_decryption_key = aes_gcm_decrypt(
         &dm.encrypted_decryption_key,
         &aes_256_key_decryption_key,

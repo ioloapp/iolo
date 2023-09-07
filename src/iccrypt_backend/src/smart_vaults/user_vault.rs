@@ -18,8 +18,9 @@ pub struct UserVault {
     date_modified: u64,
     /// The secrets
     secrets: BTreeMap<SecretID, Secret>,
+    /// Contains all the keys required to decrypt the secrets:
     /// Every secret is encrypted by using dedicated key.
-    /// This key is itself encrypted using the UserVault key,
+    /// This key is itself encrypted using the UserVault decryption key,
     /// which itself is derived by vetkd.
     key_box: KeyBox, // TODO: make getter and setter
 }

@@ -68,7 +68,8 @@ service : {
   delete_user : () -> (Result_2);
   encrypted_ibe_decryption_key_for_caller : (vec nat8) -> (text);
   encrypted_symmetric_key_for_caller : (vec nat8) -> (text);
-  get_encrypted_symmetric_key_for : (vec nat8) -> (text, vec nat8);
+  encrypted_symmetric_key_for_testament : (vec nat8, vec nat8) -> (text);
+  encrypted_symmetric_key_for_uservault : (vec nat8) -> (text);
   get_secret_decryption_material : (nat) -> (Result_3) query;
   get_secret_list : () -> (Result_4) query;
   ibe_encryption_key : () -> (text);
