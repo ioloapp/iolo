@@ -1,6 +1,9 @@
 use std::{str::FromStr, vec};
 
-use candid::candid_method;
+use candid::{candid_method, CandidType};
+use serde::{Deserialize, Serialize};
+
+use crate::common::uuid::UUID;
 
 use super::vetkd_types::{
     CanisterId, VetKDCurve, VetKDEncryptedKeyReply, VetKDEncryptedKeyRequest, VetKDKeyId,
@@ -8,6 +11,12 @@ use super::vetkd_types::{
 };
 
 const VETKD_SYSTEM_API_CANISTER_ID: &str = "s55qq-oqaaa-aaaaa-aaakq-cai";
+
+#[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
+pub struct TestamentKeyDerviationArgs {
+    pub encryption_public_key: Vec<u8>,
+    pub testament_id: UUID,
+}
 
 /// Computes a fresh vetkd symmetric key to encrypt the secrets in a user vault.
 ///
@@ -17,7 +26,7 @@ const VETKD_SYSTEM_API_CANISTER_ID: &str = "s55qq-oqaaa-aaaaa-aaakq-cai";
 #[ic_cdk_macros::update]
 #[candid_method(update)]
 async fn encrypted_symmetric_key_for_uservault(encryption_public_key: Vec<u8>) -> String {
-    debug_println_caller("encrypted_symmetric_key_for_caller");
+    // debug_println_caller("encrypted_symmetric_key_for_caller");
 
     let request = VetKDEncryptedKeyRequest {
         derivation_id: ic_cdk::caller().as_slice().to_vec(),
@@ -42,17 +51,35 @@ async fn encrypted_symmetric_key_for_uservault(encryption_public_key: Vec<u8>) -
 /// The key is encrypted using the provided encryption_publi_key.
 #[ic_cdk_macros::update]
 #[candid_method(update)]
-async fn encrypted_symmetric_key_for_testament(
-    encryption_public_key: Vec<u8>,
-    testament_id: Vec<u8>,
-) -> String {
-    debug_println_caller("encrypted_symmetric_key_for_caller");
+async fn encrypted_symmetric_key_for_testament(args: TestamentKeyDerviationArgs) -> String {
+    ic_cdk::println!(
+        "encrypted_symmetric_key_for_testament with testament id: {:?}",
+        &args.testament_id,
+    );
+
+    let caller = ic_cdk::caller(); //.as_slice().to_vec();
+
+    // check if caller has the right to derive this key
+    let caller_is_testator = true; // TODO
+    let caller_is_heir = true; // TODO
+
+    if !(caller_is_testator || caller_is_heir) {
+        ic_cdk::trap(&format!(
+            "Caller {:?} is not allowed to see testament {:?}",
+            caller, &args.testament_id
+        ));
+    }
+
+    let mut derivation_id: Vec<u8> = ic_cdk::id().as_slice().to_vec();
+
+    let testament_id_bytes = b"testament id"; // todo: take from args
+    derivation_id.extend_from_slice(testament_id_bytes);
 
     let request = VetKDEncryptedKeyRequest {
-        derivation_id: ic_cdk::caller().as_slice().to_vec(),
+        derivation_id,
         public_key_derivation_path: vec![b"symmetric_key".to_vec()],
         key_id: bls12_381_test_key_1(),
-        encryption_public_key,
+        encryption_public_key: args.encryption_public_key,
     };
 
     let (response,): (VetKDEncryptedKeyReply,) = ic_cdk::api::call::call(
@@ -97,7 +124,7 @@ async fn symmetric_key_verification_key() -> String {
 #[ic_cdk_macros::update]
 #[candid_method(update)]
 async fn encrypted_symmetric_key_for_caller(encryption_public_key: Vec<u8>) -> String {
-    debug_println_caller("encrypted_symmetric_key_for_caller");
+    // debug_println_caller("encrypted_symmetric_key_for_caller");
 
     let request = VetKDEncryptedKeyRequest {
         derivation_id: ic_cdk::caller().as_slice().to_vec(),
@@ -140,7 +167,7 @@ async fn ibe_encryption_key() -> String {
 #[ic_cdk_macros::update]
 #[candid_method(update)]
 async fn encrypted_ibe_decryption_key_for_caller(encryption_public_key: Vec<u8>) -> String {
-    debug_println_caller("encrypted_ibe_decryption_key_for_caller");
+    // debug_println_caller("encrypted_ibe_decryption_key_for_caller");
 
     let request = VetKDEncryptedKeyRequest {
         derivation_id: ic_cdk::caller().as_slice().to_vec(),

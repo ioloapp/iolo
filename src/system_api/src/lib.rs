@@ -38,10 +38,10 @@ thread_local! {
 
 #[update]
 async fn vetkd_public_key(request: VetKDPublicKeyRequest) -> VetKDPublicKeyReply {
-    ic_cdk::println!(
-        "Hi from System API - vetkd public key. Caller is (ic_cdk::caller()): {}",
-        ic_cdk::caller()
-    );
+    // ic_cdk::println!(
+    //     "Hi from System API - vetkd public key. Caller is (ic_cdk::caller()): {}",
+    //     ic_cdk::caller()
+    // );
     ensure_bls12_381_test_key_1(request.key_id);
     ensure_derivation_path_is_valid(&request.derivation_path);
     let derivation_path = {
@@ -56,10 +56,10 @@ async fn vetkd_public_key(request: VetKDPublicKeyRequest) -> VetKDPublicKeyReply
 
 #[update]
 async fn vetkd_encrypted_key(request: VetKDEncryptedKeyRequest) -> VetKDEncryptedKeyReply {
-    ic_cdk::println!(
-        "Hi from System API - vetkd encrypted key. Caller is (ic_cdk::caller()): {}",
-        ic_cdk::caller()
-    );
+    // ic_cdk::println!(
+    //     "Hi from System API - vetkd encrypted key. Caller is (ic_cdk::caller()): {}",
+    //     ic_cdk::caller()
+    // );
     ensure_call_is_paid(ENCRYPTED_KEY_CYCLE_COSTS);
     ensure_bls12_381_test_key_1(request.key_id);
     ensure_derivation_path_is_valid(&request.public_key_derivation_path);
@@ -150,7 +150,7 @@ async fn with_rng<T>(fn_with_rng: impl FnOnce(&mut ChaCha20Rng) -> T) -> T {
             // practices_.
             option_rng.borrow_mut().get_or_insert(rng);
         });
-        ic_cdk::println!("RNG initialized");
+        // ic_cdk::println!("RNG initialized");
     }
     RNG.with(|option_rng| fn_with_rng(option_rng.borrow_mut().as_mut().expect("missing RNG")))
 }

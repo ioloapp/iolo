@@ -109,7 +109,6 @@ impl MasterVault {
         if !self.user_vaults.contains_key(vault_id) {
             return Err(SmartVaultErr::UserVaultDoesNotExist(vault_id.to_string()));
         }
-
         let user_vault = self.user_vaults.get_mut(vault_id).unwrap();
         user_vault.update_testament(t)
     }

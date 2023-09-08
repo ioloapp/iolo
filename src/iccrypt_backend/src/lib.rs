@@ -7,6 +7,7 @@ pub mod utils;
 use crate::common::error::SmartVaultErr;
 use crate::common::user::User;
 use crate::common::uuid::UUID;
+use crate::smart_vaults::key_manager::TestamentKeyDerviationArgs;
 use crate::smart_vaults::secret::SecretDecryptionMaterial;
 use crate::smart_vaults::secret::SecretID;
 use crate::smart_vaults::secret::SecretListEntry;
@@ -28,7 +29,6 @@ fn who_am_i() -> String {
 #[ic_cdk_macros::query]
 #[candid_method(query)]
 fn what_time_is_it() -> u64 {
-    ic_cdk::println!("Hi from what time is it");
     utils::time::get_current_time()
 }
 

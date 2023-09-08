@@ -29,3 +29,9 @@ pub struct Testament {
 /// The struct provided by the backend when calling "create_secret". It contains:
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct CreateTestamentArgs {}
+
+#[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
+pub struct TestamentKeyDerviationArgs {
+    pub encryption_public_key: Vec<u8>,
+    pub testament_id: Vec<u8>,
+}

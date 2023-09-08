@@ -17,8 +17,8 @@ use crate::{
     utils::{
         agent::{create_identity, get_dfx_agent_with_identity, make_call_with_agent, CallType},
         vetkd::{
-            aes_gcm_decrypt, aes_gcm_encrypt, get_aes_256_gcm_key_for_uservault,
-            get_local_random_aes_256_gcm_key,
+            aes_gcm_decrypt, aes_gcm_encrypt, get_aes_256_gcm_key_for_testament,
+            get_aes_256_gcm_key_for_uservault, get_local_random_aes_256_gcm_key,
         },
     },
 };
@@ -138,6 +138,24 @@ async fn test_testament_lifecycle() -> anyhow::Result<()> {
     .unwrap();
 
     dbg!(&testament_list);
+
+    // We need to encrypt the fields in the testament
+    // For this we need a testament encryption key
+    let testament_key_encryption_key = get_aes_256_gcm_key_for_testament(testament.id)
+        .await
+        .unwrap();
+    let (encrypted_secret_decryption_key, nonce_encrypted_secret_decryption_key) =
+        aes_gcm_encrypt(&secret_encryption_key, &testament_key_encryption_key)
+            .await
+            .unwrap();
+
+    let decryption_material: SecretDecryptionMaterial = SecretDecryptionMaterial {
+        encrypted_decryption_key: encrypted_secret_decryption_key,
+        iv: nonce_encrypted_secret_decryption_key.to_vec(),
+        username_decryption_nonce: Some(username_decryption_nonce.to_vec()),
+        password_decryption_nonce: Some(password_decryption_nonce.to_vec()),
+        notes_decryption_nonce: Some(notes_decryption_nonce.to_vec()),
+    };
 
     dbg!("Chaning the name of my testament");
     testament.name = Some("Mein Testament".into());

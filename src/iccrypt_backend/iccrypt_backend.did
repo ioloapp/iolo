@@ -54,6 +54,10 @@ type Testament = record {
   key_box : vec record { nat; SecretDecryptionMaterial };
   date_modified : nat64;
 };
+type TestamentKeyDerviationArgs = record {
+  encryption_public_key : vec nat8;
+  testament_id : nat;
+};
 type User = record {
   id : principal;
   date_created : nat64;
@@ -68,7 +72,9 @@ service : {
   delete_user : () -> (Result_3);
   encrypted_ibe_decryption_key_for_caller : (vec nat8) -> (text);
   encrypted_symmetric_key_for_caller : (vec nat8) -> (text);
-  encrypted_symmetric_key_for_testament : (vec nat8, vec nat8) -> (text);
+  encrypted_symmetric_key_for_testament : (TestamentKeyDerviationArgs) -> (
+    text
+  );
   encrypted_symmetric_key_for_uservault : (vec nat8) -> (text);
   get_secret_decryption_material : (nat) -> (Result_4) query;
   get_secret_list : () -> (Result_5) query;

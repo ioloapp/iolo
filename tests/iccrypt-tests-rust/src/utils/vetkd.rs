@@ -8,8 +8,11 @@ use candid::Principal;
 use ic_agent::Agent;
 use ring::rand::{SecureRandom, SystemRandom};
 
-use crate::utils::agent::{
-    get_default_dfx_agent, make_call_with_agent, make_call_with_default_agent, CallType,
+use crate::{
+    types::testament::TestamentKeyDerviationArgs,
+    utils::agent::{
+        get_default_dfx_agent, make_call_with_agent, make_call_with_default_agent, CallType,
+    },
 };
 
 pub async fn get_local_random_aes_256_gcm_key() -> Result<Vec<u8>> {
@@ -61,6 +64,57 @@ pub async fn get_aes_256_gcm_key_for_uservault() -> Result<Vec<u8>> {
 
     // The derivation ID used in the backend is based on the caller, which in this case
     // is the agent used here to make the call.
+    let did = get_default_dfx_agent().await?.get_principal().unwrap();
+
+    let aes_256_gcm_key = tsk
+        .decrypt_and_hash(
+            &hex::decode(ek_bytes_hex).unwrap(),
+            &hex::decode(pk_bytes_hex).unwrap(),
+            did.as_slice(),
+            32,
+            "aes-256-gcm".as_bytes(),
+        )
+        .unwrap();
+
+    // let Ok(value) = key else {
+    //     println!("Error occurred: {:?}", key.unwrap_err());
+    //     panic!();
+    // };
+
+    Ok(aes_256_gcm_key)
+}
+
+/// Get a new key from the VETKD api using the caller as the derivation ID
+pub async fn get_aes_256_gcm_key_for_testament(testament_id: Vec<u8>) -> Result<Vec<u8>> {
+    let rng = SystemRandom::new();
+    let mut seed = [0u8; 32]; // An array of 8-bit unsigned integers, length 32
+    rng.fill(&mut seed)?;
+
+    // The TransportSecretKey (tsk) is used by the backend to encrypt the vetkd key.
+    let tsk = ic_vetkd_utils::TransportSecretKey::from_seed(seed.to_vec()).unwrap();
+
+    let tkda: TestamentKeyDerviationArgs = TestamentKeyDerviationArgs {
+        encryption_public_key: tsk.public_key(),
+        testament_id,
+    };
+
+    // We ask the backend for a new symmetric key and also ask it to encrypt it using the public key of our transport secret key
+    let ek_bytes_hex: String = make_call_with_default_agent(
+        CallType::Update("encrypted_symmetric_key_for_testament".to_string()),
+        Some(tkda),
+    )
+    .await?;
+
+    // now we need the verification key
+    let pk_bytes_hex: String = make_call_with_default_agent(
+        CallType::Update("symmetric_key_verification_key".to_string()),
+        Option::<Vec<u8>>::None,
+    )
+    .await?;
+
+    // The derivation ID used in the backend is based on the caller, which in this case
+    // is the agent used here to make the call.
+    // TODO: this needs to be the backend canister?
     let did = get_default_dfx_agent().await?.get_principal().unwrap();
 
     let aes_256_gcm_key = tsk

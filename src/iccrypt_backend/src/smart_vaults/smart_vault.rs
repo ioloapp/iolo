@@ -118,7 +118,6 @@ pub fn get_secret_decryption_material(
 #[ic_cdk_macros::update]
 #[candid_method(update)]
 pub fn create_secret(args: CreateSecretArgs) -> Result<Secret, SmartVaultErr> {
-    // ic_cdk::println!("{:?}", &args);
     let principal = get_caller();
 
     let user_vault_id: UUID = get_vault_id_for(principal)?;
@@ -161,7 +160,6 @@ pub fn remove_user_secret(secret_id: UUID) -> Result<(), SmartVaultErr> {
 #[ic_cdk_macros::update]
 #[candid_method(update)]
 pub fn create_testament(args: CreateTestamentArgs) -> Result<Testament, SmartVaultErr> {
-    ic_cdk::println!("add user testament: {:?}", &args);
     let principal = get_caller();
 
     let user_vault_id: UUID = get_vault_id_for(principal)?;
@@ -179,7 +177,6 @@ pub fn update_testament(t: Testament) -> Result<Testament, SmartVaultErr> {
     let principal = get_caller();
 
     let user_vault_id: UUID = get_vault_id_for(principal)?;
-
     MASTERVAULT.with(
         |ms: &RefCell<MasterVault>| -> Result<Testament, SmartVaultErr> {
             let mut master_vault = ms.borrow_mut();

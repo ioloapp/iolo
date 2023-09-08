@@ -116,7 +116,7 @@ impl UserVault {
     }
 
     pub fn update_testament(&mut self, t: Testament) -> Result<Testament, SmartVaultErr> {
-        if !self.secrets.contains_key(t.id()) {
+        if !self.testaments.contains_key(t.id()) {
             return Err(SmartVaultErr::SecretDoesNotExist(t.id().to_string()));
         }
         let tid = *t.id();
