@@ -33,5 +33,5 @@ pub struct CreateTestamentArgs {}
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct TestamentKeyDerviationArgs {
     pub encryption_public_key: Vec<u8>,
-    pub testament_id: Vec<u8>,
+    pub testament_id: UUID,
 }

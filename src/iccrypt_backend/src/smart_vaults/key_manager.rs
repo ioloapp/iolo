@@ -72,8 +72,7 @@ async fn encrypted_symmetric_key_for_testament(args: TestamentKeyDerviationArgs)
 
     let mut derivation_id: Vec<u8> = ic_cdk::id().as_slice().to_vec();
 
-    let testament_id_bytes = b"testament id"; // todo: take from args
-    derivation_id.extend_from_slice(testament_id_bytes);
+    derivation_id.extend_from_slice(&args.testament_id.as_bytes());
 
     let request = VetKDEncryptedKeyRequest {
         derivation_id,

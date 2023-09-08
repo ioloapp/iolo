@@ -141,13 +141,20 @@ async fn test_testament_lifecycle() -> anyhow::Result<()> {
 
     // We need to encrypt the fields in the testament
     // For this we need a testament encryption key
-    let testament_key_encryption_key = get_aes_256_gcm_key_for_testament(testament.id)
+    let testament_key_encryption_key = get_aes_256_gcm_key_for_testament(testament.id.clone())
         .await
         .unwrap();
+    dbg!("still alive?");
     let (encrypted_secret_decryption_key, nonce_encrypted_secret_decryption_key) =
         aes_gcm_encrypt(&secret_encryption_key, &testament_key_encryption_key)
             .await
             .unwrap();
+
+    println!(
+        "{}",
+        "this is the key we use for encrypting the testament".yellow()
+    );
+    dbg!(&testament_key_encryption_key);
 
     let decryption_material: SecretDecryptionMaterial = SecretDecryptionMaterial {
         encrypted_decryption_key: encrypted_secret_decryption_key,

@@ -9,9 +9,12 @@ use ic_agent::Agent;
 use ring::rand::{SecureRandom, SystemRandom};
 
 use crate::{
-    types::testament::TestamentKeyDerviationArgs,
-    utils::agent::{
-        get_default_dfx_agent, make_call_with_agent, make_call_with_default_agent, CallType,
+    types::{secret::UUID, testament::TestamentKeyDerviationArgs},
+    utils::{
+        agent::{
+            get_default_dfx_agent, make_call_with_agent, make_call_with_default_agent, CallType,
+        },
+        dfx::get_backend_canister_id,
     },
 };
 
@@ -85,7 +88,7 @@ pub async fn get_aes_256_gcm_key_for_uservault() -> Result<Vec<u8>> {
 }
 
 /// Get a new key from the VETKD api using the caller as the derivation ID
-pub async fn get_aes_256_gcm_key_for_testament(testament_id: Vec<u8>) -> Result<Vec<u8>> {
+pub async fn get_aes_256_gcm_key_for_testament(testament_id: UUID) -> Result<Vec<u8>> {
     let rng = SystemRandom::new();
     let mut seed = [0u8; 32]; // An array of 8-bit unsigned integers, length 32
     rng.fill(&mut seed)?;
@@ -117,11 +120,17 @@ pub async fn get_aes_256_gcm_key_for_testament(testament_id: Vec<u8>) -> Result<
     // TODO: this needs to be the backend canister?
     let did = get_default_dfx_agent().await?.get_principal().unwrap();
 
+    dbg!("i guess: still alive :_)");
+    let xxx = get_backend_canister_id().unwrap();
+    dbg!(&xxx);
+    let ppp = Principal::from_text(xxx).unwrap();
+    dbg!(&ppp);
+
     let aes_256_gcm_key = tsk
         .decrypt_and_hash(
             &hex::decode(ek_bytes_hex).unwrap(),
             &hex::decode(pk_bytes_hex).unwrap(),
-            did.as_slice(),
+            ppp.as_slice(),
             32,
             "aes-256-gcm".as_bytes(),
         )

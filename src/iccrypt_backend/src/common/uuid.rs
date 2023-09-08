@@ -29,17 +29,15 @@ impl UUID {
     pub fn new_empty() -> Self {
         UUID(0)
     }
+
+    pub fn as_bytes(&self) -> Vec<u8> {
+        self.0.to_string().as_bytes().to_vec()
+    }
 }
 
 impl fmt::Display for UUID {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.0)
-    }
-}
-
-impl From<u128> for UUID {
-    fn from(value: u128) -> Self {
-        UUID(value)
     }
 }
 
