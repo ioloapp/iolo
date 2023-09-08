@@ -1,7 +1,6 @@
 use std::{cell::RefCell, fmt};
 
 use candid::{CandidType, Deserialize};
-use ic_cdk::{post_upgrade, pre_upgrade, storage};
 use serde::Serialize;
 
 use crate::smart_vaults::smart_vault::UUID_COUNTER;
@@ -9,7 +8,7 @@ use crate::smart_vaults::smart_vault::UUID_COUNTER;
 #[derive(
     Debug, CandidType, Deserialize, Serialize, Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd,
 )]
-pub struct UUID(u128);
+pub struct UUID(pub u128);
 impl UUID {
     pub fn new() -> Self {
         // get current counter
@@ -29,6 +28,10 @@ impl UUID {
 
     pub fn new_empty() -> Self {
         UUID(0)
+    }
+
+    pub fn as_bytes(&self) -> Vec<u8> {
+        self.0.to_string().as_bytes().to_vec()
     }
 }
 

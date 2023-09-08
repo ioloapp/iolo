@@ -6,11 +6,11 @@ use super::uuid::UUID;
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone, Copy)]
 pub struct User {
-    id: Principal,
-    date_created: u64,
-    date_modified: u64,
-    date_last_login: Option<u64>,
-    user_vault_id: UUID, // TODO make option
+    pub id: Principal,
+    pub date_created: u64,
+    pub date_modified: u64,
+    pub date_last_login: Option<u64>,
+    pub user_vault_id: UUID, // TODO make option
 }
 
 impl User {

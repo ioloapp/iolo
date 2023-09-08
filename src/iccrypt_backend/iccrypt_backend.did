@@ -1,34 +1,35 @@
+type CreateSecretArgs = record {
+  decryption_material : SecretDecryptionMaterial;
+};
 type Result = variant { Ok : Secret; Err : SmartVaultErr };
-type Result_1 = variant { Ok : User; Err : SmartVaultErr };
-type Result_2 = variant { Ok; Err : SmartVaultErr };
-type Result_3 = variant { Ok : UserVault; Err : SmartVaultErr };
+type Result_1 = variant { Ok : Testament; Err : SmartVaultErr };
+type Result_2 = variant { Ok : User; Err : SmartVaultErr };
+type Result_3 = variant { Ok; Err : SmartVaultErr };
+type Result_4 = variant { Ok : SecretDecryptionMaterial; Err : SmartVaultErr };
+type Result_5 = variant { Ok : vec SecretListEntry; Err : SmartVaultErr };
+type Result_6 = variant { Ok : vec Testament; Err : SmartVaultErr };
 type Secret = record {
   id : nat;
   url : opt text;
-  username : opt text;
+  username : opt vec nat8;
   date_created : nat64;
-  password : opt text;
-  name : text;
-  notes : opt text;
-  category : SecretCategory;
+  password : opt vec nat8;
+  name : opt text;
+  notes : opt vec nat8;
+  category : opt SecretCategory;
   date_modified : nat64;
 };
 type SecretCategory = variant { Password; Note; Document };
-type SecretForCreation = record {
-  url : opt text;
-  username : opt text;
-  password : opt text;
-  name : text;
-  notes : opt text;
-  category : SecretCategory;
+type SecretDecryptionMaterial = record {
+  iv : vec nat8;
+  password_decryption_nonce : opt vec nat8;
+  notes_decryption_nonce : opt vec nat8;
+  encrypted_decryption_key : vec nat8;
+  username_decryption_nonce : opt vec nat8;
 };
-type SecretForUpdate = record {
+type SecretListEntry = record {
   id : nat;
-  url : opt text;
-  username : opt text;
-  password : opt text;
   name : opt text;
-  notes : opt text;
   category : opt SecretCategory;
 };
 type SmartVaultErr = variant {
@@ -37,9 +38,25 @@ type SmartVaultErr = variant {
   SecretDoesAlreadyExist : text;
   UserDeletionFailed : text;
   SecretDoesNotExist : text;
+  TestamentAlreadyExists : text;
+  TestamentDoesNotExist : text;
   UserVaultCreationFailed : text;
   UserDoesNotExist : text;
   UserVaultDoesNotExist : text;
+};
+type Testament = record {
+  id : nat;
+  heirs : vec principal;
+  date_created : nat64;
+  name : opt text;
+  testator : principal;
+  secrets : vec nat;
+  key_box : vec record { nat; SecretDecryptionMaterial };
+  date_modified : nat64;
+};
+type TestamentKeyDerviationArgs = record {
+  encryption_public_key : vec nat8;
+  testament_id : nat;
 };
 type User = record {
   id : principal;
@@ -48,23 +65,26 @@ type User = record {
   user_vault_id : nat;
   date_modified : nat64;
 };
-type UserVault = record {
-  id : nat;
-  date_created : nat64;
-  secrets : vec record { nat; Secret };
-  date_modified : nat64;
-};
 service : {
-  add_user_secret : (SecretForCreation) -> (Result);
-  create_user : () -> (Result_1);
-  delete_user : () -> (Result_2);
-  encrypted_symmetric_key_for_secrets : (vec nat8, vec nat8) -> (text, vec nat8);
-  get_encrypted_symmetric_key_for : (vec nat8) -> (text, vec nat8);
-  get_user_vault : () -> (Result_3) query;
+  create_secret : (CreateSecretArgs) -> (Result);
+  create_testament : (record {}) -> (Result_1);
+  create_user : () -> (Result_2);
+  delete_user : () -> (Result_3);
+  encrypted_ibe_decryption_key_for_caller : (vec nat8) -> (text);
+  encrypted_symmetric_key_for_caller : (vec nat8) -> (text);
+  encrypted_symmetric_key_for_testament : (TestamentKeyDerviationArgs) -> (
+    text
+  );
+  encrypted_symmetric_key_for_uservault : (vec nat8) -> (text);
+  get_secret_decryption_material : (nat) -> (Result_4) query;
+  get_secret_list : () -> (Result_5) query;
+  get_testament_list : () -> (Result_6) query;
+  ibe_encryption_key : () -> (text);
   is_user_vault_existing : () -> (bool) query;
-  remove_user_secret : (nat) -> (Result_2);
+  remove_user_secret : (nat) -> (Result_3);
   symmetric_key_verification_key : () -> (text);
-  update_user_secret : (SecretForUpdate) -> (Result);
+  update_secret : (Secret) -> (Result);
+  update_testament : (Testament) -> (Result_1);
   what_time_is_it : () -> (nat64) query;
   who_am_i : () -> (text) query;
 };

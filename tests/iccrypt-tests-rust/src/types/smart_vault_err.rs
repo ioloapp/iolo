@@ -12,8 +12,6 @@ pub enum SmartVaultErr {
     SecretDoesNotExist(String),
     SecretHasNoId,
     SecretDoesAlreadyExist(String),
-    TestamentAlreadyExists(String),
-    TestamentDoesNotExist(String),
 }
 
 impl Display for SmartVaultErr {
@@ -48,16 +46,6 @@ impl Display for SmartVaultErr {
             }
             SmartVaultErr::SecretDoesAlreadyExist(id) => {
                 write!(f, "Failed to create secret with the following id: {}", id)
-            }
-            SmartVaultErr::TestamentAlreadyExists(id) => {
-                write!(
-                    f,
-                    "Failed to create testament with the following id: {}",
-                    id
-                )
-            }
-            SmartVaultErr::TestamentDoesNotExist(id) => {
-                write!(f, "Failed to read testament with the following id: {}", id)
             }
         }
     }

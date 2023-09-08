@@ -1,45 +1,95 @@
-#![allow(dead_code)]
+use colored::*;
+
+use std::env;
 
 use anyhow::Ok;
 use anyhow::Result;
 
-use args::Arguments;
-use clap::Parser;
-use common::cleanup;
-use key_derivation::test_key_derivation;
-use smart_vaults::test_smart_vaults;
-use utils::test_utils;
+use tests::div::test_utils;
+use tests::encryption::test_encryption;
+use tests::smart_vaults::test_smart_vaults;
+use utils::dfx::cleanup;
+use utils::dfx::upgrade_canister;
 
-use crate::common::upgrade_canister;
-
-//use xshell::{cmd, Shell};
-
-mod args;
-mod common;
-mod key_derivation;
-mod smart_vaults;
+mod tests;
+mod types;
 mod utils;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    // test_utils().await?;
-    //test_smart_vaults().await?;
-    test_key_derivation().await?;
+    let mut args = env::args();
 
-    // let args = Arguments::parse();
+    if args.len() < 2 {
+        print_help_menu();
+        return Ok(());
+    }
 
-    // dbg!(&args);
+    let c: &str = &args.nth(1).expect("no pattern given");
 
-    // if args.clean {
-    //     // reinstall erverything
-    //     cleanup();
-    // }
+    match c {
+        "deploy" => {
+            cleanup()?;
+        }
+        "upgrade" => {
+            let Some(canister) = args.nth(0) else {
+                println!("\nPlease provide valid canister name: iccrypt_backend, iccrypt_frontend");
+                return Ok(());
+            };
+            if canister == "iccrypt_backend" || canister == "iccrypt_frontend" {
+                upgrade_canister(&canister)?;
+            } else {
+                println!("\nPlease provide valid canister name: iccrypt_backend, iccrypt_frontend");
+            }
 
-    // if let Some(canister) = args.upgrade {
-    //     upgrade_canister(canister);
-    // }
+            return Ok(());
+        }
+        "utils" => {
+            test_utils().await?;
+        }
+        "vetkd" => {
+            test_encryption().await?;
+        }
+        "sv" => {
+            test_smart_vaults().await?;
+        }
+        _ => {
+            print_help_menu();
+            return Ok(());
+        }
+    }
+    return Ok(());
+}
 
-    // println!("Hello {}!", args.name.unwrap());
+fn print_help_menu() {
+    println!("\n{}:\n", "Commands".yellow().bold());
+    println!(
+        "   {}{} Cleanup the local replica and deploy everything from scratch",
+        "deploy".green(),
+        sh(6)
+    );
+    println!(
+        "   {}{} Upgrade canister with CANISTER_NAME",
+        "upgrade [CANISTER]".green(),
+        sh(18)
+    );
+    println!("   {}{} Test Utils like time, etc.", "utils".green(), sh(5));
+    println!(
+        "   {}{} Test key vetkd functionalities",
+        "vetkd".green(),
+        sh(5)
+    );
+    println!(
+        "   {}{} Test smart vault functionalities",
+        "sm".green(),
+        sh(2)
+    );
+}
 
-    Ok(())
+fn sh(n: i32) -> String {
+    let tab = 25;
+    let mut res: String = String::from("");
+    for _ in 1..(tab - n) {
+        res.push(' ');
+    }
+    res
 }
