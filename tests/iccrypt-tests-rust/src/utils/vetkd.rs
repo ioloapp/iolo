@@ -102,14 +102,14 @@ pub async fn get_aes_256_gcm_key_for_testament(testament_id: UUID) -> Result<Vec
     };
 
     // We ask the backend for a new symmetric key and also ask it to encrypt it using the public key of our transport secret key
-    let ek_bytes_hex: String = make_call_with_default_agent(
+    let ek_bytes_hex_testament: String = make_call_with_default_agent(
         CallType::Update("encrypted_symmetric_key_for_testament".to_string()),
         Some(tkda),
     )
     .await?;
 
     // now we need the verification key
-    let pk_bytes_hex: String = make_call_with_default_agent(
+    let pk_bytes_hex_testament: String = make_call_with_default_agent(
         CallType::Update("symmetric_key_verification_key".to_string()),
         Option::<Vec<u8>>::None,
     )
@@ -121,16 +121,18 @@ pub async fn get_aes_256_gcm_key_for_testament(testament_id: UUID) -> Result<Vec
     let did = get_default_dfx_agent().await?.get_principal().unwrap();
 
     dbg!("i guess: still alive :_)");
-    let xxx = get_backend_canister_id().unwrap();
-    dbg!(&xxx);
-    let ppp = Principal::from_text(xxx).unwrap();
-    dbg!(&ppp);
+
+    let backend_principal = Principal::from_text(get_backend_canister_id().unwrap()).unwrap();
+    let mut derivation_id: Vec<u8> = backend_principal.as_slice().to_vec();
+    let testament_id_vec = testament_id.0.to_string().as_bytes().to_vec();
+    derivation_id.extend_from_slice(&testament_id_vec);
+    dbg!(&backend_principal);
 
     let aes_256_gcm_key = tsk
         .decrypt_and_hash(
-            &hex::decode(ek_bytes_hex).unwrap(),
-            &hex::decode(pk_bytes_hex).unwrap(),
-            ppp.as_slice(),
+            &hex::decode(ek_bytes_hex_testament).unwrap(),
+            &hex::decode(pk_bytes_hex_testament).unwrap(),
+            derivation_id.as_slice(),
             32,
             "aes-256-gcm".as_bytes(),
         )

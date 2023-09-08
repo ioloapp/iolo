@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 #[derive(
     Debug, CandidType, Deserialize, Serialize, Clone, PartialEq, PartialOrd, Ord, Eq, Hash,
 )]
-pub struct UUID(u128);
+pub struct UUID(pub u128);
 pub type SecretID = UUID;
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone, Copy, PartialEq, Eq)]
