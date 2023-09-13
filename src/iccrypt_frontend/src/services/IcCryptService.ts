@@ -1,9 +1,10 @@
 import {ActorSubclass, HttpAgent, Identity} from "@dfinity/agent";
 import {
-    _SERVICE, CreateSecretArgs, Result,
-    Result_1,
+    _SERVICE,
+    CreateSecretArgs,
+    Result,
     Result_2,
-    Result_4,
+    Result_5,
     SecretListEntry,
     User
 } from "../../../declarations/iccrypt_backend/iccrypt_backend.did";
@@ -36,7 +37,7 @@ class IcCryptService {
         });
     }
 
-    public getActor(){
+    public getActor() {
         return this.actor;
     }
 
@@ -47,7 +48,7 @@ class IcCryptService {
             onSuccess: async () => {
                 loginSuccessAction(await this.getUserPrincipal());
             },
-            onError: async  () => {
+            onError: async () => {
                 throw new ICCryptError();
             },
             identityProvider: process.env.II_URL,
@@ -61,7 +62,7 @@ class IcCryptService {
     }
 
     public async createUser(): Promise<User> {
-        const result: Result_1 = await this.actor.create_user();
+        const result: Result_2 = await this.actor.create_user();
         if (result['OK']) {
             return result['OK']
         }
@@ -77,7 +78,7 @@ class IcCryptService {
     }
 
     public async getSecretList(): Promise<SecretListEntry[]> {
-        const result: Result_4 = await this.actor.get_secret_list();
+        const result: Result_5 = await this.actor.get_secret_list();
         if (result['OK']) {
             return result['OK']
         }
@@ -87,15 +88,9 @@ class IcCryptService {
     public async addSecret(secret: any): Promise<SecretListEntry[]> {
         //TODO add frontend mapping with type
         const request: CreateSecretArgs = {
-            category: undefined,
-            decryption_material: undefined,
-            name: "",
-            notes: undefined,
-            password: undefined,
-            url: undefined,
-            username: undefined
+            decryption_material: undefined
         }
-        const result: Result = await this.actor.add_user_secret(request);
+        const result: Result = await this.actor.create_secret(request);
         if (result['OK']) {
             return result['OK']
         }
