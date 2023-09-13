@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 )]
 pub struct UUID(pub u128);
 
-pub type SecretID = UUID;
+pub type SecretID = String;
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone, Copy, PartialEq, Eq)]
 pub enum SecretCategory {
@@ -17,7 +17,7 @@ pub enum SecretCategory {
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone, PartialEq)]
 pub struct Secret {
-    pub id: SecretID,
+    pub id: String,
     pub date_created: u64,
     pub date_modified: u64,
     pub category: Option<SecretCategory>,
@@ -29,7 +29,8 @@ pub struct Secret {
 }
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
-pub struct CreateSecretArgs {
+pub struct AddSecretArgs {
+    pub secret: Secret,
     pub decryption_material: SecretDecryptionMaterial,
 }
 

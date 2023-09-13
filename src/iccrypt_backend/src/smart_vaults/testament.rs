@@ -100,22 +100,3 @@ impl Testament {
         &self.key_box
     }
 }
-
-/// SecretDecryptionMaterial contains all the information required to
-/// decrypt a secret:
-/// 1) The aes gcm decryption key encrypted with the uservault's vetkd key
-/// 2) The nonce/iv required to decrypt the decryption key
-/// 3) The nonces requried to decrypt the different fields
-#[derive(Debug, CandidType, Deserialize, Serialize, Clone, Default)]
-pub struct TestamentDecryptionMaterial {
-    // the "decryption key" (encrypted using the uservaults vetkd) required to decrypt username, password and notes
-    pub encrypted_decryption_key: Vec<u8>,
-    // the initialization vector (iv/nonce) to decrypt the encrypted_decryption_key
-    pub iv: Vec<u8>,
-    // the iv/nonce required to decrypt the encrypted username using the "decryption key"
-    pub username_decryption_nonce: Option<Vec<u8>>,
-    // the iv/nonce required to decrypt the encrypted password using the "decryption key"
-    pub password_decryption_nonce: Option<Vec<u8>>,
-    // the iv/nonce required to decrypt the encrypted notes using the "decryption key"
-    pub notes_decryption_nonce: Option<Vec<u8>>,
-}
