@@ -144,7 +144,7 @@ pub fn update_secret(s: Secret) -> Result<Secret, SmartVaultErr> {
 
 #[ic_cdk_macros::update]
 #[candid_method(update)]
-pub fn remove_user_secret(secret_id: UUID) -> Result<(), SmartVaultErr> {
+pub fn remove_user_secret(secret_id: String) -> Result<(), SmartVaultErr> {
     let principal = get_caller();
 
     let user_vault_id: UUID = get_vault_id_for(principal)?;

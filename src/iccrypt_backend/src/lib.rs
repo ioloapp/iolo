@@ -6,7 +6,6 @@ pub mod utils;
 // for the candid file creation
 use crate::common::error::SmartVaultErr;
 use crate::common::user::User;
-use crate::common::uuid::UUID;
 use crate::smart_vaults::key_manager::TestamentKeyDerviationArgs;
 use crate::smart_vaults::secret::SecretDecryptionMaterial;
 use crate::smart_vaults::secret::SecretID;
@@ -23,7 +22,7 @@ fn init() {}
 #[ic_cdk_macros::query]
 #[candid_method(query)]
 fn who_am_i() -> String {
-    format!("Hey. You are: {}", utils::caller::get_caller().to_string())
+    format!("Hey. You are: {}", utils::caller::get_caller())
 }
 
 #[ic_cdk_macros::query]

@@ -72,13 +72,13 @@ impl UserVault {
         &self.key_box
     }
 
-    pub fn get_secret(&self, secret_id: &UUID) -> Result<&Secret, SmartVaultErr> {
+    pub fn get_secret(&self, secret_id: &str) -> Result<&Secret, SmartVaultErr> {
         self.secrets
             .get(secret_id)
             .ok_or_else(|| SmartVaultErr::SecretDoesNotExist(secret_id.to_string()))
     }
 
-    pub fn get_secret_mut(&mut self, secret_id: &UUID) -> Result<&mut Secret, SmartVaultErr> {
+    pub fn get_secret_mut(&mut self, secret_id: &str) -> Result<&mut Secret, SmartVaultErr> {
         self.secrets
             .get_mut(secret_id)
             .ok_or_else(|| SmartVaultErr::SecretDoesNotExist(secret_id.to_string()))
@@ -90,12 +90,12 @@ impl UserVault {
             return Err(SmartVaultErr::SecretDoesAlreadyExist(sid.to_string()));
         }
 
-        self.secrets.insert(*secret.id(), secret);
+        self.secrets.insert(secret.id().clone(), secret);
         self.date_modified = time::get_current_time();
         Ok(self.secrets.get(&sid).unwrap().clone())
     }
 
-    pub fn remove_secret(&mut self, secret_id: &UUID) -> Result<(), SmartVaultErr> {
+    pub fn remove_secret(&mut self, secret_id: &str) -> Result<(), SmartVaultErr> {
         if !self.secrets.contains_key(secret_id) {
             return Err(SmartVaultErr::SecretDoesNotExist(secret_id.to_string()));
         }
@@ -108,8 +108,8 @@ impl UserVault {
         if !self.secrets.contains_key(secret.id()) {
             return Err(SmartVaultErr::SecretDoesNotExist(secret.id().to_string()));
         }
-        let sid = *secret.id();
-        self.secrets.insert(sid, secret);
+        let sid = secret.id().clone();
+        self.secrets.insert(sid.clone(), secret);
         self.date_modified = time::get_current_time();
         Ok(self.secrets.get(&sid).unwrap().clone())
     }
@@ -259,7 +259,7 @@ mod tests {
             user_vault.get_secret(secret.id()).unwrap().name(),
             secret_name
         );
-        let uuid = UUID::new();
+        let uuid = "UUID::new()";
         assert_eq!(
             user_vault.get_secret(&uuid),
             Err(SmartVaultErr::SecretDoesNotExist(uuid.to_string())),
@@ -271,7 +271,7 @@ mod tests {
         // Check get_secret_mut()
         let secret_mut = user_vault.get_secret_mut(secret.id()).unwrap();
         assert_eq!(secret_mut.name(), Some(secret_name),);
-        let uuid = UUID::new();
+        let uuid = "UUID::new()";
         assert_eq!(
             user_vault.get_secret_mut(&uuid),
             Err(SmartVaultErr::SecretDoesNotExist(uuid.to_string()))

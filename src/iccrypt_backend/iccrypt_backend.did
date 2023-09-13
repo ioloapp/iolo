@@ -1,4 +1,5 @@
-type CreateSecretArgs = record {
+type AddSecretArgs = record {
+  secret : Secret;
   decryption_material : SecretDecryptionMaterial;
 };
 type Result = variant { Ok : Secret; Err : SmartVaultErr };
@@ -9,7 +10,7 @@ type Result_4 = variant { Ok : SecretDecryptionMaterial; Err : SmartVaultErr };
 type Result_5 = variant { Ok : vec SecretListEntry; Err : SmartVaultErr };
 type Result_6 = variant { Ok : vec Testament; Err : SmartVaultErr };
 type Secret = record {
-  id : nat;
+  id : text;
   url : opt text;
   username : opt vec nat8;
   date_created : nat64;
@@ -28,7 +29,7 @@ type SecretDecryptionMaterial = record {
   username_decryption_nonce : opt vec nat8;
 };
 type SecretListEntry = record {
-  id : nat;
+  id : text;
   name : opt text;
   category : opt SecretCategory;
 };
@@ -50,8 +51,8 @@ type Testament = record {
   date_created : nat64;
   name : opt text;
   testator : principal;
-  secrets : vec nat;
-  key_box : vec record { nat; SecretDecryptionMaterial };
+  secrets : vec text;
+  key_box : vec record { text; SecretDecryptionMaterial };
   date_modified : nat64;
 };
 type TestamentKeyDerviationArgs = record {
@@ -66,7 +67,7 @@ type User = record {
   date_modified : nat64;
 };
 service : {
-  create_secret : (CreateSecretArgs) -> (Result);
+  add_secret : (AddSecretArgs) -> (Result);
   create_testament : (record {}) -> (Result_1);
   create_user : () -> (Result_2);
   delete_user : () -> (Result_3);
@@ -76,12 +77,12 @@ service : {
     text
   );
   encrypted_symmetric_key_for_uservault : (vec nat8) -> (text);
-  get_secret_decryption_material : (nat) -> (Result_4) query;
+  get_secret_decryption_material : (text) -> (Result_4) query;
   get_secret_list : () -> (Result_5) query;
   get_testament_list : () -> (Result_6) query;
   ibe_encryption_key : () -> (text);
   is_user_vault_existing : () -> (bool) query;
-  remove_user_secret : (nat) -> (Result_3);
+  remove_user_secret : (text) -> (Result_3);
   symmetric_key_verification_key : () -> (text);
   update_secret : (Secret) -> (Result);
   update_testament : (Testament) -> (Result_1);

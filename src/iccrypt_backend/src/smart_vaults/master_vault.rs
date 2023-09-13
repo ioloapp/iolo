@@ -74,7 +74,7 @@ impl MasterVault {
         let decryption_material = asa.decryption_material.clone();
         user_vault
             .key_box_mut()
-            .insert(*secret.id(), decryption_material);
+            .insert(secret.id().clone(), decryption_material);
 
         Ok(secret)
     }
@@ -124,11 +124,7 @@ impl MasterVault {
     }
 
     // Remove a secret
-    pub fn remove_secret(
-        &mut self,
-        vault_id: &UUID,
-        secret_id: &UUID,
-    ) -> Result<(), SmartVaultErr> {
+    pub fn remove_secret(&mut self, vault_id: &UUID, secret_id: &str) -> Result<(), SmartVaultErr> {
         if !self.user_vaults.contains_key(vault_id) {
             return Err(SmartVaultErr::UserVaultDoesNotExist(vault_id.to_string()));
         }

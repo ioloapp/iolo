@@ -8,7 +8,7 @@ use ic_agent::{identity::BasicIdentity, Agent, Identity};
 use crate::{
     types::{
         secret::{
-            CreateSecretArgs, Secret, SecretCategory, SecretDecryptionMaterial, SecretListEntry,
+            AddSecretArgs, Secret, SecretCategory, SecretDecryptionMaterial, SecretListEntry,
         },
         smart_vault_err::SmartVaultErr,
         testament::{CreateTestamentArgs, Testament},
@@ -28,8 +28,8 @@ pub async fn test_smart_vaults() -> Result<()> {
         "\n{}",
         "Testing smart vaults and testaments".yellow().bold()
     );
-    // test_user_lifecycle().await?;
-    // test_secret_lifecycle().await?;
+    test_user_lifecycle().await?;
+    test_secret_lifecycle().await?;
     test_testament_lifecycle().await?;
     Ok(())
 }
@@ -104,20 +104,29 @@ async fn test_testament_lifecycle() -> anyhow::Result<()> {
         notes_decryption_nonce: Some(notes_decryption_nonce.to_vec()),
     };
 
+    let new_secret: Secret = Secret {
+        id: "secret-id-uuid-format".into(),
+        date_created: 123,
+        date_modified: 123,
+        category: Some(SecretCategory::Password),
+        name: Some("Hey, cool".into()),
+        username: Some(encrypted_username.clone()),
+        password: Some(encrypted_password.clone()),
+        url: Some("www.google.com".to_string()),
+        notes: Some(encrypted_notes.clone()),
+    };
+
     // let's add the secret
     // to create a secret the backend only asks for the decryption material
-    let create_secret_args = CreateSecretArgs {
+    let add_secret_args = AddSecretArgs {
         decryption_material: decryption_material.clone(),
+        secret: new_secret,
     };
-    let mut secret: Secret = add_user_secret(&a1, &create_secret_args).await.unwrap();
+
+    let mut secret: Secret = add_user_secret(&a1, &add_secret_args).await.unwrap();
 
     // update the secret:
-    secret.name = Some("Hey, cool".into());
-    secret.category = Some(SecretCategory::Password);
-    secret.username = Some(encrypted_username.clone());
-    secret.password = Some(encrypted_password.clone());
-    secret.url = Some("www.google.com".to_string());
-    secret.notes = Some(encrypted_notes.clone());
+    secret.name = Some("Hey, still very cool, even with a new name".into());
 
     let secret = update_user_secret(&a1, secret).await?;
 
@@ -342,10 +351,10 @@ pub async fn create_user(agent: &Agent) -> anyhow::Result<User, SmartVaultErr> {
 
 async fn add_user_secret(
     agent: &Agent,
-    args: &CreateSecretArgs,
+    args: &AddSecretArgs,
 ) -> anyhow::Result<Secret, SmartVaultErr> {
     let s: Result<Secret, SmartVaultErr> =
-        make_call_with_agent(agent, CallType::Update("create_secret".into()), Some(args))
+        make_call_with_agent(agent, CallType::Update("add_secret".into()), Some(args))
             .await
             .unwrap();
 
@@ -441,21 +450,27 @@ async fn test_secret_lifecycle() -> anyhow::Result<()> {
         notes_decryption_nonce: Some(notes_decryption_nonce.to_vec()),
     };
 
-    // let's add the secret
-    let create_secret_args = CreateSecretArgs {
-        decryption_material: decryption_material.clone(),
+    let new_secret: Secret = Secret {
+        id: "secret-id-uuid-format".into(),
+        date_created: 123,
+        date_modified: 123,
+        category: Some(SecretCategory::Password),
+        name: Some("Hey, cool".to_string()),
+        username: Some(encrypted_username.clone()),
+        password: Some(encrypted_password.clone()),
+        url: Some("www.google.com".to_string()),
+        notes: Some(encrypted_notes.clone()),
     };
 
-    let mut secret: Secret = add_user_secret(&a1, &create_secret_args).await.unwrap();
-    dbg!(&secret);
+    // let's add the secret
+    // to create a secret the backend only asks for the decryption material
+    let add_secret_args = AddSecretArgs {
+        decryption_material: decryption_material.clone(),
+        secret: new_secret,
+    };
+    let mut secret: Secret = add_user_secret(&a1, &add_secret_args).await.unwrap();
 
-    // update the secret:
-    secret.name = Some("Hey, cool".into());
-    secret.category = Some(SecretCategory::Password);
-    secret.username = Some(encrypted_username.clone());
-    secret.password = Some(encrypted_password.clone());
-    secret.url = Some("www.google.com".to_string());
-    secret.notes = Some(encrypted_notes.clone());
+    secret.name = Some("another_name".into());
 
     let secret = update_user_secret(&a1, secret).await?;
 

@@ -1,10 +1,9 @@
 use candid::{CandidType, Deserialize};
 use serde::Serialize;
 
-use crate::common::uuid::UUID;
 use crate::utils::time;
 
-pub type SecretID = UUID;
+pub type SecretID = String;
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone, Copy, PartialEq, Eq)]
 pub enum SecretCategory {
@@ -15,7 +14,7 @@ pub enum SecretCategory {
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone, PartialEq)]
 pub struct Secret {
-    id: SecretID,
+    id: String,
     date_created: u64,
     date_modified: u64,
     category: Option<SecretCategory>,
@@ -44,7 +43,7 @@ pub struct SecretListEntry {
 impl From<Secret> for SecretListEntry {
     fn from(s: Secret) -> Self {
         SecretListEntry {
-            id: *s.id(),
+            id: s.id().into(),
             category: s.category(),
             name: s.name(),
         }
@@ -72,7 +71,7 @@ pub struct SecretDecryptionMaterial {
 
 impl Secret {
     pub fn new() -> Self {
-        let id = UUID::new();
+        let id = time::get_current_time().to_string();
         let now: u64 = time::get_current_time();
         Self {
             id,
@@ -313,7 +312,7 @@ mod tests {
 
     #[test]
     fn utest_secret_create_secret_for_update() {
-        let id = UUID::new();
+        let id = "UUID::new()";
 
         // Check return of None
         // let secret_for_update = SecretForUpdate::new(id, None, None, None, None, None, None);
