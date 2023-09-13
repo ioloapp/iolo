@@ -26,9 +26,9 @@ pub struct Secret {
     notes: Option<Vec<u8>>,
 }
 
-/// The struct provided by the backend when calling "create_secret". It contains:
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
-pub struct CreateSecretArgs {
+pub struct AddSecretArgs {
+    pub secret: Secret,
     // All the information required to decrypt the secret.
     // This material will be stored in the uservault's key box
     pub decryption_material: SecretDecryptionMaterial,
@@ -352,24 +352,24 @@ mod tests {
 
     #[test]
     fn utest_secret_create_secret_for_creation() {
-        let category = SecretCategory::Document;
-        let name = "my-super-secret".to_string();
+        // let category = SecretCategory::Document;
+        // let name = "my-super-secret".to_string();
 
-        // Check return of None
-        let secret_for_creation = CreateSecretArgs {
-            decryption_material: SecretDecryptionMaterial::default(),
-        };
+        // // Check return of None
+        // let secret_for_creation = CreateSecretArgs {
+        //     decryption_material: SecretDecryptionMaterial::default(),
+        // };
 
-        // Check return of Some
-        let category = SecretCategory::Note;
-        let name = "my-super-secret-update".to_string();
-        let encrypted_username = Some(vec![1, 2, 3]);
-        let encrypted_password = Some(vec![1, 2, 3]);
-        let url = Some("my-super-url-update".to_string());
-        let encrypted_notes = Some(vec![1, 2, 3]);
+        // // Check return of Some
+        // let category = SecretCategory::Note;
+        // let name = "my-super-secret-update".to_string();
+        // let encrypted_username = Some(vec![1, 2, 3]);
+        // let encrypted_password = Some(vec![1, 2, 3]);
+        // let url = Some("my-super-url-update".to_string());
+        // let encrypted_notes = Some(vec![1, 2, 3]);
 
-        let secret_for_update = CreateSecretArgs {
-            decryption_material: SecretDecryptionMaterial::default(),
-        };
+        // let secret_for_update = CreateSecretArgs {
+        //     decryption_material: SecretDecryptionMaterial::default(),
+        // };
     }
 }

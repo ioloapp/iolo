@@ -10,9 +10,7 @@ use crate::smart_vaults::user_registry::UserRegistry;
 use crate::utils::caller::get_caller;
 
 use super::master_vault::MasterVault;
-use super::secret::{
-    CreateSecretArgs, Secret, SecretDecryptionMaterial, SecretID, SecretListEntry,
-};
+use super::secret::{AddSecretArgs, Secret, SecretDecryptionMaterial, SecretID, SecretListEntry};
 use super::testament::{CreateTestamentArgs, Testament};
 
 thread_local! {
@@ -117,14 +115,14 @@ pub fn get_secret_decryption_material(
 
 #[ic_cdk_macros::update]
 #[candid_method(update)]
-pub fn create_secret(args: CreateSecretArgs) -> Result<Secret, SmartVaultErr> {
+pub fn add_secret(args: AddSecretArgs) -> Result<Secret, SmartVaultErr> {
     let principal = get_caller();
 
     let user_vault_id: UUID = get_vault_id_for(principal)?;
     MASTERVAULT.with(
         |ms: &RefCell<MasterVault>| -> Result<Secret, SmartVaultErr> {
             let mut master_vault = ms.borrow_mut();
-            master_vault.create_user_secret(&user_vault_id, args)
+            master_vault.add_user_secret(&user_vault_id, args)
         },
     )
 }

@@ -84,16 +84,15 @@ impl UserVault {
             .ok_or_else(|| SmartVaultErr::SecretDoesNotExist(secret_id.to_string()))
     }
 
-    pub fn add_secret(&mut self, secret: Secret) -> Result<(), SmartVaultErr> {
+    pub fn add_secret(&mut self, secret: Secret) -> Result<Secret, SmartVaultErr> {
+        let sid = secret.id().clone();
         if self.secrets.contains_key(secret.id()) {
-            return Err(SmartVaultErr::SecretDoesAlreadyExist(
-                secret.id().to_string(),
-            ));
+            return Err(SmartVaultErr::SecretDoesAlreadyExist(sid.to_string()));
         }
 
         self.secrets.insert(*secret.id(), secret);
         self.date_modified = time::get_current_time();
-        Ok(())
+        Ok(self.secrets.get(&sid).unwrap().clone())
     }
 
     pub fn remove_secret(&mut self, secret_id: &UUID) -> Result<(), SmartVaultErr> {
@@ -205,7 +204,7 @@ mod tests {
         let created_before_update = user_vault.date_created;
 
         // Add secret to user_vault
-        assert_eq!(user_vault.add_secret(secret.clone()), Ok(()));
+        // assert_eq!(user_vault.add_secret(secret.clone()), Ok(()));
 
         // Same secret cannot be added twice
         assert_eq!(

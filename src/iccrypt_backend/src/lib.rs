@@ -15,7 +15,7 @@ use crate::smart_vaults::testament::CreateTestamentArgs;
 use crate::smart_vaults::testament::Testament;
 use candid::candid_method;
 
-use crate::smart_vaults::secret::{CreateSecretArgs, Secret};
+use crate::smart_vaults::secret::{AddSecretArgs, Secret};
 
 #[ic_cdk_macros::init]
 fn init() {}
