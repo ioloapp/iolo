@@ -2,23 +2,21 @@ import type { Principal } from '@dfinity/principal';
 import type { ActorMethod } from '@dfinity/agent';
 
 export interface CreateSecretArgs {
-  'url' : [] | [string],
-  'username' : [] | [Uint8Array | number[]],
-  'password' : [] | [Uint8Array | number[]],
-  'name' : string,
   'decryption_material' : SecretDecryptionMaterial,
-  'notes' : [] | [Uint8Array | number[]],
-  'category' : SecretCategory,
 }
 export type Result = { 'Ok' : Secret } |
   { 'Err' : SmartVaultErr };
-export type Result_1 = { 'Ok' : User } |
+export type Result_1 = { 'Ok' : Testament } |
   { 'Err' : SmartVaultErr };
-export type Result_2 = { 'Ok' : null } |
+export type Result_2 = { 'Ok' : User } |
   { 'Err' : SmartVaultErr };
-export type Result_3 = { 'Ok' : SecretDecryptionMaterial } |
+export type Result_3 = { 'Ok' : null } |
   { 'Err' : SmartVaultErr };
-export type Result_4 = { 'Ok' : Array<SecretListEntry> } |
+export type Result_4 = { 'Ok' : SecretDecryptionMaterial } |
+  { 'Err' : SmartVaultErr };
+export type Result_5 = { 'Ok' : Array<SecretListEntry> } |
+  { 'Err' : SmartVaultErr };
+export type Result_6 = { 'Ok' : Array<Testament> } |
   { 'Err' : SmartVaultErr };
 export interface Secret {
   'id' : bigint,
@@ -26,9 +24,9 @@ export interface Secret {
   'username' : [] | [Uint8Array | number[]],
   'date_created' : bigint,
   'password' : [] | [Uint8Array | number[]],
-  'name' : string,
+  'name' : [] | [string],
   'notes' : [] | [Uint8Array | number[]],
-  'category' : SecretCategory,
+  'category' : [] | [SecretCategory],
   'date_modified' : bigint,
 }
 export type SecretCategory = { 'Password' : null } |
@@ -41,28 +39,35 @@ export interface SecretDecryptionMaterial {
   'encrypted_decryption_key' : Uint8Array | number[],
   'username_decryption_nonce' : [] | [Uint8Array | number[]],
 }
-export interface SecretForUpdate {
-  'id' : bigint,
-  'url' : [] | [string],
-  'username' : [] | [string],
-  'password' : [] | [string],
-  'name' : [] | [string],
-  'notes' : [] | [string],
-  'category' : [] | [SecretCategory],
-}
 export interface SecretListEntry {
   'id' : bigint,
-  'name' : string,
-  'category' : SecretCategory,
+  'name' : [] | [string],
+  'category' : [] | [SecretCategory],
 }
 export type SmartVaultErr = { 'UserAlreadyExists' : string } |
   { 'SecretHasNoId' : null } |
   { 'SecretDoesAlreadyExist' : string } |
   { 'UserDeletionFailed' : string } |
   { 'SecretDoesNotExist' : string } |
+  { 'TestamentAlreadyExists' : string } |
+  { 'TestamentDoesNotExist' : string } |
   { 'UserVaultCreationFailed' : string } |
   { 'UserDoesNotExist' : string } |
   { 'UserVaultDoesNotExist' : string };
+export interface Testament {
+  'id' : bigint,
+  'heirs' : Array<Principal>,
+  'date_created' : bigint,
+  'name' : [] | [string],
+  'testator' : Principal,
+  'secrets' : Array<bigint>,
+  'key_box' : Array<[bigint, SecretDecryptionMaterial]>,
+  'date_modified' : bigint,
+}
+export interface TestamentKeyDerviationArgs {
+  'encryption_public_key' : Uint8Array | number[],
+  'testament_id' : bigint,
+}
 export interface User {
   'id' : Principal,
   'date_created' : bigint,
@@ -71,9 +76,10 @@ export interface User {
   'date_modified' : bigint,
 }
 export interface _SERVICE {
-  'add_user_secret' : ActorMethod<[CreateSecretArgs], Result>,
-  'create_user' : ActorMethod<[], Result_1>,
-  'delete_user' : ActorMethod<[], Result_2>,
+  'create_secret' : ActorMethod<[CreateSecretArgs], Result>,
+  'create_testament' : ActorMethod<[{}], Result_1>,
+  'create_user' : ActorMethod<[], Result_2>,
+  'delete_user' : ActorMethod<[], Result_3>,
   'encrypted_ibe_decryption_key_for_caller' : ActorMethod<
     [Uint8Array | number[]],
     string
@@ -82,17 +88,23 @@ export interface _SERVICE {
     [Uint8Array | number[]],
     string
   >,
-  'get_encrypted_symmetric_key_for' : ActorMethod<
-    [Uint8Array | number[]],
-    [string, Uint8Array | number[]]
+  'encrypted_symmetric_key_for_testament' : ActorMethod<
+    [TestamentKeyDerviationArgs],
+    string
   >,
-  'get_secret_decryption_material' : ActorMethod<[bigint], Result_3>,
-  'get_secret_list' : ActorMethod<[], Result_4>,
+  'encrypted_symmetric_key_for_uservault' : ActorMethod<
+    [Uint8Array | number[]],
+    string
+  >,
+  'get_secret_decryption_material' : ActorMethod<[bigint], Result_4>,
+  'get_secret_list' : ActorMethod<[], Result_5>,
+  'get_testament_list' : ActorMethod<[], Result_6>,
   'ibe_encryption_key' : ActorMethod<[], string>,
   'is_user_vault_existing' : ActorMethod<[], boolean>,
-  'remove_user_secret' : ActorMethod<[bigint], Result_2>,
+  'remove_user_secret' : ActorMethod<[bigint], Result_3>,
   'symmetric_key_verification_key' : ActorMethod<[], string>,
-  'update_user_secret' : ActorMethod<[SecretForUpdate], Result>,
+  'update_secret' : ActorMethod<[Secret], Result>,
+  'update_testament' : ActorMethod<[Testament], Result_1>,
   'what_time_is_it' : ActorMethod<[], bigint>,
   'who_am_i' : ActorMethod<[], string>,
 }

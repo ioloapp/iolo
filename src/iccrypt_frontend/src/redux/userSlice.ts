@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import {createSlice, PayloadAction} from '@reduxjs/toolkit';
 
 // Define a type for the slice state
 interface UserState {
@@ -37,6 +37,6 @@ export const userSlice = createSlice({
 })
 
 // Action creators are generated for each case reducer function
-export const { logIn, logOut, hasAccount } = userSlice.actions;
+export const {logIn, logOut, hasAccount} = userSlice.actions;
 
 export default userSlice.reducer;

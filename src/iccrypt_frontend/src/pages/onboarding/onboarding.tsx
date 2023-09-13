@@ -1,6 +1,6 @@
 // IC
 import { AuthClient } from "@dfinity/auth-client";
-import { getActor } from '../../utils/backend';
+import { getActor } from '../../services/backend';
 import { useAppDispatch } from "../../redux/hooks";
 import {hasAccount, logIn } from "../../redux/userSlice";
 import {Backdrop, Box, Button, CircularProgress, Typography } from "@mui/material";
