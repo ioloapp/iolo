@@ -1,117 +1,117 @@
-import * as React from 'react';
-import { useEffect, useState } from 'react';
-
-// Redux
-import { useAppSelector } from '../redux/hooks'; // for typescript
-
-// MUI
-import {
-    Box, Typography, List, ListItem, IconButton, ListItemText, TextField, Button, Select, MenuItem, ListItemAvatar, Avatar, Modal, Fab, ListItemButton, Backdrop, CircularProgress, InputAdornment, FilledInput, InputLabel, FormControl
-} from '@mui/material';
-import { Delete as DeleteIcon, Key as KeyIcon, Add as AddIcon, Visibility, VisibilityOff } from '@mui/icons-material';
-
-// IC
-import { getActor } from '../utils/backend';
-import { SecretCategory, CreateSecretArgs, SecretForUpdate, Result_2, Result_3, Result, Secret } from '../../../declarations/iccrypt_backend/iccrypt_backend.did';
-
-// Various
-import { importRsaPublicKey, importRsaPrivateKey, decrypt, encrypt, ab2base64, base642ab } from '../utils/crypto';
-import * as vetkd from "ic-vetkd-utils";
-import { iccrypt_backend } from "../../../declarations/iccrypt_backend";
-import * as agent from "@dfinity/agent";
-
-const secretCategories = {
-    Password: "Password",
-    Note: "Note",
-    Document: "Document"
-}
-
-const secretInModalInitValues = {
-    id: 0,
-    name: '',
-    category: secretCategories.Password,
-    username: '',
-    password: '',
-    url: '',
-    notes: '',
-}
-
-const modalStyle = {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: "70%",
-    bgcolor: 'background.paper',
-    boxShadow: 24,
-    p: 4,
-};
-
-
-// Helper methods for Dfinity mock
-const hex_decode = (hexString) =>
-    Uint8Array.from(hexString.match(/.{1,2}/g).map((byte) => parseInt(byte, 16)));
-
-const hex_encode = (bytes) =>
-    bytes.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '');
-
-async function get_aes_256_gcm_key() {
-    const seed = window.crypto.getRandomValues(new Uint8Array(32));
-    const tsk = new vetkd.TransportSecretKey(seed);
-    //const ek_bytes_hex = await iccrypt_backend.get_encrypted_symmetric_key_for(tsk.public_key());
-    const EncryptedKeyHexAndDerivationId = await iccrypt_backend.get_encrypted_symmetric_key_for(tsk.public_key());
-    const pk_bytes_hex = await iccrypt_backend.symmetric_key_verification_key();
-    //const app_backend_principal = (await agent.Actor.agentOf(iccrypt_backend).getPrincipal()); // default is the anonymous principal!
-
-    let derivationId: Uint8Array;
-    let ek_bytes_hex: String = EncryptedKeyHexAndDerivationId[0];
-
-    if (EncryptedKeyHexAndDerivationId[1] instanceof Uint8Array) {
-        derivationId = EncryptedKeyHexAndDerivationId[1];
-    }
-    return tsk.decrypt_and_hash(
-        hex_decode(ek_bytes_hex),
-        hex_decode(pk_bytes_hex),
-        //app_backend_principal.toUint8Array(),
-        derivationId,
-        32,
-        new TextEncoder().encode("aes-256-gcm")
-    );
-}
-
-
-async function aes_gcm_decrypt(ciphertext_hex, rawKey) {
-    const iv_and_ciphertext = hex_decode(ciphertext_hex);
-    const iv = iv_and_ciphertext.subarray(0, 12); // 96-bits; unique per message
-    const ciphertext = iv_and_ciphertext.subarray(12);
-    const aes_key = await window.crypto.subtle.importKey("raw", rawKey, "AES-GCM", false, ["decrypt"]);
-    let decrypted = await window.crypto.subtle.decrypt(
-        { name: "AES-GCM", iv: iv },
-        aes_key,
-        ciphertext
-    );
-    return new TextDecoder().decode(decrypted);
-}
-
-async function aes_gcm_encrypt(message, rawKey) {
-    const iv = window.crypto.getRandomValues(new Uint8Array(12)); // 96-bits; unique per message
-    const aes_key = await window.crypto.subtle.importKey("raw", rawKey, "AES-GCM", false, ["encrypt"]);
-    const message_encoded = new TextEncoder().encode(message);
-    const ciphertext_buffer = await window.crypto.subtle.encrypt(
-        { name: "AES-GCM", iv: iv },
-        aes_key,
-        message_encoded
-    );
-    const ciphertext = new Uint8Array(ciphertext_buffer);
-    var iv_and_ciphertext = new Uint8Array(iv.length + ciphertext.length);
-    iv_and_ciphertext.set(iv, 0);
-    iv_and_ciphertext.set(ciphertext, iv.length);
-    return hex_encode(iv_and_ciphertext);
-}
+// import * as React from 'react';
+// import { useEffect, useState } from 'react';
+//
+// // Redux
+// import { useAppSelector } from '../redux/hooks'; // for typescript
+//
+// // MUI
+// import {
+//     Box, Typography, List, ListItem, IconButton, ListItemText, TextField, Button, Select, MenuItem, ListItemAvatar, Avatar, Modal, Fab, ListItemButton, Backdrop, CircularProgress, InputAdornment, FilledInput, InputLabel, FormControl
+// } from '@mui/material';
+// import { Delete as DeleteIcon, Key as KeyIcon, Add as AddIcon, Visibility, VisibilityOff } from '@mui/icons-material';
+//
+// // IC
+// import { getActor } from '../utils/backend';
+// import { SecretCategory, CreateSecretArgs, SecretForUpdate, Result_2, Result_3, Result, Secret } from '../../../declarations/iccrypt_backend/iccrypt_backend.did';
+//
+// // Various
+// import { importRsaPublicKey, importRsaPrivateKey, decrypt, encrypt, ab2base64, base642ab } from '../utils/crypto';
+// import * as vetkd from "ic-vetkd-utils";
+// import { iccrypt_backend } from "../../../declarations/iccrypt_backend";
+// import * as agent from "@dfinity/agent";
+//
+// const secretCategories = {
+//     Password: "Password",
+//     Note: "Note",
+//     Document: "Document"
+// }
+//
+// const secretInModalInitValues = {
+//     id: 0,
+//     name: '',
+//     category: secretCategories.Password,
+//     username: '',
+//     password: '',
+//     url: '',
+//     notes: '',
+// }
+//
+// const modalStyle = {
+//     position: 'absolute',
+//     top: '50%',
+//     left: '50%',
+//     transform: 'translate(-50%, -50%)',
+//     width: "70%",
+//     bgcolor: 'background.paper',
+//     boxShadow: 24,
+//     p: 4,
+// };
+//
+//
+// // Helper methods for Dfinity mock
+// const hex_decode = (hexString) =>
+//     Uint8Array.from(hexString.match(/.{1,2}/g).map((byte) => parseInt(byte, 16)));
+//
+// const hex_encode = (bytes) =>
+//     bytes.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '');
+//
+// async function get_aes_256_gcm_key() {
+//     const seed = window.crypto.getRandomValues(new Uint8Array(32));
+//     const tsk = new vetkd.TransportSecretKey(seed);
+//     //const ek_bytes_hex = await iccrypt_backend.get_encrypted_symmetric_key_for(tsk.public_key());
+//     const EncryptedKeyHexAndDerivationId = await iccrypt_backend.get_encrypted_symmetric_key_for(tsk.public_key());
+//     const pk_bytes_hex = await iccrypt_backend.symmetric_key_verification_key();
+//     //const app_backend_principal = (await agent.Actor.agentOf(iccrypt_backend).getPrincipal()); // default is the anonymous principal!
+//
+//     let derivationId: Uint8Array;
+//     let ek_bytes_hex: String = EncryptedKeyHexAndDerivationId[0];
+//
+//     if (EncryptedKeyHexAndDerivationId[1] instanceof Uint8Array) {
+//         derivationId = EncryptedKeyHexAndDerivationId[1];
+//     }
+//     return tsk.decrypt_and_hash(
+//         hex_decode(ek_bytes_hex),
+//         hex_decode(pk_bytes_hex),
+//         //app_backend_principal.toUint8Array(),
+//         derivationId,
+//         32,
+//         new TextEncoder().encode("aes-256-gcm")
+//     );
+// }
+//
+//
+// async function aes_gcm_decrypt(ciphertext_hex, rawKey) {
+//     const iv_and_ciphertext = hex_decode(ciphertext_hex);
+//     const iv = iv_and_ciphertext.subarray(0, 12); // 96-bits; unique per message
+//     const ciphertext = iv_and_ciphertext.subarray(12);
+//     const aes_key = await window.crypto.subtle.importKey("raw", rawKey, "AES-GCM", false, ["decrypt"]);
+//     let decrypted = await window.crypto.subtle.decrypt(
+//         { name: "AES-GCM", iv: iv },
+//         aes_key,
+//         ciphertext
+//     );
+//     return new TextDecoder().decode(decrypted);
+// }
+//
+// async function aes_gcm_encrypt(message, rawKey) {
+//     const iv = window.crypto.getRandomValues(new Uint8Array(12)); // 96-bits; unique per message
+//     const aes_key = await window.crypto.subtle.importKey("raw", rawKey, "AES-GCM", false, ["encrypt"]);
+//     const message_encoded = new TextEncoder().encode(message);
+//     const ciphertext_buffer = await window.crypto.subtle.encrypt(
+//         { name: "AES-GCM", iv: iv },
+//         aes_key,
+//         message_encoded
+//     );
+//     const ciphertext = new Uint8Array(ciphertext_buffer);
+//     var iv_and_ciphertext = new Uint8Array(iv.length + ciphertext.length);
+//     iv_and_ciphertext.set(iv, 0);
+//     iv_and_ciphertext.set(ciphertext, iv.length);
+//     return hex_encode(iv_and_ciphertext);
+// }
 
 const SmartVault = () => {
 
-    useEffect(() => {
+    /* useEffect(() => {
         getUserVault();
     }, []);
 
@@ -430,7 +430,7 @@ const SmartVault = () => {
 
             </Modal>
         </Box>
-    );
+    );*/
 };
 
 export default SmartVault;

@@ -38,3 +38,15 @@ cargo it
 # To derive the candid specification
 cargo candid
 ```
+
+## Generating the interfaces to candid
+
+```bash
+# run 
+cargo candid
+
+#Copy the did output of the console to the did file
+
+# Deploys all canisters locally
+./deploy local
+```
