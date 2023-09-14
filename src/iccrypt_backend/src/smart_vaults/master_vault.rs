@@ -69,14 +69,14 @@ impl MasterVault {
         }
 
         let user_vault = self.user_vaults.get_mut(vault_id).unwrap();
-        let secret = user_vault.add_secret(asa.secret)?;
+        let added_secret = user_vault.add_secret(asa.secret)?;
 
         let decryption_material = asa.decryption_material.clone();
         user_vault
             .key_box_mut()
-            .insert(secret.id().clone(), decryption_material);
+            .insert(added_secret.id().clone(), decryption_material);
 
-        Ok(secret)
+        Ok(added_secret)
     }
 
     // Inserts a testament into a user's vault.

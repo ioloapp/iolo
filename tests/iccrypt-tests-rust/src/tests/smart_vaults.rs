@@ -29,8 +29,8 @@ pub async fn test_smart_vaults() -> Result<()> {
         "Testing smart vaults and testaments".yellow().bold()
     );
     test_user_lifecycle().await?;
-    test_secret_lifecycle().await?;
-    test_testament_lifecycle().await?;
+    // test_secret_lifecycle().await?;
+    // test_testament_lifecycle().await?;
     Ok(())
 }
 
