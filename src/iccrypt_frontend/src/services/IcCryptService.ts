@@ -1,7 +1,7 @@
 import {ActorSubclass, HttpAgent, Identity} from "@dfinity/agent";
 import {
     _SERVICE,
-    CreateSecretArgs,
+    AddSecretArgs,
     Result,
     Result_2,
     Result_5,
@@ -87,18 +87,29 @@ class IcCryptService {
 
     public async addSecret(secret: any): Promise<SecretListEntry[]> {
         //TODO add frontend mapping with type
-        const request: CreateSecretArgs = {
+        const request: AddSecretArgs = {
+            secret: {
+                id: "",
+                url: [],
+                username: [],
+                date_created: 0n,
+                password: [],
+                name: [],
+                notes: [],
+                category: [],
+                date_modified: 0n
+            },
             decryption_material: undefined
         }
-        const result: Result = await this.actor.create_secret(request);
+        const result: Result = await this.actor.add_secret(request);
         if (result['OK']) {
             return result['OK']
         }
         throw mapError(result['Err']);
     }
 
-    public async removeSecret(secretId: bigint) {
-        const result: Result_2 = await this.actor.remove_user_secret(secretId);
+    public async deleteSecret(secretId: bigint) {
+        const result: Result_2 = await this.actor.remove_user_secret(`${secretId}`);
         if (result['OK']) {
             return result['OK']
         }

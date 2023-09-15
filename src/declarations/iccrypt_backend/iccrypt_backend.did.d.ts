@@ -1,7 +1,8 @@
-import type { Principal } from '@dfinity/principal';
-import type { ActorMethod } from '@dfinity/agent';
+import type {Principal} from '@dfinity/principal';
+import type {ActorMethod} from '@dfinity/agent';
 
-export interface CreateSecretArgs {
+export interface AddSecretArgs {
+  'secret' : Secret,
   'decryption_material' : SecretDecryptionMaterial,
 }
 export type Result = { 'Ok' : Secret } |
@@ -19,7 +20,7 @@ export type Result_5 = { 'Ok' : Array<SecretListEntry> } |
 export type Result_6 = { 'Ok' : Array<Testament> } |
   { 'Err' : SmartVaultErr };
 export interface Secret {
-  'id' : bigint,
+  'id' : string,
   'url' : [] | [string],
   'username' : [] | [Uint8Array | number[]],
   'date_created' : bigint,
@@ -40,7 +41,7 @@ export interface SecretDecryptionMaterial {
   'username_decryption_nonce' : [] | [Uint8Array | number[]],
 }
 export interface SecretListEntry {
-  'id' : bigint,
+  'id' : string,
   'name' : [] | [string],
   'category' : [] | [SecretCategory],
 }
@@ -60,8 +61,8 @@ export interface Testament {
   'date_created' : bigint,
   'name' : [] | [string],
   'testator' : Principal,
-  'secrets' : Array<bigint>,
-  'key_box' : Array<[bigint, SecretDecryptionMaterial]>,
+  'secrets' : Array<string>,
+  'key_box' : Array<[string, SecretDecryptionMaterial]>,
   'date_modified' : bigint,
 }
 export interface TestamentKeyDerviationArgs {
@@ -76,7 +77,7 @@ export interface User {
   'date_modified' : bigint,
 }
 export interface _SERVICE {
-  'create_secret' : ActorMethod<[CreateSecretArgs], Result>,
+  'add_secret' : ActorMethod<[AddSecretArgs], Result>,
   'create_testament' : ActorMethod<[{}], Result_1>,
   'create_user' : ActorMethod<[], Result_2>,
   'delete_user' : ActorMethod<[], Result_3>,
@@ -96,12 +97,12 @@ export interface _SERVICE {
     [Uint8Array | number[]],
     string
   >,
-  'get_secret_decryption_material' : ActorMethod<[bigint], Result_4>,
+  'get_secret_decryption_material' : ActorMethod<[string], Result_4>,
   'get_secret_list' : ActorMethod<[], Result_5>,
   'get_testament_list' : ActorMethod<[], Result_6>,
   'ibe_encryption_key' : ActorMethod<[], string>,
   'is_user_vault_existing' : ActorMethod<[], boolean>,
-  'remove_user_secret' : ActorMethod<[bigint], Result_3>,
+  'remove_user_secret' : ActorMethod<[string], Result_3>,
   'symmetric_key_verification_key' : ActorMethod<[], string>,
   'update_secret' : ActorMethod<[Secret], Result>,
   'update_testament' : ActorMethod<[Testament], Result_1>,

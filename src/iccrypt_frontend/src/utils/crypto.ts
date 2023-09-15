@@ -13,7 +13,7 @@ export async function get_aes_256_gcm_key() {
     const seed = window.crypto.getRandomValues(new Uint8Array(32));
     const tsk = new vetkd.TransportSecretKey(seed);
     //const ek_bytes_hex = await iccrypt_backend.get_encrypted_symmetric_key_for(tsk.public_key());
-    const EncryptedKeyHexAndDerivationId = await iccrypt_backend.get_encrypted_symmetric_key_for(tsk.public_key());
+    const EncryptedKeyHexAndDerivationId = null;//TODO await iccrypt_backend.get_encrypted_symmetric_key_for(tsk.public_key());
     const pk_bytes_hex = await iccrypt_backend.symmetric_key_verification_key();
     //const app_backend_principal = (await agent.Actor.agentOf(iccrypt_backend).getPrincipal()); // default is the anonymous principal!
 

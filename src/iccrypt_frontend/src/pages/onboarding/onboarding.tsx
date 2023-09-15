@@ -1,10 +1,9 @@
 // IC
-import { AuthClient } from "@dfinity/auth-client";
-import { getActor } from '../../services/backend';
-import { useAppDispatch } from "../../redux/hooks";
-import {hasAccount, logIn } from "../../redux/userSlice";
-import {Backdrop, Box, Button, CircularProgress, Typography } from "@mui/material";
+import {useAppDispatch} from "../../redux/hooks";
+import {hasAccount} from "../../redux/userSlice";
+import {Backdrop, Box, Button, CircularProgress, Typography} from "@mui/material";
 import * as React from "react";
+import IcCryptService from "../../services/IcCryptService";
 
 
 export function Onboarding() {
@@ -12,15 +11,12 @@ export function Onboarding() {
 
     const dispatch = useAppDispatch();
     const [loadingIconIsOpen, setLoadingIcon] = React.useState(false);
+    const icCryptService = new IcCryptService();
 
     // Login/Logout
     async function createUser() {
         setLoadingIcon(true);
-        let actor = await getActor();
-        const result = await actor.create_user();
-        if(result['Ok']) {
-            dispatch(hasAccount(true));
-        }
+        await icCryptService.login(() => dispatch(hasAccount(true)));
         setLoadingIcon(false);
     }
 
