@@ -5,6 +5,7 @@ import {
     Result,
     Result_2,
     Result_5,
+    Secret,
     SecretListEntry,
     User
 } from "../../../declarations/iccrypt_backend/iccrypt_backend.did";
@@ -86,19 +87,12 @@ class IcCryptService {
         throw mapError(result['Err']);
     }
 
-    public async addSecret(secret: any): Promise<SecretListEntry[]> {
-        //TODO add frontend mapping with type
+    public async addSecret(secret: Secret): Promise<SecretListEntry[]> {
         const request: AddSecretArgs = {
             secret: {
-                id: "",
-                url: [],
-                username: [],
-                date_created: 0n,
-                password: [],
-                name: [],
-                notes: [],
-                category: [],
-                date_modified: 0n
+                ...secret,
+                date_created: BigInt(new Date().getDate()),
+                date_modified: BigInt(new Date().getDate())
             },
             decryption_material: undefined
         }
