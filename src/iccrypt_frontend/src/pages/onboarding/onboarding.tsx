@@ -1,9 +1,9 @@
 // IC
 import {useAppDispatch} from "../../redux/hooks";
-import {hasAccount} from "../../redux/userSlice";
 import {Backdrop, Box, Button, CircularProgress, Typography} from "@mui/material";
 import * as React from "react";
 import IcCryptService from "../../services/IcCryptService";
+import {userActions} from "../../redux/user/userSlice";
 
 
 export function Onboarding() {
@@ -16,7 +16,8 @@ export function Onboarding() {
     // Login/Logout
     async function createUser() {
         setLoadingIcon(true);
-        await icCryptService.login(() => dispatch(hasAccount(true)));
+        const user = await icCryptService.createUser();
+        dispatch(userActions.setUserVaultExisting(user.user_vault_id != undefined));
         setLoadingIcon(false);
     }
 
@@ -25,9 +26,7 @@ export function Onboarding() {
             <Typography paragraph>
                 It seems you have not yet created your IC Crypt account. You wanna go for one?
             </Typography>
-            <Button variant="contained" sx={{ ml: 2, mt: 1 }} onClick={() => {
-                createUser();
-            }}>
+            <Button variant="contained" sx={{ ml: 2, mt: 1 }} onClick={createUser}>
                 Create Account
             </Button>
             <Backdrop

@@ -3,7 +3,7 @@ import {useAppDispatch} from "../../redux/hooks";
 import {Button} from "@mui/material";
 import * as React from "react";
 import IcCryptService from "../../services/IcCryptService";
-import {hasAccount, logIn} from "../../redux/userSlice";
+import {userActions} from "../../redux/user/userSlice";
 
 
 export function Login() {
@@ -14,8 +14,11 @@ export function Login() {
 
     // Login/Logout
     async function handleLogin() {
-        await icCryptService.login((principal: string) => dispatch(logIn(principal)));
-        dispatch(hasAccount(await icCryptService.isUserVaultExisting()));
+        const principal = await icCryptService.login();
+        if(principal){
+            dispatch(userActions.logIn(principal.toText()));
+            dispatch(userActions.setUserVaultExisting(await icCryptService.isUserVaultExisting()));
+        }
     }
 
     return (

@@ -12,9 +12,10 @@ import {AuthClient} from "@dfinity/auth-client";
 import {createActor} from "../../../declarations/iccrypt_backend";
 import {mapError} from "../utils/errorMapper";
 import {ICCryptError} from "../error/Errors";
+import {Principal} from "@dfinity/principal";
 
 class IcCryptService {
-    static instance;
+    static instance: IcCryptService;
     private authClient: AuthClient;
     private identity: Identity;
     private agent: HttpAgent
@@ -41,12 +42,12 @@ class IcCryptService {
         return this.actor;
     }
 
-    public async login(loginSuccessAction: (principal: string) => void) {
+    public async login(): Promise<Principal> {
         const daysToAdd = 7;
         const expiry = Date.now() + (daysToAdd * 86400000);
         await this.authClient.login({
             onSuccess: async () => {
-                loginSuccessAction(await this.getUserPrincipal());
+                console.log('login successful')
             },
             onError: async () => {
                 throw new ICCryptError();
@@ -54,11 +55,11 @@ class IcCryptService {
             identityProvider: process.env.II_URL,
             maxTimeToLive: BigInt(expiry * 1000000)
         });
-        return false;
+        return this.getUserPrincipal();
     }
 
-    public async getUserPrincipal(): Promise<string> {
-        return this.authClient.getIdentity().getPrincipal().toText();
+    public async getUserPrincipal(): Promise<Principal> {
+        return this.authClient.getIdentity().getPrincipal();
     }
 
     public async createUser(): Promise<User> {

@@ -2,6 +2,7 @@ import {SmartVaultErr} from "../../../declarations/iccrypt_backend/iccrypt_backe
 import {ICCryptError} from "../error/Errors";
 
 export function mapError(input: SmartVaultErr): ICCryptError{
+    console.log('error', input);
     if(input['UserAlreadyExists']){
         throw new ICCryptError(input['UserAlreadyExists'])
     } else if(input['SecretHasNoId']){
