@@ -27,10 +27,9 @@ thread_local! {
 #[ic_cdk_macros::update]
 #[candid_method(update)]
 pub fn create_user() -> Result<User, SmartVaultErr> {
-    let principal = get_caller();
-    let mut new_user = User::new(&principal);
+    let mut new_user = User::new(&get_caller());
 
-    // Let's create a vault for the user
+    // Let's create the user vault
     let new_user_vault_id: UUID =
         MASTERVAULT.with(|ms: &RefCell<MasterVault>| -> Result<UUID, SmartVaultErr> {
             let mut master_vault = ms.borrow_mut();
@@ -49,9 +48,7 @@ pub fn create_user() -> Result<User, SmartVaultErr> {
                 Err(e) => Err(e),
             }
         },
-    )?;
-
-    Ok(new_user)
+    )
 }
 
 #[ic_cdk_macros::update]
@@ -74,6 +71,33 @@ pub fn delete_user() -> Result<(), SmartVaultErr> {
         },
     )?;
     Ok(())
+}
+
+#[ic_cdk_macros::update]
+#[candid_method(update)]
+pub fn add_secret(args: AddSecretArgs) -> Result<Secret, SmartVaultErr> {
+    let user_vault_id: UUID = get_vault_id_for(get_caller())?;
+    MASTERVAULT.with(
+        |ms: &RefCell<MasterVault>| -> Result<Secret, SmartVaultErr> {
+            let mut master_vault = ms.borrow_mut();
+            master_vault.add_user_secret(&user_vault_id, args)
+        },
+    )
+}
+
+#[ic_cdk_macros::update]
+#[candid_method(update)]
+pub fn update_secret(s: Secret) -> Result<Secret, SmartVaultErr> {
+    let principal = get_caller();
+
+    let user_vault_id: UUID = get_vault_id_for(principal)?;
+
+    MASTERVAULT.with(
+        |ms: &RefCell<MasterVault>| -> Result<Secret, SmartVaultErr> {
+            let mut master_vault = ms.borrow_mut();
+            master_vault.update_user_secret(&user_vault_id, s)
+        },
+    )
 }
 
 #[ic_cdk_macros::query]
@@ -111,35 +135,6 @@ pub fn get_secret_decryption_material(
         let sdm: &SecretDecryptionMaterial = uv.key_box().get(&sid).unwrap();
         Ok(sdm.clone())
     })
-}
-
-#[ic_cdk_macros::update]
-#[candid_method(update)]
-pub fn add_secret(args: AddSecretArgs) -> Result<Secret, SmartVaultErr> {
-    let principal = get_caller();
-
-    let user_vault_id: UUID = get_vault_id_for(principal)?;
-    MASTERVAULT.with(
-        |ms: &RefCell<MasterVault>| -> Result<Secret, SmartVaultErr> {
-            let mut master_vault = ms.borrow_mut();
-            master_vault.add_user_secret(&user_vault_id, args)
-        },
-    )
-}
-
-#[ic_cdk_macros::update]
-#[candid_method(update)]
-pub fn update_secret(s: Secret) -> Result<Secret, SmartVaultErr> {
-    let principal = get_caller();
-
-    let user_vault_id: UUID = get_vault_id_for(principal)?;
-
-    MASTERVAULT.with(
-        |ms: &RefCell<MasterVault>| -> Result<Secret, SmartVaultErr> {
-            let mut master_vault = ms.borrow_mut();
-            master_vault.update_user_secret(&user_vault_id, s)
-        },
-    )
 }
 
 #[ic_cdk_macros::update]

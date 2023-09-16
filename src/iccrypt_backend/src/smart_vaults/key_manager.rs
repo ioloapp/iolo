@@ -196,13 +196,3 @@ fn bls12_381_test_key_1() -> VetKDKeyId {
 fn vetkd_system_api_canister_id() -> CanisterId {
     CanisterId::from_str(VETKD_SYSTEM_API_CANISTER_ID).expect("failed to create canister ID")
 }
-
-fn debug_println_caller(method_name: &str) {
-    ic_cdk::println!(
-        "{}: caller: {} (isAnonymous: {})",
-        method_name,
-        ic_cdk::caller().to_text(),
-        ic_cdk::caller() == candid::Principal::anonymous()
-    );
-    ic_cdk::println!("And i am: {}", ic_cdk::id());
-}

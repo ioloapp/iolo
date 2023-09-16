@@ -148,6 +148,12 @@ impl Secret {
     }
 }
 
+impl Default for Secret {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[cfg(test)]
 mod tests {
 

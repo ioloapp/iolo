@@ -87,7 +87,7 @@ impl UserVault {
     pub fn add_secret(&mut self, secret: Secret) -> Result<Secret, SmartVaultErr> {
         let sid = secret.id().clone();
         if self.secrets.contains_key(secret.id()) {
-            return Err(SmartVaultErr::SecretDoesAlreadyExist(sid.to_string()));
+            return Err(SmartVaultErr::SecretAlreadyExists(sid.to_string()));
         }
 
         self.secrets.insert(secret.id().clone(), secret);
@@ -105,10 +105,11 @@ impl UserVault {
     }
 
     pub fn update_secret(&mut self, secret: Secret) -> Result<Secret, SmartVaultErr> {
+        let sid = secret.id().clone();
         if !self.secrets.contains_key(secret.id()) {
             return Err(SmartVaultErr::SecretDoesNotExist(secret.id().to_string()));
         }
-        let sid = secret.id().clone();
+
         self.secrets.insert(sid.clone(), secret);
         self.date_modified = time::get_current_time();
         Ok(self.secrets.get(&sid).unwrap().clone())
@@ -130,7 +131,7 @@ impl UserVault {
 
     pub fn add_testament(&mut self, testament: Testament) -> Result<(), SmartVaultErr> {
         if self.testaments.contains_key(testament.id()) {
-            return Err(SmartVaultErr::SecretDoesAlreadyExist(
+            return Err(SmartVaultErr::SecretAlreadyExists(
                 testament.id().to_string(),
             ));
         }
@@ -209,11 +210,9 @@ mod tests {
         // Same secret cannot be added twice
         assert_eq!(
             user_vault.add_secret(secret.clone()),
-            Err(SmartVaultErr::SecretDoesAlreadyExist(
-                secret.id().to_string()
-            )),
+            Err(SmartVaultErr::SecretAlreadyExists(secret.id().to_string())),
             "Error must be {:?} but is {:?}",
-            SmartVaultErr::SecretDoesAlreadyExist(secret.id().to_string()),
+            SmartVaultErr::SecretAlreadyExists(secret.id().to_string()),
             user_vault.add_secret(secret.clone())
         );
 
