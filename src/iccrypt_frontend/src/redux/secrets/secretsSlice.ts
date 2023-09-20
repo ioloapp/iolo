@@ -1,6 +1,9 @@
 import {createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {initialState} from "./secretsState";
 import {SecretListEntry} from "../../../../declarations/iccrypt_backend/iccrypt_backend.did";
+import IcCryptService from "../../services/IcCryptService";
+
+const icCryptService = new IcCryptService();
 
 // Define a type for the slice state
 export const secretsSlice = createSlice({
