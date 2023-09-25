@@ -2,7 +2,7 @@ import {Button, Typography} from "@mui/material";
 import * as React from "react";
 import IcCryptService from "../../services/IcCryptService";
 import {useAppDispatch} from "../../redux/hooks";
-import {secretsActions} from "../../redux/secrets/secretsSlice";
+import {addSecretThunk} from "../../redux/secrets/secretsSlice";
 import {v4 as uuidv4} from 'uuid';
 
 export function Wallet() {
@@ -12,7 +12,7 @@ export function Wallet() {
 
 
     const createSecret = async () => {
-        const secretList = await icCryptService.addSecret({
+        dispatch(addSecretThunk({
             id: uuidv4(),
             category: undefined,
             date_created: 0n,
@@ -23,8 +23,7 @@ export function Wallet() {
             url: undefined,
             username: undefined
 
-        });
-        dispatch(secretsActions.setSecretList(secretList));
+        }));
     }
 
     return (<>

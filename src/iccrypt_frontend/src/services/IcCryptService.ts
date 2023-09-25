@@ -97,6 +97,7 @@ class IcCryptService {
             decryption_material: undefined
         }
         const result: Result = await this.actor.add_secret(request);
+        console.log('result2', result)
         if (result['OK']) {
             return result['OK']
         }
