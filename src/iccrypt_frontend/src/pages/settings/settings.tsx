@@ -1,7 +1,8 @@
-import {Button, Typography} from "@mui/material";
+import {Button} from "@mui/material";
 import * as React from "react";
 import {userActions} from "../../redux/user/userSlice";
 import {useAppDispatch} from "../../redux/hooks";
+import {PageLayout} from "../../components/layout/page-layout";
 
 export function Settings() {
 
@@ -10,8 +11,9 @@ export function Settings() {
         dispatch(userActions.logOut());
     }
 
-    return (<>
-        <Typography variant="h4">Settings</Typography>
-        <Button variant="contained" onClick={logout}>Logout</Button>
-    </>);
+    return (
+        <PageLayout title="Settings">
+            <Button variant="contained" onClick={logout}>Logout</Button>
+        </PageLayout>
+    );
 }

@@ -1,8 +1,9 @@
 // IC
 import {useAppDispatch} from "../../redux/hooks";
-import {Backdrop, Box, Button, CircularProgress, Typography} from "@mui/material";
+import {Backdrop, Button, CircularProgress, Typography} from "@mui/material";
 import * as React from "react";
 import {createUserThunk} from "../../redux/user/userSlice";
+import {PageLayout} from "../../components/layout/page-layout";
 
 
 export function Onboarding() {
@@ -19,7 +20,7 @@ export function Onboarding() {
     }
 
     return (
-        <Box justifyContent="center">
+        <PageLayout title="Onboarding">
             <Typography paragraph>
                 It seems you have not yet created your IC Crypt account. You wanna go for one?
             </Typography>
@@ -32,6 +33,6 @@ export function Onboarding() {
             >
                 <CircularProgress color="inherit"/>
             </Backdrop>
-        </Box>
+        </PageLayout>
     );
 }

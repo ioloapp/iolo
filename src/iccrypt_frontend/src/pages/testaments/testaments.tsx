@@ -1,6 +1,9 @@
-import { Typography } from "@mui/material";
 import * as React from "react";
+import {PageLayout} from "../../components/layout/page-layout";
 
 export function Testaments() {
-    return <Typography variant="h4">Testaments</Typography>;
+    return (
+        <PageLayout title="Testaments">
+        </PageLayout>
+    );
 }

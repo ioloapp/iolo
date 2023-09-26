@@ -3,6 +3,7 @@ import {useAppDispatch} from "../../redux/hooks";
 import {Button} from "@mui/material";
 import * as React from "react";
 import {loginUserThunk} from "../../redux/user/userSlice";
+import {PageLayout} from "../../components/layout/page-layout";
 
 
 export function Login() {
@@ -15,8 +16,8 @@ export function Login() {
     }
 
     return (
-        <div>
-            <Button color="inherit" onClick={handleLogin}>Log in</Button>
-        </div>
+        <PageLayout title="IC Crypt">
+            <Button variant="contained" onClick={handleLogin}>Log in</Button>
+        </PageLayout>
     );
 }

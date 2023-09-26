@@ -1,9 +1,10 @@
-import {Button, Typography} from "@mui/material";
+import {Button} from "@mui/material";
 import * as React from "react";
 import IcCryptService from "../../services/IcCryptService";
 import {useAppDispatch} from "../../redux/hooks";
 import {addSecretThunk} from "../../redux/secrets/secretsSlice";
 import {v4 as uuidv4} from 'uuid';
+import {PageLayout} from "../../components/layout/page-layout";
 
 export function Wallet() {
 
@@ -26,8 +27,8 @@ export function Wallet() {
         }));
     }
 
-    return (<>
-        <Typography variant="h4">Wallet</Typography>
-        <Button variant="contained" onClick={createSecret}>Create Secret</Button>
-    </>);
+    return (
+        <PageLayout title="Wallet">
+            <Button variant="contained" onClick={createSecret}>Create Secret</Button>
+        </PageLayout>);
 }
