@@ -13,7 +13,7 @@ export async function get_aes_256_gcm_key() {
     const seed = window.crypto.getRandomValues(new Uint8Array(32));
     const tsk = new vetkd.TransportSecretKey(seed);
     //const ek_bytes_hex = await iccrypt_backend.get_encrypted_symmetric_key_for(tsk.public_key());
-    const EncryptedKeyHexAndDerivationId = null;//TODO await iccrypt_backend.get_encrypted_symmetric_key_for(tsk.public_key());
+    const EncryptedKeyHexAndDerivationId = null; //await iccrypt_backend.encrypted_symmetric_key_for_uservault(tsk.public_key());
     const pk_bytes_hex = await iccrypt_backend.symmetric_key_verification_key();
     //const app_backend_principal = (await agent.Actor.agentOf(iccrypt_backend).getPrincipal()); // default is the anonymous principal!
 
@@ -47,9 +47,14 @@ export async function aes_gcm_decrypt(ciphertext_hex, rawKey) {
     return new TextDecoder().decode(decrypted);
 }
 
-export async function aes_gcm_encrypt(message, rawKey) {
-    const iv = window.crypto.getRandomValues(new Uint8Array(12)); // 96-bits; unique per message
-    const aes_key = await window.crypto.subtle.importKey("raw", rawKey, "AES-GCM", false, ["encrypt"]);
+export interface EncryptionMaterial {
+    nonce: Uint8Array,
+    ciphertext: Uint8Array
+}
+
+export async function aes_gcm_encrypt(message, rawKey): Promise<EncryptionMaterial> {
+    const iv: Uint8Array = window.crypto.getRandomValues(new Uint8Array(12)); // 96-bits; unique per message
+    const aes_key: CryptoKey = await window.crypto.subtle.importKey("raw", rawKey, "AES-GCM", false, ["encrypt"]);
     const message_encoded = new TextEncoder().encode(message);
     const ciphertext_buffer = await window.crypto.subtle.encrypt(
         { name: "AES-GCM", iv: iv },
@@ -57,10 +62,14 @@ export async function aes_gcm_encrypt(message, rawKey) {
         message_encoded
     );
     const ciphertext = new Uint8Array(ciphertext_buffer);
-    var iv_and_ciphertext = new Uint8Array(iv.length + ciphertext.length);
-    iv_and_ciphertext.set(iv, 0);
-    iv_and_ciphertext.set(ciphertext, iv.length);
-    return hex_encode(iv_and_ciphertext);
+    return  {
+        nonce: iv,
+        ciphertext
+    }
+    // var iv_and_ciphertext = new Uint8Array(iv.length + ciphertext.length);
+    // iv_and_ciphertext.set(iv, 0);
+    // iv_and_ciphertext.set(ciphertext, iv.length);
+    // return hex_encode(iv_and_ciphertext);
 }
 
 // from https://developers.google.com/web/updates/2012/06/How-to-convert-ArrayBuffer-to-and-from-String

@@ -6,6 +6,7 @@ import {
     Result_2,
     Result_5,
     Secret,
+    SecretDecryptionMaterial,
     SecretListEntry,
     User
 } from "../../../declarations/iccrypt_backend/iccrypt_backend.did";
@@ -14,6 +15,7 @@ import {createActor} from "../../../declarations/iccrypt_backend";
 import {mapError} from "../utils/errorMapper";
 import {ICCryptError} from "../error/Errors";
 import {Principal} from "@dfinity/principal";
+import {aes_gcm_encrypt, get_aes_256_gcm_key} from "../utils/crypto";
 
 class IcCryptService {
     static instance: IcCryptService;
@@ -88,20 +90,46 @@ class IcCryptService {
     }
 
     public async addSecret(secret: Secret): Promise<SecretListEntry[]> {
-        const request: AddSecretArgs = {
-            secret: {
-                ...secret,
-                date_created: BigInt(new Date().getDate()),
-                date_modified: BigInt(new Date().getDate())
-            },
-            decryption_material: undefined
-        }
-        const result: Result = await this.actor.add_secret(request);
+        const result: Result = await this.actor.add_secret(await this.encryptSecret(secret));
         console.log('result2', result)
         if (result['OK']) {
             return result['OK']
         }
         throw mapError(result['Err']);
+    }
+
+    private async encryptSecret(secret: Secret): Promise<AddSecretArgs> {
+        const secret_encryption_key = await get_aes_256_gcm_key();
+
+        // Encrypt secret fields
+        const encrypted_username = await aes_gcm_encrypt(secret.username, secret_encryption_key);
+        const encrypted_password = await aes_gcm_encrypt(secret.password, secret_encryption_key);
+        const encrypted_notes = await aes_gcm_encrypt(secret.notes, secret_encryption_key);
+
+        // Encrypt the encryption key
+        const uservault_encryption_key = null //TODO get_aes_256_gcm_key_for_uservault();
+        const encrypted_secret_decryption_key = await aes_gcm_encrypt(secret_encryption_key, uservault_encryption_key);
+
+        let decryption_material: SecretDecryptionMaterial = {
+            encrypted_decryption_key: encrypted_secret_decryption_key.ciphertext,
+            iv: encrypted_secret_decryption_key.nonce,
+            username_decryption_nonce: [encrypted_username.ciphertext],
+            password_decryption_nonce: [encrypted_password.ciphertext],
+            notes_decryption_nonce: [encrypted_notes.ciphertext],
+        };
+
+        return {
+            secret: {
+                ...secret,
+                username: [encrypted_username.ciphertext],
+                password: [encrypted_password.ciphertext],
+                notes: [encrypted_notes.ciphertext],
+                date_created: BigInt(new Date().getDate()),
+                date_modified: BigInt(new Date().getDate())
+            },
+            decryption_material
+        }
+
     }
 
     public async deleteSecret(secretId: bigint) {
