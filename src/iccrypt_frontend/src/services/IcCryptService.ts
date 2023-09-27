@@ -5,7 +5,7 @@ import {
     Result,
     Result_2,
     Result_5,
-    Secret,
+    SecretCategory,
     SecretDecryptionMaterial,
     SecretListEntry,
     User
@@ -16,6 +16,7 @@ import {mapError} from "../utils/errorMapper";
 import {ICCryptError} from "../error/Errors";
 import {Principal} from "@dfinity/principal";
 import {aes_gcm_encrypt, get_aes_256_gcm_key} from "../utils/crypto";
+import {UiSecret, UiSecretCategory} from "./IcTypesForUi";
 
 class IcCryptService {
     static instance: IcCryptService;
@@ -67,39 +68,42 @@ class IcCryptService {
 
     public async createUser(): Promise<User> {
         const result: Result_2 = await this.actor.create_user();
-        if (result['OK']) {
-            return result['OK']
+        if (result['Ok']) {
+            return result['Ok']
         }
         throw mapError(result['Err']);
     }
 
     public async deleteUser(): Promise<User> {
         const result: Result_2 = await this.actor.delete_user();
-        if (result['OK']) {
-            return result['OK']
+        if (result['Ok']) {
+            return result['Ok']
         }
         throw mapError(result['Err']);
     }
 
     public async getSecretList(): Promise<SecretListEntry[]> {
         const result: Result_5 = await this.actor.get_secret_list();
-        if (result['OK']) {
-            return result['OK']
+        if (result['Ok']) {
+            return result['Ok']
         }
         throw mapError(result['Err']);
     }
 
-    public async addSecret(secret: Secret): Promise<SecretListEntry[]> {
-        const result: Result = await this.actor.add_secret(await this.encryptSecret(secret));
+    public async addSecret(secret: UiSecret): Promise<SecretListEntry[]> {
+        console.log('start adding')
+        const encryptedSecret = await this.encryptSecret(secret)
+        console.log('encryptedSecret', encryptedSecret)
+        const result: Result = await this.actor.add_secret(encryptedSecret);
         console.log('result2', result)
-        if (result['OK']) {
-            return result['OK']
+        if (result['Ok']) {
+            return result['Ok']
         }
         throw mapError(result['Err']);
     }
 
-    private async encryptSecret(secret: Secret): Promise<AddSecretArgs> {
-        const secret_encryption_key = await get_aes_256_gcm_key();
+    private async encryptSecret(secret: UiSecret): Promise<AddSecretArgs> {
+        const secret_encryption_key = await get_aes_256_gcm_key(await this.getUserPrincipal());
 
         // Encrypt secret fields
         const encrypted_username = await aes_gcm_encrypt(secret.username, secret_encryption_key);
@@ -118,9 +122,12 @@ class IcCryptService {
             notes_decryption_nonce: [encrypted_notes.ciphertext],
         };
 
-        return {
+        const encryptedSecret: AddSecretArgs = {
             secret: {
-                ...secret,
+                id: secret.id,
+                url: [secret.url],
+                name: [secret.name],
+                category: [this.getSecretCategory(secret.category)],
                 username: [encrypted_username.ciphertext],
                 password: [encrypted_password.ciphertext],
                 notes: [encrypted_notes.ciphertext],
@@ -129,13 +136,25 @@ class IcCryptService {
             },
             decryption_material
         }
+        console.log('encrypted secret to add: ', encryptedSecret)
+        return encryptedSecret
+    }
 
+    private getSecretCategory(uiCategory: UiSecretCategory): SecretCategory {
+        switch (uiCategory){
+            case UiSecretCategory.Password:
+                return { 'Password' : null }
+            case UiSecretCategory.Note:
+                return { 'Note' : null }
+            case UiSecretCategory.Document:
+                return { 'Document' : null }
+        }
     }
 
     public async deleteSecret(secretId: bigint) {
         const result: Result_2 = await this.actor.remove_user_secret(`${secretId}`);
-        if (result['OK']) {
-            return result['OK']
+        if (result['Ok']) {
+            return result['Ok']
         }
         throw mapError(result['Err']);
     }

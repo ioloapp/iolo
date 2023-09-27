@@ -11,6 +11,7 @@ import DescriptionIcon from '@mui/icons-material/Description';
 import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 import {useSelector} from "react-redux";
 import {selectSecrets} from "../../redux/secrets/secretsSelectors";
+import {UiSecretCategory} from "../../services/IcTypesForUi";
 
 export function Wallet() {
 
@@ -25,14 +26,11 @@ export function Wallet() {
     const createSecret = async () => {
         dispatch(addSecretThunk({
             id: uuidv4(),
-            category: undefined,
-            date_created: 0n,
-            date_modified: 0n,
-            name: ['test'],
-            notes: undefined,
-            password: undefined,
-            url: undefined,
-            username: undefined
+            category: UiSecretCategory.Password,
+            name: 'PW Test',
+            password: "test",
+            url: "http://test.me",
+            username: "me"
 
         }));
     }
@@ -48,71 +46,17 @@ export function Wallet() {
     return (
         <PageLayout title="Wallet">
             <Box>
-                {secretList.passwordList && <Box>
-                    <Typography variant="h4">Passwords</Typography>
-                    <List dense={false}>
-                        {secretList.passwordList.map(secret =>
-                            <ListItem key={secret.id}>
-                                <ListItemAvatar>
-                                    <Avatar>
-                                        <PasswordIcon/>
-                                    </Avatar>
-                                </ListItemAvatar>
-                                <ListItemText
-                                    primary={secret.name}
-                                />
-                            </ListItem>,
-                        )}
-                    </List>
-                </Box>
-                }
-                {secretList.notesList &&
-                <Box>
-                    <Typography variant="h4">Notes</Typography>
-                    <List dense={false}>
-                        {secretList.notesList.map(secret =>
-                            <ListItem key={secret.id}>
-                                <ListItemAvatar>
-                                    <Avatar>
-                                        <NotesIcon/>
-                                    </Avatar>
-                                </ListItemAvatar>
-                                <ListItemText
-                                    primary={secret.name}
-                                />
-                            </ListItem>,
-                        )}
-                    </List>
-                </Box>
-                }
-                {secretList.documentsList &&
-                <Box>
-                    <Typography variant="h4">Documents</Typography>
-                    <List dense={false}>
-                        {secretList.documentsList.map(secret =>
-                            <ListItem key={secret.id}>
-                                <ListItemAvatar>
-                                    <Avatar>
-                                        <DescriptionIcon/>
-                                    </Avatar>
-                                </ListItemAvatar>
-                                <ListItemText
-                                    primary={secret.name}
-                                />
-                            </ListItem>,
-                        )}
-                    </List>
-                </Box>
-                }
-                {secretList.othersList &&
-                    <Box>
-                        <Typography variant="h4">No Category</Typography>
+                {secretList &&
+                    <>
+                    {secretList.passwordList &&
+                        <Box>
+                        <Typography variant="h4">Passwords</Typography>
                         <List dense={false}>
-                            {secretList.othersList.map(secret =>
+                            {secretList.passwordList.map(secret =>
                                 <ListItem key={secret.id}>
                                     <ListItemAvatar>
                                         <Avatar>
-                                            <QuestionMarkIcon/>
+                                            <PasswordIcon/>
                                         </Avatar>
                                     </ListItemAvatar>
                                     <ListItemText
@@ -122,6 +66,65 @@ export function Wallet() {
                             )}
                         </List>
                     </Box>
+                    }
+                    {secretList.notesList &&
+                    <Box>
+                        <Typography variant="h4">Notes</Typography>
+                        <List dense={false}>
+                            {secretList.notesList.map(secret =>
+                                <ListItem key={secret.id}>
+                                    <ListItemAvatar>
+                                        <Avatar>
+                                            <NotesIcon/>
+                                        </Avatar>
+                                    </ListItemAvatar>
+                                    <ListItemText
+                                        primary={secret.name}
+                                    />
+                                </ListItem>,
+                            )}
+                        </List>
+                    </Box>
+                    }
+                    {secretList.documentsList &&
+                    <Box>
+                        <Typography variant="h4">Documents</Typography>
+                        <List dense={false}>
+                            {secretList.documentsList.map(secret =>
+                                <ListItem key={secret.id}>
+                                    <ListItemAvatar>
+                                        <Avatar>
+                                            <DescriptionIcon/>
+                                        </Avatar>
+                                    </ListItemAvatar>
+                                    <ListItemText
+                                        primary={secret.name}
+                                    />
+                                </ListItem>,
+                            )}
+                        </List>
+                    </Box>
+                    }
+                    {secretList.othersList &&
+                        <Box>
+                            <Typography variant="h4">No Category</Typography>
+                            <List dense={false}>
+                                {secretList.othersList.map(secret =>
+                                    <ListItem key={secret.id}>
+                                        <ListItemAvatar>
+                                            <Avatar>
+                                                <QuestionMarkIcon/>
+                                            </Avatar>
+                                        </ListItemAvatar>
+                                        <ListItemText
+                                            primary={secret.name}
+                                        />
+                                    </ListItem>,
+                                )}
+                            </List>
+                        </Box>
+                    }
+                    </>
                 }
                 <Box>
                     <Button variant="contained" onClick={createSecret}>Create Secret</Button>

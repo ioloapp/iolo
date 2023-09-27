@@ -1,17 +1,22 @@
 import {createAsyncThunk, createSlice} from '@reduxjs/toolkit';
 import {GroupedSecretList, initialState} from "./secretsState";
-import {Secret, SecretListEntry} from "../../../../declarations/iccrypt_backend/iccrypt_backend.did";
+import {SecretListEntry} from "../../../../declarations/iccrypt_backend/iccrypt_backend.did";
 import IcCryptService from "../../services/IcCryptService";
 import {RootState} from "../store";
+import {UiSecret} from "../../services/IcTypesForUi";
 
 const icCryptService = new IcCryptService();
 
-export const addSecretThunk = createAsyncThunk<SecretListEntry[], Secret, { state: RootState }>('secrets/add',
-    async (secret) => {
+export const addSecretThunk = createAsyncThunk<SecretListEntry[], UiSecret, { state: RootState }>('secrets/add',
+    async (secret, {rejectWithValue}) => {
         console.log('add secret', secret)
-        const result = await icCryptService.addSecret(secret);
-        console.log('result', result)
-        return result;
+        try {
+            const result = await icCryptService.addSecret(secret);
+            console.log('result', result)
+            return result;
+        }catch (e){
+            rejectWithValue(e)
+        }
     }
 );
 
@@ -61,19 +66,21 @@ const splitSecretListByCategory = (secretList: SecretListEntry[]): GroupedSecret
     const documentsList: SecretListEntry[] = [];
     const othersList: SecretListEntry[] = [];
 
-    secretList.forEach(secret => {
-        secret.category.forEach(category => {
-            if (category['Password']) {
-                passwordList.push()
-            } else if (category['Note']) {
-                notesList.push(secret);
-            } else if (category['Document']) {
-                documentsList.push(secret);
-            } else {
-                othersList.push(secret);
-            }
+    if(secretList) {
+        secretList.forEach(secret => {
+            secret.category.forEach(category => {
+                if (category['Password']) {
+                    passwordList.push()
+                } else if (category['Note']) {
+                    notesList.push(secret);
+                } else if (category['Document']) {
+                    documentsList.push(secret);
+                } else {
+                    othersList.push(secret);
+                }
+            })
         })
-    })
+    }
 
     return {
         passwordList,

@@ -1,36 +1,35 @@
 import * as vetkd from "ic-vetkd-utils";
 import {iccrypt_backend} from "../../../declarations/iccrypt_backend";
+import {Principal} from "@dfinity/principal";
 
 var RSAKey = require('rsa-key');
 
-const hex_decode = (hexString) =>
+const hex_decode = (hexString: string) =>
     Uint8Array.from(hexString.match(/.{1,2}/g).map((byte) => parseInt(byte, 16)));
 
 const hex_encode = (bytes) =>
     bytes.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '');
 
-export async function get_aes_256_gcm_key() {
+export async function get_aes_256_gcm_key(userPrincipal: Principal) {
     const seed = window.crypto.getRandomValues(new Uint8Array(32));
     const tsk = new vetkd.TransportSecretKey(seed);
-    //const ek_bytes_hex = await iccrypt_backend.get_encrypted_symmetric_key_for(tsk.public_key());
-    const EncryptedKeyHexAndDerivationId = null; //await iccrypt_backend.encrypted_symmetric_key_for_uservault(tsk.public_key());
+    const ek_bytes_hex = await iccrypt_backend.encrypted_symmetric_key_for_uservault(tsk.public_key());
     const pk_bytes_hex = await iccrypt_backend.symmetric_key_verification_key();
-    //const app_backend_principal = (await agent.Actor.agentOf(iccrypt_backend).getPrincipal()); // default is the anonymous principal!
 
-    let derivationId: Uint8Array;
-    let ek_bytes_hex: String = EncryptedKeyHexAndDerivationId[0];
-
-    if (EncryptedKeyHexAndDerivationId[1] instanceof Uint8Array) {
-        derivationId = EncryptedKeyHexAndDerivationId[1];
+    console.log('start decrypt_and_hash')
+    try {
+        const result = tsk.decrypt_and_hash(
+            hex_decode(ek_bytes_hex),
+            hex_decode(pk_bytes_hex),
+            userPrincipal.toUint8Array(),
+            32,
+            new TextEncoder().encode("aes-256-gcm")
+        );
+        console.log('end decrypt_and_hash', result)
+        return result;
+    }catch(e){
+        console.error('failed', e)
     }
-    return tsk.decrypt_and_hash(
-        hex_decode(ek_bytes_hex),
-        hex_decode(pk_bytes_hex),
-        //app_backend_principal.toUint8Array(),
-        derivationId,
-        32,
-        new TextEncoder().encode("aes-256-gcm")
-    );
 }
 
 
