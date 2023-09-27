@@ -1,12 +1,12 @@
-import {createAsyncThunk, createSlice, PayloadAction} from '@reduxjs/toolkit';
-import {initialState} from "./secretsState";
+import {createAsyncThunk, createSlice} from '@reduxjs/toolkit';
+import {GroupedSecretList, initialState} from "./secretsState";
 import {Secret, SecretListEntry} from "../../../../declarations/iccrypt_backend/iccrypt_backend.did";
 import IcCryptService from "../../services/IcCryptService";
 import {RootState} from "../store";
 
 const icCryptService = new IcCryptService();
 
-export const addSecretThunk = createAsyncThunk<SecretListEntry[], Secret, {state: RootState}>('secrets/add',
+export const addSecretThunk = createAsyncThunk<SecretListEntry[], Secret, { state: RootState }>('secrets/add',
     async (secret) => {
         console.log('add secret', secret)
         const result = await icCryptService.addSecret(secret);
@@ -15,30 +15,73 @@ export const addSecretThunk = createAsyncThunk<SecretListEntry[], Secret, {state
     }
 );
 
+export const loadSecretsThunk = createAsyncThunk<SecretListEntry[], void, { state: RootState }>('secrets/load',
+    async () => {
+        const result = await icCryptService.getSecretList();
+        console.log('loaded secrets', result)
+        return result;
+    }
+);
+
 // Define a type for the slice state
 export const secretsSlice = createSlice({
     name: 'secrets',
     initialState,
-    reducers: {
-        setSecretList: (state, {payload}: PayloadAction<SecretListEntry[]>) => {
-            state.secretList = payload
-        }
-    },
+    reducers: {},
     extraReducers: (builder) => {
         builder
+            .addCase(loadSecretsThunk.pending, (state) => {
+                state.loadingState = 'loading';
+            })
+            .addCase(loadSecretsThunk.fulfilled, (state, action) => {
+                state.loadingState = 'succeeded';
+                state.secretList = splitSecretListByCategory(action.payload)
+            })
+            .addCase(loadSecretsThunk.rejected, (state, action) => {
+                state.loadingState = 'failed';
+                state.error = action.error.message;
+            })
             .addCase(addSecretThunk.pending, (state) => {
-                state.loginStatus = 'loading';
+                state.addState = 'loading';
             })
             .addCase(addSecretThunk.fulfilled, (state, action) => {
-                state.loginStatus = 'succeeded';
-                state.secretList = action.payload
+                state.addState = 'succeeded';
+                state.secretList = splitSecretListByCategory(action.payload)
             })
             .addCase(addSecretThunk.rejected, (state, action) => {
-                state.loginStatus = 'failed';
+                state.addState = 'failed';
                 state.error = action.error.message;
             });
     },
 })
+
+const splitSecretListByCategory = (secretList: SecretListEntry[]): GroupedSecretList => {
+    const passwordList: SecretListEntry[] = [];
+    const notesList: SecretListEntry[] = [];
+    const documentsList: SecretListEntry[] = [];
+    const othersList: SecretListEntry[] = [];
+
+    secretList.forEach(secret => {
+        secret.category.forEach(category => {
+            if (category['Password']) {
+                passwordList.push()
+            } else if (category['Note']) {
+                notesList.push(secret);
+            } else if (category['Document']) {
+                documentsList.push(secret);
+            } else {
+                othersList.push(secret);
+            }
+        })
+    })
+
+    return {
+        passwordList,
+        notesList,
+        documentsList,
+        othersList
+    }
+}
 
 // Action creators are generated for each case reducer function
 export const secretsActions = secretsSlice.actions;
