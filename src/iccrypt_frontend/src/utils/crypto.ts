@@ -1,6 +1,7 @@
 import * as vetkd from "ic-vetkd-utils";
 import {iccrypt_backend} from "../../../declarations/iccrypt_backend";
 import {Principal} from "@dfinity/principal";
+import {Actor} from "@dfinity/agent";
 
 var RSAKey = require('rsa-key');
 
@@ -17,11 +18,12 @@ export async function get_aes_256_gcm_key(userPrincipal: Principal) {
     const pk_bytes_hex = await iccrypt_backend.symmetric_key_verification_key();
 
     console.log('start decrypt_and_hash')
+    let app_backend_principal = await Actor.agentOf(iccrypt_backend).getPrincipal();
     try {
         const result = tsk.decrypt_and_hash(
             hex_decode(ek_bytes_hex),
             hex_decode(pk_bytes_hex),
-            userPrincipal.toUint8Array(),
+            app_backend_principal.toUint8Array(),
             32,
             new TextEncoder().encode("aes-256-gcm")
         );

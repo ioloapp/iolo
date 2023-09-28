@@ -22,7 +22,6 @@
                 "entrypoint": "src/iccrypt_frontend/src/index.html"
             },
             "source": [
-                "src/iccrypt_frontend/src/assets",
                 "dist/iccrypt_frontend/"
             ],
             "type": "assets"
