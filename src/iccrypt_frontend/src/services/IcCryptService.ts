@@ -15,7 +15,7 @@ import {createActor} from "../../../declarations/iccrypt_backend";
 import {mapError} from "../utils/errorMapper";
 import {ICCryptError} from "../error/Errors";
 import {Principal} from "@dfinity/principal";
-import {aes_gcm_encrypt, get_aes_256_gcm_key} from "../utils/crypto";
+import {aes_gcm_encrypt, get_aes_256_gcm_key_for_uservault, get_local_random_aes_256_gcm_key} from "../utils/crypto";
 import {UiSecret, UiSecretCategory} from "./IcTypesForUi";
 
 class IcCryptService {
@@ -90,7 +90,7 @@ class IcCryptService {
         throw mapError(result['Err']);
     }
 
-    public async addSecret(secret: UiSecret): Promise<SecretListEntry[]> {
+    public async addSecret(secret: UiSecret): Promise<SecretListEntry> {
         console.log('start adding')
         const encryptedSecret = await this.encryptSecret(secret)
         console.log('encryptedSecret', encryptedSecret)
@@ -103,51 +103,55 @@ class IcCryptService {
     }
 
     private async encryptSecret(secret: UiSecret): Promise<AddSecretArgs> {
-        const secret_encryption_key = await get_aes_256_gcm_key(await this.getUserPrincipal());
+        try {
+            const secret_encryption_key = await get_local_random_aes_256_gcm_key();
 
-        // Encrypt secret fields
-        const encrypted_username = await aes_gcm_encrypt(secret.username, secret_encryption_key);
-        const encrypted_password = await aes_gcm_encrypt(secret.password, secret_encryption_key);
-        const encrypted_notes = await aes_gcm_encrypt(secret.notes, secret_encryption_key);
+            // Encrypt secret fields
+            const encrypted_username = await aes_gcm_encrypt(secret.username, secret_encryption_key);
+            const encrypted_password = await aes_gcm_encrypt(secret.password, secret_encryption_key);
+            const encrypted_notes = await aes_gcm_encrypt(secret.notes, secret_encryption_key);
 
-        // Encrypt the encryption key
-        const uservault_encryption_key = null //TODO get_aes_256_gcm_key_for_uservault();
-        const encrypted_secret_decryption_key = await aes_gcm_encrypt(secret_encryption_key, uservault_encryption_key);
+            // Encrypt the encryption key
+            const uservault_encryption_key = await get_aes_256_gcm_key_for_uservault();
+            const encrypted_secret_decryption_key = await aes_gcm_encrypt(secret_encryption_key, uservault_encryption_key);
 
-        let decryption_material: SecretDecryptionMaterial = {
-            encrypted_decryption_key: encrypted_secret_decryption_key.ciphertext,
-            iv: encrypted_secret_decryption_key.nonce,
-            username_decryption_nonce: [encrypted_username.ciphertext],
-            password_decryption_nonce: [encrypted_password.ciphertext],
-            notes_decryption_nonce: [encrypted_notes.ciphertext],
-        };
+            let decryption_material: SecretDecryptionMaterial = {
+                encrypted_decryption_key: encrypted_secret_decryption_key.ciphertext,
+                iv: encrypted_secret_decryption_key.nonce,
+                username_decryption_nonce: [encrypted_username.ciphertext],
+                password_decryption_nonce: [encrypted_password.ciphertext],
+                notes_decryption_nonce: [encrypted_notes.ciphertext],
+            };
 
-        const encryptedSecret: AddSecretArgs = {
-            secret: {
-                id: secret.id,
-                url: [secret.url],
-                name: [secret.name],
-                category: [this.getSecretCategory(secret.category)],
-                username: [encrypted_username.ciphertext],
-                password: [encrypted_password.ciphertext],
-                notes: [encrypted_notes.ciphertext],
-                date_created: BigInt(new Date().getDate()),
-                date_modified: BigInt(new Date().getDate())
-            },
-            decryption_material
+            const encryptedSecret: AddSecretArgs = {
+                secret: {
+                    id: secret.id,
+                    url: [secret.url],
+                    name: [secret.name],
+                    category: [this.getSecretCategory(secret.category)],
+                    username: [encrypted_username.ciphertext],
+                    password: [encrypted_password.ciphertext],
+                    notes: [encrypted_notes.ciphertext],
+                    date_created: BigInt(new Date().getDate()),
+                    date_modified: BigInt(new Date().getDate())
+                },
+                decryption_material
+            }
+            console.log('encrypted secret to add: ', encryptedSecret)
+            return encryptedSecret
+        } catch (e) {
+            console.error(e)
         }
-        console.log('encrypted secret to add: ', encryptedSecret)
-        return encryptedSecret
     }
 
     private getSecretCategory(uiCategory: UiSecretCategory): SecretCategory {
-        switch (uiCategory){
+        switch (uiCategory) {
             case UiSecretCategory.Password:
-                return { 'Password' : null }
+                return {'Password': null}
             case UiSecretCategory.Note:
-                return { 'Note' : null }
+                return {'Note': null}
             case UiSecretCategory.Document:
-                return { 'Document' : null }
+                return {'Document': null}
         }
     }
 

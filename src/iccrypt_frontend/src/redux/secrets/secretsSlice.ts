@@ -7,7 +7,7 @@ import {UiSecret} from "../../services/IcTypesForUi";
 
 const icCryptService = new IcCryptService();
 
-export const addSecretThunk = createAsyncThunk<SecretListEntry[], UiSecret, { state: RootState }>('secrets/add',
+export const addSecretThunk = createAsyncThunk<SecretListEntry, UiSecret, { state: RootState }>('secrets/add',
     async (secret, {rejectWithValue}) => {
         console.log('add secret', secret)
         try {
@@ -51,7 +51,7 @@ export const secretsSlice = createSlice({
             })
             .addCase(addSecretThunk.fulfilled, (state, action) => {
                 state.addState = 'succeeded';
-                state.secretList = splitSecretListByCategory(action.payload)
+                state.secretList = addSecretToGroupedSecretList(state.secretList, action.payload)
             })
             .addCase(addSecretThunk.rejected, (state, action) => {
                 state.addState = 'failed';
@@ -59,6 +59,22 @@ export const secretsSlice = createSlice({
             });
     },
 })
+
+const addSecretToGroupedSecretList = (group: GroupedSecretList, secret: SecretListEntry): GroupedSecretList => {
+    const newGroupedSecretList = {
+        ...group
+    }
+    if (secret.category['Password']) {
+        newGroupedSecretList.passwordList.push()
+    } else if (secret.category['Note']) {
+        newGroupedSecretList.notesList.push(secret);
+    } else if (secret.category['Document']) {
+        newGroupedSecretList.documentsList.push(secret);
+    } else {
+        newGroupedSecretList.othersList.push(secret);
+    }
+    return newGroupedSecretList;
+}
 
 const splitSecretListByCategory = (secretList: SecretListEntry[]): GroupedSecretList => {
     const passwordList: SecretListEntry[] = [];

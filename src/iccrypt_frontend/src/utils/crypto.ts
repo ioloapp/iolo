@@ -1,6 +1,5 @@
 import * as vetkd from "ic-vetkd-utils";
 import {iccrypt_backend} from "../../../declarations/iccrypt_backend";
-import {Principal} from "@dfinity/principal";
 import {Actor} from "@dfinity/agent";
 
 var RSAKey = require('rsa-key');
@@ -11,14 +10,30 @@ const hex_decode = (hexString: string) =>
 const hex_encode = (bytes) =>
     bytes.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '');
 
-export async function get_aes_256_gcm_key(userPrincipal: Principal) {
+export async function get_local_random_aes_256_gcm_key() {
+    // Generate a random 256-bit key for AES-GCM
+    const key = await window.crypto.subtle.generateKey(
+        {
+            name: "AES-GCM",
+            length: 256,
+        },
+        true, // whether the key is extractable
+        ["encrypt", "decrypt"]
+    );
+
+    // Exporting the key as a raw array buffer
+    const rawKey = await window.crypto.subtle.exportKey("raw", key);
+    return new Uint8Array(rawKey);
+}
+
+export async function get_aes_256_gcm_key_for_uservault() {
     const seed = window.crypto.getRandomValues(new Uint8Array(32));
     const tsk = new vetkd.TransportSecretKey(seed);
     const ek_bytes_hex = await iccrypt_backend.encrypted_symmetric_key_for_uservault(tsk.public_key());
     const pk_bytes_hex = await iccrypt_backend.symmetric_key_verification_key();
 
-    console.log('start decrypt_and_hash')
     let app_backend_principal = await Actor.agentOf(iccrypt_backend).getPrincipal();
+    console.log('start decrypt_and_hash for principal ', app_backend_principal.toText())
     try {
         const result = tsk.decrypt_and_hash(
             hex_decode(ek_bytes_hex),
