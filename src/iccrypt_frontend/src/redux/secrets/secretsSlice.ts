@@ -3,7 +3,7 @@ import {GroupedSecretList, initialState} from "./secretsState";
 import {SecretListEntry} from "../../../../declarations/iccrypt_backend/iccrypt_backend.did";
 import IcCryptService from "../../services/IcCryptService";
 import {RootState} from "../store";
-import {UiSecret} from "../../services/IcTypesForUi";
+import {UiSecret, UiSecretCategory, UiSecretListEntry} from "../../services/IcTypesForUi";
 
 const icCryptService = new IcCryptService();
 
@@ -32,7 +32,21 @@ export const loadSecretsThunk = createAsyncThunk<SecretListEntry[], void, { stat
 export const secretsSlice = createSlice({
     name: 'secrets',
     initialState,
-    reducers: {},
+    reducers: {
+        closeAddDialog: state => {
+            state.showAddDialog = false
+        },
+        openAddDialog: state => {
+            state.showAddDialog = true
+        },
+        cancelAddSecret: state => {
+            state.secretToAdd = {};
+            state.showAddDialog = false;
+        },
+        updateSecretToAdd: (state, action) => {
+            state.secretToAdd = action.payload;
+        },
+    },
     extraReducers: (builder) => {
         builder
             .addCase(loadSecretsThunk.pending, (state) => {
@@ -65,34 +79,42 @@ const addSecretToGroupedSecretList = (group: GroupedSecretList, secret: SecretLi
         ...group
     }
     if (secret.category['Password']) {
-        newGroupedSecretList.passwordList.push()
+        newGroupedSecretList.passwordList.push(mapSecretListEntry(secret, UiSecretCategory.Password))
     } else if (secret.category['Note']) {
-        newGroupedSecretList.notesList.push(secret);
+        newGroupedSecretList.notesList.push(mapSecretListEntry(secret, UiSecretCategory.Note));
     } else if (secret.category['Document']) {
-        newGroupedSecretList.documentsList.push(secret);
+        newGroupedSecretList.documentsList.push(mapSecretListEntry(secret, UiSecretCategory.Document));
     } else {
-        newGroupedSecretList.othersList.push(secret);
+        newGroupedSecretList.othersList.push(mapSecretListEntry(secret, undefined));
     }
     return newGroupedSecretList;
 }
 
+const mapSecretListEntry = (secret: SecretListEntry, category: UiSecretCategory): UiSecretListEntry => {
+    return {
+        id: secret.id,
+        name: secret.name && secret.name.length > 0 ? secret.name[0]: undefined,
+        category,
+    }
+}
+
 const splitSecretListByCategory = (secretList: SecretListEntry[]): GroupedSecretList => {
-    const passwordList: SecretListEntry[] = [];
-    const notesList: SecretListEntry[] = [];
-    const documentsList: SecretListEntry[] = [];
-    const othersList: SecretListEntry[] = [];
+    const passwordList: UiSecretListEntry[] = [];
+    const notesList: UiSecretListEntry[] = [];
+    const documentsList: UiSecretListEntry[] = [];
+    const othersList: UiSecretListEntry[] = [];
 
     if(secretList) {
         secretList.forEach(secret => {
             secret.category.forEach(category => {
                 if (category['Password']) {
-                    passwordList.push()
+                    passwordList.push(mapSecretListEntry(secret, UiSecretCategory.Password))
                 } else if (category['Note']) {
-                    notesList.push(secret);
+                    notesList.push(mapSecretListEntry(secret, UiSecretCategory.Note));
                 } else if (category['Document']) {
-                    documentsList.push(secret);
+                    documentsList.push(mapSecretListEntry(secret, UiSecretCategory.Document));
                 } else {
-                    othersList.push(secret);
+                    othersList.push(mapSecretListEntry(secret, undefined));
                 }
             })
         })

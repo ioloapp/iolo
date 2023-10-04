@@ -4,14 +4,17 @@ export enum UiSecretCategory {
     Document = "Document"
 }
 
-export interface UiSecret {
-    id : string,
+export interface UiSecretListEntry {
+    id? : string,
+    name? : string,
+    category? : UiSecretCategory
+}
+
+export interface UiSecret extends UiSecretListEntry{
     url? : string,
     username? : string,
     date_created? : Date,
     password? : string,
-    name : string,
     notes? : string,
-    category : UiSecretCategory,
     date_modified? : Date,
 }

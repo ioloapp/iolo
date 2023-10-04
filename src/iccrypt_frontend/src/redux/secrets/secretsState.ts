@@ -1,18 +1,19 @@
-import {Secret, SecretListEntry} from "../../../../declarations/iccrypt_backend/iccrypt_backend.did";
+import {UiSecret, UiSecretListEntry} from "../../services/IcTypesForUi";
 
 export interface GroupedSecretList {
-    passwordList: SecretListEntry[],
-    notesList: SecretListEntry[],
-    documentsList: SecretListEntry[],
-    othersList: SecretListEntry[]
+    passwordList: UiSecretListEntry[],
+    notesList: UiSecretListEntry[],
+    documentsList: UiSecretListEntry[],
+    othersList: UiSecretListEntry[]
 }
 
 export interface SecretsState {
     secretList: GroupedSecretList,
-    secretToAdd: Secret
+    secretToAdd: UiSecret
     addState: string,
     loadingState: string,
     error?: string;
+    showAddDialog: boolean
 }
 
 // Define the initial state using that type
@@ -23,7 +24,8 @@ export const initialState: SecretsState = {
         documentsList: [],
         othersList: []
     },
-    secretToAdd: undefined,
+    secretToAdd: {},
     addState: 'init',
-    loadingState: 'init'
+    loadingState: 'init',
+    showAddDialog: false
 }
