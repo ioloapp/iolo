@@ -27,7 +27,8 @@ function Layout() {
     }));
 
     const SearchField = styled(TextField)(() => ({
-        width: '100%'
+        width: '100%',
+        boxShadow: 'none'
     }));
 
     if (!isLoggedIn) {
@@ -41,7 +42,7 @@ function Layout() {
     return (
         <Router>
             <StyledAppBar position="sticky">
-                <SearchField id="outlined-basic" variant="outlined"/>
+                <SearchField id="outlined-basic" sx={{boxShadow: 'none'}}/>
                 <IconButton size="large" aria-label="search" color="inherit">
                     <SearchIcon/>
                 </IconButton>

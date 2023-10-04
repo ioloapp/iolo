@@ -18,3 +18,13 @@ export interface UiSecret extends UiSecretListEntry{
     notes? : string,
     date_modified? : Date,
 }
+
+export interface UiTestament {
+    id? : string,
+    name? : string,
+    testator? : string,
+    secrets? : Array<string>,
+    heirs? : Array<string>,
+    date_created? : Date,
+    date_modified? : Date,
+}

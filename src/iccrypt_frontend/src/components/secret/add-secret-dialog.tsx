@@ -7,7 +7,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import {useSelector} from "react-redux";
-import {selectSecretToAdd, selectShowAddDialog} from "../../redux/secrets/secretsSelectors";
+import {selectSecretToAdd, selectShowAddSecretDialog} from "../../redux/secrets/secretsSelectors";
 import {useAppDispatch} from "../../redux/hooks";
 import {addSecretThunk, secretsActions} from "../../redux/secrets/secretsSlice";
 import AddIcon from "@mui/icons-material/Add";
@@ -17,7 +17,7 @@ import {v4 as uuidv4} from 'uuid';
 
 export default function AddSecretDialog() {
     const dispatch = useAppDispatch();
-    const showAddSecretDialog = useSelector(selectShowAddDialog);
+    const showAddSecretDialog = useSelector(selectShowAddSecretDialog);
     const secretToAdd = useSelector(selectSecretToAdd);
 
     const handleClickOpen = () => {

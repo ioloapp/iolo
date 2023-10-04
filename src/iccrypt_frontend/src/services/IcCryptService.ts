@@ -3,11 +3,14 @@ import {
     _SERVICE,
     AddSecretArgs,
     Result,
+    Result_1,
     Result_2,
     Result_5,
+    Result_6,
     SecretCategory,
     SecretDecryptionMaterial,
     SecretListEntry,
+    Testament,
     User
 } from "../../../declarations/iccrypt_backend/iccrypt_backend.did";
 import {AuthClient} from "@dfinity/auth-client";
@@ -165,6 +168,28 @@ class IcCryptService {
 
     public async isUserVaultExisting(): Promise<boolean> {
         return await this.actor.is_user_vault_existing();
+    }
+
+    async addTestament(testament: Testament): Promise<Testament> {
+        const initialTestament = await this.actor.create_testament({});
+        //TODO encrypt the testament
+        const encryptedTestament = {
+            ...initialTestament,
+            ...testament
+        }
+        const result: Result_1 = await this.actor.update_testament(encryptedTestament);
+        if (result['Ok']) {
+            return result['Ok']
+        }
+        throw mapError(result['Err']);
+    }
+
+    async getTestamentList(): Promise<Testament[]> {
+        const result: Result_6 = await this.actor.get_testament_list();
+        if (result['Ok']) {
+            return result['Ok']
+        }
+        throw mapError(result['Err']);
     }
 }
 
