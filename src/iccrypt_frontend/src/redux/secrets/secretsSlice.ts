@@ -1,6 +1,6 @@
 import {createAsyncThunk, createSlice} from '@reduxjs/toolkit';
 import {GroupedSecretList, initialState} from "./secretsState";
-import {SecretListEntry} from "../../../../declarations/iccrypt_backend/iccrypt_backend.did";
+import {SecretCategory, SecretListEntry} from "../../../../declarations/iccrypt_backend/iccrypt_backend.did";
 import IcCryptService from "../../services/IcCryptService";
 import {RootState} from "../store";
 import {UiSecret, UiSecretCategory, UiSecretListEntry} from "../../services/IcTypesForUi";
@@ -65,6 +65,7 @@ export const secretsSlice = createSlice({
             })
             .addCase(addSecretThunk.fulfilled, (state, action) => {
                 state.addState = 'succeeded';
+                state.showAddDialog = false;
                 state.secretList = addSecretToGroupedSecretList(state.secretList, action.payload)
             })
             .addCase(addSecretThunk.rejected, (state, action) => {
@@ -78,11 +79,12 @@ const addSecretToGroupedSecretList = (group: GroupedSecretList, secret: SecretLi
     const newGroupedSecretList = {
         ...group
     }
-    if (secret.category['Password']) {
+    const category = secret.category && secret.category.length > 0 ? secret.category [0] as SecretCategory: undefined;
+    if (category.hasOwnProperty('Password')) {
         newGroupedSecretList.passwordList.push(mapSecretListEntry(secret, UiSecretCategory.Password))
-    } else if (secret.category['Note']) {
+    } else if (category.hasOwnProperty('Note')) {
         newGroupedSecretList.notesList.push(mapSecretListEntry(secret, UiSecretCategory.Note));
-    } else if (secret.category['Document']) {
+    } else if (category.hasOwnProperty('Document')) {
         newGroupedSecretList.documentsList.push(mapSecretListEntry(secret, UiSecretCategory.Document));
     } else {
         newGroupedSecretList.othersList.push(mapSecretListEntry(secret, undefined));
@@ -106,12 +108,13 @@ const splitSecretListByCategory = (secretList: SecretListEntry[]): GroupedSecret
 
     if(secretList) {
         secretList.forEach(secret => {
-            secret.category.forEach(category => {
-                if (category['Password']) {
+            secret.category.forEach(cat => {
+                const category = cat as SecretCategory;
+                if (category.hasOwnProperty('Password')) {
                     passwordList.push(mapSecretListEntry(secret, UiSecretCategory.Password))
-                } else if (category['Note']) {
+                } else if (category.hasOwnProperty('Note')) {
                     notesList.push(mapSecretListEntry(secret, UiSecretCategory.Note));
-                } else if (category['Document']) {
+                } else if (category.hasOwnProperty('Document')) {
                     documentsList.push(mapSecretListEntry(secret, UiSecretCategory.Document));
                 } else {
                     othersList.push(mapSecretListEntry(secret, undefined));
