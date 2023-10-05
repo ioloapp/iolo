@@ -31,7 +31,7 @@ export const loadTestamentsThunk = createAsyncThunk<Testament[], void, { state: 
 
 function mapTestament(testament: UiTestament): Testament {
     return {
-        id: BigInt(testament.id),
+        id: testament.id,
         heirs: testament.heirs.map(heire => Principal.fromText(heire)),
         name: [testament.name],
         testator: Principal.fromText(testament.testator),

@@ -1,5 +1,5 @@
-import type { Principal } from '@dfinity/principal';
-import type { ActorMethod } from '@dfinity/agent';
+import type {Principal} from '@dfinity/principal';
+import type {ActorMethod} from '@dfinity/agent';
 
 export interface AddSecretArgs {
   'secret' : Secret,
@@ -47,16 +47,16 @@ export interface SecretListEntry {
 }
 export type SmartVaultErr = { 'UserAlreadyExists' : string } |
   { 'SecretHasNoId' : null } |
-  { 'SecretDoesAlreadyExist' : string } |
   { 'UserDeletionFailed' : string } |
   { 'SecretDoesNotExist' : string } |
   { 'TestamentAlreadyExists' : string } |
   { 'TestamentDoesNotExist' : string } |
   { 'UserVaultCreationFailed' : string } |
   { 'UserDoesNotExist' : string } |
-  { 'UserVaultDoesNotExist' : string };
+  { 'UserVaultDoesNotExist' : string } |
+  { 'SecretAlreadyExists' : string };
 export interface Testament {
-  'id' : bigint,
+  'id' : string,
   'heirs' : Array<Principal>,
   'date_created' : bigint,
   'name' : [] | [string],

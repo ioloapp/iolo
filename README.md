@@ -19,6 +19,9 @@ If you want to test the ic crypt project locally, you can use the following comm
 # Deploys all canisters locally
 ./deploy.sh local
 
+# stop local canister
+killall dfx
+
 # Run the frontend
 npm install
 npm start

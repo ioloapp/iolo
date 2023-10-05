@@ -20,6 +20,7 @@ import {ICCryptError} from "../error/Errors";
 import {Principal} from "@dfinity/principal";
 import {aes_gcm_encrypt, get_aes_256_gcm_key_for_uservault, get_local_random_aes_256_gcm_key} from "../utils/crypto";
 import {UiSecret, UiSecretCategory} from "./IcTypesForUi";
+import {v4 as uuidv4} from 'uuid';
 
 class IcCryptService {
     static instance: IcCryptService;
@@ -128,7 +129,7 @@ class IcCryptService {
 
             const encryptedSecret: AddSecretArgs = {
                 secret: {
-                    id: secret.id,
+                    id: uuidv4(),
                     url: [secret.url],
                     name: [secret.name],
                     category: [this.getSecretCategory(secret.category)],
@@ -171,11 +172,11 @@ class IcCryptService {
     }
 
     async addTestament(testament: Testament): Promise<Testament> {
-        const initialTestament = await this.actor.create_testament({});
+        //const initialTestament = await this.actor.create_testament({});
         //TODO encrypt the testament
         const encryptedTestament = {
-            ...initialTestament,
-            ...testament
+            ...testament,
+            id: uuidv4()
         }
         const result: Result_1 = await this.actor.update_testament(encryptedTestament);
         if (result['Ok']) {

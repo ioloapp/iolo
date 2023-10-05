@@ -29,7 +29,6 @@ export const idlFactory = ({ IDL }) => {
   const SmartVaultErr = IDL.Variant({
     'UserAlreadyExists' : IDL.Text,
     'SecretHasNoId' : IDL.Null,
-    'SecretDoesAlreadyExist' : IDL.Text,
     'UserDeletionFailed' : IDL.Text,
     'SecretDoesNotExist' : IDL.Text,
     'TestamentAlreadyExists' : IDL.Text,
@@ -37,10 +36,11 @@ export const idlFactory = ({ IDL }) => {
     'UserVaultCreationFailed' : IDL.Text,
     'UserDoesNotExist' : IDL.Text,
     'UserVaultDoesNotExist' : IDL.Text,
+    'SecretAlreadyExists' : IDL.Text,
   });
   const Result = IDL.Variant({ 'Ok' : Secret, 'Err' : SmartVaultErr });
   const Testament = IDL.Record({
-    'id' : IDL.Nat,
+    'id' : IDL.Text,
     'heirs' : IDL.Vec(IDL.Principal),
     'date_created' : IDL.Nat64,
     'name' : IDL.Opt(IDL.Text),
