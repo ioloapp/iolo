@@ -36,7 +36,6 @@ type SecretListEntry = record {
 type SmartVaultErr = variant {
   UserAlreadyExists : text;
   SecretHasNoId;
-  SecretDoesAlreadyExist : text;
   UserDeletionFailed : text;
   SecretDoesNotExist : text;
   TestamentAlreadyExists : text;
@@ -44,9 +43,10 @@ type SmartVaultErr = variant {
   UserVaultCreationFailed : text;
   UserDoesNotExist : text;
   UserVaultDoesNotExist : text;
+  SecretAlreadyExists : text;
 };
 type Testament = record {
-  id : nat;
+  id : text;
   heirs : vec principal;
   date_created : nat64;
   name : opt text;

@@ -119,8 +119,8 @@ impl UserVault {
         if !self.testaments.contains_key(t.id()) {
             return Err(SmartVaultErr::SecretDoesNotExist(t.id().to_string()));
         }
-        let tid = *t.id();
-        self.testaments.insert(tid, t);
+        let tid = t.id().clone();
+        self.testaments.insert(t.id().clone(), t);
         self.date_modified = time::get_current_time();
         Ok(self.testaments.get(&tid).unwrap().clone())
     }
@@ -136,7 +136,7 @@ impl UserVault {
             ));
         }
 
-        self.testaments.insert(*testament.id(), testament);
+        self.testaments.insert(testament.id().clone(), testament);
         self.date_modified = time::get_current_time();
         Ok(())
     }
