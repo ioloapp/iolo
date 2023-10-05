@@ -90,7 +90,7 @@ impl MasterVault {
         }
 
         let testament: Testament = Testament::new(get_caller());
-        let testament_id = *testament.id();
+        let testament_id = testament.id().clone();
 
         let user_vault = self.user_vaults.get_mut(vault_id).unwrap();
         user_vault.add_testament(testament)?;

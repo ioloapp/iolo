@@ -3,11 +3,11 @@ use std::collections::{BTreeMap, HashSet};
 use candid::{CandidType, Principal};
 use serde::{Deserialize, Serialize};
 
-use crate::{common::uuid::UUID, utils::time};
+use crate::utils::time;
 
 use super::{secret::SecretID, user_vault::KeyBox};
 
-pub type TestamentID = UUID;
+pub type TestamentID = String;
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct Testament {
@@ -34,9 +34,9 @@ pub struct CreateTestamentArgs {}
 impl Testament {
     pub fn new(testator: Principal) -> Self {
         let now: u64 = time::get_current_time();
-        let uuid = UUID::new();
+        // let uuid = UUID::new();
         Self {
-            id: uuid,
+            id: "new".to_string(),
             name: None,
             date_created: now,
             date_modified: now,
