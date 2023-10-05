@@ -19,7 +19,7 @@ import {mapError} from "../utils/errorMapper";
 import {ICCryptError} from "../error/Errors";
 import {Principal} from "@dfinity/principal";
 import {aes_gcm_encrypt, get_aes_256_gcm_key_for_uservault, get_local_random_aes_256_gcm_key} from "../utils/crypto";
-import {UiSecret, UiSecretCategory} from "./IcTypesForUi";
+import {UiSecret, UiSecretCategory, UiUser} from "./IcTypesForUi";
 import {v4 as uuidv4} from 'uuid';
 
 class IcCryptService {
@@ -191,6 +191,14 @@ class IcCryptService {
             return result['Ok']
         }
         throw mapError(result['Err']);
+    }
+
+    async addHeire(heire: UiUser) {
+
+    }
+
+    async getHeiresList(): Promise<UiUser[]> {
+        return []
     }
 }
 

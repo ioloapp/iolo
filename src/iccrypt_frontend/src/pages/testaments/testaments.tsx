@@ -6,8 +6,8 @@ import {loadSecretsThunk} from "../../redux/secrets/secretsSlice";
 import {PageLayout} from "../../components/layout/page-layout";
 import PasswordIcon from '@mui/icons-material/Password';
 import {useSelector} from "react-redux";
-import AddSecretDialog from "../../components/secret/add-secret-dialog";
 import {selectTestaments} from "../../redux/testaments/testamentsSelectors";
+import AddTestamentDialog from "../../components/testament/add-testament-dialog";
 
 export function Testaments() {
 
@@ -40,7 +40,7 @@ export function Testaments() {
                     </Box>
                 }
             </Box>
-            <AddSecretDialog/>
+            <AddTestamentDialog/>
         </PageLayout>
     );
 }

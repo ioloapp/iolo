@@ -13,7 +13,6 @@ import {addSecretThunk, secretsActions} from "../../redux/secrets/secretsSlice";
 import AddIcon from "@mui/icons-material/Add";
 import {Fab, FormControl, InputLabel, MenuItem, Select} from "@mui/material";
 import {UiSecret, UiSecretCategory} from "../../services/IcTypesForUi";
-import {v4 as uuidv4} from 'uuid';
 
 export default function AddSecretDialog() {
     const dispatch = useAppDispatch();
@@ -29,14 +28,7 @@ export default function AddSecretDialog() {
     };
 
     const updateSecret = (secret: UiSecret) => {
-        let updateSecret = secret;
-        if(!secret.id){
-            updateSecret = {
-                ...updateSecret,
-                id: uuidv4()
-            }
-        }
-        dispatch(secretsActions.updateSecretToAdd(updateSecret))
+        dispatch(secretsActions.updateSecretToAdd(secret))
     }
 
     const cancelAddSecret = () => {
@@ -54,7 +46,7 @@ export default function AddSecretDialog() {
                 bottom: (theme) => theme.spacing(10),
                 right: (theme) => theme.spacing(2)
             }}>
-                <AddIcon />
+                <AddIcon/>
             </Fab>
             <Dialog open={showAddSecretDialog} onClose={handleClose}>
                 <DialogTitle>Add Secret</DialogTitle>

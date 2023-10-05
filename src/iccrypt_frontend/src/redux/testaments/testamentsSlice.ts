@@ -1,4 +1,4 @@
-import {createAsyncThunk, createSlice} from '@reduxjs/toolkit';
+import {createAsyncThunk, createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {initialState} from "./testamentsState";
 import {Testament} from "../../../../declarations/iccrypt_backend/iccrypt_backend.did";
 import IcCryptService from "../../services/IcCryptService";
@@ -69,7 +69,7 @@ export const testamentsSlice = createSlice({
             state.testamentToAdd = {};
             state.showAddDialog = false;
         },
-        updateTestamentToAdd: (state, action) => {
+        updateTestamentToAdd: (state, action: PayloadAction<UiTestament>) => {
             state.testamentToAdd = action.payload;
         },
     },

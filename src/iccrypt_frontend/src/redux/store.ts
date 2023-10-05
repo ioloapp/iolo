@@ -4,6 +4,7 @@ import storage from 'redux-persist/lib/storage';
 import {userReducer} from './user/userSlice';
 import {secretsReducer} from "./secrets/secretsSlice";
 import {testamentsReducer} from "./testaments/testamentsSlice";
+import {heiresReducer} from "./heires/heiresSlice";
 
 const persistConfig = {
     key: 'root',
@@ -13,7 +14,8 @@ const persistConfig = {
 const rootReducer = combineReducers({
     user: userReducer,
     secrets: secretsReducer,
-    testaments: testamentsReducer
+    testaments: testamentsReducer,
+    heires: heiresReducer
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
