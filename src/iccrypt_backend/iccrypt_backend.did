@@ -1,6 +1,12 @@
 type AddSecretArgs = record {
-  secret : Secret;
+  id : text;
+  url : opt text;
+  username : opt vec nat8;
+  password : opt vec nat8;
+  name : opt text;
   decryption_material : SecretDecryptionMaterial;
+  notes : opt vec nat8;
+  category : opt SecretCategory;
 };
 type Result = variant { Ok : Secret; Err : SmartVaultErr };
 type Result_1 = variant { Ok : Testament; Err : SmartVaultErr };

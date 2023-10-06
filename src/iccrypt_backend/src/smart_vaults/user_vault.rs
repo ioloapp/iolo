@@ -200,7 +200,7 @@ mod tests {
 
         // Create secret stuff...
         let secret_name = String::from("my-first-secret");
-        let secret: Secret = Secret::new();
+        let secret: Secret = Secret::new_test_instance();
         let modified_before_update = user_vault.date_modified;
         let created_before_update = user_vault.date_created;
 
@@ -284,7 +284,7 @@ mod tests {
 
         // Add secret to user_vault
         let secret_name = String::from("my-first-secret");
-        let mut secret: Secret = Secret::new();
+        let mut secret: Secret = Secret::new_test_instance();
         let mut modified_before_update = user_vault.date_modified;
         let mut created_before_update = user_vault.date_created;
         user_vault.add_secret(secret.clone());
@@ -333,7 +333,7 @@ mod tests {
 
         // Add secret to user_vault
         let secret_name = String::from("my-first-secret");
-        let secret: Secret = Secret::new();
+        let secret: Secret = Secret::new_test_instance();
         let mut modified_before_update = user_vault.date_modified;
         let mut created_before_update = user_vault.date_created;
         user_vault.add_secret(secret.clone());

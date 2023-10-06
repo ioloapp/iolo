@@ -69,7 +69,7 @@ impl MasterVault {
         }
 
         let user_vault = self.user_vaults.get_mut(vault_id).unwrap();
-        let added_secret = user_vault.add_secret(asa.secret)?;
+        let added_secret = user_vault.add_secret(asa.clone().into())?;
 
         let decryption_material = asa.decryption_material.clone();
         user_vault
