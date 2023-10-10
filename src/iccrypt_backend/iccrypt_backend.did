@@ -84,6 +84,7 @@ service : {
     text
   );
   encrypted_symmetric_key_for_uservault : (vec nat8) -> (text);
+  get_secret : (text) -> (Result) query;
   get_secret_decryption_material : (text) -> (Result_4) query;
   get_secret_list : () -> (Result_5) query;
   get_testament_list : () -> (Result_6) query;

@@ -12,6 +12,7 @@ use crate::utils::caller::get_caller;
 use super::master_vault::MasterVault;
 use super::secret::{AddSecretArgs, Secret, SecretDecryptionMaterial, SecretID, SecretListEntry};
 use super::testament::{AddTestamentArgs, Testament};
+use super::user_vault::UserVault;
 
 thread_local! {
     // Master_vault holding all the user vaults
@@ -96,6 +97,22 @@ pub fn update_secret(s: Secret) -> Result<Secret, SmartVaultErr> {
         |ms: &RefCell<MasterVault>| -> Result<Secret, SmartVaultErr> {
             let mut master_vault = ms.borrow_mut();
             master_vault.update_user_secret(&user_vault_id, s)
+        },
+    )
+}
+
+#[ic_cdk_macros::query]
+#[candid_method(query)]
+pub fn get_secret(sid: SecretID) -> Result<Secret, SmartVaultErr> {
+    let principal = get_caller();
+    let user_vault_id: UUID = get_vault_id_for(principal)?;
+
+    MASTERVAULT.with(
+        |mv: &RefCell<MasterVault>| -> Result<Secret, SmartVaultErr> {
+            mv.borrow()
+                .get_user_vault(&user_vault_id)?
+                .get_secret(&sid)
+                .cloned()
         },
     )
 }
