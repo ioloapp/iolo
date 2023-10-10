@@ -3,8 +3,6 @@ use std::{str::FromStr, vec};
 use candid::{candid_method, CandidType};
 use serde::{Deserialize, Serialize};
 
-use crate::common::uuid::UUID;
-
 use super::vetkd_types::{
     CanisterId, VetKDCurve, VetKDEncryptedKeyReply, VetKDEncryptedKeyRequest, VetKDKeyId,
     VetKDPublicKeyReply, VetKDPublicKeyRequest,
@@ -15,7 +13,7 @@ const VETKD_SYSTEM_API_CANISTER_ID: &str = "s55qq-oqaaa-aaaaa-aaakq-cai";
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct TestamentKeyDerviationArgs {
     pub encryption_public_key: Vec<u8>,
-    pub testament_id: UUID,
+    pub testament_id: String,
 }
 
 /// Computes a fresh vetkd symmetric key to encrypt the secrets in a user vault.

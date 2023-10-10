@@ -11,7 +11,7 @@ use crate::utils::caller::get_caller;
 
 use super::master_vault::MasterVault;
 use super::secret::{AddSecretArgs, Secret, SecretDecryptionMaterial, SecretID, SecretListEntry};
-use super::testament::{CreateTestamentArgs, Testament};
+use super::testament::{AddTestamentArgs, Testament};
 
 thread_local! {
     // Master_vault holding all the user vaults
@@ -152,14 +152,14 @@ pub fn remove_user_secret(secret_id: String) -> Result<(), SmartVaultErr> {
 
 #[ic_cdk_macros::update]
 #[candid_method(update)]
-pub fn create_testament(args: CreateTestamentArgs) -> Result<Testament, SmartVaultErr> {
+pub fn add_testament(args: AddTestamentArgs) -> Result<Testament, SmartVaultErr> {
     let principal = get_caller();
-
     let user_vault_id: UUID = get_vault_id_for(principal)?;
+
     MASTERVAULT.with(
         |ms: &RefCell<MasterVault>| -> Result<Testament, SmartVaultErr> {
             let mut master_vault = ms.borrow_mut();
-            master_vault.create_user_testament(&user_vault_id, args)
+            master_vault.add_user_testament(&user_vault_id, args)
         },
     )
 }

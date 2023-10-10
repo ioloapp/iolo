@@ -9,7 +9,7 @@ use crate::{
 
 use super::{
     secret::{AddSecretArgs, Secret},
-    testament::{CreateTestamentArgs, Testament},
+    testament::{AddTestamentArgs, Testament},
     user_vault::UserVault,
 };
 
@@ -69,7 +69,8 @@ impl MasterVault {
         }
 
         let user_vault = self.user_vaults.get_mut(vault_id).unwrap();
-        let added_secret = user_vault.add_secret(asa.clone().into())?;
+        let secret: Secret = asa.clone().into();
+        let added_secret = user_vault.add_secret(secret)?;
 
         let decryption_material = asa.decryption_material.clone();
         user_vault
@@ -80,16 +81,16 @@ impl MasterVault {
     }
 
     // Inserts a testament into a user's vault.
-    pub fn create_user_testament(
+    pub fn add_user_testament(
         &mut self,
         vault_id: &UUID,
-        _cta: CreateTestamentArgs, // might be required later
+        ata: AddTestamentArgs, // might be required later
     ) -> Result<Testament, SmartVaultErr> {
         if !self.user_vaults.contains_key(vault_id) {
             return Err(SmartVaultErr::UserVaultDoesNotExist(vault_id.to_string()));
         }
 
-        let testament: Testament = Testament::new(get_caller());
+        let testament: Testament = Testament::new(ata.id, get_caller());
         let testament_id = testament.id().clone();
 
         let user_vault = self.user_vaults.get_mut(vault_id).unwrap();

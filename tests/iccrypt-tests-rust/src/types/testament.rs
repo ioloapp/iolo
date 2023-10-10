@@ -4,9 +4,9 @@ use candid::{CandidType, Principal};
 
 use serde::{Deserialize, Serialize};
 
-use super::secret::{SecretDecryptionMaterial, SecretID, UUID};
+use super::secret::{SecretDecryptionMaterial, SecretID};
 
-pub type TestamentID = UUID;
+pub type TestamentID = String;
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct Testament {
@@ -28,10 +28,12 @@ pub struct Testament {
 
 /// The struct provided by the backend when calling "create_secret". It contains:
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
-pub struct CreateTestamentArgs {}
+pub struct AddTestamentArgs {
+    pub id: String,
+}
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct TestamentKeyDerviationArgs {
     pub encryption_public_key: Vec<u8>,
-    pub testament_id: UUID,
+    pub testament_id: String,
 }
