@@ -8,11 +8,14 @@ import {selectHeirs} from "../../redux/heirs/heirsSelectors";
 import {loadHeirsThunk} from "../../redux/heirs/heirsSlice";
 import AddHeirDialog from "../../components/heir/add-heir-dialog";
 import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
+import {UserType} from "../../services/IcTypesForUi";
+import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined';
 
 export function Heirs() {
 
     const dispatch = useAppDispatch();
     const heirs = useSelector(selectHeirs);
+    //TODO const sortedHeirs = heirs.sort((a,b) => a.type === b.type ? 0 : -1)
 
     useEffect(() => {
         dispatch(loadHeirsThunk())
@@ -26,14 +29,34 @@ export function Heirs() {
                         <List dense={false}>
                             {heirs.map(heir =>
                                 <ListItem key={heir.id}>
-                                    <ListItemAvatar>
-                                        <Avatar>
-                                            <PersonOutlinedIcon/>
-                                        </Avatar>
-                                    </ListItemAvatar>
-                                    <ListItemText
-                                        primary={heir.name}
-                                    />
+                                    {heir.type === UserType.Person &&
+                                            <>
+                                                <ListItemAvatar>
+                                                <Avatar>
+                                                    <PersonOutlinedIcon/>
+                                                </Avatar>
+                                            </ListItemAvatar>
+
+                                            <ListItemText
+                                                primary={`${heir.firstname} ${heir.name}`}
+                                                secondary={heir.email}
+                                            />
+                                        </>
+                                    }
+                                    {heir.type === UserType.Company &&
+                                        <>
+                                            <ListItemAvatar>
+                                                <Avatar>
+                                                    <ApartmentOutlinedIcon/>
+                                                </Avatar>
+                                            </ListItemAvatar>
+
+                                            <ListItemText
+                                                primary={heir.name}
+                                                secondary={heir.email}
+                                            />
+                                        </>
+                                    }
                                 </ListItem>,
                             )}
                         </List>
