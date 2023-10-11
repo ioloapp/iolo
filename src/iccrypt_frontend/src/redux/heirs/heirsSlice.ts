@@ -2,7 +2,7 @@ import {createAsyncThunk, createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {initialState} from "./heirsState";
 import IcCryptService from "../../services/IcCryptService";
 import {RootState} from "../store";
-import {UiTestament, UiUser} from "../../services/IcTypesForUi";
+import {UiUser} from "../../services/IcTypesForUi";
 
 const icCryptService = new IcCryptService();
 
@@ -46,7 +46,7 @@ export const heirsSlice = createSlice({
             state.heirToAdd = {};
             state.showAddDialog = false;
         },
-        updateTestamentToAdd: (state, action: PayloadAction<UiTestament>) => {
+        updateHeirToAdd: (state, action: PayloadAction<UiUser>) => {
             state.heirToAdd = action.payload;
         },
     },
@@ -70,6 +70,7 @@ export const heirsSlice = createSlice({
             .addCase(addHeirThunk.fulfilled, (state, action) => {
                 state.addState = 'succeeded';
                 state.showAddDialog = false;
+                state.heirToAdd = {};
                 state.heirsList = [...state.heirsList, action.payload]
             })
             .addCase(addHeirThunk.rejected, (state, action) => {

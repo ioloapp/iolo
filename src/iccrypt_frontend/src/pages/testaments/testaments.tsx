@@ -4,10 +4,10 @@ import {useEffect} from "react";
 import {useAppDispatch} from "../../redux/hooks";
 import {loadSecretsThunk} from "../../redux/secrets/secretsSlice";
 import {PageLayout} from "../../components/layout/page-layout";
-import PasswordIcon from '@mui/icons-material/Password';
 import {useSelector} from "react-redux";
 import {selectTestaments} from "../../redux/testaments/testamentsSelectors";
 import AddTestamentDialog from "../../components/testament/add-testament-dialog";
+import HistoryEduOutlinedIcon from "@mui/icons-material/HistoryEduOutlined";
 
 export function Testaments() {
 
@@ -28,7 +28,7 @@ export function Testaments() {
                                 <ListItem key={testament.id}>
                                     <ListItemAvatar>
                                         <Avatar>
-                                            <PasswordIcon/>
+                                            <HistoryEduOutlinedIcon/>
                                         </Avatar>
                                     </ListItemAvatar>
                                     <ListItemText

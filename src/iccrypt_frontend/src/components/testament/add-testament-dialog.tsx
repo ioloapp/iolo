@@ -51,7 +51,9 @@ export default function AddTestamentDialog() {
     }
 
     const cancelAddSecret = () => {
-        dispatch(testamentsActions.cancelAddTestament())
+        setSelectedHeirs([]);
+        setSelectedSecrets([]);
+        dispatch(testamentsActions.cancelAddTestament());
     }
 
     const createSecret = async () => {

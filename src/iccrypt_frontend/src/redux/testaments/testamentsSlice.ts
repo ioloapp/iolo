@@ -111,6 +111,7 @@ export const testamentsSlice = createSlice({
             .addCase(addTestamentThunk.fulfilled, (state, action) => {
                 state.addState = 'succeeded';
                 state.showAddDialog = false;
+                state.testamentToAdd = {};
                 state.testamentsList = [...state.testamentsList, action.payload]
             })
             .addCase(addTestamentThunk.rejected, (state, action) => {

@@ -67,6 +67,7 @@ export const secretsSlice = createSlice({
             .addCase(addSecretThunk.fulfilled, (state, action) => {
                 state.addState = 'succeeded';
                 state.showAddDialog = false;
+                state.secretToAdd = {};
                 state.groupedSecretList = addSecretToGroupedSecretList(state.groupedSecretList, action.payload)
                 state.secretList = [...state.groupedSecretList.passwordList, ...state.groupedSecretList.notesList, ...state.groupedSecretList.othersList, ...state.groupedSecretList.documentsList]
             })
