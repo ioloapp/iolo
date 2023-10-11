@@ -9,13 +9,13 @@ import NotesIcon from '@mui/icons-material/Notes';
 import DescriptionIcon from '@mui/icons-material/Description';
 import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 import {useSelector} from "react-redux";
-import {selectSecrets} from "../../redux/secrets/secretsSelectors";
+import {selectGroupedSecrets} from "../../redux/secrets/secretsSelectors";
 import AddSecretDialog from "../../components/secret/add-secret-dialog";
 
 export function Wallet() {
 
     const dispatch = useAppDispatch();
-    const secretList = useSelector(selectSecrets);
+    const groupedSecretList = useSelector(selectGroupedSecrets);
 
     useEffect(() => {
         dispatch(loadSecretsThunk())
@@ -24,13 +24,13 @@ export function Wallet() {
     return (
         <PageLayout title="Wallet">
             <Box>
-                {secretList &&
+                {groupedSecretList &&
                     <>
-                        {secretList.passwordList &&
+                        {groupedSecretList.passwordList &&
                             <Box>
                                 <Typography variant="h4">Passwords</Typography>
                                 <List dense={false}>
-                                    {secretList.passwordList.map(secret =>
+                                    {groupedSecretList.passwordList.map(secret =>
                                         <ListItem key={secret.id}>
                                             <ListItemAvatar>
                                                 <Avatar>
@@ -45,11 +45,11 @@ export function Wallet() {
                                 </List>
                             </Box>
                         }
-                        {secretList.notesList &&
+                        {groupedSecretList.notesList &&
                             <Box>
                                 <Typography variant="h4">Notes</Typography>
                                 <List dense={false}>
-                                    {secretList.notesList.map(secret =>
+                                    {groupedSecretList.notesList.map(secret =>
                                         <ListItem key={secret.id}>
                                             <ListItemAvatar>
                                                 <Avatar>
@@ -64,11 +64,11 @@ export function Wallet() {
                                 </List>
                             </Box>
                         }
-                        {secretList.documentsList &&
+                        {groupedSecretList.documentsList &&
                             <Box>
                                 <Typography variant="h4">Documents</Typography>
                                 <List dense={false}>
-                                    {secretList.documentsList.map(secret =>
+                                    {groupedSecretList.documentsList.map(secret =>
                                         <ListItem key={secret.id}>
                                             <ListItemAvatar>
                                                 <Avatar>
@@ -83,11 +83,11 @@ export function Wallet() {
                                 </List>
                             </Box>
                         }
-                        {secretList.othersList &&
+                        {groupedSecretList.othersList &&
                             <Box>
                                 <Typography variant="h4">No Category</Typography>
                                 <List dense={false}>
-                                    {secretList.othersList.map(secret =>
+                                    {groupedSecretList.othersList.map(secret =>
                                         <ListItem key={secret.id}>
                                             <ListItemAvatar>
                                                 <Avatar>

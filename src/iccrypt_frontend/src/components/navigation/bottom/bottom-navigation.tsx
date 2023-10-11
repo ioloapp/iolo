@@ -14,7 +14,7 @@ function AppBottomNavigation() {
         <BottomNavigation showLabels value={location.pathname} sx={{ position: 'fixed', bottom: 0, width: 1.0 }}>
             <BottomNavigationAction label="Wallet" icon={<LockOpenOutlinedIcon/>} component={Link} to="/" value="/"/>
             <BottomNavigationAction label="Testaments" icon={<HistoryEduOutlinedIcon/>} component={Link} to="/testaments" value="/testaments" />
-            <BottomNavigationAction label="Heires" icon={<PersonOutlinedIcon/>} component={Link} to="/heires" value="/heires"/>
+            <BottomNavigationAction label="Heirs" icon={<PersonOutlinedIcon/>} component={Link} to="/heirs" value="/heirs"/>
             <BottomNavigationAction label="Settings" icon={<SettingsOutlinedIcon/>} component={Link} to="/settings" value="/settings"/>
         </BottomNavigation>
     );

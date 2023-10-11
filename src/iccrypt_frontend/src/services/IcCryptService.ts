@@ -193,11 +193,11 @@ class IcCryptService {
         throw mapError(result['Err']);
     }
 
-    async addHeire(heire: UiUser) {
-
+    async addHeir(heir: UiUser): Promise<UiUser> {
+        return heir;
     }
 
-    async getHeiresList(): Promise<UiUser[]> {
+    async getHeirsList(): Promise<UiUser[]> {
         return []
     }
 }

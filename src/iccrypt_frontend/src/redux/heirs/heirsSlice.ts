@@ -1,16 +1,16 @@
 import {createAsyncThunk, createSlice, PayloadAction} from '@reduxjs/toolkit';
-import {initialState} from "./heiresState";
+import {initialState} from "./heirsState";
 import IcCryptService from "../../services/IcCryptService";
 import {RootState} from "../store";
 import {UiTestament, UiUser} from "../../services/IcTypesForUi";
 
 const icCryptService = new IcCryptService();
 
-export const addHeireThunk = createAsyncThunk<any, UiUser, { state: RootState }>('heires/add',
-    async (heire, {rejectWithValue}) => {
-        console.log('add heire', heire)
+export const addHeirThunk = createAsyncThunk<UiUser, UiUser, { state: RootState }>('heirs/add',
+    async (heir, {rejectWithValue}) => {
+        console.log('add heir', heir)
         try {
-            const result = await icCryptService.addHeire(heire);
+            const result = await icCryptService.addHeir(heir);
             console.log('result', result)
             return result;
         } catch (e) {
@@ -19,10 +19,10 @@ export const addHeireThunk = createAsyncThunk<any, UiUser, { state: RootState }>
     }
 );
 
-export const loadHeiresThunk = createAsyncThunk<UiUser[], void, { state: RootState }>('heires/load',
+export const loadHeirsThunk = createAsyncThunk<UiUser[], void, { state: RootState }>('heirs/load',
     async (_, {rejectWithValue}) => {
         try {
-            const result = await icCryptService.getHeiresList();
+            const result = await icCryptService.getHeirsList();
             console.log('result', result)
             return result;
         } catch (e) {
@@ -32,7 +32,7 @@ export const loadHeiresThunk = createAsyncThunk<UiUser[], void, { state: RootSta
 );
 
 // Define a type for the slice state
-export const heiresSlice = createSlice({
+export const heirsSlice = createSlice({
     name: 'testaments',
     initialState,
     reducers: {
@@ -42,37 +42,37 @@ export const heiresSlice = createSlice({
         openAddDialog: state => {
             state.showAddDialog = true
         },
-        cancelAddHeire: state => {
-            state.heireToAdd = {};
+        cancelAddHeir: state => {
+            state.heirToAdd = {};
             state.showAddDialog = false;
         },
         updateTestamentToAdd: (state, action: PayloadAction<UiTestament>) => {
-            state.heireToAdd = action.payload;
+            state.heirToAdd = action.payload;
         },
     },
     extraReducers: (builder) => {
         builder
-            .addCase(loadHeiresThunk.pending, (state) => {
+            .addCase(loadHeirsThunk.pending, (state) => {
                 state.loadingState = 'loading';
             })
-            .addCase(loadHeiresThunk.fulfilled, (state, action) => {
+            .addCase(loadHeirsThunk.fulfilled, (state, action) => {
                 state.loadingState = 'succeeded';
-                state.heiresList = action.payload
+                state.heirsList = action.payload
             })
-            .addCase(loadHeiresThunk.rejected, (state, action) => {
+            .addCase(loadHeirsThunk.rejected, (state, action) => {
                 state.loadingState = 'failed';
                 state.error = action.error.message;
             })
-            .addCase(addHeireThunk.pending, (state) => {
+            .addCase(addHeirThunk.pending, (state) => {
                 state.addState = 'loading';
                 state.showAddDialog = true;
             })
-            .addCase(addHeireThunk.fulfilled, (state, action) => {
+            .addCase(addHeirThunk.fulfilled, (state, action) => {
                 state.addState = 'succeeded';
                 state.showAddDialog = false;
-                state.heiresList = [...state.heiresList, action.payload]
+                state.heirsList = [...state.heirsList, action.payload]
             })
-            .addCase(addHeireThunk.rejected, (state, action) => {
+            .addCase(addHeirThunk.rejected, (state, action) => {
                 state.addState = 'failed';
                 state.error = action.error.message;
                 state.showAddDialog = true;
@@ -81,6 +81,6 @@ export const heiresSlice = createSlice({
 })
 
 // Action creators are generated for each case reducer function
-export const heiresActions = heiresSlice.actions;
+export const heirsActions = heirsSlice.actions;
 
-export const heiresReducer = heiresSlice.reducer;
+export const heirsReducer = heirsSlice.reducer;

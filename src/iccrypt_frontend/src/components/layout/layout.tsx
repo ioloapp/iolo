@@ -5,7 +5,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import {styled} from '@mui/material/styles';
 import {Wallet} from '../../pages/wallet/wallet';
 import {Testaments} from '../../pages/testaments/testaments';
-import {Heires} from '../../pages/heires/heires';
+import {Heirs} from '../../pages/heirs/heirs';
 import {Settings} from '../../pages/settings/settings';
 import {Login} from '../../pages/login/login';
 import * as React from 'react';
@@ -50,7 +50,7 @@ function Layout() {
             <Routes>
                 <Route path="/" Component={Wallet}/>
                 <Route path="/testaments" Component={Testaments}/>
-                <Route path="/heires" Component={Heires}/>
+                <Route path="/heirs" Component={Heirs}/>
                 <Route path="/settings" Component={Settings}/>
             </Routes>
             <AppBottomNavigation/>

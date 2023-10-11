@@ -8,7 +8,8 @@ export interface GroupedSecretList {
 }
 
 export interface SecretsState {
-    secretList: GroupedSecretList,
+    secretList: UiSecretListEntry[],
+    groupedSecretList: GroupedSecretList,
     secretToAdd: UiSecret
     addState: string,
     loadingState: string,
@@ -18,7 +19,8 @@ export interface SecretsState {
 
 // Define the initial state using that type
 export const initialState: SecretsState = {
-    secretList: {
+    secretList: [],
+    groupedSecretList: {
         passwordList: [],
         notesList: [],
         documentsList: [],

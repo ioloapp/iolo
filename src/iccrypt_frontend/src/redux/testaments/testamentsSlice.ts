@@ -3,55 +3,73 @@ import {initialState} from "./testamentsState";
 import {Testament} from "../../../../declarations/iccrypt_backend/iccrypt_backend.did";
 import IcCryptService from "../../services/IcCryptService";
 import {RootState} from "../store";
-import {UiTestament} from "../../services/IcTypesForUi";
+import {UiSecretListEntry, UiTestament, UiUser} from "../../services/IcTypesForUi";
 import {Principal} from "@dfinity/principal";
 
 const icCryptService = new IcCryptService();
 
-export const addTestamentThunk = createAsyncThunk<Testament, UiTestament, { state: RootState }>('testaments/add',
+export const addTestamentThunk = createAsyncThunk<UiTestament, UiTestament, { state: RootState }>('testaments/add',
     async (testament, {rejectWithValue}) => {
         console.log('add testament', testament)
         try {
             const result = await icCryptService.addTestament(mapTestament(testament));
             console.log('result', result)
-            return result;
+            return {
+                ...testament,
+                id: result.id,
+                date_created: new Date(result.date_created.toString()),
+                date_modified: new Date(result.date_modified.toString())
+            } as UiTestament;
         } catch (e) {
             rejectWithValue(e)
         }
     }
 );
 
-export const loadTestamentsThunk = createAsyncThunk<Testament[], void, { state: RootState }>('testaments/load',
-    async () => {
+export interface LoadTestamentResult {
+    testaments?: Testament[],
+    heirs?: UiUser[],
+    secrets?: UiSecretListEntry[]
+}
+
+export const loadTestamentsThunk = createAsyncThunk<LoadTestamentResult, void, { state: RootState }>('testaments/load',
+    async (_, {getState}) => {
         const result = await icCryptService.getTestamentList();
         console.log('loaded testament', result)
-        return result;
+        getState().heirs
+        return {
+            testaments: result,
+            heirs: getState().heirs.heirsList,
+            secrets: getState().secrets.secretList
+        } as LoadTestamentResult;
     }
 );
 
 function mapTestament(testament: UiTestament): Testament {
     return {
         id: testament.id,
-        heirs: testament.heirs.map(heire => Principal.fromText(heire)),
+        heirs: testament.heirs.map(heir => Principal.fromText(heir.id)),
         name: [testament.name],
-        testator: Principal.fromText(testament.testator),
-        secrets: testament.secrets,
+        testator: Principal.fromText(testament.testator.id),
+        secrets: testament.secrets.map(secret => secret.id),
         date_modified: BigInt(testament.date_modified.getTime()),
         date_created: BigInt(testament.date_created.getTime()),
         key_box: []
     };
 }
 
-function mapUiTestament(testament: Testament): UiTestament {
-    return {
-        id: `${testament.id}`,
-        heirs: testament.heirs.map(heire => heire.toString()),
-        name: testament.name && testament.name.length > 0 ? testament.name[0] : undefined,
-        testator: testament.testator.toString(),
-        secrets: testament.secrets,
-        date_modified: new Date(testament.date_modified.toString()),
-        date_created: new Date(testament.date_created.toString())
-    };
+function mapUiTestaments(result: LoadTestamentResult): UiTestament[] {
+    return result.testaments.map(testament => {
+        return {
+            id: `${testament.id}`,
+            heirs: testament.heirs.map(heir => result.heirs.find(h => h.id === heir.toString())),
+            name: testament.name && testament.name.length > 0 ? testament.name[0] : undefined,
+            testator: result.heirs.find(h => h.id === testament.testator.toString()),
+            secrets: testament.secrets.map(s => result.secrets.find(rs => rs.id === s)),
+            date_modified: new Date(testament.date_modified.toString()),
+            date_created: new Date(testament.date_created.toString())
+        } as UiTestament
+    });
 }
 
 // Define a type for the slice state
@@ -80,7 +98,7 @@ export const testamentsSlice = createSlice({
             })
             .addCase(loadTestamentsThunk.fulfilled, (state, action) => {
                 state.loadingState = 'succeeded';
-                state.testamentsList = action.payload.map(t => mapUiTestament(t))
+                state.testamentsList = mapUiTestaments(action.payload)
             })
             .addCase(loadTestamentsThunk.rejected, (state, action) => {
                 state.loadingState = 'failed';
@@ -93,7 +111,7 @@ export const testamentsSlice = createSlice({
             .addCase(addTestamentThunk.fulfilled, (state, action) => {
                 state.addState = 'succeeded';
                 state.showAddDialog = false;
-                state.testamentsList = [...state.testamentsList, mapUiTestament(action.payload)]
+                state.testamentsList = [...state.testamentsList, action.payload]
             })
             .addCase(addTestamentThunk.rejected, (state, action) => {
                 state.addState = 'failed';

@@ -54,7 +54,8 @@ export const secretsSlice = createSlice({
             })
             .addCase(loadSecretsThunk.fulfilled, (state, action) => {
                 state.loadingState = 'succeeded';
-                state.secretList = splitSecretListByCategory(action.payload)
+                state.groupedSecretList = splitSecretListByCategory(action.payload);
+                state.secretList = [...state.groupedSecretList.passwordList, ...state.groupedSecretList.notesList, ...state.groupedSecretList.othersList, ...state.groupedSecretList.documentsList]
             })
             .addCase(loadSecretsThunk.rejected, (state, action) => {
                 state.loadingState = 'failed';
@@ -66,7 +67,8 @@ export const secretsSlice = createSlice({
             .addCase(addSecretThunk.fulfilled, (state, action) => {
                 state.addState = 'succeeded';
                 state.showAddDialog = false;
-                state.secretList = addSecretToGroupedSecretList(state.secretList, action.payload)
+                state.groupedSecretList = addSecretToGroupedSecretList(state.groupedSecretList, action.payload)
+                state.secretList = [...state.groupedSecretList.passwordList, ...state.groupedSecretList.notesList, ...state.groupedSecretList.othersList, ...state.groupedSecretList.documentsList]
             })
             .addCase(addSecretThunk.rejected, (state, action) => {
                 state.addState = 'failed';
