@@ -4,18 +4,20 @@ import {SecretCategory, SecretListEntry} from "../../../../declarations/iccrypt_
 import IcCryptService from "../../services/IcCryptService";
 import {RootState} from "../store";
 import {UiSecret, UiSecretCategory, UiSecretListEntry} from "../../services/IcTypesForUi";
+import {mapError} from "../../utils/errorMapper";
 
 const icCryptService = new IcCryptService();
 
 export const addSecretThunk = createAsyncThunk<SecretListEntry, UiSecret, { state: RootState }>('secrets/add',
     async (secret, {rejectWithValue}) => {
+
         console.log('add secret', secret)
         try {
             const result = await icCryptService.addSecret(secret);
             console.log('result', result)
             return result;
         }catch (e){
-            rejectWithValue(e)
+            rejectWithValue(mapError(e))
         }
     }
 );
@@ -82,12 +84,12 @@ const addSecretToGroupedSecretList = (group: GroupedSecretList, secret: SecretLi
     const newGroupedSecretList = {
         ...group
     }
-    const category = secret.category && secret.category.length > 0 ? secret.category [0] as SecretCategory: undefined;
-    if (category.hasOwnProperty('Password')) {
+    const category = secret?.category && secret.category.length > 0 ? secret.category [0] as SecretCategory: undefined;
+    if (category?.hasOwnProperty('Password')) {
         newGroupedSecretList.passwordList.push(mapSecretListEntry(secret, UiSecretCategory.Password))
-    } else if (category.hasOwnProperty('Note')) {
+    } else if (category?.hasOwnProperty('Note')) {
         newGroupedSecretList.notesList.push(mapSecretListEntry(secret, UiSecretCategory.Note));
-    } else if (category.hasOwnProperty('Document')) {
+    } else if (category?.hasOwnProperty('Document')) {
         newGroupedSecretList.documentsList.push(mapSecretListEntry(secret, UiSecretCategory.Document));
     } else {
         newGroupedSecretList.othersList.push(mapSecretListEntry(secret, undefined));

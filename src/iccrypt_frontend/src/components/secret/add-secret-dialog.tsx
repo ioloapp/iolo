@@ -11,7 +11,7 @@ import {selectSecretToAdd, selectShowAddSecretDialog} from "../../redux/secrets/
 import {useAppDispatch} from "../../redux/hooks";
 import {addSecretThunk, secretsActions} from "../../redux/secrets/secretsSlice";
 import AddIcon from "@mui/icons-material/Add";
-import {Fab, FormControl, InputLabel, MenuItem, Select} from "@mui/material";
+import {Fab, FormControl, MenuItem, Select, Typography} from "@mui/material";
 import {UiSecret, UiSecretCategory} from "../../services/IcTypesForUi";
 
 export default function AddSecretDialog() {
@@ -55,9 +55,8 @@ export default function AddSecretDialog() {
                         To add a new Secret choose the category of it and fill in the necessary information.
                     </DialogContentText>
                     <FormControl fullWidth>
-                        <InputLabel id="category-select-label">Category</InputLabel>
+                        <Typography variant="body2">Category</Typography>
                         <Select
-                            labelId="category-select-label"
                             id="category-select"
                             value={secretToAdd.category}
                             label="Category"

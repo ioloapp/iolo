@@ -2,12 +2,12 @@ import {Avatar, Box, List, ListItem, ListItemAvatar, ListItemText} from "@mui/ma
 import * as React from "react";
 import {useEffect} from "react";
 import {useAppDispatch} from "../../redux/hooks";
-import {loadSecretsThunk} from "../../redux/secrets/secretsSlice";
 import {PageLayout} from "../../components/layout/page-layout";
 import {useSelector} from "react-redux";
 import {selectTestaments} from "../../redux/testaments/testamentsSelectors";
 import AddTestamentDialog from "../../components/testament/add-testament-dialog";
 import HistoryEduOutlinedIcon from "@mui/icons-material/HistoryEduOutlined";
+import {loadTestamentsThunk} from "../../redux/testaments/testamentsSlice";
 
 export function Testaments() {
 
@@ -15,7 +15,7 @@ export function Testaments() {
     const testaments = useSelector(selectTestaments);
 
     useEffect(() => {
-        dispatch(loadSecretsThunk())
+        dispatch(loadTestamentsThunk())
     }, [])
 
     return (
@@ -24,7 +24,7 @@ export function Testaments() {
                 {testaments &&
                     <Box>
                         <List dense={false}>
-                            {testaments.map(testament =>
+                            {testaments.flatMap(f => f ? [f] : []).map(testament =>
                                 <ListItem key={testament.id}>
                                     <ListItemAvatar>
                                         <Avatar>

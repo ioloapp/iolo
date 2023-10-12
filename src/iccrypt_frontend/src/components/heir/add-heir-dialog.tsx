@@ -9,7 +9,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import {useSelector} from "react-redux";
 import {useAppDispatch} from "../../redux/hooks";
 import AddIcon from "@mui/icons-material/Add";
-import {Fab, FormControl, InputLabel, MenuItem, Select} from "@mui/material";
+import {Fab, FormControl, MenuItem, Select, Typography} from "@mui/material";
 import {UiUser, UserType} from "../../services/IcTypesForUi";
 import {selectHeirToAdd, selectShowAddHeirDialog} from "../../redux/heirs/heirsSelectors";
 import {addHeirThunk, heirsActions} from "../../redux/heirs/heirsSlice";
@@ -55,7 +55,7 @@ export default function AddHeirDialog() {
                         To add a new Heir enter the id of it and extend it with a known name.
                     </DialogContentText>
                     <FormControl fullWidth>
-                        <InputLabel id="category-select-label">Category</InputLabel>
+                        <Typography variant="body2">Category</Typography>
                         <Select
                             labelId="category-select-label"
                             id="category-select"
@@ -73,6 +73,8 @@ export default function AddHeirDialog() {
 
                             }
                         </Select>
+                    </FormControl>
+                    <FormControl fullWidth>
                         <TextField
                             autoFocus
                             margin="dense"
@@ -86,8 +88,10 @@ export default function AddHeirDialog() {
                                 id: e.target.value
                             })}
                         />
-                        {heirToAdd.type === UserType.Person &&
-                            <>
+                    </FormControl>
+                    {heirToAdd.type === UserType.Person &&
+                        <>
+                            <FormControl fullWidth>
                                 <TextField
                                     autoFocus
                                     margin="dense"
@@ -101,6 +105,8 @@ export default function AddHeirDialog() {
                                         firstname: e.target.value
                                     })}
                                 />
+                            </FormControl>
+                            <FormControl fullWidth>
                                 <TextField
                                     autoFocus
                                     margin="dense"
@@ -114,9 +120,11 @@ export default function AddHeirDialog() {
                                         name: e.target.value
                                     })}
                                 />
-                            </>
-                        }
-                        {heirToAdd.type === UserType.Company &&
+                            </FormControl>
+                        </>
+                    }
+                    {heirToAdd.type === UserType.Company &&
+                        <FormControl fullWidth>
                             <TextField
                                 autoFocus
                                 margin="dense"
@@ -130,7 +138,9 @@ export default function AddHeirDialog() {
                                     name: e.target.value
                                 })}
                             />
-                        }
+                        </FormControl>
+                    }
+                    <FormControl fullWidth>
                         <TextField
                             autoFocus
                             margin="dense"
@@ -148,7 +158,7 @@ export default function AddHeirDialog() {
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={cancelAddHeir}>Cancel</Button>
-                    <Button onClick={createHeir}>Add Secret</Button>
+                    <Button onClick={createHeir}>Add Heir</Button>
                 </DialogActions>
             </Dialog>
         </div>

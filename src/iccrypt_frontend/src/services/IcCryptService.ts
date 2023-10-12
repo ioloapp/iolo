@@ -89,7 +89,7 @@ class IcCryptService {
     public async getSecretList(): Promise<SecretListEntry[]> {
         const result: Result_5 = await this.actor.get_secret_list();
         if (result['Ok']) {
-            return result['Ok']
+            return result['Ok'].flatMap(f => f ? [f] : []);
         }
         throw mapError(result['Err']);
     }
@@ -130,7 +130,7 @@ class IcCryptService {
             const encryptedSecret: AddSecretArgs = {
                 secret: {
                     id: uuidv4(),
-                    url: [secret.url],
+                    url: secret.url ? [secret.url]: [],
                     name: [secret.name],
                     category: [this.getSecretCategory(secret.category)],
                     username: [encrypted_username.ciphertext],
@@ -172,13 +172,16 @@ class IcCryptService {
     }
 
     async addTestament(testament: Testament): Promise<Testament> {
-        //const initialTestament = await this.actor.create_testament({});
-        //TODO encrypt the testament
+        console.log(1)
+        const initialTestament = await this.actor.create_testament({});
+        console.log(2)
         const encryptedTestament = {
             ...testament,
             id: uuidv4()
         }
+        console.log(3)
         const result: Result_1 = await this.actor.update_testament(encryptedTestament);
+        console.log(4)
         if (result['Ok']) {
             return result['Ok']
         }
@@ -188,7 +191,7 @@ class IcCryptService {
     async getTestamentList(): Promise<Testament[]> {
         const result: Result_6 = await this.actor.get_testament_list();
         if (result['Ok']) {
-            return result['Ok']
+            return result['Ok'].flatMap(f => f ? [f] : []);
         }
         throw mapError(result['Err']);
     }

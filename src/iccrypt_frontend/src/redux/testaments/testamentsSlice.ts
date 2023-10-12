@@ -5,6 +5,7 @@ import IcCryptService from "../../services/IcCryptService";
 import {RootState} from "../store";
 import {UiSecretListEntry, UiTestament, UiUser} from "../../services/IcTypesForUi";
 import {Principal} from "@dfinity/principal";
+import {mapError} from "../../utils/errorMapper";
 
 const icCryptService = new IcCryptService();
 
@@ -12,16 +13,19 @@ export const addTestamentThunk = createAsyncThunk<UiTestament, UiTestament, { st
     async (testament, {rejectWithValue}) => {
         console.log('add testament', testament)
         try {
-            const result = await icCryptService.addTestament(mapTestament(testament));
+            console.log(-1)
+            const mappedTestament = mapTestament(testament);
+            console.log(0)
+            const result = await icCryptService.addTestament(mappedTestament);
             console.log('result', result)
             return {
                 ...testament,
-                id: result.id,
-                date_created: new Date(result.date_created.toString()),
-                date_modified: new Date(result.date_modified.toString())
+                id: result?.id,
+                date_created: result?.date_created ? new Date(result?.date_created.toString()) : new Date(),
+                date_modified: result?.date_modified ? new Date(result?.date_modified.toString()) : new Date()
             } as UiTestament;
         } catch (e) {
-            rejectWithValue(e)
+            rejectWithValue(mapError(e))
         }
     }
 );

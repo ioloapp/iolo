@@ -9,22 +9,21 @@ import DialogTitle from '@mui/material/DialogTitle';
 import {useSelector} from "react-redux";
 import {selectGroupedSecrets, selectSecrets} from "../../redux/secrets/secretsSelectors";
 import {useAppDispatch} from "../../redux/hooks";
-import {addSecretThunk} from "../../redux/secrets/secretsSlice";
 import AddIcon from "@mui/icons-material/Add";
 import {
     Checkbox,
     Divider,
     Fab,
     FormControl,
-    InputLabel,
     ListItemText,
     MenuItem,
     OutlinedInput,
     Select,
-    SelectChangeEvent
+    SelectChangeEvent,
+    Typography
 } from "@mui/material";
 import {UiTestament} from "../../services/IcTypesForUi";
-import {testamentsActions} from "../../redux/testaments/testamentsSlice";
+import {addTestamentThunk, testamentsActions} from "../../redux/testaments/testamentsSlice";
 import {selectShowAddTestamentDialog, selectTestamentToAdd} from "../../redux/testaments/testamentsSelectors";
 import {selectHeirs} from "../../redux/heirs/heirsSelectors";
 
@@ -50,33 +49,35 @@ export default function AddTestamentDialog() {
         dispatch(testamentsActions.updateTestamentToAdd(testament))
     }
 
-    const cancelAddSecret = () => {
+    const cancelAddTestament = () => {
         setSelectedHeirs([]);
         setSelectedSecrets([]);
         dispatch(testamentsActions.cancelAddTestament());
     }
 
-    const createSecret = async () => {
-        dispatch(addSecretThunk(testamentToAdd));
+    const createTestament = async () => {
+        dispatch(addTestamentThunk(testamentToAdd));
     }
 
-    const handleSecretChange = (event: SelectChangeEvent<typeof selectedHeirs>) => {
+    const handleSecretChange = (event: SelectChangeEvent<typeof selectedSecrets>) => {
         const {target: {value}} = event;
-        const ids = typeof value === 'string' ? value.split(',') : value;
-        setSelectedHeirs(ids);
+        let ids = typeof value === 'string' ? value.split(',') : value;
+        ids = ids.flatMap(f => f ? [f] : []);
+        setSelectedSecrets(ids);
         dispatch(testamentsActions.updateTestamentToAdd({
             ...testamentToAdd,
-            secrets: [...testamentToAdd.secrets ? testamentToAdd.secrets : [], ids.map(id => secretsList.find(s => s.id === id))]
+            secrets: [...testamentToAdd.secrets ? testamentToAdd.secrets : [], ...ids.map(id => secretsList.find(s => s.id === id))]
         }))
     };
 
     const handleHeirChange = (event: SelectChangeEvent<typeof selectedHeirs>) => {
         const {target: {value}} = event;
-        const ids = typeof value === 'string' ? value.split(',') : value;
+        let ids = typeof value === 'string' ? value.split(',') : value;
+        ids = ids.flatMap(f => f ? [f] : [])
         setSelectedHeirs(ids);
         dispatch(testamentsActions.updateTestamentToAdd({
             ...testamentToAdd,
-            heirs: [...testamentToAdd.heirs ? testamentToAdd.heirs : [], ids.map(id => heirsList.find(h => h.id === id))]
+            heirs: [...testamentToAdd.heirs ? testamentToAdd.heirs : [], ...ids.map(id => heirsList.find(h => h.id === id))]
         }))
     };
 
@@ -120,21 +121,24 @@ export default function AddTestamentDialog() {
                                 name: e.target.value
                             })}
                         />
-                        <InputLabel id="secrets-multiple-checkbox-label">Secrets</InputLabel>
+                    </FormControl>
+                    <FormControl fullWidth>
+                        <Typography variant="body2">Secrets</Typography>
                         <Select
                             labelId="secrets-multiple-checkbox-label"
                             id="secrets-multiple-checkbox"
                             multiple
-                            value={selectedHeirs}
+                            value={selectedSecrets}
                             onChange={handleSecretChange}
                             input={<OutlinedInput label="Secrets"/>}
                             renderValue={(selected) => selected.join(', ')}
                             MenuProps={MenuProps}
                         >
-                            {groupedSecretList.passwordList?.length > 0 && <Divider textAlign="left">Passwords</Divider>}
+                            {groupedSecretList.passwordList?.length > 0 &&
+                                <Divider textAlign="left">Passwords</Divider>}
                             {groupedSecretList.passwordList.map((secret) => (
                                 <MenuItem key={secret.id} value={secret.id}>
-                                    <Checkbox checked={selectedHeirs.indexOf(secret.id) > -1}/>
+                                    <Checkbox checked={selectedSecrets.indexOf(secret.id) > -1}/>
                                     <ListItemText primary={secret.name}/>
                                 </MenuItem>
                             ))}
@@ -142,15 +146,16 @@ export default function AddTestamentDialog() {
                             {groupedSecretList.notesList?.length > 0 && <Divider textAlign="left">Notes</Divider>}
                             {groupedSecretList.notesList.map((secret) => (
                                 <MenuItem key={secret.id} value={secret.id}>
-                                    <Checkbox checked={selectedHeirs.indexOf(secret.id) > -1}/>
+                                    <Checkbox checked={selectedSecrets.indexOf(secret.id) > -1}/>
                                     <ListItemText primary={secret.name}/>
                                 </MenuItem>
                             ))}
 
-                            {groupedSecretList.documentsList?.length > 0 && <Divider textAlign="left">Documents</Divider>}
+                            {groupedSecretList.documentsList?.length > 0 &&
+                                <Divider textAlign="left">Documents</Divider>}
                             {groupedSecretList.documentsList.map((secret) => (
                                 <MenuItem key={secret.id} value={secret.id}>
-                                    <Checkbox checked={selectedHeirs.indexOf(secret.id) > -1}/>
+                                    <Checkbox checked={selectedSecrets.indexOf(secret.id) > -1}/>
                                     <ListItemText primary={secret.name}/>
                                 </MenuItem>
                             ))}
@@ -158,14 +163,15 @@ export default function AddTestamentDialog() {
                             {groupedSecretList.othersList?.length > 0 && <Divider textAlign="left">Others</Divider>}
                             {groupedSecretList.othersList.map((secret) => (
                                 <MenuItem key={secret.id} value={secret.id}>
-                                    <Checkbox checked={selectedHeirs.indexOf(secret.id) > -1}/>
+                                    <Checkbox checked={selectedSecrets.indexOf(secret.id) > -1}/>
                                     <ListItemText primary={secret.name}/>
                                 </MenuItem>
                             ))}
                         </Select>
-                        <InputLabel id="heirs-multiple-checkbox-label">Heirs</InputLabel>
+                    </FormControl>
+                    <FormControl fullWidth>
+                        <Typography variant="body2">Heirs</Typography>
                         <Select
-                            labelId="heirs-multiple-checkbox-label"
                             id="heirs-multiple-checkbox"
                             multiple
                             value={selectedHeirs}
@@ -184,8 +190,8 @@ export default function AddTestamentDialog() {
                     </FormControl>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={cancelAddSecret}>Cancel</Button>
-                    <Button onClick={createSecret}>Add Testament</Button>
+                    <Button onClick={cancelAddTestament}>Cancel</Button>
+                    <Button onClick={createTestament}>Add Testament</Button>
                 </DialogActions>
             </Dialog>
         </div>
