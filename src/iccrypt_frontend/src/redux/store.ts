@@ -11,12 +11,20 @@ const persistConfig = {
     storage,
 };
 
-const rootReducer = combineReducers({
+const appReducer = combineReducers({
     user: userReducer,
     secrets: secretsReducer,
     testaments: testamentsReducer,
     heirs: heirsReducer
 });
+
+const rootReducer = (state, action) => {
+    if (action.type === "user/logOut") {
+        storage.removeItem('persist:root')
+        return appReducer(undefined, action)
+    }
+    return appReducer(state, action)
+}
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 

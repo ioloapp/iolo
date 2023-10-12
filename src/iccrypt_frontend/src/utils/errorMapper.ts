@@ -19,5 +19,5 @@ export function mapError(input: Error): ICCryptError{
     } else if(input.hasOwnProperty('UserVaultDoesNotExist')){
         throw new ICCryptError(input['UserVaultDoesNotExist'])
     }
-    throw new ICCryptError('Unknown Error Type');
+    throw input;
 }

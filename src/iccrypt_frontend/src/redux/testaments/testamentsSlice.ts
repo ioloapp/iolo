@@ -56,8 +56,8 @@ function mapTestament(testament: UiTestament): Testament {
         name: [testament.name],
         testator: Principal.fromText(testament.testator.id),
         secrets: testament.secrets.map(secret => secret.id),
-        date_modified: BigInt(testament.date_modified.getTime()),
-        date_created: BigInt(testament.date_created.getTime()),
+        date_modified: testament.date_modified ? BigInt(testament.date_modified.getTime()): BigInt(Date.now()),
+        date_created: testament.date_modified ? BigInt(testament.date_created.getTime()): BigInt(Date.now()),
         key_box: []
     };
 }

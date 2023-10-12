@@ -26,6 +26,7 @@ import {UiTestament} from "../../services/IcTypesForUi";
 import {addTestamentThunk, testamentsActions} from "../../redux/testaments/testamentsSlice";
 import {selectShowAddTestamentDialog, selectTestamentToAdd} from "../../redux/testaments/testamentsSelectors";
 import {selectHeirs} from "../../redux/heirs/heirsSelectors";
+import {selectCurrentUser} from "../../redux/user/userSelectors";
 
 export default function AddTestamentDialog() {
     const dispatch = useAppDispatch();
@@ -34,6 +35,7 @@ export default function AddTestamentDialog() {
     const groupedSecretList = useSelector(selectGroupedSecrets);
     const heirsList = useSelector(selectHeirs);
     const secretsList = useSelector(selectSecrets);
+    const currentUser = useSelector(selectCurrentUser);
     const [selectedSecrets, setSelectedSecrets] = React.useState<string[]>(testamentToAdd.secrets ? testamentToAdd.secrets.map(secret => secret.id) : []);
     const [selectedHeirs, setSelectedHeirs] = React.useState<string[]>(testamentToAdd.heirs ? testamentToAdd.heirs.map(heir => heir.id) : []);
 
@@ -56,7 +58,10 @@ export default function AddTestamentDialog() {
     }
 
     const createTestament = async () => {
-        dispatch(addTestamentThunk(testamentToAdd));
+        dispatch(addTestamentThunk({
+            ...testamentToAdd,
+            testator: currentUser
+        }));
     }
 
     const handleSecretChange = (event: SelectChangeEvent<typeof selectedSecrets>) => {

@@ -1,6 +1,9 @@
+import {UiUser} from "../../services/IcTypesForUi";
+
 export interface UserState {
-    principal: String,
+    principal: string,
     userVaultExisting: boolean,
+    user?: UiUser;
     loginStatus?: string,
     error?: string;
 }

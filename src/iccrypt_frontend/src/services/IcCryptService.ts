@@ -144,7 +144,7 @@ class IcCryptService {
             console.log('encrypted secret to add: ', encryptedSecret)
             return encryptedSecret
         } catch (e) {
-            console.error(e)
+            throw mapError(e)
         }
     }
 
@@ -172,16 +172,12 @@ class IcCryptService {
     }
 
     async addTestament(testament: Testament): Promise<Testament> {
-        console.log(1)
         const initialTestament = await this.actor.create_testament({});
-        console.log(2)
         const encryptedTestament = {
             ...testament,
             id: uuidv4()
         }
-        console.log(3)
         const result: Result_1 = await this.actor.update_testament(encryptedTestament);
-        console.log(4)
         if (result['Ok']) {
             return result['Ok']
         }
