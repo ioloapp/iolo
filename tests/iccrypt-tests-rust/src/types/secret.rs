@@ -29,8 +29,22 @@ pub struct Secret {
 }
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
-pub struct AddSecretArgs {
+pub struct AddSecretArgsOld {
     pub secret: Secret,
+    pub decryption_material: SecretDecryptionMaterial,
+}
+
+#[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
+pub struct AddSecretArgs {
+    pub id: String,
+    pub category: Option<SecretCategory>,
+    pub name: Option<String>,
+    pub username: Option<Vec<u8>>,
+    pub password: Option<Vec<u8>>,
+    pub url: Option<String>,
+    pub notes: Option<Vec<u8>>,
+    // All the information required to decrypt the secret.
+    // This material will be stored in the uservault's key box
     pub decryption_material: SecretDecryptionMaterial,
 }
 

@@ -1,7 +1,14 @@
 type AddSecretArgs = record {
-  secret : Secret;
+  id : text;
+  url : opt text;
+  username : opt vec nat8;
+  password : opt vec nat8;
+  name : opt text;
   decryption_material : SecretDecryptionMaterial;
+  notes : opt vec nat8;
+  category : opt SecretCategory;
 };
+type AddTestamentArgs = record { id : text };
 type Result = variant { Ok : Secret; Err : SmartVaultErr };
 type Result_1 = variant { Ok : Testament; Err : SmartVaultErr };
 type Result_2 = variant { Ok : User; Err : SmartVaultErr };
@@ -57,7 +64,7 @@ type Testament = record {
 };
 type TestamentKeyDerviationArgs = record {
   encryption_public_key : vec nat8;
-  testament_id : nat;
+  testament_id : text;
 };
 type User = record {
   id : principal;
@@ -68,7 +75,7 @@ type User = record {
 };
 service : {
   add_secret : (AddSecretArgs) -> (Result);
-  create_testament : (record {}) -> (Result_1);
+  add_testament : (AddTestamentArgs) -> (Result_1);
   create_user : () -> (Result_2);
   delete_user : () -> (Result_3);
   encrypted_ibe_decryption_key_for_caller : (vec nat8) -> (text);
@@ -77,6 +84,7 @@ service : {
     text
   );
   encrypted_symmetric_key_for_uservault : (vec nat8) -> (text);
+  get_secret : (text) -> (Result) query;
   get_secret_decryption_material : (text) -> (Result_4) query;
   get_secret_list : () -> (Result_5) query;
   get_testament_list : () -> (Result_6) query;

@@ -10,7 +10,7 @@ use crate::smart_vaults::key_manager::TestamentKeyDerviationArgs;
 use crate::smart_vaults::secret::SecretDecryptionMaterial;
 use crate::smart_vaults::secret::SecretID;
 use crate::smart_vaults::secret::SecretListEntry;
-use crate::smart_vaults::testament::CreateTestamentArgs;
+use crate::smart_vaults::testament::AddTestamentArgs;
 use crate::smart_vaults::testament::Testament;
 use candid::candid_method;
 

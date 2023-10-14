@@ -29,14 +29,15 @@ pub struct Testament {
 
 /// The struct provided by the backend when calling "create_secret". It contains:
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
-pub struct CreateTestamentArgs {}
+pub struct AddTestamentArgs {
+    pub id: String,
+}
 
 impl Testament {
-    pub fn new(testator: Principal) -> Self {
+    pub fn new(id: String, testator: Principal) -> Self {
         let now: u64 = time::get_current_time();
-        // let uuid = UUID::new();
         Self {
-            id: "new".to_string(),
+            id,
             name: None,
             date_created: now,
             date_modified: now,

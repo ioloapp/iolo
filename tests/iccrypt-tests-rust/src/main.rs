@@ -1,4 +1,6 @@
 use colored::*;
+use tests::smart_vaults_testaments::test_smart_vaults_testaments;
+use tests::users::test_smart_vaults_users;
 
 use std::env;
 
@@ -7,7 +9,7 @@ use anyhow::Result;
 
 use tests::div::test_utils;
 use tests::encryption::test_encryption;
-use tests::smart_vaults::test_smart_vaults;
+use tests::smart_vaults_secrets::test_smart_vaults_secrets;
 use utils::dfx::cleanup;
 use utils::dfx::upgrade_canister;
 
@@ -49,8 +51,14 @@ async fn main() -> Result<()> {
         "vetkd" => {
             test_encryption().await?;
         }
-        "sv" => {
-            test_smart_vaults().await?;
+        "svs" => {
+            test_smart_vaults_secrets().await?;
+        }
+        "svt" => {
+            test_smart_vaults_testaments().await?;
+        }
+        "user" => {
+            test_smart_vaults_users().await?;
         }
         _ => {
             print_help_menu();

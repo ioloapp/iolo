@@ -9,7 +9,7 @@ use ic_agent::Agent;
 use ring::rand::{SecureRandom, SystemRandom};
 
 use crate::{
-    types::{secret::UUID, testament::TestamentKeyDerviationArgs},
+    types::testament::TestamentKeyDerviationArgs,
     utils::{
         agent::{
             get_default_dfx_agent, make_call_with_agent, make_call_with_default_agent, CallType,
@@ -90,7 +90,7 @@ pub async fn get_aes_256_gcm_key_for_uservault() -> Result<Vec<u8>> {
 /// Get a new key from the VETKD api using the following two variables for the derivation
 /// 1) id of the backend (iccrypt_backend)
 /// 2) id of the testament
-pub async fn get_aes_256_gcm_key_for_testament(testament_id: UUID) -> Result<Vec<u8>> {
+pub async fn get_aes_256_gcm_key_for_testament(testament_id: String) -> Result<Vec<u8>> {
     let rng = SystemRandom::new();
     let mut seed = [0u8; 32]; // An array of 8-bit unsigned integers, length 32
     rng.fill(&mut seed)?;
@@ -121,7 +121,7 @@ pub async fn get_aes_256_gcm_key_for_testament(testament_id: UUID) -> Result<Vec
     // -> We need to have the same derivation ID locally as well -> we need the principal of the backend canister.
     let backend_principal = Principal::from_text(get_backend_canister_id().unwrap()).unwrap();
     let mut derivation_id: Vec<u8> = backend_principal.as_slice().to_vec();
-    derivation_id.extend_from_slice(&testament_id.0.to_string().as_bytes().to_vec());
+    derivation_id.extend_from_slice(&testament_id.as_bytes().to_vec());
 
     // this is the final testament vetkd encryption key
     let aes_256_gcm_key = tsk
