@@ -2,9 +2,16 @@ import type { Principal } from '@dfinity/principal';
 import type { ActorMethod } from '@dfinity/agent';
 
 export interface AddSecretArgs {
-  'secret' : Secret,
+  'id' : string,
+  'url' : [] | [string],
+  'username' : [] | [Uint8Array | number[]],
+  'password' : [] | [Uint8Array | number[]],
+  'name' : [] | [string],
   'decryption_material' : SecretDecryptionMaterial,
+  'notes' : [] | [Uint8Array | number[]],
+  'category' : [] | [SecretCategory],
 }
+export interface AddTestamentArgs { 'id' : string }
 export type Result = { 'Ok' : Secret } |
   { 'Err' : SmartVaultErr };
 export type Result_1 = { 'Ok' : Testament } |
@@ -67,7 +74,7 @@ export interface Testament {
 }
 export interface TestamentKeyDerviationArgs {
   'encryption_public_key' : Uint8Array | number[],
-  'testament_id' : bigint,
+  'testament_id' : string,
 }
 export interface User {
   'id' : Principal,
@@ -78,7 +85,7 @@ export interface User {
 }
 export interface _SERVICE {
   'add_secret' : ActorMethod<[AddSecretArgs], Result>,
-  'create_testament' : ActorMethod<[{}], Result_1>,
+  'add_testament' : ActorMethod<[AddTestamentArgs], Result_1>,
   'create_user' : ActorMethod<[], Result_2>,
   'delete_user' : ActorMethod<[], Result_3>,
   'encrypted_ibe_decryption_key_for_caller' : ActorMethod<
@@ -97,6 +104,7 @@ export interface _SERVICE {
     [Uint8Array | number[]],
     string
   >,
+  'get_secret' : ActorMethod<[string], Result>,
   'get_secret_decryption_material' : ActorMethod<[string], Result_4>,
   'get_secret_list' : ActorMethod<[], Result_5>,
   'get_testament_list' : ActorMethod<[], Result_6>,

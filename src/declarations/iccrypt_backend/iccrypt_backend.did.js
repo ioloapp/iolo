@@ -1,8 +1,25 @@
 export const idlFactory = ({ IDL }) => {
+  const SecretDecryptionMaterial = IDL.Record({
+    'iv' : IDL.Vec(IDL.Nat8),
+    'password_decryption_nonce' : IDL.Opt(IDL.Vec(IDL.Nat8)),
+    'notes_decryption_nonce' : IDL.Opt(IDL.Vec(IDL.Nat8)),
+    'encrypted_decryption_key' : IDL.Vec(IDL.Nat8),
+    'username_decryption_nonce' : IDL.Opt(IDL.Vec(IDL.Nat8)),
+  });
   const SecretCategory = IDL.Variant({
     'Password' : IDL.Null,
     'Note' : IDL.Null,
     'Document' : IDL.Null,
+  });
+  const AddSecretArgs = IDL.Record({
+    'id' : IDL.Text,
+    'url' : IDL.Opt(IDL.Text),
+    'username' : IDL.Opt(IDL.Vec(IDL.Nat8)),
+    'password' : IDL.Opt(IDL.Vec(IDL.Nat8)),
+    'name' : IDL.Opt(IDL.Text),
+    'decryption_material' : SecretDecryptionMaterial,
+    'notes' : IDL.Opt(IDL.Vec(IDL.Nat8)),
+    'category' : IDL.Opt(SecretCategory),
   });
   const Secret = IDL.Record({
     'id' : IDL.Text,
@@ -14,17 +31,6 @@ export const idlFactory = ({ IDL }) => {
     'notes' : IDL.Opt(IDL.Vec(IDL.Nat8)),
     'category' : IDL.Opt(SecretCategory),
     'date_modified' : IDL.Nat64,
-  });
-  const SecretDecryptionMaterial = IDL.Record({
-    'iv' : IDL.Vec(IDL.Nat8),
-    'password_decryption_nonce' : IDL.Opt(IDL.Vec(IDL.Nat8)),
-    'notes_decryption_nonce' : IDL.Opt(IDL.Vec(IDL.Nat8)),
-    'encrypted_decryption_key' : IDL.Vec(IDL.Nat8),
-    'username_decryption_nonce' : IDL.Opt(IDL.Vec(IDL.Nat8)),
-  });
-  const AddSecretArgs = IDL.Record({
-    'secret' : Secret,
-    'decryption_material' : SecretDecryptionMaterial,
   });
   const SmartVaultErr = IDL.Variant({
     'UserAlreadyExists' : IDL.Text,
@@ -39,6 +45,7 @@ export const idlFactory = ({ IDL }) => {
     'SecretAlreadyExists' : IDL.Text,
   });
   const Result = IDL.Variant({ 'Ok' : Secret, 'Err' : SmartVaultErr });
+  const AddTestamentArgs = IDL.Record({ 'id' : IDL.Text });
   const Testament = IDL.Record({
     'id' : IDL.Text,
     'heirs' : IDL.Vec(IDL.Principal),
@@ -61,7 +68,7 @@ export const idlFactory = ({ IDL }) => {
   const Result_3 = IDL.Variant({ 'Ok' : IDL.Null, 'Err' : SmartVaultErr });
   const TestamentKeyDerviationArgs = IDL.Record({
     'encryption_public_key' : IDL.Vec(IDL.Nat8),
-    'testament_id' : IDL.Nat,
+    'testament_id' : IDL.Text,
   });
   const Result_4 = IDL.Variant({
     'Ok' : SecretDecryptionMaterial,
@@ -82,7 +89,7 @@ export const idlFactory = ({ IDL }) => {
   });
   return IDL.Service({
     'add_secret' : IDL.Func([AddSecretArgs], [Result], []),
-    'create_testament' : IDL.Func([IDL.Record({})], [Result_1], []),
+    'add_testament' : IDL.Func([AddTestamentArgs], [Result_1], []),
     'create_user' : IDL.Func([], [Result_2], []),
     'delete_user' : IDL.Func([], [Result_3], []),
     'encrypted_ibe_decryption_key_for_caller' : IDL.Func(
@@ -105,6 +112,7 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Text],
         [],
       ),
+    'get_secret' : IDL.Func([IDL.Text], [Result], ['query']),
     'get_secret_decryption_material' : IDL.Func(
         [IDL.Text],
         [Result_4],

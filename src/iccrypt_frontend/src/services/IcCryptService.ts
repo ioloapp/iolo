@@ -142,7 +142,6 @@ class IcCryptService {
             };
 
             const encryptedSecret: AddSecretArgs = {
-                secret: {
                     id: uuidv4(),
                     url: secret.url ? [secret.url]: [],
                     name: [secret.name],
@@ -150,10 +149,7 @@ class IcCryptService {
                     username: [encrypted_username.ciphertext],
                     password: [encrypted_password.ciphertext],
                     notes: [encrypted_notes.ciphertext],
-                    date_created: BigInt(new Date().getDate()),
-                    date_modified: BigInt(new Date().getDate())
-                },
-                decryption_material
+                    decryption_material: decryption_material
             }
             console.log('encrypted secret to add: ', encryptedSecret)
             return encryptedSecret
@@ -186,7 +182,7 @@ class IcCryptService {
     }
 
     async addTestament(testament: Testament): Promise<Testament> {
-        const initialTestament = await this.actor.create_testament({});
+        const initialTestament = await this.actor.add_testament({id: uuidv4()});
         const encryptedTestament = {
             ...testament,
             id: uuidv4()
