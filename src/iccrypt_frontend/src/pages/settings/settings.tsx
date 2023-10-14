@@ -1,4 +1,4 @@
-import {Button} from "@mui/material";
+import {Box, Button} from "@mui/material";
 import * as React from "react";
 import {userActions} from "../../redux/user/userSlice";
 import {useAppDispatch} from "../../redux/hooks";
@@ -13,7 +13,16 @@ export function Settings() {
 
     return (
         <PageLayout title="Settings">
-            <Button variant="contained" onClick={logout}>Logout</Button>
+            <Box
+                sx={{
+                    flexGrow: 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                }}
+            >
+                <Button variant="contained" onClick={logout}>Logout</Button>
+            </Box>
         </PageLayout>
     );
 }

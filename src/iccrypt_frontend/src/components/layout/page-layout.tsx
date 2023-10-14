@@ -28,12 +28,7 @@ export const PageLayout = ({title, children}: PageLayoutProps) => {
                 <Typography variant="h4">{title}</Typography>
             </Box>
 
-            <Box
-                sx={{
-                    flexGrow: 1,
-                    display: 'flex'
-                }}
-            >
+            <Box>
                 {children}
             </Box>
         </Box>
