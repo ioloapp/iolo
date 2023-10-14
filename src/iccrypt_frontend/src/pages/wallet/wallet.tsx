@@ -1,8 +1,8 @@
-import {Avatar, Box, List, ListItem, ListItemAvatar, ListItemText, Typography} from "@mui/material";
+import {Box, List, Typography} from "@mui/material";
 import * as React from "react";
 import {useEffect} from "react";
 import {useAppDispatch} from "../../redux/hooks";
-import {loadSecretsThunk} from "../../redux/secrets/secretsSlice";
+import {loadSecretsThunk, secretsActions} from "../../redux/secrets/secretsSlice";
 import {PageLayout} from "../../components/layout/page-layout";
 import PasswordIcon from '@mui/icons-material/Password';
 import NotesIcon from '@mui/icons-material/Notes';
@@ -10,7 +10,10 @@ import DescriptionIcon from '@mui/icons-material/Description';
 import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 import {useSelector} from "react-redux";
 import {selectGroupedSecrets} from "../../redux/secrets/secretsSelectors";
-import AddSecretDialog from "../../components/secret/add-secret-dialog";
+import AddEditSecretDialog from "../../components/secret/add-edit-secret-dialog";
+import {UiSecretListEntry} from "../../services/IcTypesForUi";
+import {SecretItem} from "./secret-item";
+import DeleteSecretDialog from "../../components/secret/delete-secret-dialog";
 
 export function Wallet() {
 
@@ -21,83 +24,57 @@ export function Wallet() {
         dispatch(loadSecretsThunk())
     }, [])
 
+    const deleteItem = (secret: UiSecretListEntry) => {
+        dispatch(secretsActions.updateSecretToAdd(secret));
+        dispatch(secretsActions.openDeleteDialog());
+    }
+
+    const editItem = (secret: UiSecretListEntry) => {
+        dispatch(secretsActions.updateSecretToAdd(secret));
+        dispatch(secretsActions.openEditDialog());
+    }
+
     return (
         <PageLayout title="Wallet">
-            <Box>
+            <Box sx={{width: '100%', margin: '3rem'}}>
                 {groupedSecretList &&
                     <>
                         {groupedSecretList.passwordList &&
                             <Box>
-                                <Typography variant="h4">Passwords</Typography>
+                                <Typography variant="h5">Passwords</Typography>
                                 <List dense={false}>
-                                    {groupedSecretList.passwordList.map(secret =>
-                                        <ListItem key={secret.id}>
-                                            <ListItemAvatar>
-                                                <Avatar>
-                                                    <PasswordIcon/>
-                                                </Avatar>
-                                            </ListItemAvatar>
-                                            <ListItemText
-                                                primary={secret.name}
-                                            />
-                                        </ListItem>,
+                                    {groupedSecretList.passwordList.map((secret: UiSecretListEntry) =>
+                                        <SecretItem secret={secret} editAction={editItem} deleteAction={deleteItem}><PasswordIcon/></SecretItem>
                                     )}
                                 </List>
                             </Box>
                         }
                         {groupedSecretList.notesList &&
                             <Box>
-                                <Typography variant="h4">Notes</Typography>
+                                <Typography variant="h5">Notes</Typography>
                                 <List dense={false}>
-                                    {groupedSecretList.notesList.map(secret =>
-                                        <ListItem key={secret.id}>
-                                            <ListItemAvatar>
-                                                <Avatar>
-                                                    <NotesIcon/>
-                                                </Avatar>
-                                            </ListItemAvatar>
-                                            <ListItemText
-                                                primary={secret.name}
-                                            />
-                                        </ListItem>,
+                                    {groupedSecretList.notesList.map((secret: UiSecretListEntry) =>
+                                        <SecretItem secret={secret} editAction={editItem} deleteAction={deleteItem}><NotesIcon/></SecretItem>
                                     )}
                                 </List>
                             </Box>
                         }
                         {groupedSecretList.documentsList &&
                             <Box>
-                                <Typography variant="h4">Documents</Typography>
+                                <Typography variant="h5">Documents</Typography>
                                 <List dense={false}>
-                                    {groupedSecretList.documentsList.map(secret =>
-                                        <ListItem key={secret.id}>
-                                            <ListItemAvatar>
-                                                <Avatar>
-                                                    <DescriptionIcon/>
-                                                </Avatar>
-                                            </ListItemAvatar>
-                                            <ListItemText
-                                                primary={secret.name}
-                                            />
-                                        </ListItem>,
+                                    {groupedSecretList.documentsList.map((secret: UiSecretListEntry) =>
+                                        <SecretItem secret={secret} editAction={editItem} deleteAction={deleteItem}><DescriptionIcon/></SecretItem>
                                     )}
                                 </List>
                             </Box>
                         }
                         {groupedSecretList.othersList &&
                             <Box>
-                                <Typography variant="h4">No Category</Typography>
+                                <Typography variant="h5">No Category</Typography>
                                 <List dense={false}>
-                                    {groupedSecretList.othersList.map(secret =>
-                                        <ListItem key={secret.id}>
-                                            <ListItemAvatar>
-                                                <Avatar>
-                                                    <QuestionMarkIcon/>
-                                                </Avatar>
-                                            </ListItemAvatar>
-                                            <ListItemText
-                                                primary={secret.name}
-                                            />
-                                        </ListItem>,
+                                    {groupedSecretList.othersList.map((secret: UiSecretListEntry) =>
+                                        <SecretItem secret={secret} editAction={editItem} deleteAction={deleteItem}><QuestionMarkIcon/></SecretItem>
                                     )}
                                 </List>
                             </Box>
@@ -105,6 +82,7 @@ export function Wallet() {
                     </>
                 }
             </Box>
-            <AddSecretDialog/>
+            <AddEditSecretDialog/>
+            <DeleteSecretDialog/>
         </PageLayout>);
 }

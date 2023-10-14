@@ -7,16 +7,21 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import {useSelector} from "react-redux";
-import {selectSecretToAdd, selectShowAddSecretDialog} from "../../redux/secrets/secretsSelectors";
+import {
+    selectSecretToAdd,
+    selectShowAddSecretDialog,
+    selectShowEditSecretDialog
+} from "../../redux/secrets/secretsSelectors";
 import {useAppDispatch} from "../../redux/hooks";
-import {addSecretThunk, secretsActions} from "../../redux/secrets/secretsSlice";
+import {addSecretThunk, secretsActions, updateSecretThunk} from "../../redux/secrets/secretsSlice";
 import AddIcon from "@mui/icons-material/Add";
 import {Fab, FormControl, MenuItem, Select, Typography} from "@mui/material";
 import {UiSecret, UiSecretCategory} from "../../services/IcTypesForUi";
 
-export default function AddSecretDialog() {
+export default function AddEditSecretDialog() {
     const dispatch = useAppDispatch();
-    const showAddSecretDialog = useSelector(selectShowAddSecretDialog);
+    const showAddSecretDialog: boolean = useSelector(selectShowAddSecretDialog);
+    const showEditSecretDialog: boolean = useSelector(selectShowEditSecretDialog);
     const secretToAdd = useSelector(selectSecretToAdd);
 
     const handleClickOpen = () => {
@@ -24,10 +29,10 @@ export default function AddSecretDialog() {
     };
 
     const handleClose = () => {
-        dispatch(secretsActions.closeAddDialog());
+        dispatch(secretsActions.closeAddOrEditDialog());
     };
 
-    const updateSecret = (secret: UiSecret) => {
+    const updateSecretToAdd = (secret: UiSecret) => {
         dispatch(secretsActions.updateSecretToAdd(secret))
     }
 
@@ -39,6 +44,10 @@ export default function AddSecretDialog() {
         dispatch(addSecretThunk(secretToAdd));
     }
 
+    const updateSecret = async () => {
+        dispatch(updateSecretThunk(secretToAdd));
+    }
+
     return (
         <div>
             <Fab color="primary" aria-label="add" onClick={handleClickOpen} sx={{
@@ -48,7 +57,7 @@ export default function AddSecretDialog() {
             }}>
                 <AddIcon/>
             </Fab>
-            <Dialog open={showAddSecretDialog} onClose={handleClose}>
+            <Dialog open={showAddSecretDialog || showEditSecretDialog} onClose={handleClose}>
                 <DialogTitle>Add Secret</DialogTitle>
                 <DialogContent>
                     <DialogContentText>
@@ -60,7 +69,7 @@ export default function AddSecretDialog() {
                             id="category-select"
                             value={secretToAdd.category}
                             label="Category"
-                            onChange={e => updateSecret({
+                            onChange={e => updateSecretToAdd({
                                 ...secretToAdd,
                                 category: UiSecretCategory[e.target.value as keyof typeof UiSecretCategory]
                             })}
@@ -80,7 +89,7 @@ export default function AddSecretDialog() {
                             fullWidth
                             variant="standard"
                             value={secretToAdd.name}
-                            onChange={e => updateSecret({
+                            onChange={e => updateSecretToAdd({
                                 ...secretToAdd,
                                 name: e.target.value
                             })}
@@ -95,7 +104,7 @@ export default function AddSecretDialog() {
                                     fullWidth
                                     variant="standard"
                                     value={secretToAdd.username}
-                                    onChange={e => updateSecret({
+                                    onChange={e => updateSecretToAdd({
                                         ...secretToAdd,
                                         username: e.target.value
                                     })}
@@ -109,7 +118,7 @@ export default function AddSecretDialog() {
                                     type="password"
                                     variant="standard"
                                     value={secretToAdd.password}
-                                    onChange={e => updateSecret({
+                                    onChange={e => updateSecretToAdd({
                                         ...secretToAdd,
                                         password: e.target.value
                                     })}
@@ -122,7 +131,7 @@ export default function AddSecretDialog() {
                                     fullWidth
                                     variant="standard"
                                     value={secretToAdd.url}
-                                    onChange={e => updateSecret({
+                                    onChange={e => updateSecretToAdd({
                                         ...secretToAdd,
                                         url: e.target.value
                                     })}
@@ -139,7 +148,7 @@ export default function AddSecretDialog() {
                                 variant="standard"
                                 value={secretToAdd.notes}
                                 multiline
-                                onChange={e => updateSecret({
+                                onChange={e => updateSecretToAdd({
                                     ...secretToAdd,
                                     notes: e.target.value
                                 })}
@@ -149,7 +158,8 @@ export default function AddSecretDialog() {
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={cancelAddSecret}>Cancel</Button>
-                    <Button onClick={createSecret}>Add Secret</Button>
+                    {showAddSecretDialog && <Button onClick={createSecret}>Add Secret</Button>}
+                    {showEditSecretDialog && <Button onClick={updateSecret}>Update Secret</Button>}
                 </DialogActions>
             </Dialog>
         </div>

@@ -106,6 +106,20 @@ class IcCryptService {
         throw mapError(result['Err']);
     }
 
+    public async updateSecret(secret: UiSecret): Promise<SecretListEntry> {
+        console.log('start updating')
+        //TODO implement it end remove following test code
+        // @ts-ignore
+        const category: SecretCategory = {};
+        category[`${secret.category}`] = null;
+
+        return {
+            id: secret.id || 'test-id',
+            name: [secret.name],
+            category: [category]
+        };
+    }
+
     private async encryptSecret(secret: UiSecret): Promise<AddSecretArgs> {
         try {
             const secret_encryption_key = await get_local_random_aes_256_gcm_key();
@@ -159,8 +173,8 @@ class IcCryptService {
         }
     }
 
-    public async deleteSecret(secretId: bigint) {
-        const result: Result_2 = await this.actor.remove_user_secret(`${secretId}`);
+    public async deleteSecret(secretId: string) {
+        const result: Result_2 = await this.actor.remove_user_secret(secretId);
         if (result['Ok']) {
             return result['Ok']
         }

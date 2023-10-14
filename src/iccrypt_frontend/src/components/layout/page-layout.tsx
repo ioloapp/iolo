@@ -31,9 +31,7 @@ export const PageLayout = ({title, children}: PageLayoutProps) => {
             <Box
                 sx={{
                     flexGrow: 1,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
+                    display: 'flex'
                 }}
             >
                 {children}

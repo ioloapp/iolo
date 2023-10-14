@@ -6,4 +6,8 @@ export const selectGroupedSecrets = (state: RootState)  => state.secrets.grouped
 
 export const selectShowAddSecretDialog = (state: RootState)  => state.secrets.showAddDialog;
 
+export const selectShowEditSecretDialog = (state: RootState)  => state.secrets.showEditDialog;
+
+export const selectShowDeleteSecretDialog = (state: RootState)  => state.secrets.showDeleteDialog;
+
 export const selectSecretToAdd = (state: RootState)  => state.secrets.secretToAdd;
