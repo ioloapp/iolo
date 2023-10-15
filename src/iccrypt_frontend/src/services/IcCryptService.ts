@@ -5,8 +5,10 @@ import {
     Result,
     Result_1,
     Result_2,
+    Result_4,
     Result_5,
     Result_6,
+    Secret,
     SecretCategory,
     SecretDecryptionMaterial,
     SecretListEntry,
@@ -18,7 +20,7 @@ import {createActor} from "../../../declarations/iccrypt_backend";
 import {mapError} from "../utils/errorMapper";
 import {ICCryptError} from "../error/Errors";
 import {Principal} from "@dfinity/principal";
-import {aes_gcm_encrypt, get_aes_256_gcm_key_for_uservault, get_local_random_aes_256_gcm_key} from "../utils/crypto";
+import {aes_gcm_decrypt, aes_gcm_encrypt, get_aes_256_gcm_key_for_uservault, get_local_random_aes_256_gcm_key} from "../utils/crypto";
 import {UiSecret, UiSecretCategory, UiUser} from "./IcTypesForUi";
 import {v4 as uuidv4} from 'uuid';
 
@@ -55,7 +57,8 @@ class IcCryptService {
         const expiry = Date.now() + (daysToAdd * 86400000);
         await this.authClient.login({
             onSuccess: async () => {
-                console.log('login successful')
+                const principal = await this.getUserPrincipal();
+                console.log('login successful with principal ', principal.toString());
             },
             onError: async () => {
                 throw new ICCryptError();
@@ -94,64 +97,129 @@ class IcCryptService {
         throw mapError(result['Err']);
     }
 
-    public async addSecret(secret: UiSecret): Promise<SecretListEntry> {
-        console.log('start adding')
-        const encryptedSecret = await this.encryptSecret(secret)
-        console.log('encryptedSecret', encryptedSecret)
+    public async addSecret(uiSecret: UiSecret): Promise<Secret> {
+        console.log('start adding secret...')
+        const encryptedSecret: AddSecretArgs = await this.encryptNewSecret(uiSecret)
         const result: Result = await this.actor.add_secret(encryptedSecret);
-        console.log('result2', result)
         if (result['Ok']) {
             return result['Ok']
         }
         throw mapError(result['Err']);
     }
 
-    public async updateSecret(secret: UiSecret): Promise<SecretListEntry> {
-        console.log('start updating')
-        //TODO implement it end remove following test code
-        // @ts-ignore
-        const category: SecretCategory = {};
-        category[`${secret.category}`] = null;
+    public async updateSecret(uiSecret: UiSecret): Promise<Secret> {
+        console.log('start updating secret...')
+        const resultDecryptionMaterial: Result_4 = await this.actor.get_secret_decryption_material(uiSecret.id);
 
-        return {
-            id: secret.id || 'test-id',
-            name: [secret.name],
-            category: [category]
-        };
+        let decryptionMaterial: SecretDecryptionMaterial;
+        if (resultDecryptionMaterial['Ok']) {
+            decryptionMaterial = resultDecryptionMaterial['Ok'];
+        } else {
+            throw mapError(resultDecryptionMaterial['Err']);
+        }
+
+        // Get the vetKey to decrypt the encryption key
+        const uservaultEncryptionKey: Uint8Array = await get_aes_256_gcm_key_for_uservault();
+
+        // Decrypt encryption key
+        const decryptedEncryptionKey = await aes_gcm_decrypt(decryptionMaterial.encrypted_decryption_key as Uint8Array, uservaultEncryptionKey);
+
+        // Encrypt updated secret
+        const encryptedSecret: Secret = await this.encryptExistingSecret(uiSecret, decryptedEncryptionKey, decryptionMaterial.username_decryption_nonce[0] as Uint8Array, decryptionMaterial.password_decryption_nonce[0] as Uint8Array, decryptionMaterial.notes_decryption_nonce[0] as Uint8Array);
+
+        // Update encrypted secret
+        const resultUpdate: Result = await this.actor.update_secret(encryptedSecret);
+
+        if (resultUpdate['Ok']) {
+            return resultUpdate['Ok']
+        }
+        throw mapError(resultUpdate['Err']);
     }
 
-    private async encryptSecret(secret: UiSecret): Promise<AddSecretArgs> {
+    private async encryptNewSecret(uiSecret: UiSecret): Promise<AddSecretArgs> {
+        // When creating new secrets no encryption key and no ivs are provided, they are generated new
         try {
-            const secret_encryption_key = await get_local_random_aes_256_gcm_key();
-
-            // Encrypt secret fields
-            const encrypted_username = await aes_gcm_encrypt(secret.username, secret_encryption_key);
-            const encrypted_password = await aes_gcm_encrypt(secret.password, secret_encryption_key);
-            const encrypted_notes = await aes_gcm_encrypt(secret.notes, secret_encryption_key);
-
             // Encrypt the encryption key
-            const uservault_encryption_key = await get_aes_256_gcm_key_for_uservault();
-            const encrypted_secret_decryption_key = await aes_gcm_encrypt(secret_encryption_key, uservault_encryption_key);
+            const encryptionKey = await get_local_random_aes_256_gcm_key();
+            const ivEncryptionKey = window.crypto.getRandomValues(new Uint8Array(12)); // 96-bits; unique per message
+            const uservaultEncryptionKey = await get_aes_256_gcm_key_for_uservault();
+            const encryptedEncryptionKey = await aes_gcm_encrypt(encryptionKey, uservaultEncryptionKey, ivEncryptionKey);
 
-            let decryption_material: SecretDecryptionMaterial = {
-                encrypted_decryption_key: encrypted_secret_decryption_key.ciphertext,
-                iv: encrypted_secret_decryption_key.nonce,
-                username_decryption_nonce: [encrypted_username.ciphertext],
-                password_decryption_nonce: [encrypted_password.ciphertext],
-                notes_decryption_nonce: [encrypted_notes.ciphertext],
+            // Encrypt optional secret attributes
+            let ivUsername = new Uint8Array(0);;
+            let encryptedUsername = new Uint8Array(0);
+            if (uiSecret.username) {
+                ivUsername = window.crypto.getRandomValues(new Uint8Array(12)); // 96-bits; unique per message
+                encryptedUsername = await aes_gcm_encrypt(uiSecret.username, encryptionKey, ivUsername);
+            }
+            let ivPassword = new Uint8Array(0);;
+            let encryptedPassword = new Uint8Array(0);
+            if (uiSecret.password) {
+                ivPassword = window.crypto.getRandomValues(new Uint8Array(12)); // 96-bits; unique per message
+                encryptedPassword = await aes_gcm_encrypt(uiSecret.password, encryptionKey, ivPassword);
+            }
+            let ivNotes = new Uint8Array(0);;
+            let encryptedNotes = new Uint8Array(0);
+            if (uiSecret.notes) {
+                ivNotes = window.crypto.getRandomValues(new Uint8Array(12)); // 96-bits; unique per message
+                encryptedNotes = await aes_gcm_encrypt(uiSecret.notes, encryptionKey, ivNotes);
+            }
+
+            let decryptionMaterial: SecretDecryptionMaterial = {
+                encrypted_decryption_key: encryptedEncryptionKey,
+                iv: ivEncryptionKey,
+                username_decryption_nonce: [ivUsername],
+                password_decryption_nonce: [ivPassword],
+                notes_decryption_nonce: [ivNotes],
             };
 
             const encryptedSecret: AddSecretArgs = {
                     id: uuidv4(),
-                    url: secret.url ? [secret.url]: [],
-                    name: [secret.name],
-                    category: [this.getSecretCategory(secret.category)],
-                    username: [encrypted_username.ciphertext],
-                    password: [encrypted_password.ciphertext],
-                    notes: [encrypted_notes.ciphertext],
-                    decryption_material: decryption_material
+                    url: uiSecret.url ? [uiSecret.url]: [],
+                    name: [uiSecret.name],
+                    category: [this.getSecretCategory(uiSecret.category)],
+                    username: [encryptedUsername],
+                    password: [encryptedPassword],
+                    notes: [encryptedNotes],
+                    decryption_material: decryptionMaterial
             }
             console.log('encrypted secret to add: ', encryptedSecret)
+            return encryptedSecret
+        } catch (e) {
+            throw mapError(e)
+        }
+    }
+
+    private async encryptExistingSecret(uiSecret: UiSecret, encryptionKey:  Uint8Array, ivUsername: Uint8Array, ivPassword: Uint8Array, ivNotes: Uint8Array): Promise<Secret> {
+        // When updating existing secrets the existing encryption key and the existing ivs must be used
+
+        try {
+
+            // Encrypt optional secret attributes
+            let encryptedUsername = new Uint8Array(0);
+            if (uiSecret.username) {
+                encryptedUsername = await aes_gcm_encrypt(uiSecret.username, encryptionKey, ivUsername);
+            }
+            let encryptedPassword = new Uint8Array(0);
+            if (uiSecret.password) {
+                encryptedPassword = await aes_gcm_encrypt(uiSecret.password, encryptionKey, ivPassword);
+            }
+            let encryptedNotes = new Uint8Array(0);
+            if (uiSecret.notes) {
+                encryptedNotes = await aes_gcm_encrypt(uiSecret.notes, encryptionKey, ivNotes);
+            }
+            const encryptedSecret: Secret = {
+                id: uiSecret.id,
+                url: uiSecret.url ? [uiSecret.url] : [],
+                name: [uiSecret.name],
+                category: [this.getSecretCategory(uiSecret.category)],
+                username: [encryptedUsername],
+                password: [encryptedPassword],
+                notes: [encryptedNotes],
+                date_created: 0n, // will be ignored by update_secret function in backend
+                date_modified: 0n // will be ignored by update_secret function in backend
+            }
+            console.log('encrypted secret to update: ', encryptedSecret)
             return encryptedSecret
         } catch (e) {
             throw mapError(e)

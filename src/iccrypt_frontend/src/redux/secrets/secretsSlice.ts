@@ -1,6 +1,6 @@
 import {createAsyncThunk, createSlice} from '@reduxjs/toolkit';
 import {GroupedSecretList, initialState} from "./secretsState";
-import {SecretCategory, SecretListEntry} from "../../../../declarations/iccrypt_backend/iccrypt_backend.did";
+import {Secret, SecretCategory, SecretListEntry} from "../../../../declarations/iccrypt_backend/iccrypt_backend.did";
 import IcCryptService from "../../services/IcCryptService";
 import {RootState} from "../store";
 import {UiSecret, UiSecretCategory, UiSecretListEntry} from "../../services/IcTypesForUi";
@@ -8,14 +8,12 @@ import {mapError} from "../../utils/errorMapper";
 
 const icCryptService = new IcCryptService();
 
-export const addSecretThunk = createAsyncThunk<SecretListEntry, UiSecret, {
+export const addSecretThunk = createAsyncThunk<Secret, UiSecret, {
     state: RootState
 }>('secrets/add',
-    async (secret, {rejectWithValue}) => {
-
-        console.log('add secret', secret)
+    async (uiSecret: UiSecret, {rejectWithValue}) => {
         try {
-            const result = await icCryptService.addSecret(secret);
+            const result: Secret = await icCryptService.addSecret(uiSecret);
             console.log('result', result)
             return result;
         } catch (e) {
@@ -24,14 +22,12 @@ export const addSecretThunk = createAsyncThunk<SecretListEntry, UiSecret, {
     }
 );
 
-export const updateSecretThunk = createAsyncThunk<SecretListEntry, UiSecret, {
+export const updateSecretThunk = createAsyncThunk<Secret, UiSecret, {
     state: RootState
 }>('secrets/update',
-    async (secret, {rejectWithValue}) => {
-
-        console.log('update secret', secret)
+    async (secret: UiSecret, {rejectWithValue}) => {
         try {
-            const result = await icCryptService.updateSecret(secret);
+            const result: Secret = await icCryptService.updateSecret(secret);
             console.log('result', result)
             return result;
         } catch (e) {
@@ -44,7 +40,6 @@ export const deleteSecretThunk = createAsyncThunk<string, UiSecret, {
     state: RootState
 }>('secrets/delete',
     async (secret, {rejectWithValue}) => {
-        console.log('delete secret', secret)
         try {
             await icCryptService.deleteSecret(secret.id);
             return secret.id;
@@ -156,7 +151,7 @@ export const secretsSlice = createSlice({
     },
 })
 
-const updateSecretInGroupedSecretList = (group: GroupedSecretList, secret: SecretListEntry): GroupedSecretList => {
+const updateSecretInGroupedSecretList = (group: GroupedSecretList, secret: Secret): GroupedSecretList => {
     const newGroupedSecretList = {
         ...group
     }
@@ -188,11 +183,11 @@ const removeSecretFromGroupedSecretList = (group: GroupedSecretList, secretId: s
     return newGroupedSecretList;
 }
 
-const addSecretToGroupedSecretList = (group: GroupedSecretList, secret: SecretListEntry): GroupedSecretList => {
+const addSecretToGroupedSecretList = (group: GroupedSecretList, secret: Secret): GroupedSecretList => {
     const newGroupedSecretList = {
         ...group
     }
-    const category = secret?.category && secret.category.length > 0 ? secret.category [0] as SecretCategory : undefined;
+    const category: SecretCategory = secret?.category && secret.category.length > 0 ? secret.category [0] as SecretCategory : undefined;
     if (category?.hasOwnProperty('Password')) {
         newGroupedSecretList.passwordList.push(mapSecretListEntry(secret, UiSecretCategory.Password))
     } else if (category?.hasOwnProperty('Note')) {
@@ -205,10 +200,10 @@ const addSecretToGroupedSecretList = (group: GroupedSecretList, secret: SecretLi
     return newGroupedSecretList;
 }
 
-const mapSecretListEntry = (secret: SecretListEntry, category: UiSecretCategory): UiSecretListEntry => {
+const mapSecretListEntry = (secretListEntry: SecretListEntry, category: UiSecretCategory): UiSecretListEntry => {
     return {
-        id: secret.id,
-        name: secret.name && secret.name.length > 0 ? secret.name[0] : undefined,
+        id: secretListEntry.id,
+        name: secretListEntry.name && secretListEntry.name.length > 0 ? secretListEntry.name[0] : undefined,
         category,
     }
 }
@@ -220,17 +215,17 @@ const splitSecretListByCategory = (secretList: SecretListEntry[]): GroupedSecret
     const othersList: UiSecretListEntry[] = [];
 
     if (secretList) {
-        secretList.forEach(secret => {
-            secret.category.forEach(cat => {
+        secretList.forEach(secretListEntry => {
+            secretListEntry.category.forEach(cat => {
                 const category = cat as SecretCategory;
                 if (category.hasOwnProperty('Password')) {
-                    passwordList.push(mapSecretListEntry(secret, UiSecretCategory.Password))
+                    passwordList.push(mapSecretListEntry(secretListEntry, UiSecretCategory.Password))
                 } else if (category.hasOwnProperty('Note')) {
-                    notesList.push(mapSecretListEntry(secret, UiSecretCategory.Note));
+                    notesList.push(mapSecretListEntry(secretListEntry, UiSecretCategory.Note));
                 } else if (category.hasOwnProperty('Document')) {
-                    documentsList.push(mapSecretListEntry(secret, UiSecretCategory.Document));
+                    documentsList.push(mapSecretListEntry(secretListEntry, UiSecretCategory.Document));
                 } else {
-                    othersList.push(mapSecretListEntry(secret, undefined));
+                    othersList.push(mapSecretListEntry(secretListEntry, undefined));
                 }
             })
         })

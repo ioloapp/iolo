@@ -41,7 +41,6 @@
     "react-dom": "^18.2.0",
     "react-redux": "^8.1.2",
     "redux-persist": "^6.0.0",
-    "rsa-key": "^0.0.6",
     "uuid": "^9.0.1"
   },
   "devDependencies": {
