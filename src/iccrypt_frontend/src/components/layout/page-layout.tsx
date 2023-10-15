@@ -28,8 +28,16 @@ export const PageLayout = ({title, children}: PageLayoutProps) => {
                 <Typography variant="h4">{title}</Typography>
             </Box>
 
-            <Box>
-                {children}
+            <Box sx={{
+                padding: 2,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+            }}>
+                <Box sx={{width: '100%', maxWidth: '650px'}}>
+                    {children}
+                </Box>
+
             </Box>
         </Box>
     )

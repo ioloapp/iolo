@@ -67,26 +67,29 @@ export const secretsSlice = createSlice({
         closeAddOrEditDialog: state => {
             state.showAddDialog = false;
             state.showEditDialog = false;
+            state.secretToAdd = {...initialState.secretToAdd};
         },
         openAddDialog: state => {
             state.showAddDialog = true
+            state.secretToAdd = {...initialState.secretToAdd};
         },
         openEditDialog: state => {
             state.showEditDialog = true
         },
         cancelAddSecret: state => {
-            state.secretToAdd = {};
             state.showAddDialog = false;
             state.showEditDialog = false;
+            state.secretToAdd = {...initialState.secretToAdd};
         },
         openDeleteDialog: state => {
             state.showDeleteDialog = true
         },
         closeDeleteDialog: state => {
             state.showDeleteDialog = false
+            state.secretToAdd = {...initialState.secretToAdd};
         },
         cancelDeleteSecret: state => {
-            state.secretToAdd = {};
+            state.secretToAdd = {...initialState.secretToAdd};
             state.showDeleteDialog = false;
         },
         updateSecretToAdd: (state, action) => {

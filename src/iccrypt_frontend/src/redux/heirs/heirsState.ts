@@ -1,4 +1,4 @@
-import {UiUser} from "../../services/IcTypesForUi";
+import {UiUser, UserType} from "../../services/IcTypesForUi";
 
 export interface HeirsState {
     heirsList: UiUser[],
@@ -6,14 +6,24 @@ export interface HeirsState {
     addState: string,
     loadingState: string,
     error?: string;
-    showAddDialog: boolean
+    showAddDialog: boolean;
+    showEditDialog: boolean;
+    showDeleteDialog: boolean;
 }
 
 // Define the initial state using that type
 export const initialState: HeirsState = {
     heirsList: [],
-    heirToAdd: {},
+    heirToAdd: {
+        type: UserType.Person,
+        id: '',
+        name: '',
+        firstname: '',
+        email: ''
+    },
     addState: 'init',
     loadingState: 'init',
-    showAddDialog: false
+    showAddDialog: false,
+    showEditDialog: false,
+    showDeleteDialog: false
 }

@@ -20,7 +20,12 @@ import {createActor} from "../../../declarations/iccrypt_backend";
 import {mapError} from "../utils/errorMapper";
 import {ICCryptError} from "../error/Errors";
 import {Principal} from "@dfinity/principal";
-import {aes_gcm_decrypt, aes_gcm_encrypt, get_aes_256_gcm_key_for_uservault, get_local_random_aes_256_gcm_key} from "../utils/crypto";
+import {
+    aes_gcm_decrypt,
+    aes_gcm_encrypt,
+    get_aes_256_gcm_key_for_uservault,
+    get_local_random_aes_256_gcm_key
+} from "../utils/crypto";
 import {UiSecret, UiSecretCategory, UiUser} from "./IcTypesForUi";
 import {v4 as uuidv4} from 'uuid';
 
@@ -251,6 +256,7 @@ class IcCryptService {
 
     async addTestament(testament: Testament): Promise<Testament> {
         const initialTestament = await this.actor.add_testament({id: uuidv4()});
+        //TODO encrypt testament
         const encryptedTestament = {
             ...testament,
             id: uuidv4()
@@ -270,13 +276,33 @@ class IcCryptService {
         throw mapError(result['Err']);
     }
 
+    async updateTestament(testament: Testament): Promise<Testament> {
+        //TODO
+        return testament;
+    }
+
+    async deleteTestament(id: string) {
+        //TODO
+    }
+
     async addHeir(heir: UiUser): Promise<UiUser> {
+        //TODO
         return heir;
     }
 
     async getHeirsList(): Promise<UiUser[]> {
+        //TODO
         return []
     }
+
+    async updateHeir(heir: UiUser): Promise<UiUser> {
+        return heir;
+    }
+
+    async deleteHeir(id: string) {
+        //TODO
+    }
+
 }
 
 export default IcCryptService;

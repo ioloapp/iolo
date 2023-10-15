@@ -3,6 +3,7 @@ import {initialState} from "./heirsState";
 import IcCryptService from "../../services/IcCryptService";
 import {RootState} from "../store";
 import {UiUser} from "../../services/IcTypesForUi";
+import {mapError} from "../../utils/errorMapper";
 
 const icCryptService = new IcCryptService();
 
@@ -15,6 +16,33 @@ export const addHeirThunk = createAsyncThunk<UiUser, UiUser, { state: RootState 
             return result;
         } catch (e) {
             rejectWithValue(e)
+        }
+    }
+);
+
+export const updateHeirThunk = createAsyncThunk<UiUser, UiUser, { state: RootState }>('heirs/update',
+    async (heir, {rejectWithValue}) => {
+        console.log('update heir', heir)
+        try {
+            const result = await icCryptService.updateHeir(heir);
+            console.log('result', result)
+            return result;
+        } catch (e) {
+            rejectWithValue(e)
+        }
+    }
+);
+
+export const deleteHeirThunk = createAsyncThunk<string, UiUser, {
+    state: RootState
+}>('heirs/delete',
+    async (heir, {rejectWithValue}) => {
+        console.log('delete heir', heir)
+        try {
+            await icCryptService.deleteHeir(heir.id);
+            return heir.id;
+        } catch (e) {
+            rejectWithValue(mapError(e))
         }
     }
 );
@@ -43,8 +71,23 @@ export const heirsSlice = createSlice({
             state.showAddDialog = true
         },
         cancelAddHeir: state => {
-            state.heirToAdd = {};
+            state.heirToAdd = initialState.heirToAdd;
             state.showAddDialog = false;
+            state.showEditDialog = false;
+        },
+        openEditDialog: state => {
+            state.showEditDialog = true
+        },
+        openDeleteDialog: state => {
+            state.showDeleteDialog = true
+        },
+        closeDeleteDialog: state => {
+            state.showDeleteDialog = false
+            state.heirToAdd = initialState.heirToAdd;
+        },
+        cancelDeleteHeir: state => {
+            state.heirToAdd = initialState.heirToAdd;
+            state.showDeleteDialog = false;
         },
         updateHeirToAdd: (state, action: PayloadAction<UiUser>) => {
             state.heirToAdd = action.payload;
@@ -70,13 +113,38 @@ export const heirsSlice = createSlice({
             .addCase(addHeirThunk.fulfilled, (state, action) => {
                 state.addState = 'succeeded';
                 state.showAddDialog = false;
-                state.heirToAdd = {};
+                state.heirToAdd = initialState.heirToAdd;
                 state.heirsList = [...state.heirsList, action.payload]
             })
             .addCase(addHeirThunk.rejected, (state, action) => {
                 state.addState = 'failed';
                 state.error = action.error.message;
                 state.showAddDialog = true;
+            })
+            .addCase(updateHeirThunk.pending, (state) => {
+                state.addState = 'loading';
+            })
+            .addCase(updateHeirThunk.fulfilled, (state, action) => {
+                state.addState = 'succeeded';
+                state.showEditDialog = false;
+                state.heirToAdd = initialState.heirToAdd;
+                state.heirsList = [...state.heirsList.filter(h => h.id != action.payload.id), action.payload]
+            })
+            .addCase(updateHeirThunk.rejected, (state, action) => {
+                state.addState = 'failed';
+                state.error = action.error.message;
+            })
+            .addCase(deleteHeirThunk.pending, (state) => {
+                state.addState = 'loading';
+            })
+            .addCase(deleteHeirThunk.fulfilled, (state, action) => {
+                state.addState = 'succeeded';
+                state.showDeleteDialog = false;
+                state.heirsList = [...state.heirsList.filter(h => h.id != action.payload)]
+            })
+            .addCase(deleteHeirThunk.rejected, (state, action) => {
+                state.addState = 'failed';
+                state.error = action.error.message;
             });
     },
 })

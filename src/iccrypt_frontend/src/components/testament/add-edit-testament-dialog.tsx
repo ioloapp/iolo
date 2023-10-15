@@ -23,14 +23,19 @@ import {
     Typography
 } from "@mui/material";
 import {UiTestament} from "../../services/IcTypesForUi";
-import {addTestamentThunk, testamentsActions} from "../../redux/testaments/testamentsSlice";
-import {selectShowAddTestamentDialog, selectTestamentToAdd} from "../../redux/testaments/testamentsSelectors";
+import {addTestamentThunk, testamentsActions, updateTestamentThunk} from "../../redux/testaments/testamentsSlice";
+import {
+    selectShowAddTestamentDialog,
+    selectShowEditTestamentDialog,
+    selectTestamentToAdd
+} from "../../redux/testaments/testamentsSelectors";
 import {selectHeirs} from "../../redux/heirs/heirsSelectors";
 import {selectCurrentUser} from "../../redux/user/userSelectors";
 
-export default function AddTestamentDialog() {
+export default function AddEditTestamentDialog() {
     const dispatch = useAppDispatch();
-    const showAddSecretDialog = useSelector(selectShowAddTestamentDialog);
+    const showAddTestamentDialog = useSelector(selectShowAddTestamentDialog);
+    const showEditTestamentDialog = useSelector(selectShowEditTestamentDialog);
     const testamentToAdd = useSelector(selectTestamentToAdd);
     const groupedSecretList = useSelector(selectGroupedSecrets);
     const heirsList = useSelector(selectHeirs);
@@ -47,18 +52,25 @@ export default function AddTestamentDialog() {
         dispatch(testamentsActions.closeAddDialog());
     };
 
-    const updateTestament = (testament: UiTestament) => {
+    const updateTestamentToAdd = (testament: UiTestament) => {
         dispatch(testamentsActions.updateTestamentToAdd(testament))
     }
 
     const cancelAddTestament = () => {
         setSelectedHeirs([]);
         setSelectedSecrets([]);
-        dispatch(testamentsActions.cancelAddTestament());
+        dispatch(testamentsActions.cancelAddOrEditTestament());
     }
 
     const createTestament = async () => {
         dispatch(addTestamentThunk({
+            ...testamentToAdd,
+            testator: currentUser
+        }));
+    }
+
+    const updateTestament = async () => {
+        dispatch(updateTestamentThunk({
             ...testamentToAdd,
             testator: currentUser
         }));
@@ -106,7 +118,7 @@ export default function AddTestamentDialog() {
             }}>
                 <AddIcon/>
             </Fab>
-            <Dialog open={showAddSecretDialog} onClose={handleClose}>
+            <Dialog open={showAddTestamentDialog || showEditTestamentDialog} onClose={handleClose}>
                 <DialogTitle>Add Secret</DialogTitle>
                 <DialogContent>
                     <DialogContentText>
@@ -121,7 +133,7 @@ export default function AddTestamentDialog() {
                             fullWidth
                             variant="standard"
                             value={testamentToAdd.name}
-                            onChange={e => updateTestament({
+                            onChange={e => updateTestamentToAdd({
                                 ...testamentToAdd,
                                 name: e.target.value
                             })}
@@ -196,7 +208,8 @@ export default function AddTestamentDialog() {
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={cancelAddTestament}>Cancel</Button>
-                    <Button onClick={createTestament}>Add Testament</Button>
+                    {showAddTestamentDialog && <Button onClick={createTestament}>Add Testament</Button>}
+                    {showEditTestamentDialog && <Button onClick={updateTestament}>Update Testament</Button>}
                 </DialogActions>
             </Dialog>
         </div>

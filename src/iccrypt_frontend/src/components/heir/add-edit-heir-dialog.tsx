@@ -11,12 +11,13 @@ import {useAppDispatch} from "../../redux/hooks";
 import AddIcon from "@mui/icons-material/Add";
 import {Fab, FormControl, MenuItem, Select, Typography} from "@mui/material";
 import {UiUser, UserType} from "../../services/IcTypesForUi";
-import {selectHeirToAdd, selectShowAddHeirDialog} from "../../redux/heirs/heirsSelectors";
-import {addHeirThunk, heirsActions} from "../../redux/heirs/heirsSlice";
+import {selectHeirToAdd, selectShowAddHeirDialog, selectShowEditHeirDialog} from "../../redux/heirs/heirsSelectors";
+import {addHeirThunk, heirsActions, updateHeirThunk} from "../../redux/heirs/heirsSlice";
 
-export default function AddHeirDialog() {
+export default function AddEditHeirDialog() {
     const dispatch = useAppDispatch();
     const showAddHeirDialog = useSelector(selectShowAddHeirDialog);
+    const showEditHeirDialog = useSelector(selectShowEditHeirDialog);
     const heirToAdd = useSelector(selectHeirToAdd);
 
     const handleClickOpen = () => {
@@ -27,7 +28,7 @@ export default function AddHeirDialog() {
         dispatch(heirsActions.closeAddDialog());
     };
 
-    const updateHeir = (heir: UiUser) => {
+    const updateHeirToAdd = (heir: UiUser) => {
         dispatch(heirsActions.updateHeirToAdd(heir))
     }
 
@@ -39,6 +40,10 @@ export default function AddHeirDialog() {
         dispatch(addHeirThunk(heirToAdd));
     }
 
+    const updateHeir = async () => {
+        dispatch(updateHeirThunk(heirToAdd));
+    }
+
     return (
         <div>
             <Fab color="primary" aria-label="add" onClick={handleClickOpen} sx={{
@@ -48,7 +53,7 @@ export default function AddHeirDialog() {
             }}>
                 <AddIcon/>
             </Fab>
-            <Dialog open={showAddHeirDialog} onClose={handleClose}>
+            <Dialog open={showAddHeirDialog || showEditHeirDialog} onClose={handleClose}>
                 <DialogTitle>Add Heir</DialogTitle>
                 <DialogContent>
                     <DialogContentText>
@@ -61,7 +66,7 @@ export default function AddHeirDialog() {
                             id="category-select"
                             value={heirToAdd.type}
                             label="Category"
-                            onChange={e => updateHeir({
+                            onChange={e => updateHeirToAdd({
                                 ...heirToAdd,
                                 type: UserType[e.target.value as keyof typeof UserType]
                             })}
@@ -83,7 +88,7 @@ export default function AddHeirDialog() {
                             fullWidth
                             variant="standard"
                             value={heirToAdd.id}
-                            onChange={e => updateHeir({
+                            onChange={e => updateHeirToAdd({
                                 ...heirToAdd,
                                 id: e.target.value
                             })}
@@ -100,7 +105,7 @@ export default function AddHeirDialog() {
                                     fullWidth
                                     variant="standard"
                                     value={heirToAdd.firstname}
-                                    onChange={e => updateHeir({
+                                    onChange={e => updateHeirToAdd({
                                         ...heirToAdd,
                                         firstname: e.target.value
                                     })}
@@ -115,7 +120,7 @@ export default function AddHeirDialog() {
                                     fullWidth
                                     variant="standard"
                                     value={heirToAdd.name}
-                                    onChange={e => updateHeir({
+                                    onChange={e => updateHeirToAdd({
                                         ...heirToAdd,
                                         name: e.target.value
                                     })}
@@ -133,7 +138,7 @@ export default function AddHeirDialog() {
                                 fullWidth
                                 variant="standard"
                                 value={heirToAdd.name}
-                                onChange={e => updateHeir({
+                                onChange={e => updateHeirToAdd({
                                     ...heirToAdd,
                                     name: e.target.value
                                 })}
@@ -149,7 +154,7 @@ export default function AddHeirDialog() {
                             fullWidth
                             variant="standard"
                             value={heirToAdd.email}
-                            onChange={e => updateHeir({
+                            onChange={e => updateHeirToAdd({
                                 ...heirToAdd,
                                 email: e.target.value
                             })}
@@ -158,7 +163,8 @@ export default function AddHeirDialog() {
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={cancelAddHeir}>Cancel</Button>
-                    <Button onClick={createHeir}>Add Heir</Button>
+                    {showAddHeirDialog && <Button onClick={createHeir}>Add Heir</Button>}
+                    {showEditHeirDialog && <Button onClick={updateHeir}>Update Heir</Button>}
                 </DialogActions>
             </Dialog>
         </div>

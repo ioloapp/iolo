@@ -6,6 +6,7 @@ import {RootState} from "../store";
 import {UiSecretListEntry, UiTestament, UiUser} from "../../services/IcTypesForUi";
 import {Principal} from "@dfinity/principal";
 import {mapError} from "../../utils/errorMapper";
+import {deleteHeirThunk, updateHeirThunk} from "../heirs/heirsSlice";
 
 const icCryptService = new IcCryptService();
 
@@ -13,9 +14,7 @@ export const addTestamentThunk = createAsyncThunk<UiTestament, UiTestament, { st
     async (testament, {rejectWithValue}) => {
         console.log('add testament', testament)
         try {
-            console.log(-1)
             const mappedTestament = mapTestament(testament);
-            console.log(0)
             const result = await icCryptService.addTestament(mappedTestament);
             console.log('result', result)
             return {
@@ -29,6 +28,41 @@ export const addTestamentThunk = createAsyncThunk<UiTestament, UiTestament, { st
         }
     }
 );
+
+export const updateTestamentThunk = createAsyncThunk<UiTestament, UiTestament, { state: RootState }>('testaments/update',
+    async (testament, {rejectWithValue}) => {
+        console.log('update testament', testament)
+        try {
+            const mappedTestament = mapTestament(testament);
+            const result = await icCryptService.updateTestament(mappedTestament);
+            console.log('result', result)
+            return {
+                ...testament,
+                id: result?.id,
+                date_created: result?.date_created ? new Date(result?.date_created.toString()) : new Date(),
+                date_modified: result?.date_modified ? new Date(result?.date_modified.toString()) : new Date()
+            } as UiTestament;
+        } catch (e) {
+            rejectWithValue(mapError(e))
+        }
+    }
+);
+
+
+export const deleteTestamentThunk = createAsyncThunk<string, UiTestament, {
+    state: RootState
+}>('testaments/delete',
+    async (testament, {rejectWithValue}) => {
+        console.log('delete testaments', testament)
+        try {
+            await icCryptService.deleteTestament(testament.id);
+            return testament.id;
+        } catch (e) {
+            rejectWithValue(mapError(e))
+        }
+    }
+);
+
 
 export interface LoadTestamentResult {
     testaments?: Testament[],
@@ -87,9 +121,24 @@ export const testamentsSlice = createSlice({
         openAddDialog: state => {
             state.showAddDialog = true
         },
-        cancelAddTestament: state => {
-            state.testamentToAdd = {};
+        cancelAddOrEditTestament: state => {
+            state.testamentToAdd = initialState.testamentToAdd;
             state.showAddDialog = false;
+            state.showEditDialog = false;
+        },
+        openEditDialog: state => {
+            state.showEditDialog = true
+        },
+        openDeleteDialog: state => {
+            state.showDeleteDialog = true
+        },
+        closeDeleteDialog: state => {
+            state.showDeleteDialog = false
+            state.testamentToAdd = initialState.testamentToAdd;
+        },
+        cancelDeleteTestament: state => {
+            state.testamentToAdd = initialState.testamentToAdd;
+            state.showDeleteDialog = false;
         },
         updateTestamentToAdd: (state, action: PayloadAction<UiTestament>) => {
             state.testamentToAdd = action.payload;
@@ -115,13 +164,38 @@ export const testamentsSlice = createSlice({
             .addCase(addTestamentThunk.fulfilled, (state, action) => {
                 state.addState = 'succeeded';
                 state.showAddDialog = false;
-                state.testamentToAdd = {};
+                state.testamentToAdd = initialState.testamentToAdd;
                 state.testamentsList = [...state.testamentsList, action.payload]
             })
             .addCase(addTestamentThunk.rejected, (state, action) => {
                 state.addState = 'failed';
                 state.error = action.error.message;
                 state.showAddDialog = true;
+            })
+            .addCase(updateHeirThunk.pending, (state) => {
+                state.addState = 'loading';
+            })
+            .addCase(updateHeirThunk.fulfilled, (state, action) => {
+                state.addState = 'succeeded';
+                state.showEditDialog = false;
+                state.testamentToAdd = initialState.testamentToAdd;
+                state.testamentsList = [...state.testamentsList.filter(h => h.id != action.payload.id), action.payload]
+            })
+            .addCase(updateHeirThunk.rejected, (state, action) => {
+                state.addState = 'failed';
+                state.error = action.error.message;
+            })
+            .addCase(deleteHeirThunk.pending, (state) => {
+                state.addState = 'loading';
+            })
+            .addCase(deleteHeirThunk.fulfilled, (state, action) => {
+                state.addState = 'succeeded';
+                state.showDeleteDialog = false;
+                state.testamentsList = [...state.testamentsList.filter(h => h.id != action.payload)]
+            })
+            .addCase(deleteHeirThunk.rejected, (state, action) => {
+                state.addState = 'failed';
+                state.error = action.error.message;
             });
     },
 })

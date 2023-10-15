@@ -1,15 +1,18 @@
-import {Avatar, Box, List, ListItem, ListItemAvatar, ListItemText} from "@mui/material";
+import {Avatar, Box, IconButton, List, ListItem, ListItemAvatar, ListItemText} from "@mui/material";
 import * as React from "react";
 import {useEffect} from "react";
 import {PageLayout} from "../../components/layout/page-layout";
 import {useAppDispatch} from "../../redux/hooks";
 import {useSelector} from "react-redux";
 import {selectHeirs} from "../../redux/heirs/heirsSelectors";
-import {loadHeirsThunk} from "../../redux/heirs/heirsSlice";
-import AddHeirDialog from "../../components/heir/add-heir-dialog";
+import {heirsActions, loadHeirsThunk} from "../../redux/heirs/heirsSlice";
+import AddEditHeirDialog from "../../components/heir/add-edit-heir-dialog";
 import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
-import {UserType} from "../../services/IcTypesForUi";
+import {UiUser, UserType} from "../../services/IcTypesForUi";
 import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined';
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import DeleteIcon from "@mui/icons-material/Delete";
+import DeleteHeirDialog from "../../components/heir/delete-heir-dialog";
 
 export function Heirs() {
 
@@ -21,14 +24,33 @@ export function Heirs() {
         dispatch(loadHeirsThunk())
     }, [])
 
+    const deleteHeir = (heir: UiUser) => {
+        dispatch(heirsActions.updateHeirToAdd(heir));
+        dispatch(heirsActions.openDeleteDialog());
+    }
+
+    const editHeir = (heir: UiUser) => {
+        dispatch(heirsActions.updateHeirToAdd(heir));
+        dispatch(heirsActions.openEditDialog());
+    }
+
     return (
         <PageLayout title="Heirs">
             <Box>
                 {heirs &&
                     <Box>
                         <List dense={false}>
-                            {heirs.map(heir =>
-                                <ListItem key={heir.id}>
+                            {heirs.map((heir: UiUser) =>
+                                <ListItem key={heir.id} secondaryAction={
+                                    <>
+                                        <IconButton edge="end" aria-label="delete" onClick={() => editHeir(heir)}>
+                                            <EditOutlinedIcon/>
+                                        </IconButton>
+                                        <IconButton edge="end" aria-label="delete" onClick={() => deleteHeir(heir)}>
+                                            <DeleteIcon/>
+                                        </IconButton>
+                                    </>
+                                }>
                                     {heir.type === UserType.Person &&
                                             <>
                                                 <ListItemAvatar>
@@ -63,7 +85,8 @@ export function Heirs() {
                     </Box>
                 }
             </Box>
-            <AddHeirDialog/>
+            <AddEditHeirDialog/>
+            <DeleteHeirDialog />
         </PageLayout>
     )
 }

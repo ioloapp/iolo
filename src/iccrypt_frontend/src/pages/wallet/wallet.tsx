@@ -36,7 +36,7 @@ export function Wallet() {
 
     return (
         <PageLayout title="Wallet">
-            <Box sx={{width: '100%', margin: '3rem'}}>
+            <Box sx={{width: '100%'}}>
                 {groupedSecretList &&
                     <>
                         {groupedSecretList.passwordList &&

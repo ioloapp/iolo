@@ -1,4 +1,4 @@
-import {UiSecret, UiSecretListEntry} from "../../services/IcTypesForUi";
+import {UiSecret, UiSecretCategory, UiSecretListEntry} from "../../services/IcTypesForUi";
 
 export interface GroupedSecretList {
     passwordList: UiSecretListEntry[],
@@ -28,7 +28,13 @@ export const initialState: SecretsState = {
         documentsList: [],
         othersList: []
     },
-    secretToAdd: {},
+    secretToAdd: {
+        category: UiSecretCategory.Password,
+        name: '',
+        username: '',
+        password: '',
+        url: ''
+    },
     addState: 'init',
     loadingState: 'init',
     showAddDialog: false,
