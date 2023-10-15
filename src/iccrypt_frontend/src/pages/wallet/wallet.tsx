@@ -1,6 +1,6 @@
-import {Box, List, Typography} from "@mui/material";
+import {Box, IconButton, List, Typography} from "@mui/material";
 import * as React from "react";
-import {useEffect} from "react";
+import {useEffect, useState} from "react";
 import {useAppDispatch} from "../../redux/hooks";
 import {loadSecretsThunk, secretsActions} from "../../redux/secrets/secretsSlice";
 import {PageLayout} from "../../components/layout/page-layout";
@@ -14,15 +14,23 @@ import AddEditSecretDialog from "../../components/secret/add-edit-secret-dialog"
 import {UiSecretListEntry} from "../../services/IcTypesForUi";
 import {SecretItem} from "./secret-item";
 import DeleteSecretDialog from "../../components/secret/delete-secret-dialog";
+import SearchIcon from "@mui/icons-material/Search";
+import {SearchField, StyledAppBar} from "../../components/layout/search-bar";
 
 export function Wallet() {
 
     const dispatch = useAppDispatch();
     const groupedSecretList = useSelector(selectGroupedSecrets);
 
+    const [filteredSecretList, setFilteredSecretList] = useState(groupedSecretList)
+
     useEffect(() => {
         dispatch(loadSecretsThunk())
     }, [])
+
+    useEffect(() => {
+        setFilteredSecretList(groupedSecretList)
+    }, [groupedSecretList])
 
     const deleteItem = (secret: UiSecretListEntry) => {
         dispatch(secretsActions.updateSecretToAdd(secret));
@@ -34,46 +42,66 @@ export function Wallet() {
         dispatch(secretsActions.openEditDialog());
     }
 
+    const filterSecretList = (search: string) => {
+        const searchString = search.toLowerCase();
+        if(searchString.length === 0){
+            setFilteredSecretList(groupedSecretList);
+        }else {
+            setFilteredSecretList({
+                passwordList: groupedSecretList.passwordList.filter(s => s.name.toLowerCase().indexOf(searchString) >= 0),
+                documentsList: groupedSecretList.documentsList.filter(s => s.name.toLowerCase().indexOf(searchString) >= 0),
+                notesList: groupedSecretList.notesList.filter(s => s.name.toLowerCase().indexOf(searchString) >= 0),
+                othersList: groupedSecretList.othersList.filter(s => s.name.toLowerCase().indexOf(searchString) >= 0),
+            })
+        }
+    }
+
     return (
         <PageLayout title="Wallet">
+            <StyledAppBar position="sticky">
+                <SearchField id="outlined-basic" sx={{boxShadow: 'none'}} onChange={(e) => filterSecretList(e.target.value)}/>
+                <IconButton size="large" aria-label="search" color="inherit">
+                    <SearchIcon/>
+                </IconButton>
+            </StyledAppBar>
             <Box sx={{width: '100%'}}>
-                {groupedSecretList &&
+                {filteredSecretList &&
                     <>
-                        {groupedSecretList.passwordList &&
+                        {filteredSecretList.passwordList &&
                             <Box>
                                 <Typography variant="h5">Passwords</Typography>
                                 <List dense={false}>
-                                    {groupedSecretList.passwordList.map((secret: UiSecretListEntry) =>
+                                    {filteredSecretList.passwordList.map((secret: UiSecretListEntry) =>
                                         <SecretItem secret={secret} editAction={editItem} deleteAction={deleteItem}><PasswordIcon/></SecretItem>
                                     )}
                                 </List>
                             </Box>
                         }
-                        {groupedSecretList.notesList &&
+                        {filteredSecretList.notesList &&
                             <Box>
                                 <Typography variant="h5">Notes</Typography>
                                 <List dense={false}>
-                                    {groupedSecretList.notesList.map((secret: UiSecretListEntry) =>
+                                    {filteredSecretList.notesList.map((secret: UiSecretListEntry) =>
                                         <SecretItem secret={secret} editAction={editItem} deleteAction={deleteItem}><NotesIcon/></SecretItem>
                                     )}
                                 </List>
                             </Box>
                         }
-                        {groupedSecretList.documentsList &&
+                        {filteredSecretList.documentsList &&
                             <Box>
                                 <Typography variant="h5">Documents</Typography>
                                 <List dense={false}>
-                                    {groupedSecretList.documentsList.map((secret: UiSecretListEntry) =>
+                                    {filteredSecretList.documentsList.map((secret: UiSecretListEntry) =>
                                         <SecretItem secret={secret} editAction={editItem} deleteAction={deleteItem}><DescriptionIcon/></SecretItem>
                                     )}
                                 </List>
                             </Box>
                         }
-                        {groupedSecretList.othersList &&
+                        {filteredSecretList.othersList &&
                             <Box>
                                 <Typography variant="h5">No Category</Typography>
                                 <List dense={false}>
-                                    {groupedSecretList.othersList.map((secret: UiSecretListEntry) =>
+                                    {filteredSecretList.othersList.map((secret: UiSecretListEntry) =>
                                         <SecretItem secret={secret} editAction={editItem} deleteAction={deleteItem}><QuestionMarkIcon/></SecretItem>
                                     )}
                                 </List>

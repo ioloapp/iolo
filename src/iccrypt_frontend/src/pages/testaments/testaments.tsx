@@ -1,6 +1,6 @@
 import {Avatar, Box, IconButton, List, ListItem, ListItemAvatar, ListItemText} from "@mui/material";
 import * as React from "react";
-import {useEffect} from "react";
+import {useEffect, useState} from "react";
 import {useAppDispatch} from "../../redux/hooks";
 import {PageLayout} from "../../components/layout/page-layout";
 import {useSelector} from "react-redux";
@@ -12,6 +12,8 @@ import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteIcon from "@mui/icons-material/Delete";
 import {UiTestament} from "../../services/IcTypesForUi";
 import DeleteTestamentDialog from "../../components/testament/delete-testament-dialog";
+import {SearchField, StyledAppBar} from "../../components/layout/search-bar";
+import SearchIcon from "@mui/icons-material/Search";
 
 export function Testaments() {
 
@@ -21,6 +23,12 @@ export function Testaments() {
     useEffect(() => {
         dispatch(loadTestamentsThunk())
     }, [])
+
+    useEffect(() => {
+        setFilteredTestaments(testaments)
+    }, [testaments])
+
+    const [filteredTestaments, setFilteredTestaments] = useState(testaments)
 
     const deleteTestament = (testament: UiTestament) => {
         dispatch(testamentsActions.updateTestamentToAdd(testament));
@@ -32,13 +40,28 @@ export function Testaments() {
         dispatch(testamentsActions.openEditDialog());
     }
 
+    const filterTestamentList = (search: string) => {
+        const searchString = search.toLowerCase();
+        if(searchString.length === 0){
+            setFilteredTestaments(testaments);
+        }else {
+            setFilteredTestaments(testaments.filter(s => s.name.toLowerCase().indexOf(searchString) >= 0))
+        }
+    }
+
     return (
         <PageLayout title="Testaments">
+            <StyledAppBar position="sticky">
+                <SearchField id="outlined-basic" sx={{boxShadow: 'none'}} onChange={(e) => filterTestamentList(e.target.value)}/>
+                <IconButton size="large" aria-label="search" color="inherit">
+                    <SearchIcon/>
+                </IconButton>
+            </StyledAppBar>
             <Box>
-                {testaments &&
+                {filteredTestaments &&
                     <Box>
                         <List dense={false}>
-                            {testaments.flatMap(f => f ? [f] : []).map((testament: UiTestament) =>
+                            {filteredTestaments.flatMap(f => f ? [f] : []).map((testament: UiTestament) =>
                                 <ListItem key={testament.id} secondaryAction={
                                     <>
                                         <IconButton edge="end" aria-label="delete" onClick={() => editTestament(testament)}>

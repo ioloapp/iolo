@@ -1,6 +1,6 @@
 import {Avatar, Box, IconButton, List, ListItem, ListItemAvatar, ListItemText} from "@mui/material";
 import * as React from "react";
-import {useEffect} from "react";
+import {useEffect, useState} from "react";
 import {PageLayout} from "../../components/layout/page-layout";
 import {useAppDispatch} from "../../redux/hooks";
 import {useSelector} from "react-redux";
@@ -13,16 +13,23 @@ import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined';
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteIcon from "@mui/icons-material/Delete";
 import DeleteHeirDialog from "../../components/heir/delete-heir-dialog";
+import {SearchField, StyledAppBar} from "../../components/layout/search-bar";
+import SearchIcon from "@mui/icons-material/Search";
 
 export function Heirs() {
 
     const dispatch = useAppDispatch();
     const heirs = useSelector(selectHeirs);
-    //TODO const sortedHeirs = heirs.sort((a,b) => a.type === b.type ? 0 : -1)
 
     useEffect(() => {
         dispatch(loadHeirsThunk())
     }, [])
+
+    useEffect(() => {
+        setFilteredHeirs(heirs)
+    }, [heirs])
+
+    const [filteredHeirs, setFilteredHeirs] = useState(heirs)
 
     const deleteHeir = (heir: UiUser) => {
         dispatch(heirsActions.updateHeirToAdd(heir));
@@ -34,13 +41,28 @@ export function Heirs() {
         dispatch(heirsActions.openEditDialog());
     }
 
+    const filterHeirsList = (search: string) => {
+        const searchString = search.toLowerCase();
+        if(searchString.length === 0){
+            setFilteredHeirs(heirs);
+        }else {
+            setFilteredHeirs(heirs.filter(s => s.name.toLowerCase().indexOf(searchString) >= 0 || s.firstname.toLowerCase().indexOf(searchString) >= 0 || s.email.toLowerCase().indexOf(searchString) >= 0))
+        }
+    }
+
     return (
         <PageLayout title="Heirs">
+            <StyledAppBar position="sticky">
+                <SearchField id="outlined-basic" sx={{boxShadow: 'none'}} onChange={(e) => filterHeirsList(e.target.value)}/>
+                <IconButton size="large" aria-label="search" color="inherit">
+                    <SearchIcon/>
+                </IconButton>
+            </StyledAppBar>
             <Box>
-                {heirs &&
+                {filteredHeirs &&
                     <Box>
                         <List dense={false}>
-                            {heirs.map((heir: UiUser) =>
+                            {filteredHeirs.map((heir: UiUser) =>
                                 <ListItem key={heir.id} secondaryAction={
                                     <>
                                         <IconButton edge="end" aria-label="delete" onClick={() => editHeir(heir)}>
