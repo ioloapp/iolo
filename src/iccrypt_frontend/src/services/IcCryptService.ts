@@ -26,7 +26,7 @@ import {
     get_aes_256_gcm_key_for_uservault,
     get_local_random_aes_256_gcm_key
 } from "../utils/crypto";
-import {UiSecret, UiSecretCategory, UiUser} from "./IcTypesForUi";
+import {UiSecret, UiSecretCategory, UiTestament, UiUser} from "./IcTypesForUi";
 import {v4 as uuidv4} from 'uuid';
 
 class IcCryptService {
@@ -102,10 +102,10 @@ class IcCryptService {
         throw mapError(result['Err']);
     }
 
-    public async getSecret(id: string): Promise<UiSecret> {
+    public async getSecret(secretId: string): Promise<UiSecret> {
         console.log('start getting secret...')
-        const result1 = this.actor.get_secret(id);
-        const result2 = this.actor.get_secret_symmetric_crypto_material(id);
+        const result1 = this.actor.get_secret(secretId);
+        const result2 = this.actor.get_secret_symmetric_crypto_material(secretId);
 
         // Wait for both promises to complete
         const [value1, value2] = await Promise.all([result1, result2]);
@@ -116,42 +116,37 @@ class IcCryptService {
             const uservaultVetKey: Uint8Array = await get_aes_256_gcm_key_for_uservault();
 
             // Decrypt symmetric key
-            console.log("A")
-            const decryptedSymmetricKey = await aes_gcm_decrypt(value2['Ok'].encrypted_symmetric_key as Uint8Array, uservaultVetKey);
-            console.log("A: ", decryptedSymmetricKey)
+            const decryptedSymmetricKey = await aes_gcm_decrypt(value2['Ok'].encrypted_symmetric_key as Uint8Array, uservaultVetKey, value2['Ok'].iv);
 
             // Decrypt attributes
             let decryptedUsername = undefined;
-            if (value1['Ok'].username) {
-                console.log("B")
-                decryptedUsername = await aes_gcm_decrypt(value1['Ok'].username, decryptedSymmetricKey);
-                console.log("B: ", decryptedUsername)
+            if (value1['Ok'].username[0].length > 0) {
+                decryptedUsername = await aes_gcm_decrypt(value1['Ok'].username[0], decryptedSymmetricKey, value2['Ok'].username_decryption_nonce[0]);
             }
+
             let decryptedPassword = undefined;
-            if (value1['Ok'].username) {
-                console.log("C")
-                decryptedPassword = await aes_gcm_decrypt(value1['Ok'].password, decryptedSymmetricKey);
-                console.log("C: ", decryptedPassword)
+            if (value1['Ok'].password[0].length > 0) {
+                decryptedPassword = await aes_gcm_decrypt(value1['Ok'].password[0], decryptedSymmetricKey, value2['Ok'].password_decryption_nonce[0]);
             }
             let decryptedNotes = undefined;
-            if (value1['Ok'].username) {
-                console.log("D")
-                decryptedNotes = await aes_gcm_decrypt(value1['Ok'].notes, decryptedSymmetricKey);
-                console.log("D: ", decryptedNotes)
+            if (value1['Ok'].notes[0].length > 0) {
+                decryptedNotes = await aes_gcm_decrypt(value1['Ok'].notes[0], decryptedSymmetricKey, value2['Ok'].notes_decryption_nonce[0]);
             }
+
             return {
                 id: value1['Ok'].id,
-                name: value1['Ok'].name,
+                name: value1['Ok'].name[0],
                 category: value1['Ok'].category,
-                url: value1['Ok'].url,
-                username: decryptedUsername,
-                password: decryptedPassword,
-                notes: decryptedNotes,
+                url: value1['Ok'].url[0],
+                username: new TextDecoder().decode(decryptedUsername),
+                password: new TextDecoder().decode(decryptedPassword),
+                notes: new TextDecoder().decode(decryptedNotes),
                 date_created: value1['Ok'].date_created,
                 date_modified: value1['Ok'].date_modified,
             }
         } else throw mapError(value1['Err']);
     }
+
     public async addSecret(uiSecret: UiSecret): Promise<Secret> {
         console.log('start adding secret...')
         const encryptedSecret: AddSecretArgs = await this.encryptNewSecret(uiSecret)
@@ -164,23 +159,22 @@ class IcCryptService {
 
     public async updateSecret(uiSecret: UiSecret): Promise<Secret> {
         console.log('start updating secret...')
-        const resultDecryptionMaterial: Result_5 = await this.actor.get_secret_symmetric_crypto_material(uiSecret.id);
-
-        let decryptionMaterial: SecretSymmetricCryptoMaterial;
-        if (resultDecryptionMaterial['Ok']) {
-            decryptionMaterial = resultDecryptionMaterial['Ok'];
+        const resultSymmetricCryptoMaterial: Result_5 = await this.actor.get_secret_symmetric_crypto_material(uiSecret.id);
+        let symmetricCryptoMaterial: SecretSymmetricCryptoMaterial;
+        if (resultSymmetricCryptoMaterial['Ok']) {
+            symmetricCryptoMaterial = resultSymmetricCryptoMaterial['Ok'];
         } else {
-            throw mapError(resultDecryptionMaterial['Err']);
+            throw mapError(resultSymmetricCryptoMaterial['Err']);
         }
 
         // Get the vetKey to decrypt the encryption key
         const uservaultVetKey: Uint8Array = await get_aes_256_gcm_key_for_uservault();
 
         // Decrypt symmetric key
-        const decryptedSymmetricKey = await aes_gcm_decrypt(decryptionMaterial.encrypted_symmetric_key as Uint8Array, uservaultVetKey);
+        const decryptedSymmetricKey = await aes_gcm_decrypt(symmetricCryptoMaterial.encrypted_symmetric_key as Uint8Array, uservaultVetKey, symmetricCryptoMaterial.iv as Uint8Array);
 
         // Encrypt updated secret
-        const encryptedSecret: Secret = await this.encryptExistingSecret(uiSecret, decryptedSymmetricKey, decryptionMaterial.username_decryption_nonce[0] as Uint8Array, decryptionMaterial.password_decryption_nonce[0] as Uint8Array, decryptionMaterial.notes_decryption_nonce[0] as Uint8Array);
+        const encryptedSecret: Secret = await this.encryptExistingSecret(uiSecret, decryptedSymmetricKey, symmetricCryptoMaterial.username_decryption_nonce[0] as Uint8Array, symmetricCryptoMaterial.password_decryption_nonce[0] as Uint8Array, symmetricCryptoMaterial.notes_decryption_nonce[0] as Uint8Array);
 
         // Update encrypted secret
         const resultUpdate: Result = await this.actor.update_secret(encryptedSecret);
@@ -236,7 +230,7 @@ class IcCryptService {
                     username: [encryptedUsername],
                     password: [encryptedPassword],
                     notes: [encryptedNotes],
-                    decryption_material: symmetricCryptoMaterial
+                    symmetric_crypto_material: symmetricCryptoMaterial
             }
             console.log('encrypted secret to add: ', encryptedSecret)
             return encryptedSecret
@@ -303,10 +297,15 @@ class IcCryptService {
         return await this.actor.is_user_vault_existing();
     }
 
-    async addTestament(testament: Testament): Promise<Testament> {
-        const initialTestament = await this.actor.add_testament({id: uuidv4()});
+    async addTestament(testament: UiTestament): Promise<UiTestament> {
+        const heirs = testament.heirs.map((item) => {
+            return Principal.fromText(item.id);
+        });
+
+        const initialTestament = await this.actor.add_testament({id: testament.id, heirs: heirs, name: [testament.name], secrets: testament.secrets, key_box: null });
+
         //TODO encrypt testament
-        const encryptedTestament = {
+        /*const encryptedTestament: Testament = {
             ...testament,
             id: uuidv4()
         }
@@ -315,6 +314,10 @@ class IcCryptService {
             return result['Ok']
         }
         throw mapError(result['Err']);
+
+         */
+        return null;
+
     }
 
     async getTestamentList(): Promise<Testament[]> {

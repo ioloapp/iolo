@@ -15,7 +15,7 @@ export const addTestamentThunk = createAsyncThunk<UiTestament, UiTestament, { st
         console.log('add testament', testament)
         try {
             const mappedTestament = mapTestament(testament);
-            const result = await icCryptService.addTestament(mappedTestament);
+            const result = await icCryptService.addTestament(testament);
             console.log('result', result)
             return {
                 ...testament,
@@ -89,7 +89,7 @@ function mapTestament(testament: UiTestament): Testament {
         heirs: testament.heirs.map(heir => Principal.fromText(heir.id)),
         name: [testament.name],
         testator: Principal.fromText(testament.testator.id),
-        secrets: testament.secrets.map(secret => secret.id),
+        secrets: testament.secrets.map(secret => secret),
         date_modified: testament.date_modified ? BigInt(testament.date_modified.getTime()): BigInt(Date.now()),
         date_created: testament.date_modified ? BigInt(testament.date_created.getTime()): BigInt(Date.now()),
         key_box: []

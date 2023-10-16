@@ -23,7 +23,7 @@ export interface UiTestament {
     id?: string,
     name?: string,
     testator?: UiUser,
-    secrets?: Array<UiSecretListEntry>,
+    secrets?: string[],
     heirs?: Array<UiUser>,
     date_created?: Date,
     date_modified?: Date,
