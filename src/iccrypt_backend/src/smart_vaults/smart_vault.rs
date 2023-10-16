@@ -13,8 +13,8 @@ use super::master_vault::MasterVault;
 use super::secret::{
     AddSecretArgs, Secret, SecretID, SecretListEntry, SecretSymmetricCryptoMaterial,
 };
-use super::testament::{self, AddTestamentArgs, Testament, TestamentID};
-use super::user_vault::UserVault;
+use super::testament::{AddTestamentArgs, Testament, TestamentID};
+use super::testament_registry::TestamentRegistry;
 
 thread_local! {
     // Master_vault holding all the user vaults
@@ -22,6 +22,9 @@ thread_local! {
 
     // User Registsry
     pub static USER_REGISTRY: RefCell<UserRegistry> = RefCell::new(UserRegistry::new());
+
+    // Testament Registsry
+    pub static TESTAMENT_REGISTRY: RefCell<TestamentRegistry> = RefCell::new(TestamentRegistry::new());
 
     // counter for the UUIDs
     pub static UUID_COUNTER: RefCell<u128>  = RefCell::new(1);
@@ -215,6 +218,21 @@ pub fn get_testament(id: TestamentID) -> Result<Testament, SmartVaultErr> {
 
 #[ic_cdk_macros::query]
 #[candid_method(query)]
+pub fn get_testaments_for_heir(
+    heir: Principal,
+) -> Result<Vec<(Principal, TestamentID)>, SmartVaultErr> {
+    let principal = get_caller();
+    let user_vault_id: UUID = get_vault_id_for(principal)?;
+
+    TESTAMENT_REGISTRY.with(
+        |tr: &RefCell<TestamentRegistry>| -> Result<Vec<(Principal, TestamentID)>, SmartVaultErr> {
+            tr.borrow().get_testaments_for_heir(heir).cloned()
+        },
+    )
+}
+
+#[ic_cdk_macros::query]
+#[candid_method(query)]
 pub fn get_testament_list() -> Result<Vec<Testament>, SmartVaultErr> {
     let principal = get_caller();
     let user_vault_id: UUID = get_vault_id_for(principal)?;
@@ -268,6 +286,7 @@ fn get_vault_id_for(principal: Principal) -> Result<UUID, SmartVaultErr> {
 fn pre_upgrade() {
     MASTERVAULT.with(|ms| storage::stable_save((ms,)).unwrap());
     USER_REGISTRY.with(|ur| storage::stable_save((ur,)).unwrap());
+    TESTAMENT_REGISTRY.with(|tr| storage::stable_save((tr,)).unwrap());
     UUID_COUNTER.with(|c| storage::stable_save((c,)).unwrap());
 }
 
@@ -278,6 +297,9 @@ fn post_upgrade() {
 
     let (old_ur,): (UserRegistry,) = storage::stable_restore().unwrap();
     USER_REGISTRY.with(|ur| *ur.borrow_mut() = old_ur);
+
+    let (old_tr,): (TestamentRegistry,) = storage::stable_restore().unwrap();
+    TESTAMENT_REGISTRY.with(|tr| *tr.borrow_mut() = old_tr);
 
     let (old_c,): (u128,) = storage::stable_restore().unwrap();
     UUID_COUNTER.with(|c| *c.borrow_mut() = old_c);

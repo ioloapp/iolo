@@ -63,3 +63,5 @@ pub struct SecretListEntry {
     pub category: Option<SecretCategory>,
     pub name: Option<String>,
 }
+
+

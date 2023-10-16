@@ -14,6 +14,7 @@ use crate::smart_vaults::testament::AddTestamentArgs;
 use crate::smart_vaults::testament::Testament;
 use crate::smart_vaults::testament::TestamentID;
 use candid::candid_method;
+use candid::Principal;
 
 use crate::smart_vaults::secret::{AddSecretArgs, Secret};
 

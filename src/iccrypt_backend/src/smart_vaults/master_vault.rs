@@ -1,15 +1,14 @@
-use std::collections::BTreeMap;
+use std::{cell::RefCell, collections::BTreeMap};
 
 use candid::{CandidType, Deserialize};
 
-use crate::{
-    common::{error::SmartVaultErr, uuid::UUID},
-    utils::caller::get_caller,
-};
+use crate::common::{error::SmartVaultErr, uuid::UUID};
 
 use super::{
     secret::{AddSecretArgs, Secret},
+    smart_vault::TESTAMENT_REGISTRY,
     testament::{AddTestamentArgs, Testament},
+    testament_registry::TestamentRegistry,
     user_vault::UserVault,
 };
 
@@ -92,9 +91,22 @@ impl MasterVault {
 
         let testament: Testament = Testament::from(ata);
         let testament_id = testament.id().clone();
+        let heirs = testament.heirs().clone();
 
         let user_vault = self.user_vaults.get_mut(vault_id).unwrap();
         user_vault.add_testament(testament)?;
+
+        // Add entry to testament registry (reverse index)
+        TESTAMENT_REGISTRY.with(
+            |tr: &RefCell<TestamentRegistry>| -> Result<(), SmartVaultErr> {
+                let mut testament_registry = tr.borrow_mut();
+                for h in heirs {
+                    testament_registry.add_testament_for_heir(h, testament_id.clone());
+                }
+
+                Ok(())
+            },
+        )?;
 
         Ok(user_vault.get_testament(&testament_id).unwrap().clone())
     }

@@ -41,7 +41,7 @@ async fn test_testament_lifecycle() -> anyhow::Result<()> {
 
     // Bob
     let identity_bob: BasicIdentity = create_identity();
-    // let principal_bob: Principal = identity_bob.sender().unwrap();
+    let principal_bob: Principal = identity_bob.sender().unwrap();
     let _agent_bob: Agent = get_dfx_agent_with_identity(identity_bob).await?;
 
     // Eve
@@ -127,10 +127,12 @@ async fn test_testament_lifecycle() -> anyhow::Result<()> {
     println!("{}", "Let's create a testament - yeah".yellow().bold());
     // at this point, creating a testament does not require any args. this probably will change in the future,
     // which is why we alraedy introduce the wrapper (=CreateTestamentArgs)
+    let mut heirs = HashSet::new();
+    heirs.insert(principal_bob);
     let ada: AddTestamentArgs = AddTestamentArgs {
         id: "Testament 1".into(),
         name: Some("Mein Testament".into()),
-        heirs: HashSet::new(),
+        heirs,
         secrets: HashSet::new(),
         key_box: BTreeMap::new(),
     };
