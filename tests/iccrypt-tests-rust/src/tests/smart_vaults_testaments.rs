@@ -1,3 +1,5 @@
+use std::collections::{BTreeMap, HashSet};
+
 use anyhow::Result;
 use candid::Principal;
 use colored::Colorize;
@@ -127,6 +129,10 @@ async fn test_testament_lifecycle() -> anyhow::Result<()> {
     // which is why we alraedy introduce the wrapper (=CreateTestamentArgs)
     let ada: AddTestamentArgs = AddTestamentArgs {
         id: "Testament 1".into(),
+        name: Some("Mein Testament".into()),
+        heirs: HashSet::new(),
+        secrets: HashSet::new(),
+        key_box: BTreeMap::new(),
     };
 
     let mut testament = add_user_testament(&a1, &ada).await.unwrap();

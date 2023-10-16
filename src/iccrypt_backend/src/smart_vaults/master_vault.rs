@@ -90,7 +90,7 @@ impl MasterVault {
             return Err(SmartVaultErr::UserVaultDoesNotExist(vault_id.to_string()));
         }
 
-        let testament: Testament = Testament::new(ata.id, get_caller());
+        let testament: Testament = Testament::from(ata);
         let testament_id = testament.id().clone();
 
         let user_vault = self.user_vaults.get_mut(vault_id).unwrap();

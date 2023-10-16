@@ -3,7 +3,7 @@ use std::collections::{BTreeMap, HashSet};
 use candid::{CandidType, Principal};
 use serde::{Deserialize, Serialize};
 
-use crate::utils::time;
+use crate::utils::{caller::get_caller, time};
 
 use super::{secret::SecretID, user_vault::KeyBox};
 
@@ -31,17 +31,21 @@ pub struct Testament {
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct AddTestamentArgs {
     pub id: String,
+    name: Option<String>,
+    heirs: HashSet<Principal>,
+    secrets: HashSet<SecretID>,
+    key_box: KeyBox,
 }
 
 impl Testament {
-    pub fn new(id: String, testator: Principal) -> Self {
+    pub fn new(id: String) -> Self {
         let now: u64 = time::get_current_time();
         Self {
             id,
             name: None,
             date_created: now,
             date_modified: now,
-            testator,
+            testator: get_caller(),
             heirs: HashSet::new(),
             secrets: HashSet::new(),
             key_box: BTreeMap::new(),
@@ -99,5 +103,16 @@ impl Testament {
 
     pub fn key_box(&self) -> &KeyBox {
         &self.key_box
+    }
+}
+
+impl From<AddTestamentArgs> for Testament {
+    fn from(ata: AddTestamentArgs) -> Self {
+        let mut new_testament = Testament::new(ata.id);
+        new_testament.name = ata.name;
+        new_testament.heirs = ata.heirs;
+        new_testament.secrets = ata.secrets;
+        new_testament.key_box = ata.key_box;
+        new_testament
     }
 }
