@@ -47,6 +47,8 @@ export async function get_aes_256_gcm_key_for_uservault() {
 
 
 export async function aes_gcm_decrypt(ciphertext: Uint8Array, rawKey: Uint8Array): Promise<Uint8Array> {
+    console.log("cipher: ", ciphertext)
+    console.log("key: ",rawKey)
     const iv: Uint8Array = ciphertext.slice(0, 12); // 96-bits; unique per message
     const encryptedContent: Uint8Array = ciphertext.slice(12);
     const aes_key: CryptoKey = await window.crypto.subtle.importKey("raw", rawKey, "AES-GCM", false, ["decrypt"]);
