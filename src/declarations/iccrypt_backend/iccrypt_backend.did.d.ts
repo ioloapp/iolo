@@ -7,7 +7,7 @@ export interface AddSecretArgs {
   'username' : [] | [Uint8Array | number[]],
   'password' : [] | [Uint8Array | number[]],
   'name' : [] | [string],
-  'decryption_material' : SecretDecryptionMaterial,
+  'decryption_material' : SecretSymmetricCryptoMaterial,
   'notes' : [] | [Uint8Array | number[]],
   'category' : [] | [SecretCategory],
 }
@@ -20,9 +20,9 @@ export type Result_2 = { 'Ok' : User } |
   { 'Err' : SmartVaultErr };
 export type Result_3 = { 'Ok' : null } |
   { 'Err' : SmartVaultErr };
-export type Result_4 = { 'Ok' : SecretDecryptionMaterial } |
+export type Result_4 = { 'Ok' : Array<SecretListEntry> } |
   { 'Err' : SmartVaultErr };
-export type Result_5 = { 'Ok' : Array<SecretListEntry> } |
+export type Result_5 = { 'Ok' : SecretSymmetricCryptoMaterial } |
   { 'Err' : SmartVaultErr };
 export type Result_6 = { 'Ok' : Array<Testament> } |
   { 'Err' : SmartVaultErr };
@@ -40,17 +40,17 @@ export interface Secret {
 export type SecretCategory = { 'Password' : null } |
   { 'Note' : null } |
   { 'Document' : null };
-export interface SecretDecryptionMaterial {
-  'iv' : Uint8Array | number[],
-  'password_decryption_nonce' : [] | [Uint8Array | number[]],
-  'notes_decryption_nonce' : [] | [Uint8Array | number[]],
-  'encrypted_decryption_key' : Uint8Array | number[],
-  'username_decryption_nonce' : [] | [Uint8Array | number[]],
-}
 export interface SecretListEntry {
   'id' : string,
   'name' : [] | [string],
   'category' : [] | [SecretCategory],
+}
+export interface SecretSymmetricCryptoMaterial {
+  'iv' : Uint8Array | number[],
+  'password_decryption_nonce' : [] | [Uint8Array | number[]],
+  'notes_decryption_nonce' : [] | [Uint8Array | number[]],
+  'encrypted_symmetric_key' : Uint8Array | number[],
+  'username_decryption_nonce' : [] | [Uint8Array | number[]],
 }
 export type SmartVaultErr = { 'UserAlreadyExists' : string } |
   { 'SecretHasNoId' : null } |
@@ -69,7 +69,7 @@ export interface Testament {
   'name' : [] | [string],
   'testator' : Principal,
   'secrets' : Array<string>,
-  'key_box' : Array<[string, SecretDecryptionMaterial]>,
+  'key_box' : Array<[string, SecretSymmetricCryptoMaterial]>,
   'date_modified' : bigint,
 }
 export interface TestamentKeyDerviationArgs {
@@ -105,12 +105,14 @@ export interface _SERVICE {
     string
   >,
   'get_secret' : ActorMethod<[string], Result>,
-  'get_secret_decryption_material' : ActorMethod<[string], Result_4>,
-  'get_secret_list' : ActorMethod<[], Result_5>,
+  'get_secret_list' : ActorMethod<[], Result_4>,
+  'get_secret_symmetric_crypto_material' : ActorMethod<[string], Result_5>,
+  'get_testament' : ActorMethod<[string], Result_1>,
   'get_testament_list' : ActorMethod<[], Result_6>,
   'ibe_encryption_key' : ActorMethod<[], string>,
   'is_user_vault_existing' : ActorMethod<[], boolean>,
-  'remove_user_secret' : ActorMethod<[string], Result_3>,
+  'remove_secret' : ActorMethod<[string], Result_3>,
+  'remove_testament' : ActorMethod<[string], Result_3>,
   'symmetric_key_verification_key' : ActorMethod<[], string>,
   'update_secret' : ActorMethod<[Secret], Result>,
   'update_testament' : ActorMethod<[Testament], Result_1>,

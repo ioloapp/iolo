@@ -1,9 +1,9 @@
 export const idlFactory = ({ IDL }) => {
-  const SecretDecryptionMaterial = IDL.Record({
+  const SecretSymmetricCryptoMaterial = IDL.Record({
     'iv' : IDL.Vec(IDL.Nat8),
     'password_decryption_nonce' : IDL.Opt(IDL.Vec(IDL.Nat8)),
     'notes_decryption_nonce' : IDL.Opt(IDL.Vec(IDL.Nat8)),
-    'encrypted_decryption_key' : IDL.Vec(IDL.Nat8),
+    'encrypted_symmetric_key' : IDL.Vec(IDL.Nat8),
     'username_decryption_nonce' : IDL.Opt(IDL.Vec(IDL.Nat8)),
   });
   const SecretCategory = IDL.Variant({
@@ -17,7 +17,7 @@ export const idlFactory = ({ IDL }) => {
     'username' : IDL.Opt(IDL.Vec(IDL.Nat8)),
     'password' : IDL.Opt(IDL.Vec(IDL.Nat8)),
     'name' : IDL.Opt(IDL.Text),
-    'decryption_material' : SecretDecryptionMaterial,
+    'decryption_material' : SecretSymmetricCryptoMaterial,
     'notes' : IDL.Opt(IDL.Vec(IDL.Nat8)),
     'category' : IDL.Opt(SecretCategory),
   });
@@ -53,7 +53,7 @@ export const idlFactory = ({ IDL }) => {
     'name' : IDL.Opt(IDL.Text),
     'testator' : IDL.Principal,
     'secrets' : IDL.Vec(IDL.Text),
-    'key_box' : IDL.Vec(IDL.Tuple(IDL.Text, SecretDecryptionMaterial)),
+    'key_box' : IDL.Vec(IDL.Tuple(IDL.Text, SecretSymmetricCryptoMaterial)),
     'date_modified' : IDL.Nat64,
   });
   const Result_1 = IDL.Variant({ 'Ok' : Testament, 'Err' : SmartVaultErr });
@@ -70,17 +70,17 @@ export const idlFactory = ({ IDL }) => {
     'encryption_public_key' : IDL.Vec(IDL.Nat8),
     'testament_id' : IDL.Text,
   });
-  const Result_4 = IDL.Variant({
-    'Ok' : SecretDecryptionMaterial,
-    'Err' : SmartVaultErr,
-  });
   const SecretListEntry = IDL.Record({
     'id' : IDL.Text,
     'name' : IDL.Opt(IDL.Text),
     'category' : IDL.Opt(SecretCategory),
   });
-  const Result_5 = IDL.Variant({
+  const Result_4 = IDL.Variant({
     'Ok' : IDL.Vec(SecretListEntry),
+    'Err' : SmartVaultErr,
+  });
+  const Result_5 = IDL.Variant({
+    'Ok' : SecretSymmetricCryptoMaterial,
     'Err' : SmartVaultErr,
   });
   const Result_6 = IDL.Variant({
@@ -113,16 +113,18 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'get_secret' : IDL.Func([IDL.Text], [Result], ['query']),
-    'get_secret_decryption_material' : IDL.Func(
+    'get_secret_list' : IDL.Func([], [Result_4], ['query']),
+    'get_secret_symmetric_crypto_material' : IDL.Func(
         [IDL.Text],
-        [Result_4],
+        [Result_5],
         ['query'],
       ),
-    'get_secret_list' : IDL.Func([], [Result_5], ['query']),
+    'get_testament' : IDL.Func([IDL.Text], [Result_1], ['query']),
     'get_testament_list' : IDL.Func([], [Result_6], ['query']),
     'ibe_encryption_key' : IDL.Func([], [IDL.Text], []),
     'is_user_vault_existing' : IDL.Func([], [IDL.Bool], ['query']),
-    'remove_user_secret' : IDL.Func([IDL.Text], [Result_3], []),
+    'remove_secret' : IDL.Func([IDL.Text], [Result_3], []),
+    'remove_testament' : IDL.Func([IDL.Text], [Result_3], []),
     'symmetric_key_verification_key' : IDL.Func([], [IDL.Text], []),
     'update_secret' : IDL.Func([Secret], [Result], []),
     'update_testament' : IDL.Func([Testament], [Result_1], []),

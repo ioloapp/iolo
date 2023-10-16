@@ -125,13 +125,31 @@ impl MasterVault {
     }
 
     // Remove a secret
-    pub fn remove_secret(&mut self, vault_id: &UUID, secret_id: &str) -> Result<(), SmartVaultErr> {
+    pub fn remove_user_secret(
+        &mut self,
+        vault_id: &UUID,
+        secret_id: &str,
+    ) -> Result<(), SmartVaultErr> {
         if !self.user_vaults.contains_key(vault_id) {
             return Err(SmartVaultErr::UserVaultDoesNotExist(vault_id.to_string()));
         }
 
         let user_vault = self.user_vaults.get_mut(vault_id).unwrap();
         user_vault.remove_secret(secret_id)
+    }
+
+    // Remove a testament
+    pub fn remove_user_testament(
+        &mut self,
+        vault_id: &UUID,
+        testament_id: &str,
+    ) -> Result<(), SmartVaultErr> {
+        if !self.user_vaults.contains_key(vault_id) {
+            return Err(SmartVaultErr::UserVaultDoesNotExist(vault_id.to_string()));
+        }
+
+        let user_vault = self.user_vaults.get_mut(vault_id).unwrap();
+        user_vault.remove_testament(testament_id)
     }
 }
 

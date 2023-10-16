@@ -90,10 +90,12 @@ service : {
   get_secret : (text) -> (Result) query;
   get_secret_list : () -> (Result_4) query;
   get_secret_symmetric_crypto_material : (text) -> (Result_5) query;
+  get_testament : (text) -> (Result_1) query;
   get_testament_list : () -> (Result_6) query;
   ibe_encryption_key : () -> (text);
   is_user_vault_existing : () -> (bool) query;
-  remove_user_secret : (text) -> (Result_3);
+  remove_secret : (text) -> (Result_3);
+  remove_testament : (text) -> (Result_3);
   symmetric_key_verification_key : () -> (text);
   update_secret : (Secret) -> (Result);
   update_testament : (Testament) -> (Result_1);

@@ -146,6 +146,17 @@ impl UserVault {
             .get(testament_id)
             .ok_or_else(|| SmartVaultErr::TestamentDoesNotExist(testament_id.to_string()))
     }
+
+    pub fn remove_testament(&mut self, testament_id: &str) -> Result<(), SmartVaultErr> {
+        if !self.testaments.contains_key(testament_id) {
+            return Err(SmartVaultErr::TestamentDoesNotExist(
+                testament_id.to_string(),
+            ));
+        }
+        self.testaments.remove(testament_id);
+        self.date_modified = time::get_current_time();
+        Ok(())
+    }
 }
 
 #[cfg(test)]
