@@ -4,7 +4,7 @@ type AddSecretArgs = record {
   username : opt vec nat8;
   password : opt vec nat8;
   name : opt text;
-  decryption_material : SecretSymmetricCryptoMaterial;
+  symmetric_crypto_material : SecretSymmetricCryptoMaterial;
   notes : opt vec nat8;
   category : opt SecretCategory;
 };

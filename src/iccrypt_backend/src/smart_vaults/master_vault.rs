@@ -72,7 +72,7 @@ impl MasterVault {
         let secret: Secret = asa.clone().into();
         let added_secret = user_vault.add_secret(secret)?;
 
-        let decryption_material = asa.decryption_material.clone();
+        let decryption_material = asa.symmetric_crypto_material.clone();
         user_vault
             .key_box_mut()
             .insert(added_secret.id().clone(), decryption_material);
