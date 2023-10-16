@@ -4,7 +4,7 @@ use candid::{CandidType, Principal};
 
 use serde::{Deserialize, Serialize};
 
-use super::secret::{SecretDecryptionMaterial, SecretID};
+use super::secret::{SecretID, SecretSymmetricCryptoMaterial};
 
 pub type TestamentID = String;
 
@@ -23,7 +23,7 @@ pub struct Testament {
     /// Every secret is encrypted by using dedicated key.
     /// This key is itself encrypted using the Testament decryption key,
     /// which itself is derived by vetkd.
-    pub key_box: BTreeMap<SecretID, SecretDecryptionMaterial>,
+    pub key_box: BTreeMap<SecretID, SecretSymmetricCryptoMaterial>,
 }
 
 /// The struct provided by the backend when calling "create_secret". It contains:

@@ -31,7 +31,7 @@ pub struct Secret {
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct AddSecretArgsOld {
     pub secret: Secret,
-    pub decryption_material: SecretDecryptionMaterial,
+    pub decryption_material: SecretSymmetricCryptoMaterial,
 }
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
@@ -45,12 +45,12 @@ pub struct AddSecretArgs {
     pub notes: Option<Vec<u8>>,
     // All the information required to decrypt the secret.
     // This material will be stored in the uservault's key box
-    pub decryption_material: SecretDecryptionMaterial,
+    pub decryption_material: SecretSymmetricCryptoMaterial,
 }
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
-pub struct SecretDecryptionMaterial {
-    pub encrypted_decryption_key: Vec<u8>,
+pub struct SecretSymmetricCryptoMaterial {
+    pub encrypted_symmetric_key: Vec<u8>,
     pub iv: Vec<u8>, // the initialization vector
     pub username_decryption_nonce: Option<Vec<u8>>,
     pub password_decryption_nonce: Option<Vec<u8>>,

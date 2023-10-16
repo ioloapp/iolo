@@ -139,7 +139,7 @@ impl MasterVault {
 mod tests {
 
     use super::*;
-    use crate::smart_vaults::secret::SecretDecryptionMaterial;
+    use crate::smart_vaults::secret::SecretSymmetricCryptoMaterial;
 
     #[test]
     fn utest_new_master_vault() {

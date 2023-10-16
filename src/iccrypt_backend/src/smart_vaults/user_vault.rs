@@ -3,14 +3,14 @@ use serde::Serialize;
 
 use std::collections::BTreeMap;
 
-use super::secret::{Secret, SecretDecryptionMaterial, SecretID};
+use super::secret::{Secret, SecretID, SecretSymmetricCryptoMaterial};
 use super::testament::{Testament, TestamentID};
 use crate::common::uuid::UUID;
 use crate::utils::time;
 use crate::SmartVaultErr;
 
 pub type UserVaultID = UUID;
-pub type KeyBox = BTreeMap<SecretID, SecretDecryptionMaterial>;
+pub type KeyBox = BTreeMap<SecretID, SecretSymmetricCryptoMaterial>;
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct UserVault {

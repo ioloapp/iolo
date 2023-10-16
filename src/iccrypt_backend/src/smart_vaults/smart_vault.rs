@@ -10,7 +10,9 @@ use crate::smart_vaults::user_registry::UserRegistry;
 use crate::utils::caller::get_caller;
 
 use super::master_vault::MasterVault;
-use super::secret::{AddSecretArgs, Secret, SecretDecryptionMaterial, SecretID, SecretListEntry};
+use super::secret::{
+    AddSecretArgs, Secret, SecretID, SecretListEntry, SecretSymmetricCryptoMaterial,
+};
 use super::testament::{AddTestamentArgs, Testament};
 use super::user_vault::UserVault;
 
@@ -140,16 +142,16 @@ pub fn get_secret_list() -> Result<Vec<SecretListEntry>, SmartVaultErr> {
 
 #[ic_cdk_macros::query]
 #[candid_method(query)]
-pub fn get_secret_decryption_material(
+pub fn get_secret_symmetric_crypto_material(
     sid: SecretID,
-) -> Result<SecretDecryptionMaterial, SmartVaultErr> {
+) -> Result<SecretSymmetricCryptoMaterial, SmartVaultErr> {
     let principal = get_caller();
     let user_vault_id: UUID = get_vault_id_for(principal)?;
 
     MASTERVAULT.with(|mv: &RefCell<MasterVault>| {
         let mv: &MasterVault = &mv.borrow();
         let uv = mv.get_user_vault(&user_vault_id)?;
-        let sdm: &SecretDecryptionMaterial = uv.key_box().get(&sid).unwrap();
+        let sdm: &SecretSymmetricCryptoMaterial = uv.key_box().get(&sid).unwrap();
         Ok(sdm.clone())
     })
 }

@@ -5,7 +5,7 @@ use ic_agent::{identity::BasicIdentity, Agent, Identity};
 
 use crate::{
     types::{
-        secret::{AddSecretArgs, Secret, SecretCategory, SecretDecryptionMaterial},
+        secret::{AddSecretArgs, Secret, SecretCategory, SecretSymmetricCryptoMaterial},
         smart_vault_err::SmartVaultErr,
         testament::{AddTestamentArgs, Testament},
     },
@@ -91,8 +91,8 @@ async fn test_testament_lifecycle() -> anyhow::Result<()> {
             .await
             .unwrap();
 
-    let decryption_material: SecretDecryptionMaterial = SecretDecryptionMaterial {
-        encrypted_decryption_key: encrypted_secret_decryption_key,
+    let decryption_material: SecretSymmetricCryptoMaterial = SecretSymmetricCryptoMaterial {
+        encrypted_symmetric_key: encrypted_secret_decryption_key,
         iv: nonce_encrypted_secret_decryption_key.to_vec(),
         username_decryption_nonce: Some(username_decryption_nonce.to_vec()),
         password_decryption_nonce: Some(password_decryption_nonce.to_vec()),
@@ -161,8 +161,8 @@ async fn test_testament_lifecycle() -> anyhow::Result<()> {
     );
     dbg!(&testament_encryption_key);
 
-    let decryption_material: SecretDecryptionMaterial = SecretDecryptionMaterial {
-        encrypted_decryption_key: encrypted_secret_decryption_key,
+    let decryption_material: SecretSymmetricCryptoMaterial = SecretSymmetricCryptoMaterial {
+        encrypted_symmetric_key: encrypted_secret_decryption_key,
         iv: nonce_encrypted_secret_decryption_key.to_vec(),
         username_decryption_nonce: Some(username_decryption_nonce.to_vec()),
         password_decryption_nonce: Some(password_decryption_nonce.to_vec()),
@@ -198,21 +198,21 @@ async fn test_testament_lifecycle() -> anyhow::Result<()> {
 
     // 1) Get the cryptographic decryption material (dm) for that particular secret,
     // which can be found in the user's UserVault KeyBox.
-    let dmr: Result<SecretDecryptionMaterial, SmartVaultErr> = make_call_with_agent(
+    let dmr: Result<SecretSymmetricCryptoMaterial, SmartVaultErr> = make_call_with_agent(
         &a1,
-        CallType::Query("get_secret_decryption_material".into()),
+        CallType::Query("get_secret_symmetric_crypto_material".into()),
         Some(secret.id),
     )
     .await
     .unwrap();
 
-    let dm: SecretDecryptionMaterial = dmr.unwrap();
+    let dm: SecretSymmetricCryptoMaterial = dmr.unwrap();
 
     // the dm (decryption material) contains the "encrypted decryption key".
     // so first, let's get the key to decrypt this "encrypted decryption key" -> vetkd
     let uservault_decryption_key = get_aes_256_gcm_key_for_uservault().await.unwrap();
     let decrypted_decryption_key = aes_gcm_decrypt(
-        &dm.encrypted_decryption_key,
+        &dm.encrypted_symmetric_key,
         &uservault_decryption_key,
         dm.iv.as_slice().try_into().unwrap(),
     )

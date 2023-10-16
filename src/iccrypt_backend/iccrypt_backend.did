@@ -4,7 +4,7 @@ type AddSecretArgs = record {
   username : opt vec nat8;
   password : opt vec nat8;
   name : opt text;
-  decryption_material : SecretDecryptionMaterial;
+  decryption_material : SecretSymmetricCryptoMaterial;
   notes : opt vec nat8;
   category : opt SecretCategory;
 };
@@ -13,8 +13,11 @@ type Result = variant { Ok : Secret; Err : SmartVaultErr };
 type Result_1 = variant { Ok : Testament; Err : SmartVaultErr };
 type Result_2 = variant { Ok : User; Err : SmartVaultErr };
 type Result_3 = variant { Ok; Err : SmartVaultErr };
-type Result_4 = variant { Ok : SecretDecryptionMaterial; Err : SmartVaultErr };
-type Result_5 = variant { Ok : vec SecretListEntry; Err : SmartVaultErr };
+type Result_4 = variant { Ok : vec SecretListEntry; Err : SmartVaultErr };
+type Result_5 = variant {
+  Ok : SecretSymmetricCryptoMaterial;
+  Err : SmartVaultErr;
+};
 type Result_6 = variant { Ok : vec Testament; Err : SmartVaultErr };
 type Secret = record {
   id : text;
@@ -28,17 +31,17 @@ type Secret = record {
   date_modified : nat64;
 };
 type SecretCategory = variant { Password; Note; Document };
-type SecretDecryptionMaterial = record {
-  iv : vec nat8;
-  password_decryption_nonce : opt vec nat8;
-  notes_decryption_nonce : opt vec nat8;
-  encrypted_decryption_key : vec nat8;
-  username_decryption_nonce : opt vec nat8;
-};
 type SecretListEntry = record {
   id : text;
   name : opt text;
   category : opt SecretCategory;
+};
+type SecretSymmetricCryptoMaterial = record {
+  iv : vec nat8;
+  password_decryption_nonce : opt vec nat8;
+  notes_decryption_nonce : opt vec nat8;
+  encrypted_symmetric_key : vec nat8;
+  username_decryption_nonce : opt vec nat8;
 };
 type SmartVaultErr = variant {
   UserAlreadyExists : text;
@@ -59,7 +62,7 @@ type Testament = record {
   name : opt text;
   testator : principal;
   secrets : vec text;
-  key_box : vec record { text; SecretDecryptionMaterial };
+  key_box : vec record { text; SecretSymmetricCryptoMaterial };
   date_modified : nat64;
 };
 type TestamentKeyDerviationArgs = record {
@@ -85,8 +88,8 @@ service : {
   );
   encrypted_symmetric_key_for_uservault : (vec nat8) -> (text);
   get_secret : (text) -> (Result) query;
-  get_secret_decryption_material : (text) -> (Result_4) query;
-  get_secret_list : () -> (Result_5) query;
+  get_secret_list : () -> (Result_4) query;
+  get_secret_symmetric_crypto_material : (text) -> (Result_5) query;
   get_testament_list : () -> (Result_6) query;
   ibe_encryption_key : () -> (text);
   is_user_vault_existing : () -> (bool) query;
