@@ -4,11 +4,17 @@ type AddSecretArgs = record {
   username : opt vec nat8;
   password : opt vec nat8;
   name : opt text;
-  decryption_material : SecretSymmetricCryptoMaterial;
+  symmetric_crypto_material : SecretSymmetricCryptoMaterial;
   notes : opt vec nat8;
   category : opt SecretCategory;
 };
-type AddTestamentArgs = record { id : text };
+type AddTestamentArgs = record {
+  id : text;
+  heirs : vec principal;
+  name : opt text;
+  secrets : vec text;
+  key_box : vec record { text; SecretSymmetricCryptoMaterial };
+};
 type Result = variant { Ok : Secret; Err : SmartVaultErr };
 type Result_1 = variant { Ok : Testament; Err : SmartVaultErr };
 type Result_2 = variant { Ok : User; Err : SmartVaultErr };

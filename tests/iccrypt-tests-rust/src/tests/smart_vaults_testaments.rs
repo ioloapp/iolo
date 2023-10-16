@@ -1,3 +1,5 @@
+use std::collections::{BTreeMap, HashSet};
+
 use anyhow::Result;
 use candid::Principal;
 use colored::Colorize;
@@ -91,7 +93,7 @@ async fn test_testament_lifecycle() -> anyhow::Result<()> {
             .await
             .unwrap();
 
-    let decryption_material: SecretSymmetricCryptoMaterial = SecretSymmetricCryptoMaterial {
+    let crypto_material: SecretSymmetricCryptoMaterial = SecretSymmetricCryptoMaterial {
         encrypted_symmetric_key: encrypted_secret_decryption_key,
         iv: nonce_encrypted_secret_decryption_key.to_vec(),
         username_decryption_nonce: Some(username_decryption_nonce.to_vec()),
@@ -109,7 +111,7 @@ async fn test_testament_lifecycle() -> anyhow::Result<()> {
         password: Some(encrypted_password.clone()),
         url: Some("www.google.com".to_string()),
         notes: Some(encrypted_notes.clone()),
-        decryption_material: decryption_material.clone(),
+        symmetric_crypto_material: crypto_material.clone(),
     };
 
     let secret: Secret = add_user_secret(&a1, &add_secret_args).await.unwrap();
@@ -127,6 +129,10 @@ async fn test_testament_lifecycle() -> anyhow::Result<()> {
     // which is why we alraedy introduce the wrapper (=CreateTestamentArgs)
     let ada: AddTestamentArgs = AddTestamentArgs {
         id: "Testament 1".into(),
+        name: Some("Mein Testament".into()),
+        heirs: HashSet::new(),
+        secrets: HashSet::new(),
+        key_box: BTreeMap::new(),
     };
 
     let mut testament = add_user_testament(&a1, &ada).await.unwrap();
@@ -161,7 +167,7 @@ async fn test_testament_lifecycle() -> anyhow::Result<()> {
     );
     dbg!(&testament_encryption_key);
 
-    let decryption_material: SecretSymmetricCryptoMaterial = SecretSymmetricCryptoMaterial {
+    let crypto_material: SecretSymmetricCryptoMaterial = SecretSymmetricCryptoMaterial {
         encrypted_symmetric_key: encrypted_secret_decryption_key,
         iv: nonce_encrypted_secret_decryption_key.to_vec(),
         username_decryption_nonce: Some(username_decryption_nonce.to_vec()),
@@ -171,9 +177,7 @@ async fn test_testament_lifecycle() -> anyhow::Result<()> {
 
     dbg!("Chaning the name of my testament and put the key into the keybox");
     testament.name = Some("Mein Testament".into());
-    testament
-        .key_box
-        .insert(secret.id.clone(), decryption_material);
+    testament.key_box.insert(secret.id.clone(), crypto_material);
     let testament = update_user_testament(&a1, testament).await?;
     dbg!(&testament);
 

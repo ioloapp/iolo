@@ -31,7 +31,7 @@ pub struct Secret {
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct AddSecretArgsOld {
     pub secret: Secret,
-    pub decryption_material: SecretSymmetricCryptoMaterial,
+    pub symmetric_crypto_material: SecretSymmetricCryptoMaterial,
 }
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
@@ -45,7 +45,7 @@ pub struct AddSecretArgs {
     pub notes: Option<Vec<u8>>,
     // All the information required to decrypt the secret.
     // This material will be stored in the uservault's key box
-    pub decryption_material: SecretSymmetricCryptoMaterial,
+    pub symmetric_crypto_material: SecretSymmetricCryptoMaterial,
 }
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]

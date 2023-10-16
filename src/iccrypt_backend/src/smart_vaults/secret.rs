@@ -36,7 +36,7 @@ pub struct AddSecretArgs {
     pub notes: Option<Vec<u8>>,
     // All the information required to decrypt the secret.
     // This material will be stored in the uservault's key box
-    pub decryption_material: SecretSymmetricCryptoMaterial,
+    pub symmetric_crypto_material: SecretSymmetricCryptoMaterial,
 }
 
 impl From<AddSecretArgs> for Secret {
@@ -198,7 +198,7 @@ mod tests {
             password: Some(vec![4, 5, 6]),
             url: Some("http://test.com".to_string()),
             notes: Some(vec![7, 8, 9]),
-            decryption_material: SecretSymmetricCryptoMaterial {
+            symmetric_crypto_material: SecretSymmetricCryptoMaterial {
                 encrypted_symmetric_key: vec![1, 2, 3],
                 iv: vec![1, 2, 3],
                 username_decryption_nonce: Some(vec![1, 2, 3]),

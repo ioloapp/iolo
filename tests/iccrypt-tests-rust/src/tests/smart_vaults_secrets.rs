@@ -69,7 +69,7 @@ async fn test_secret_lifecycle() -> anyhow::Result<()> {
             .await
             .unwrap();
 
-    let decryption_material: SecretSymmetricCryptoMaterial = SecretSymmetricCryptoMaterial {
+    let crypto_material: SecretSymmetricCryptoMaterial = SecretSymmetricCryptoMaterial {
         encrypted_symmetric_key: encrypted_secret_decryption_key,
         iv: nonce_encrypted_secret_decryption_key.to_vec(),
         username_decryption_nonce: Some(username_decryption_nonce.to_vec()),
@@ -87,7 +87,7 @@ async fn test_secret_lifecycle() -> anyhow::Result<()> {
         password: Some(encrypted_password.clone()),
         url: Some("www.google.com".to_string()),
         notes: Some(encrypted_notes.clone()),
-        decryption_material: decryption_material.clone(),
+        symmetric_crypto_material: crypto_material.clone(),
     };
 
     let mut secret: Secret = add_user_secret(&a1, &add_secret_args).await.unwrap();
