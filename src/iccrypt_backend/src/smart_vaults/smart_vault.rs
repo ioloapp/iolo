@@ -221,9 +221,6 @@ pub fn get_testament(id: TestamentID) -> Result<Testament, SmartVaultErr> {
 pub fn get_testaments_for_heir(
     heir: Principal,
 ) -> Result<Vec<(Principal, TestamentID)>, SmartVaultErr> {
-    let principal = get_caller();
-    let user_vault_id: UUID = get_vault_id_for(principal)?;
-
     TESTAMENT_REGISTRY.with(
         |tr: &RefCell<TestamentRegistry>| -> Result<Vec<(Principal, TestamentID)>, SmartVaultErr> {
             tr.borrow().get_testaments_for_heir(heir).cloned()
