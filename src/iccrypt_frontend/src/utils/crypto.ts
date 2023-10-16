@@ -46,16 +46,21 @@ export async function get_aes_256_gcm_key_for_uservault() {
 }
 
 
-export async function aes_gcm_decrypt(ciphertext: Uint8Array, rawKey: Uint8Array): Promise<Uint8Array> {
-    const iv: Uint8Array = ciphertext.slice(0, 12); // 96-bits; unique per message
-    const encryptedContent: Uint8Array = ciphertext.slice(12);
-    const aes_key: CryptoKey = await window.crypto.subtle.importKey("raw", rawKey, "AES-GCM", false, ["decrypt"]);
-    const decryptedContent: ArrayBuffer = await window.crypto.subtle.decrypt(
-        { name: "AES-GCM", iv: iv },
-        aes_key,
-        encryptedContent
-    );
-    return new Uint8Array(decryptedContent);
+export async function aes_gcm_decrypt(ciphertext: Uint8Array, rawKey: Uint8Array, iv: Uint8Array): Promise<Uint8Array> {
+    //const iv: Uint8Array = ciphertext.slice(0, 12); // 96-bits; unique per message
+    //const encryptedContent: Uint8Array = ciphertext.slice(12);
+    try {
+        const encryptedContent: Uint8Array = ciphertext;
+        const aes_key: CryptoKey = await window.crypto.subtle.importKey("raw", rawKey, "AES-GCM", false, ["decrypt"]);
+        const decryptedContent: ArrayBuffer = await window.crypto.subtle.decrypt(
+            { name: "AES-GCM", iv: iv },
+            aes_key,
+            encryptedContent
+        );
+        return new Uint8Array(decryptedContent);}
+    catch (e) {
+        console.error('Decryption failed: ', e)
+    }
 }
 
 export async function aes_gcm_encrypt(plaintext: string | Uint8Array, rawKey: Uint8Array, iv: Uint8Array): Promise<Uint8Array> {
@@ -70,10 +75,10 @@ export async function aes_gcm_encrypt(plaintext: string | Uint8Array, rawKey: Ui
         plaintextArray
     );
 
+    return new Uint8Array(encryptedContent);
     // Combine the IV with the ciphertext for easier decryption
-    const combined: Uint8Array = new Uint8Array(iv.byteLength + encryptedContent.byteLength);
-    combined.set(iv, 0);
-    combined.set(new Uint8Array(encryptedContent), iv.byteLength);
-
-    return combined;
+    //const combined: Uint8Array = new Uint8Array(iv.byteLength + encryptedContent.byteLength);
+    //combined.set(iv, 0);
+    //combined.set(new Uint8Array(encryptedContent), iv.byteLength);
+    //return combined;
 }

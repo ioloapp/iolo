@@ -7,11 +7,17 @@ export interface AddSecretArgs {
   'username' : [] | [Uint8Array | number[]],
   'password' : [] | [Uint8Array | number[]],
   'name' : [] | [string],
-  'decryption_material' : SecretSymmetricCryptoMaterial,
+  'symmetric_crypto_material' : SecretSymmetricCryptoMaterial,
   'notes' : [] | [Uint8Array | number[]],
   'category' : [] | [SecretCategory],
 }
-export interface AddTestamentArgs { 'id' : string }
+export interface AddTestamentArgs {
+  'id' : string,
+  'heirs' : Array<Principal>,
+  'name' : [] | [string],
+  'secrets' : Array<string>,
+  'key_box' : Array<[string, SecretSymmetricCryptoMaterial]>,
+}
 export type Result = { 'Ok' : Secret } |
   { 'Err' : SmartVaultErr };
 export type Result_1 = { 'Ok' : Testament } |

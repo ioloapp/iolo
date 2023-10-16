@@ -17,7 +17,7 @@ export const idlFactory = ({ IDL }) => {
     'username' : IDL.Opt(IDL.Vec(IDL.Nat8)),
     'password' : IDL.Opt(IDL.Vec(IDL.Nat8)),
     'name' : IDL.Opt(IDL.Text),
-    'decryption_material' : SecretSymmetricCryptoMaterial,
+    'symmetric_crypto_material' : SecretSymmetricCryptoMaterial,
     'notes' : IDL.Opt(IDL.Vec(IDL.Nat8)),
     'category' : IDL.Opt(SecretCategory),
   });
@@ -45,7 +45,13 @@ export const idlFactory = ({ IDL }) => {
     'SecretAlreadyExists' : IDL.Text,
   });
   const Result = IDL.Variant({ 'Ok' : Secret, 'Err' : SmartVaultErr });
-  const AddTestamentArgs = IDL.Record({ 'id' : IDL.Text });
+  const AddTestamentArgs = IDL.Record({
+    'id' : IDL.Text,
+    'heirs' : IDL.Vec(IDL.Principal),
+    'name' : IDL.Opt(IDL.Text),
+    'secrets' : IDL.Vec(IDL.Text),
+    'key_box' : IDL.Vec(IDL.Tuple(IDL.Text, SecretSymmetricCryptoMaterial)),
+  });
   const Testament = IDL.Record({
     'id' : IDL.Text,
     'heirs' : IDL.Vec(IDL.Principal),
