@@ -55,11 +55,6 @@ export const loadSecretsThunk = createAsyncThunk<SecretListEntry[], void, {
     async () => {
         const result = await icCryptService.getSecretList();
         console.log('loaded secrets', result)
-        if (result.length > 0) {
-            const temp = await icCryptService.getSecret(result[0].id);
-            console.log("First secret: ", temp);
-        }
-
         return result;
     }
 );

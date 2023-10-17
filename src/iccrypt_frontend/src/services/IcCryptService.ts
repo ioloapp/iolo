@@ -133,16 +133,25 @@ class IcCryptService {
                 decryptedNotes = await aes_gcm_decrypt(value1['Ok'].notes[0], decryptedSymmetricKey, value2['Ok'].notes_decryption_nonce[0]);
             }
 
+            let category: UiSecretCategory = null;
+            if (value1['Ok'].category[0].hasOwnProperty(UiSecretCategory.Password)) {
+                category = UiSecretCategory.Password;
+            } else if (value1['Ok'].category[0].hasOwnProperty(UiSecretCategory.Document)) {
+                category = UiSecretCategory.Document;
+            } else if (value1['Ok'].category[0].hasOwnProperty(UiSecretCategory.Note)) {
+                category = UiSecretCategory.Note;
+            }
+
             return {
                 id: value1['Ok'].id,
                 name: value1['Ok'].name[0],
-                category: value1['Ok'].category,
+                category: category,
                 url: value1['Ok'].url[0],
                 username: new TextDecoder().decode(decryptedUsername),
                 password: new TextDecoder().decode(decryptedPassword),
                 notes: new TextDecoder().decode(decryptedNotes),
-                date_created: value1['Ok'].date_created,
-                date_modified: value1['Ok'].date_modified,
+                date_created: new Date(Number(value1['Ok'].date_created / BigInt(1000000))),
+                date_modified: new Date(Number(value1['Ok'].date_modified / BigInt(1000000))),
             }
         } else throw mapError(value1['Err']);
     }

@@ -32,6 +32,8 @@ export type Result_5 = { 'Ok' : SecretSymmetricCryptoMaterial } |
   { 'Err' : SmartVaultErr };
 export type Result_6 = { 'Ok' : Array<Testament> } |
   { 'Err' : SmartVaultErr };
+export type Result_7 = { 'Ok' : Array<[Principal, string]> } |
+  { 'Err' : SmartVaultErr };
 export interface Secret {
   'id' : string,
   'url' : [] | [string],
@@ -67,7 +69,8 @@ export type SmartVaultErr = { 'UserAlreadyExists' : string } |
   { 'UserVaultCreationFailed' : string } |
   { 'UserDoesNotExist' : string } |
   { 'UserVaultDoesNotExist' : string } |
-  { 'SecretAlreadyExists' : string };
+  { 'SecretAlreadyExists' : string } |
+  { 'NoTestamentsForHeir' : string };
 export interface Testament {
   'id' : string,
   'heirs' : Array<Principal>,
@@ -115,6 +118,7 @@ export interface _SERVICE {
   'get_secret_symmetric_crypto_material' : ActorMethod<[string], Result_5>,
   'get_testament' : ActorMethod<[string], Result_1>,
   'get_testament_list' : ActorMethod<[], Result_6>,
+  'get_testaments_as_heir' : ActorMethod<[], Result_7>,
   'ibe_encryption_key' : ActorMethod<[], string>,
   'is_user_vault_existing' : ActorMethod<[], boolean>,
   'remove_secret' : ActorMethod<[string], Result_3>,
