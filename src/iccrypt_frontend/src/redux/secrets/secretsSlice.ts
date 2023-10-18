@@ -22,6 +22,20 @@ export const addSecretThunk = createAsyncThunk<Secret, UiSecret, {
     }
 );
 
+export const decryptAndShowSecretThunk = createAsyncThunk<UiSecret, string, {
+    state: RootState
+}>('secrets/decrypt',
+    async (secretId: string, {rejectWithValue}) => {
+        try {
+            const result: UiSecret = await icCryptService.getSecret(secretId);
+            console.log('result', result)
+            return result;
+        } catch (e) {
+            rejectWithValue(mapError(e))
+        }
+    }
+);
+
 export const updateSecretThunk = createAsyncThunk<Secret, UiSecret, {
     state: RootState
 }>('secrets/update',
@@ -123,6 +137,23 @@ export const secretsSlice = createSlice({
             .addCase(addSecretThunk.rejected, (state, action) => {
                 state.addState = 'failed';
                 state.error = action.error.message;
+            })
+            .addCase(decryptAndShowSecretThunk.pending, (state) => {
+                state.showAddDialog = false;
+                state.showEditDialog = false;
+                state.addState = 'loading';
+            })
+            .addCase(decryptAndShowSecretThunk.fulfilled, (state, action) => {
+                state.addState = 'succeeded';
+                state.secretToAdd = action.payload;
+                state.showAddDialog = false;
+                state.showEditDialog = true;
+            })
+            .addCase(decryptAndShowSecretThunk.rejected, (state, action) => {
+                state.addState = 'failed';
+                state.error = action.error.message;
+                state.showAddDialog = false;
+                state.showEditDialog = false;
             })
             .addCase(updateSecretThunk.pending, (state) => {
                 state.addState = 'loading';

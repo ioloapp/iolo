@@ -130,6 +130,7 @@ export default function AddEditTestamentDialog() {
                             margin="dense"
                             id="name"
                             label="Name"
+                            InputLabelProps={{ shrink: true }}
                             fullWidth
                             variant="standard"
                             value={testamentToAdd.name}

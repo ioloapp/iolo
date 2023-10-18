@@ -86,6 +86,7 @@ export default function AddEditSecretDialog() {
                             margin="dense"
                             id="name"
                             label="Name"
+                            InputLabelProps={{ shrink: true }}
                             fullWidth
                             variant="standard"
                             value={secretToAdd.name}
@@ -101,6 +102,7 @@ export default function AddEditSecretDialog() {
                                     margin="dense"
                                     id="username"
                                     label="Username"
+                                    InputLabelProps={{ shrink: true }}
                                     fullWidth
                                     variant="standard"
                                     value={secretToAdd.username}
@@ -114,6 +116,7 @@ export default function AddEditSecretDialog() {
                                     margin="dense"
                                     id="password"
                                     label="Password"
+                                    InputLabelProps={{ shrink: true }}
                                     fullWidth
                                     type="password"
                                     variant="standard"
@@ -128,6 +131,7 @@ export default function AddEditSecretDialog() {
                                     margin="dense"
                                     id="url"
                                     label="URL"
+                                    InputLabelProps={{ shrink: true }}
                                     fullWidth
                                     variant="standard"
                                     value={secretToAdd.url}
@@ -138,22 +142,21 @@ export default function AddEditSecretDialog() {
                                 />
                             </>
                         }
-                        {secretToAdd.category === UiSecretCategory.Note &&
-                            <TextField
-                                autoFocus
-                                margin="dense"
-                                id="notes"
-                                label="Notes"
-                                fullWidth
-                                variant="standard"
-                                value={secretToAdd.notes}
-                                multiline
-                                onChange={e => updateSecretToAdd({
-                                    ...secretToAdd,
-                                    notes: e.target.value
-                                })}
-                            />
-                        }
+                        <TextField
+                            autoFocus
+                            margin="dense"
+                            id="notes"
+                            label="Notes"
+                            InputLabelProps={{ shrink: true }}
+                            fullWidth
+                            variant="standard"
+                            value={secretToAdd.notes}
+                            multiline
+                            onChange={e => updateSecretToAdd({
+                                ...secretToAdd,
+                                notes: e.target.value
+                            })}
+                        />
                     </FormControl>
                 </DialogContent>
                 <DialogActions>

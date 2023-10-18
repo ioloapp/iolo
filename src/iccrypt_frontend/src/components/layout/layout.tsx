@@ -1,6 +1,6 @@
 import {BrowserRouter as Router, Route, Routes} from 'react-router-dom';
 import AppBottomNavigation from '../navigation/bottom/bottom-navigation';
-import {Wallet} from '../../pages/wallet/wallet';
+import {Secrets} from '../../pages/secrets/secrets';
 import {Testaments} from '../../pages/testaments/testaments';
 import {Heirs} from '../../pages/heirs/heirs';
 import {Settings} from '../../pages/settings/settings';
@@ -25,7 +25,7 @@ function Layout() {
     return (
         <Router>
             <Routes>
-                <Route path="/" Component={Wallet}/>
+                <Route path="/" Component={Secrets}/>
                 <Route path="/testaments" Component={Testaments}/>
                 <Route path="/heirs" Component={Heirs}/>
                 <Route path="/settings" Component={Settings}/>
