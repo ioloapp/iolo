@@ -50,7 +50,7 @@ pub fn create_user() -> Result<User, SmartVaultErr> {
         |ur: &RefCell<UserRegistry>| -> Result<User, SmartVaultErr> {
             let mut user_registry = ur.borrow_mut();
             match user_registry.add_user(new_user) {
-                Ok(u) => Ok(*u),
+                Ok(u) => Ok(u.clone()),
                 Err(e) => Err(e),
             }
         },
