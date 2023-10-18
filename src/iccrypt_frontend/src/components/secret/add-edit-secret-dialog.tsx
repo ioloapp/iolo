@@ -8,6 +8,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import {useSelector} from "react-redux";
 import {
+    selectDialogItemState,
     selectSecretToAdd,
     selectShowAddSecretDialog,
     selectShowEditSecretDialog
@@ -15,13 +16,14 @@ import {
 import {useAppDispatch} from "../../redux/hooks";
 import {addSecretThunk, secretsActions, updateSecretThunk} from "../../redux/secrets/secretsSlice";
 import AddIcon from "@mui/icons-material/Add";
-import {Fab, FormControl, MenuItem, Select, Typography} from "@mui/material";
+import {CircularProgress, Fab, FormControl, MenuItem, Select, Typography} from "@mui/material";
 import {UiSecret, UiSecretCategory} from "../../services/IcTypesForUi";
 
 export default function AddEditSecretDialog() {
     const dispatch = useAppDispatch();
     const showAddSecretDialog: boolean = useSelector(selectShowAddSecretDialog);
     const showEditSecretDialog: boolean = useSelector(selectShowEditSecretDialog);
+    const dialogItemState: string = useSelector(selectDialogItemState);
     const secretToAdd = useSelector(selectSecretToAdd);
 
     const handleClickOpen = () => {
@@ -46,6 +48,20 @@ export default function AddEditSecretDialog() {
 
     const updateSecret = async () => {
         dispatch(updateSecretThunk(secretToAdd));
+    }
+
+    if(dialogItemState === 'loading'){
+        return (
+            <Dialog open={showAddSecretDialog || showEditSecretDialog} onClose={handleClose}>
+                <DialogTitle>Edit Secret</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        Decrypting your secret...
+                    </DialogContentText>
+                    <CircularProgress />
+                </DialogContent>
+            </Dialog>
+        )
     }
 
     return (

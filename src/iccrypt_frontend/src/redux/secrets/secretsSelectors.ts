@@ -8,6 +8,8 @@ export const selectShowAddSecretDialog = (state: RootState)  => state.secrets.sh
 
 export const selectShowEditSecretDialog = (state: RootState)  => state.secrets.showEditDialog;
 
+export const selectDialogItemState = (state: RootState)  => state.secrets.dialogItemState;
+
 export const selectShowDeleteSecretDialog = (state: RootState)  => state.secrets.showDeleteDialog;
 
 export const selectSecretToAdd = (state: RootState)  => state.secrets.secretToAdd;
