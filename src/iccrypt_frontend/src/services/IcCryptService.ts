@@ -3,7 +3,6 @@ import {
     _SERVICE,
     AddSecretArgs,
     Result,
-    Result_1,
     Result_2,
     Result_4,
     Result_5,
@@ -23,10 +22,11 @@ import {Principal} from "@dfinity/principal";
 import {
     aes_gcm_decrypt,
     aes_gcm_encrypt,
+    get_aes_256_gcm_key_for_testament,
     get_aes_256_gcm_key_for_uservault,
     get_local_random_aes_256_gcm_key
 } from "../utils/crypto";
-import {UiSecret, UiSecretCategory, UiTestament, UiUser} from "./IcTypesForUi";
+import {UiSecret, UiSecretCategory, UiTestament, UiTestamentListEntry, UiUser} from "./IcTypesForUi";
 import {v4 as uuidv4} from 'uuid';
 
 class IcCryptService {
@@ -63,7 +63,8 @@ class IcCryptService {
         await this.authClient.login({
             onSuccess: async () => {
                 const principal = await this.getUserPrincipal();
-                console.log('login successful with principal ', principal.toString());
+                this.identity = this.authClient.getIdentity();
+                this.agent.replaceIdentity(this.identity);
             },
             onError: async () => {
                 throw new ICCryptError();
@@ -71,6 +72,7 @@ class IcCryptService {
             identityProvider: process.env.II_URL,
             maxTimeToLive: BigInt(expiry * 1000000)
         });
+
         return this.getUserPrincipal();
     }
 
@@ -113,7 +115,7 @@ class IcCryptService {
         // Now you can use value1 and value2
         if (value1['Ok']) {
             // Get the vetKey to decrypt the encryption key
-            const uservaultVetKey: Uint8Array = await get_aes_256_gcm_key_for_uservault();
+            const uservaultVetKey: Uint8Array = await get_aes_256_gcm_key_for_uservault(await this.getUserPrincipal(), this.actor);
 
             // Decrypt symmetric key
             const decryptedSymmetricKey = await aes_gcm_decrypt(value2['Ok'].encrypted_symmetric_key as Uint8Array, uservaultVetKey, value2['Ok'].iv);
@@ -177,7 +179,7 @@ class IcCryptService {
         }
 
         // Get the vetKey to decrypt the encryption key
-        const uservaultVetKey: Uint8Array = await get_aes_256_gcm_key_for_uservault();
+        const uservaultVetKey: Uint8Array = await get_aes_256_gcm_key_for_uservault(await this.getUserPrincipal(),this.actor);
 
         // Decrypt symmetric key
         const decryptedSymmetricKey = await aes_gcm_decrypt(symmetricCryptoMaterial.encrypted_symmetric_key as Uint8Array, uservaultVetKey, symmetricCryptoMaterial.iv as Uint8Array);
@@ -194,13 +196,21 @@ class IcCryptService {
         throw mapError(resultUpdate['Err']);
     }
 
+    public async deleteSecret(secretId: string) {
+        const result: Result_2 = await this.actor.remove_secret(secretId);
+        if (result['Ok'] === null) {
+            return result['Ok']
+        }
+        throw mapError(result['Err']);
+    }
+
     private async encryptNewSecret(uiSecret: UiSecret): Promise<AddSecretArgs> {
         // When creating new secrets no encryption key and no ivs are provided, they are generated new
         try {
             // Encrypt the symmetric key
             const symmetricKey = await get_local_random_aes_256_gcm_key();
             const ivSymmetricKey = window.crypto.getRandomValues(new Uint8Array(12)); // 96-bits; unique per message
-            const uservaultVetKey = await get_aes_256_gcm_key_for_uservault();
+            const uservaultVetKey = await get_aes_256_gcm_key_for_uservault(await this.getUserPrincipal(), this.actor);
             const encryptedSymmetricKey = await aes_gcm_encrypt(symmetricKey, uservaultVetKey, ivSymmetricKey);
 
             // Encrypt optional secret attributes
@@ -294,45 +304,63 @@ class IcCryptService {
         }
     }
 
-    public async deleteSecret(secretId: string) {
-        const result: Result_2 = await this.actor.remove_secret(secretId);
-        if (result['Ok']) {
-            return result['Ok']
-        }
-        throw mapError(result['Err']);
-    }
-
     public async isUserVaultExisting(): Promise<boolean> {
         return await this.actor.is_user_vault_existing();
     }
 
-    async addTestament(testament: UiTestament): Promise<UiTestament> {
-        const heirs = testament.heirs.map((item) => {
+    async addTestament(uiTestament: UiTestament): Promise<UiTestament> {
+        uiTestament.id = uuidv4();
+        const heirs = uiTestament.heirs.map((item) => {
             return Principal.fromText(item.id);
         });
 
-        const initialTestament = await this.actor.add_testament({id: testament.id, heirs: heirs, name: [testament.name], secrets: testament.secrets, key_box: null });
+        // Get the uservault vetKey to decrypt the symmetric encryption key
+        const uservaultVetKey: Uint8Array = await get_aes_256_gcm_key_for_uservault(await this.getUserPrincipal(), this.actor);
+   
+        // Get vetkey for testaments
+        const testamentVetKey = await get_aes_256_gcm_key_for_testament(uiTestament.id, this.actor);
 
-        //TODO encrypt testament
-        /*const encryptedTestament: Testament = {
-            ...testament,
-            id: uuidv4()
+        // Create key_box by encrypting symmetric secrets key with testament vetKey
+        let keyBox = new Array<[string, SecretSymmetricCryptoMaterial]>;
+        for (const item of uiTestament.secrets) {
+            const result: Result_5 = await this.actor.get_secret_symmetric_crypto_material(item.id);
+            if (result['Ok']) {
+                // Decrypt symmetric key with uservault vetKey
+                const decryptedSymmetricKey = await aes_gcm_decrypt(result['Ok'].encrypted_symmetric_key as Uint8Array, uservaultVetKey, result['Ok'].iv as Uint8Array);
+
+                // Enrcypt symmetric key with testament vetKey
+                const ivSymmetricKey = window.crypto.getRandomValues(new Uint8Array(12)); // 96-bits; unique per message
+                const encryptedSymmetricKey = await aes_gcm_encrypt(decryptedSymmetricKey, testamentVetKey, ivSymmetricKey);
+
+                keyBox.push([item.id, {
+                    iv: ivSymmetricKey,
+                    encrypted_symmetric_key: encryptedSymmetricKey,
+                    username_decryption_nonce: result['Ok'].username_decryption_nonce,
+                    password_decryption_nonce: result['Ok'].password_decryption_nonce,
+                    notes_decryption_nonce: result['Ok'].notes_decryption_nonce,
+                }]);
+            } else throw mapError(result['Err']);
         }
-        const result: Result_1 = await this.actor.update_testament(encryptedTestament);
+
+        // Add testament
+        const result = await this.actor.add_testament({id: uiTestament.id, heirs: heirs, name: [uiTestament.name], secrets: uiTestament.secrets.map(item => item.id), key_box: keyBox });
         if (result['Ok']) {
             return result['Ok']
-        }
-        throw mapError(result['Err']);
-
-         */
-        return null;
+        } else throw mapError(result['Err']);
 
     }
 
-    async getTestamentList(): Promise<Testament[]> {
+    async getTestamentList(): Promise<UiTestamentListEntry[]> {
         const result: Result_6 = await this.actor.get_testament_list();
         if (result['Ok']) {
-            return result['Ok'].flatMap(f => f ? [f] : []);
+            //return result['Ok'].flatMap(f => f ? [f] : []);
+            return result['Ok'].map((item: Testament): UiTestamentListEntry  => {
+                return {
+                    id: item.id,
+                    name: item.name[0],
+                    testator: item.testator[0]
+                }
+            });
         }
         throw mapError(result['Err']);
     }

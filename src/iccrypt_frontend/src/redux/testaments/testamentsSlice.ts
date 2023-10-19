@@ -3,7 +3,7 @@ import {initialState} from "./testamentsState";
 import {Testament} from "../../../../declarations/iccrypt_backend/iccrypt_backend.did";
 import IcCryptService from "../../services/IcCryptService";
 import {RootState} from "../store";
-import {UiSecretListEntry, UiTestament, UiUser} from "../../services/IcTypesForUi";
+import {UiSecretListEntry, UiTestament, UiTestamentListEntry, UiUser} from "../../services/IcTypesForUi";
 import {Principal} from "@dfinity/principal";
 import {mapError} from "../../utils/errorMapper";
 import {deleteHeirThunk, updateHeirThunk} from "../heirs/heirsSlice";
@@ -14,9 +14,7 @@ export const addTestamentThunk = createAsyncThunk<UiTestament, UiTestament, { st
     async (testament, {rejectWithValue}) => {
         console.log('add testament', testament)
         try {
-            const mappedTestament = mapTestament(testament);
             const result = await icCryptService.addTestament(testament);
-            console.log('result', result)
             return {
                 ...testament,
                 id: result?.id,
@@ -64,8 +62,8 @@ export const deleteTestamentThunk = createAsyncThunk<string, UiTestament, {
 );
 
 
-export interface LoadTestamentResult {
-    testaments?: Testament[],
+/*export interface LoadTestamentResult {
+    testaments?: UiTestamentListEntry[],
     heirs?: UiUser[],
     secrets?: UiSecretListEntry[]
 }
@@ -83,19 +81,6 @@ export const loadTestamentsThunk = createAsyncThunk<LoadTestamentResult, void, {
     }
 );
 
-function mapTestament(testament: UiTestament): Testament {
-    return {
-        id: testament.id,
-        heirs: testament.heirs.map(heir => Principal.fromText(heir.id)),
-        name: [testament.name],
-        testator: Principal.fromText(testament.testator.id),
-        secrets: testament.secrets.map(secret => secret),
-        date_modified: testament.date_modified ? BigInt(testament.date_modified.getTime()): BigInt(Date.now()),
-        date_created: testament.date_modified ? BigInt(testament.date_created.getTime()): BigInt(Date.now()),
-        key_box: []
-    };
-}
-
 function mapUiTestaments(result: LoadTestamentResult): UiTestament[] {
     return result.testaments.map(testament => {
         return {
@@ -108,6 +93,28 @@ function mapUiTestaments(result: LoadTestamentResult): UiTestament[] {
             date_created: new Date(testament.date_created.toString())
         } as UiTestament
     });
+}
+*/
+
+export const loadTestamentsThunk = createAsyncThunk<UiTestamentListEntry[], void, { state: RootState }>('testaments/load',
+    async (_, {getState}) => {
+        const result = await icCryptService.getTestamentList();
+        console.log('loaded testament', result)
+        return result;
+    }
+);
+
+function mapTestament(testament: UiTestament): Testament {
+    return {
+        id: testament.id,
+        heirs: testament.heirs.map(heir => Principal.fromText(heir.id)),
+        name: [testament.name],
+        testator: Principal.fromText(testament.testator.id),
+        secrets: testament.secrets.map(secret => secret.id),
+        date_modified: testament.date_modified ? BigInt(testament.date_modified.getTime()): BigInt(Date.now()),
+        date_created: testament.date_modified ? BigInt(testament.date_created.getTime()): BigInt(Date.now()),
+        key_box: []
+    };
 }
 
 // Define a type for the slice state
@@ -151,7 +158,8 @@ export const testamentsSlice = createSlice({
             })
             .addCase(loadTestamentsThunk.fulfilled, (state, action) => {
                 state.loadingState = 'succeeded';
-                state.testamentsList = mapUiTestaments(action.payload)
+                //state.testamentsList = mapUiTestaments(action.payload)
+                state.testamentsList = action.payload
             })
             .addCase(loadTestamentsThunk.rejected, (state, action) => {
                 state.loadingState = 'failed';

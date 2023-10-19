@@ -43,6 +43,7 @@ export const idlFactory = ({ IDL }) => {
     'UserDoesNotExist' : IDL.Text,
     'UserVaultDoesNotExist' : IDL.Text,
     'SecretAlreadyExists' : IDL.Text,
+    'NoTestamentsForHeir' : IDL.Text,
   });
   const Result = IDL.Variant({ 'Ok' : Secret, 'Err' : SmartVaultErr });
   const AddTestamentArgs = IDL.Record({
@@ -93,6 +94,10 @@ export const idlFactory = ({ IDL }) => {
     'Ok' : IDL.Vec(Testament),
     'Err' : SmartVaultErr,
   });
+  const Result_7 = IDL.Variant({
+    'Ok' : IDL.Vec(IDL.Tuple(IDL.Principal, IDL.Text)),
+    'Err' : SmartVaultErr,
+  });
   return IDL.Service({
     'add_secret' : IDL.Func([AddSecretArgs], [Result], []),
     'add_testament' : IDL.Func([AddTestamentArgs], [Result_1], []),
@@ -127,6 +132,7 @@ export const idlFactory = ({ IDL }) => {
       ),
     'get_testament' : IDL.Func([IDL.Text], [Result_1], ['query']),
     'get_testament_list' : IDL.Func([], [Result_6], ['query']),
+    'get_testaments_as_heir' : IDL.Func([], [Result_7], ['query']),
     'ibe_encryption_key' : IDL.Func([], [IDL.Text], []),
     'is_user_vault_existing' : IDL.Func([], [IDL.Bool], ['query']),
     'remove_secret' : IDL.Func([IDL.Text], [Result_3], []),

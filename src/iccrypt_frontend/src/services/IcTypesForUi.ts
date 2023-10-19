@@ -13,17 +13,20 @@ export interface UiSecretListEntry {
 export interface UiSecret extends UiSecretListEntry {
     url?: string,
     username?: string,
-    date_created?: Date,
     password?: string,
     notes?: string,
+    date_created?: Date,
     date_modified?: Date,
 }
 
-export interface UiTestament {
+export interface UiTestamentListEntry {
     id?: string,
     name?: string,
     testator?: UiUser,
-    secrets?: string[],
+}
+
+export interface UiTestament extends UiTestamentListEntry {
+    secrets?: UiSecretListEntry[],
     heirs?: Array<UiUser>,
     date_created?: Date,
     date_modified?: Date,
