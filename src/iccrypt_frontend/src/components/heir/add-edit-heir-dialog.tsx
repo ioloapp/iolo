@@ -85,6 +85,7 @@ export default function AddEditHeirDialog() {
                             margin="dense"
                             id="id"
                             label="Internet Computer ID"
+                            InputLabelProps={{ shrink: true }}
                             fullWidth
                             variant="standard"
                             value={heirToAdd.id}
@@ -102,6 +103,7 @@ export default function AddEditHeirDialog() {
                                     margin="dense"
                                     id="firstname"
                                     label="Firstname"
+                                    InputLabelProps={{ shrink: true }}
                                     fullWidth
                                     variant="standard"
                                     value={heirToAdd.firstname}
@@ -117,6 +119,7 @@ export default function AddEditHeirDialog() {
                                     margin="dense"
                                     id="name"
                                     label="Name"
+                                    InputLabelProps={{ shrink: true }}
                                     fullWidth
                                     variant="standard"
                                     value={heirToAdd.name}
@@ -135,6 +138,7 @@ export default function AddEditHeirDialog() {
                                 margin="dense"
                                 id="name"
                                 label="Name"
+                                InputLabelProps={{ shrink: true }}
                                 fullWidth
                                 variant="standard"
                                 value={heirToAdd.name}
@@ -151,6 +155,7 @@ export default function AddEditHeirDialog() {
                             margin="dense"
                             id="email"
                             label="E-Mail"
+                            InputLabelProps={{ shrink: true }}
                             fullWidth
                             variant="standard"
                             value={heirToAdd.email}

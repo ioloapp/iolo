@@ -2,7 +2,7 @@ import {Box, IconButton, List, Typography} from "@mui/material";
 import * as React from "react";
 import {useEffect, useState} from "react";
 import {useAppDispatch} from "../../redux/hooks";
-import {loadSecretsThunk, secretsActions} from "../../redux/secrets/secretsSlice";
+import {decryptAndShowSecretThunk, loadSecretsThunk, secretsActions} from "../../redux/secrets/secretsSlice";
 import {PageLayout} from "../../components/layout/page-layout";
 import PasswordIcon from '@mui/icons-material/Password';
 import NotesIcon from '@mui/icons-material/Notes';
@@ -17,7 +17,7 @@ import DeleteSecretDialog from "../../components/secret/delete-secret-dialog";
 import SearchIcon from "@mui/icons-material/Search";
 import {SearchField, StyledAppBar} from "../../components/layout/search-bar";
 
-export function Wallet() {
+export function Secrets() {
 
     const dispatch = useAppDispatch();
     const groupedSecretList = useSelector(selectGroupedSecrets);
@@ -38,8 +38,7 @@ export function Wallet() {
     }
 
     const editItem = (secret: UiSecretListEntry) => {
-        dispatch(secretsActions.updateSecretToAdd(secret));
-        dispatch(secretsActions.openEditDialog());
+        dispatch(decryptAndShowSecretThunk(secret.id));
     }
 
     const filterSecretList = (search: string) => {

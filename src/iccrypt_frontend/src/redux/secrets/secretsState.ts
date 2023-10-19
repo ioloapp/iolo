@@ -11,8 +11,8 @@ export interface SecretsState {
     secretList: UiSecretListEntry[],
     groupedSecretList: GroupedSecretList,
     secretToAdd: UiSecret
-    addState: string,
-    loadingState: string,
+    dialogItemState: string,
+    listItemsState: string,
     error?: string;
     showAddDialog: boolean;
     showEditDialog: boolean;
@@ -35,8 +35,8 @@ export const initialState: SecretsState = {
         password: '',
         url: ''
     },
-    addState: 'init',
-    loadingState: 'init',
+    dialogItemState: 'init',
+    listItemsState: 'init',
     showAddDialog: false,
     showEditDialog: false,
     showDeleteDialog: false

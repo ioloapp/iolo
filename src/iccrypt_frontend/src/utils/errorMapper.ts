@@ -22,5 +22,5 @@ export function mapError(input: Error): ICCryptError{
         }
         throw input;
     }
-    throw new ICCryptError('A unknown error occured');
+    throw new ICCryptError('A unknown error occurred');
 }

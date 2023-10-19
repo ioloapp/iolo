@@ -22,6 +22,20 @@ export const addSecretThunk = createAsyncThunk<Secret, UiSecret, {
     }
 );
 
+export const decryptAndShowSecretThunk = createAsyncThunk<UiSecret, string, {
+    state: RootState
+}>('secrets/decrypt',
+    async (secretId: string, {rejectWithValue}) => {
+        try {
+            const result: UiSecret = await icCryptService.getSecret(secretId);
+            console.log('result', result)
+            return result;
+        } catch (e) {
+            rejectWithValue(mapError(e))
+        }
+    }
+);
+
 export const updateSecretThunk = createAsyncThunk<Secret, UiSecret, {
     state: RootState
 }>('secrets/update',
@@ -99,56 +113,73 @@ export const secretsSlice = createSlice({
     extraReducers: (builder) => {
         builder
             .addCase(loadSecretsThunk.pending, (state) => {
-                state.loadingState = 'loading';
+                state.listItemsState = 'loading';
             })
             .addCase(loadSecretsThunk.fulfilled, (state, action) => {
-                state.loadingState = 'succeeded';
+                state.listItemsState = 'succeeded';
                 state.groupedSecretList = splitSecretListByCategory(action.payload);
                 state.secretList = [...state.groupedSecretList.passwordList, ...state.groupedSecretList.notesList, ...state.groupedSecretList.othersList, ...state.groupedSecretList.documentsList]
             })
             .addCase(loadSecretsThunk.rejected, (state, action) => {
-                state.loadingState = 'failed';
+                state.listItemsState = 'failed';
                 state.error = action.error.message;
             })
             .addCase(addSecretThunk.pending, (state) => {
-                state.addState = 'loading';
+                state.dialogItemState = 'loading';
             })
             .addCase(addSecretThunk.fulfilled, (state, action) => {
-                state.addState = 'succeeded';
+                state.dialogItemState = 'succeeded';
                 state.showAddDialog = false;
                 state.secretToAdd = {};
                 state.groupedSecretList = addSecretToGroupedSecretList(state.groupedSecretList, action.payload)
                 state.secretList = [...state.groupedSecretList.passwordList, ...state.groupedSecretList.notesList, ...state.groupedSecretList.othersList, ...state.groupedSecretList.documentsList]
             })
             .addCase(addSecretThunk.rejected, (state, action) => {
-                state.addState = 'failed';
+                state.dialogItemState = 'failed';
                 state.error = action.error.message;
             })
+            .addCase(decryptAndShowSecretThunk.pending, (state) => {
+                state.showAddDialog = false;
+                state.showEditDialog = true;
+                state.dialogItemState = 'loading';
+            })
+            .addCase(decryptAndShowSecretThunk.fulfilled, (state, action) => {
+                state.dialogItemState = 'succeeded';
+                state.secretToAdd = action.payload;
+                state.showAddDialog = false;
+                state.showEditDialog = true;
+            })
+            .addCase(decryptAndShowSecretThunk.rejected, (state, action) => {
+                state.dialogItemState = 'failed';
+                state.error = action.error.message;
+                state.showAddDialog = false;
+                state.showEditDialog = false;
+            })
             .addCase(updateSecretThunk.pending, (state) => {
-                state.addState = 'loading';
+                state.dialogItemState = 'loading';
             })
             .addCase(updateSecretThunk.fulfilled, (state, action) => {
-                state.addState = 'succeeded';
+                state.dialogItemState = 'succeeded';
                 state.showEditDialog = false;
                 state.secretToAdd = {};
                 state.groupedSecretList = updateSecretInGroupedSecretList(state.groupedSecretList, action.payload)
                 state.secretList = [...state.groupedSecretList.passwordList, ...state.groupedSecretList.notesList, ...state.groupedSecretList.othersList, ...state.groupedSecretList.documentsList]
             })
             .addCase(updateSecretThunk.rejected, (state, action) => {
-                state.addState = 'failed';
+                state.dialogItemState = 'failed';
                 state.error = action.error.message;
             })
             .addCase(deleteSecretThunk.pending, (state) => {
-                state.addState = 'loading';
+                state.dialogItemState = 'loading';
             })
             .addCase(deleteSecretThunk.fulfilled, (state, action) => {
-                state.addState = 'succeeded';
+                state.dialogItemState = 'succeeded';
                 state.showDeleteDialog = false;
                 state.groupedSecretList = removeSecretFromGroupedSecretList(state.groupedSecretList, action.payload)
                 state.secretList = [...state.groupedSecretList.passwordList, ...state.groupedSecretList.notesList, ...state.groupedSecretList.othersList, ...state.groupedSecretList.documentsList]
             })
             .addCase(deleteSecretThunk.rejected, (state, action) => {
-                state.addState = 'failed';
+                state.dialogItemState = 'failed';
                 state.error = action.error.message;
             });
     },
