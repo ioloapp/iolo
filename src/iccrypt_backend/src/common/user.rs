@@ -1,16 +1,27 @@
-use crate::{smart_vaults::user_vault::UserVaultID, utils::time};
 use candid::{CandidType, Deserialize, Principal};
 use serde::Serialize;
 
+use crate::{smart_vaults::user_vault::UserVaultID, utils::time};
+
 use super::uuid::UUID;
 
-#[derive(Debug, CandidType, Deserialize, Serialize, Clone, Copy)]
+#[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct User {
     pub id: Principal,
+    pub name: Option<String>,
+    pub first_name: Option<String>,
+    pub email: Option<String>,
+    pub user_type: Option<UserType>,
     pub date_created: u64,
     pub date_modified: u64,
     pub date_last_login: Option<u64>,
-    pub user_vault_id: UUID, // TODO make option
+    pub user_vault_id: UUID, //TODO make option
+}
+
+#[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
+pub enum UserType {
+    Person,
+    Company,
 }
 
 impl User {
@@ -19,6 +30,10 @@ impl User {
 
         Self {
             id: *id,
+            name: None,
+            first_name: None,
+            email: None,
+            user_type: None,
             date_created: now,
             date_modified: now,
             date_last_login: None,

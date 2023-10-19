@@ -23,7 +23,7 @@ impl UserRegistry {
     }
 
     pub fn add_user(&mut self, user: User) -> Result<&User, SmartVaultErr> {
-        if self.users.insert(*user.id(), user).is_some() {
+        if self.users.insert(*user.id(), user.clone()).is_some() {
             Err(SmartVaultErr::UserAlreadyExists(user.id().to_string()))
         } else {
             self.get_user(user.id())
@@ -67,10 +67,10 @@ mod tests {
 
         let mut user_registry: UserRegistry = UserRegistry::new();
 
-        assert!(user_registry.add_user(new_user).is_ok());
+        assert!(user_registry.add_user(new_user.clone()).is_ok());
         // no duplicates
         assert_eq!(
-            user_registry.add_user(new_user).unwrap_err(),
+            user_registry.add_user(new_user.clone()).unwrap_err(),
             SmartVaultErr::UserAlreadyExists(principal.to_string())
         );
 
