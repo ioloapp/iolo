@@ -83,7 +83,7 @@ export default function AddEditTestamentDialog() {
         setSelectedSecrets(ids);
         dispatch(testamentsActions.updateTestamentToAdd({
             ...testamentToAdd,
-            secrets: [...testamentToAdd.secrets ? testamentToAdd.secrets : [], ...ids.map(id => secretsList.find(s => s.id === id))]
+            secrets: [...ids.map(id => secretsList.find(s => s.id === id))]
         }))
     };
 
@@ -94,7 +94,7 @@ export default function AddEditTestamentDialog() {
         setSelectedHeirs(ids);
         dispatch(testamentsActions.updateTestamentToAdd({
             ...testamentToAdd,
-            heirs: [...testamentToAdd.heirs ? testamentToAdd.heirs : [], ...ids.map(id => heirsList.find(h => h.id === id))]
+            heirs: [...ids.map(id => heirsList.find(h => h.id === id))]
         }))
     };
 

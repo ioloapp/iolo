@@ -64,11 +64,16 @@ export const idlFactory = ({ IDL }) => {
     'date_modified' : IDL.Nat64,
   });
   const Result_1 = IDL.Variant({ 'Ok' : Testament, 'Err' : SmartVaultErr });
+  const UserType = IDL.Variant({ 'Company' : IDL.Null, 'Person' : IDL.Null });
   const User = IDL.Record({
     'id' : IDL.Principal,
+    'user_type' : IDL.Opt(UserType),
     'date_created' : IDL.Nat64,
+    'name' : IDL.Opt(IDL.Text),
     'date_last_login' : IDL.Opt(IDL.Nat64),
+    'email' : IDL.Opt(IDL.Text),
     'user_vault_id' : IDL.Nat,
+    'first_name' : IDL.Opt(IDL.Text),
     'date_modified' : IDL.Nat64,
   });
   const Result_2 = IDL.Variant({ 'Ok' : User, 'Err' : SmartVaultErr });
