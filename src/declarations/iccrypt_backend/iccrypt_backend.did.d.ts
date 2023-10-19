@@ -87,11 +87,17 @@ export interface TestamentKeyDerviationArgs {
 }
 export interface User {
   'id' : Principal,
+  'user_type' : [] | [UserType],
   'date_created' : bigint,
+  'name' : [] | [string],
   'date_last_login' : [] | [bigint],
+  'email' : [] | [string],
   'user_vault_id' : bigint,
+  'first_name' : [] | [string],
   'date_modified' : bigint,
 }
+export type UserType = { 'Company' : null } |
+  { 'Person' : null };
 export interface _SERVICE {
   'add_secret' : ActorMethod<[AddSecretArgs], Result>,
   'add_testament' : ActorMethod<[AddTestamentArgs], Result_1>,

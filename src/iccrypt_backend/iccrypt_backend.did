@@ -82,11 +82,16 @@ type TestamentKeyDerviationArgs = record {
 };
 type User = record {
   id : principal;
+  user_type : opt UserType;
   date_created : nat64;
+  name : opt text;
   date_last_login : opt nat64;
+  email : opt text;
   user_vault_id : nat;
+  first_name : opt text;
   date_modified : nat64;
 };
+type UserType = variant { Company; Person };
 service : {
   add_secret : (AddSecretArgs) -> (Result);
   add_testament : (AddTestamentArgs) -> (Result_1);
@@ -95,8 +100,8 @@ service : {
   encrypted_ibe_decryption_key_for_caller : (vec nat8) -> (text);
   encrypted_symmetric_key_for_caller : (vec nat8) -> (text);
   encrypted_symmetric_key_for_testament : (TestamentKeyDerviationArgs) -> (
-    text
-  );
+      text,
+    );
   encrypted_symmetric_key_for_uservault : (vec nat8) -> (text);
   get_secret : (text) -> (Result) query;
   get_secret_list : () -> (Result_4) query;
@@ -113,4 +118,4 @@ service : {
   update_testament : (Testament) -> (Result_1);
   what_time_is_it : () -> (nat64) query;
   who_am_i : () -> (text) query;
-};
+}
