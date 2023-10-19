@@ -30,7 +30,7 @@ export type Result_4 = { 'Ok' : Array<SecretListEntry> } |
   { 'Err' : SmartVaultErr };
 export type Result_5 = { 'Ok' : SecretSymmetricCryptoMaterial } |
   { 'Err' : SmartVaultErr };
-export type Result_6 = { 'Ok' : Array<Testament> } |
+export type Result_6 = { 'Ok' : Array<TestamentListEntry> } |
   { 'Err' : SmartVaultErr };
 export type Result_7 = { 'Ok' : Array<[Principal, string]> } |
   { 'Err' : SmartVaultErr };
@@ -85,6 +85,11 @@ export interface TestamentKeyDerviationArgs {
   'encryption_public_key' : Uint8Array | number[],
   'testament_id' : string,
 }
+export interface TestamentListEntry {
+  'id' : string,
+  'name' : [] | [string],
+  'testator' : Principal,
+}
 export interface User {
   'id' : Principal,
   'user_type' : [] | [UserType],
@@ -123,7 +128,7 @@ export interface _SERVICE {
   'get_secret_list' : ActorMethod<[], Result_4>,
   'get_secret_symmetric_crypto_material' : ActorMethod<[string], Result_5>,
   'get_testament' : ActorMethod<[string], Result_1>,
-  'get_testament_list' : ActorMethod<[], Result_6>,
+  'get_testament_list_as_testator' : ActorMethod<[], Result_6>,
   'get_testaments_as_heir' : ActorMethod<[], Result_7>,
   'ibe_encryption_key' : ActorMethod<[], string>,
   'is_user_vault_existing' : ActorMethod<[], boolean>,

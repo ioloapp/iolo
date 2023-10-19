@@ -13,7 +13,7 @@ use super::master_vault::MasterVault;
 use super::secret::{
     AddSecretArgs, Secret, SecretID, SecretListEntry, SecretSymmetricCryptoMaterial,
 };
-use super::testament::{AddTestamentArgs, Testament, TestamentID};
+use super::testament::{AddTestamentArgs, Testament, TestamentListEntry, TestamentID};
 use super::testament_registry::TestamentRegistry;
 
 thread_local! {
@@ -228,7 +228,7 @@ pub fn get_testaments_as_heir() -> Result<Vec<(Principal, TestamentID)>, SmartVa
 
 #[ic_cdk_macros::query]
 #[candid_method(query)]
-pub fn get_testament_list() -> Result<Vec<Testament>, SmartVaultErr> {
+pub fn get_testament_list_as_testator() -> Result<Vec<TestamentListEntry>, SmartVaultErr> {
     let principal = get_caller();
     let user_vault_id: UUID = get_vault_id_for(principal)?;
 
@@ -240,7 +240,10 @@ pub fn get_testament_list() -> Result<Vec<Testament>, SmartVaultErr> {
             .clone()
             .into_values()
             .collect();
-        Ok(testaments)
+        Ok(testaments
+            .into_iter()
+            .map(TestamentListEntry::from)
+            .collect())
     })
 }
 

@@ -28,14 +28,12 @@ export const addTestamentThunk = createAsyncThunk<UiTestament, UiTestament, { st
 );
 
 export const updateTestamentThunk = createAsyncThunk<UiTestament, UiTestament, { state: RootState }>('testaments/update',
-    async (testament, {rejectWithValue}) => {
-        console.log('update testament', testament)
+    async (uiTestament, {rejectWithValue}) => {
+        console.log('update testament', uiTestament)
         try {
-            const mappedTestament = mapTestament(testament);
-            const result = await icCryptService.updateTestament(mappedTestament);
-            console.log('result', result)
+            const result = await icCryptService.updateTestament(uiTestament);
             return {
-                ...testament,
+                ...uiTestament,
                 id: result?.id,
                 date_created: result?.date_created ? new Date(result?.date_created.toString()) : new Date(),
                 date_modified: result?.date_modified ? new Date(result?.date_modified.toString()) : new Date()
@@ -61,61 +59,13 @@ export const deleteTestamentThunk = createAsyncThunk<string, UiTestament, {
     }
 );
 
-
-/*export interface LoadTestamentResult {
-    testaments?: UiTestamentListEntry[],
-    heirs?: UiUser[],
-    secrets?: UiSecretListEntry[]
-}
-
-export const loadTestamentsThunk = createAsyncThunk<LoadTestamentResult, void, { state: RootState }>('testaments/load',
-    async (_, {getState}) => {
-        const result = await icCryptService.getTestamentList();
-        console.log('loaded testament', result)
-        getState().heirs
-        return {
-            testaments: result,
-            heirs: getState().heirs.heirsList,
-            secrets: getState().secrets.secretList
-        } as LoadTestamentResult;
-    }
-);
-
-function mapUiTestaments(result: LoadTestamentResult): UiTestament[] {
-    return result.testaments.map(testament => {
-        return {
-            id: `${testament.id}`,
-            heirs: testament.heirs.map(heir => result.heirs.find(h => h.id === heir.toString())),
-            name: testament.name && testament.name.length > 0 ? testament.name[0] : undefined,
-            testator: result.heirs.find(h => h.id === testament.testator.toString()),
-            secrets: testament.secrets.map(s => result.secrets.find(rs => rs.id === s)),
-            date_modified: new Date(testament.date_modified.toString()),
-            date_created: new Date(testament.date_created.toString())
-        } as UiTestament
-    });
-}
-*/
-
 export const loadTestamentsThunk = createAsyncThunk<UiTestamentListEntry[], void, { state: RootState }>('testaments/load',
     async (_, {getState}) => {
+        console.log('getting testament list...')
         const result = await icCryptService.getTestamentList();
-        console.log('loaded testament', result)
         return result;
     }
 );
-
-function mapTestament(testament: UiTestament): Testament {
-    return {
-        id: testament.id,
-        heirs: testament.heirs.map(heir => Principal.fromText(heir.id)),
-        name: [testament.name],
-        testator: Principal.fromText(testament.testator.id),
-        secrets: testament.secrets.map(secret => secret.id),
-        date_modified: testament.date_modified ? BigInt(testament.date_modified.getTime()): BigInt(Date.now()),
-        date_created: testament.date_modified ? BigInt(testament.date_created.getTime()): BigInt(Date.now()),
-        key_box: []
-    };
-}
 
 // Define a type for the slice state
 export const testamentsSlice = createSlice({

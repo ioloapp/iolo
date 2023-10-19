@@ -37,6 +37,24 @@ pub struct AddTestamentArgs {
     key_box: KeyBox,
 }
 
+#[derive(Debug, CandidType, Deserialize, Serialize, Clone, PartialEq)]
+pub struct TestamentListEntry {
+    pub id: TestamentID,
+    pub name: Option<String>,
+    pub testator: Principal,
+}
+
+impl From<Testament> for TestamentListEntry {
+    fn from(t: Testament) -> Self {
+        TestamentListEntry {
+            id: t.id().into(),
+            name: t.name,
+            testator: t.testator.clone()
+        }
+    }
+}
+
+
 impl Testament {
     pub fn new(id: String) -> Self {
         let now: u64 = time::get_current_time();

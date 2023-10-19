@@ -95,8 +95,13 @@ export const idlFactory = ({ IDL }) => {
     'Ok' : SecretSymmetricCryptoMaterial,
     'Err' : SmartVaultErr,
   });
+  const TestamentListEntry = IDL.Record({
+    'id' : IDL.Text,
+    'name' : IDL.Opt(IDL.Text),
+    'testator' : IDL.Principal,
+  });
   const Result_6 = IDL.Variant({
-    'Ok' : IDL.Vec(Testament),
+    'Ok' : IDL.Vec(TestamentListEntry),
     'Err' : SmartVaultErr,
   });
   const Result_7 = IDL.Variant({
@@ -136,7 +141,7 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'get_testament' : IDL.Func([IDL.Text], [Result_1], ['query']),
-    'get_testament_list' : IDL.Func([], [Result_6], ['query']),
+    'get_testament_list_as_testator' : IDL.Func([], [Result_6], ['query']),
     'get_testaments_as_heir' : IDL.Func([], [Result_7], ['query']),
     'ibe_encryption_key' : IDL.Func([], [IDL.Text], []),
     'is_user_vault_existing' : IDL.Func([], [IDL.Bool], ['query']),
