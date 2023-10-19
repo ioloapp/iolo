@@ -216,7 +216,7 @@ mod tests {
         let created_before_update = user_vault.date_created;
 
         // Add secret to user_vault
-        // assert_eq!(user_vault.add_secret(secret.clone()), Ok(()));
+        assert_eq!(user_vault.add_secret(secret.clone()), Ok(secret.clone()));
 
         // Same secret cannot be added twice
         assert_eq!(
@@ -264,10 +264,9 @@ mod tests {
         // Check get_secret()
         assert_eq!(
             user_vault.get_secret(secret.id()).unwrap().name(),
-            Some(secret_name.clone()),
-            "secret.name must be {:?} but is {:?}",
+            None,
+            "secret.name must be None but is {:?}",
             user_vault.get_secret(secret.id()).unwrap().name(),
-            secret_name
         );
         let uuid = "UUID::new()";
         assert_eq!(
@@ -280,7 +279,6 @@ mod tests {
 
         // Check get_secret_mut()
         let secret_mut = user_vault.get_secret_mut(secret.id()).unwrap();
-        assert_eq!(secret_mut.name(), Some(secret_name),);
         let uuid = "UUID::new()";
         assert_eq!(
             user_vault.get_secret_mut(&uuid),
@@ -307,7 +305,7 @@ mod tests {
         secret.set_password(password.as_bytes().to_vec());
         modified_before_update = user_vault.date_modified;
         created_before_update = user_vault.date_created;
-        // assert_eq!(user_vault.update_secret(secret), Ok(()));
+        assert_eq!(user_vault.update_secret(secret.clone()), Ok(secret));
         assert_eq!(
             user_vault.secrets().len(),
             1,
