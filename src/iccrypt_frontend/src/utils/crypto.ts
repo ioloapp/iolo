@@ -61,9 +61,7 @@ export async function get_aes_256_gcm_key_for_testament(id: string, actor: Actor
     derivationId.set(backendPrincipal);
     derivationId.set(testamentId, backendPrincipal.length);*/
     const derivationId: Uint8Array = new TextEncoder().encode(id);
-    console.log("testament id: ", id)
-    console.log("testament id: ", derivationId)
-    console.log("length: ", derivationId.length)
+
     try {
         const result = tsk.decrypt_and_hash(
             hex_decode(ek_bytes_hex),
