@@ -1,12 +1,9 @@
 import {createAsyncThunk, createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {initialState} from "./testamentsState";
-import {Testament} from "../../../../declarations/iccrypt_backend/iccrypt_backend.did";
 import IcCryptService from "../../services/IcCryptService";
 import {RootState} from "../store";
-import {UiSecretListEntry, UiTestament, UiTestamentListEntry, UiUser} from "../../services/IcTypesForUi";
-import {Principal} from "@dfinity/principal";
+import {UiTestament, UiTestamentListEntry} from "../../services/IcTypesForUi";
 import {mapError} from "../../utils/errorMapper";
-import {deleteHeirThunk, updateHeirThunk} from "../heirs/heirsSlice";
 
 const icCryptService = new IcCryptService();
 
@@ -130,28 +127,28 @@ export const testamentsSlice = createSlice({
                 state.error = action.error.message;
                 state.showAddDialog = true;
             })
-            .addCase(updateHeirThunk.pending, (state) => {
+            .addCase(updateTestamentThunk.pending, (state) => {
                 state.addState = 'loading';
             })
-            .addCase(updateHeirThunk.fulfilled, (state, action) => {
+            .addCase(updateTestamentThunk.fulfilled, (state, action) => {
                 state.addState = 'succeeded';
                 state.showEditDialog = false;
                 state.testamentToAdd = initialState.testamentToAdd;
                 state.testamentsList = [...state.testamentsList.filter(h => h.id != action.payload.id), action.payload]
             })
-            .addCase(updateHeirThunk.rejected, (state, action) => {
+            .addCase(updateTestamentThunk.rejected, (state, action) => {
                 state.addState = 'failed';
                 state.error = action.error.message;
             })
-            .addCase(deleteHeirThunk.pending, (state) => {
+            .addCase(deleteTestamentThunk.pending, (state) => {
                 state.addState = 'loading';
             })
-            .addCase(deleteHeirThunk.fulfilled, (state, action) => {
+            .addCase(deleteTestamentThunk.fulfilled, (state, action) => {
                 state.addState = 'succeeded';
                 state.showDeleteDialog = false;
                 state.testamentsList = [...state.testamentsList.filter(h => h.id != action.payload)]
             })
-            .addCase(deleteHeirThunk.rejected, (state, action) => {
+            .addCase(deleteTestamentThunk.rejected, (state, action) => {
                 state.addState = 'failed';
                 state.error = action.error.message;
             });
