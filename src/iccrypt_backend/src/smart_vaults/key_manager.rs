@@ -68,6 +68,10 @@ async fn encrypted_symmetric_key_for_testament(args: TestamentKeyDerviationArgs)
         ));
     }
 
+    ic_cdk::println!("{:?}", ic_cdk::id());
+    ic_cdk::println!("{:?}", ic_cdk::id().to_string());
+    ic_cdk::println!("{:?}", ic_cdk::id().as_slice());
+    ic_cdk::println!("{:?}", ic_cdk::id().as_slice().to_vec());
     /*let mut derivation_id: Vec<u8> = ic_cdk::id().as_slice().to_vec();
     ic_cdk::println!(
         "backend id: {:?}, {:?}",

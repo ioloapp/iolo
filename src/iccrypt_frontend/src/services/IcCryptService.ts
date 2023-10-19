@@ -12,7 +12,9 @@ import {
     SecretSymmetricCryptoMaterial,
     SecretListEntry,
     Testament,
-    User
+    User,
+    Result_3,
+    Result_1
 } from "../../../declarations/iccrypt_backend/iccrypt_backend.did";
 import {AuthClient} from "@dfinity/auth-client";
 import {createActor} from "../../../declarations/iccrypt_backend";
@@ -26,7 +28,7 @@ import {
     get_aes_256_gcm_key_for_uservault,
     get_local_random_aes_256_gcm_key
 } from "../utils/crypto";
-import {UiSecret, UiSecretCategory, UiTestament, UiTestamentListEntry, UiUser} from "./IcTypesForUi";
+import {UiSecret, UiSecretCategory, UiSecretListEntry, UiTestament, UiTestamentListEntry, UiUser} from "./IcTypesForUi";
 import {v4 as uuidv4} from 'uuid';
 
 class IcCryptService {
@@ -197,7 +199,7 @@ class IcCryptService {
     }
 
     public async deleteSecret(secretId: string) {
-        const result: Result_2 = await this.actor.remove_secret(secretId);
+        const result: Result_3 = await this.actor.remove_secret(secretId);
         if (result['Ok'] === null) {
             return result['Ok']
         }
@@ -310,13 +312,36 @@ class IcCryptService {
 
     async addTestament(uiTestament: UiTestament): Promise<UiTestament> {
         uiTestament.id = uuidv4();
+        const testamentPrepared: Testament = await this.prepareTestament(uiTestament);
+
+        // Add testament
+        const result = await this.actor.add_testament({id: testamentPrepared.id, heirs: testamentPrepared.heirs, name: testamentPrepared.name, secrets: testamentPrepared.secrets, key_box: testamentPrepared.key_box });
+        if (result['Ok']) {
+            return result['Ok']
+        } else throw mapError(result['Err']);
+
+    }
+
+    async updateTestament(uiTestament: UiTestament): Promise<Testament> {
+        console.log('start updating testament...')
+        const testamentPrepared: Testament = await this.prepareTestament(uiTestament);
+
+        // Update testament
+        const result = await this.actor.update_testament({id: testamentPrepared.id, testator:testamentPrepared.testator, heirs: testamentPrepared.heirs, name: testamentPrepared.name, secrets: testamentPrepared.secrets, key_box: testamentPrepared.key_box, date_modified: testamentPrepared.date_modified, date_created: testamentPrepared.date_created });
+        console.log(result)
+        if (result['Ok']) {
+            return result['Ok']
+        } else throw mapError(result['Err']);
+    }
+
+    private async prepareTestament(uiTestament: UiTestament): Promise<Testament> {
         const heirs = uiTestament.heirs.map((item) => {
             return Principal.fromText(item.id);
         });
 
         // Get the uservault vetKey to decrypt the symmetric encryption key
         const uservaultVetKey: Uint8Array = await get_aes_256_gcm_key_for_uservault(await this.getUserPrincipal(), this.actor);
-   
+
         // Get vetkey for testaments
         const testamentVetKey = await get_aes_256_gcm_key_for_testament(uiTestament.id, this.actor);
 
@@ -341,19 +366,22 @@ class IcCryptService {
                 }]);
             } else throw mapError(result['Err']);
         }
-
-        // Add testament
-        const result = await this.actor.add_testament({id: uiTestament.id, heirs: heirs, name: [uiTestament.name], secrets: uiTestament.secrets.map(item => item.id), key_box: keyBox });
-        if (result['Ok']) {
-            return result['Ok']
-        } else throw mapError(result['Err']);
-
+        const dummyDate = new Date();
+        return {
+            id : uiTestament.id,
+            heirs : heirs,
+            date_created : BigInt(dummyDate.getTime()) * 1000000n,
+            name : [uiTestament.name],
+            testator : Principal.fromText(uiTestament.testator.id),
+            secrets : uiTestament.secrets.map(item => item.id),
+            key_box : keyBox,
+            date_modified : BigInt(dummyDate.getTime()) * 1000000n,
+        }
     }
 
     async getTestamentList(): Promise<UiTestamentListEntry[]> {
-        const result: Result_6 = await this.actor.get_testament_list();
+        const result: Result_6 = await this.actor.get_testament_list_as_testator();
         if (result['Ok']) {
-            //return result['Ok'].flatMap(f => f ? [f] : []);
             return result['Ok'].map((item: Testament): UiTestamentListEntry  => {
                 return {
                     id: item.id,
@@ -365,13 +393,20 @@ class IcCryptService {
         throw mapError(result['Err']);
     }
 
-    async updateTestament(testament: Testament): Promise<Testament> {
-        //TODO
-        return testament;
+    async getTestament(id: string): Promise<Testament[]> {
+        const result: Result_1 = await this.actor.get_testament(id);
+        if (result['Ok']) {
+            return result['Ok'];
+        }
+        throw mapError(result['Err']);
     }
 
     async deleteTestament(id: string) {
-        //TODO
+        const result: Result_3 = await this.actor.remove_testament(id);
+        if (result['Ok'] === null) {
+            return result['Ok']
+        }
+        throw mapError(result['Err']);
     }
 
     async addHeir(heir: UiUser): Promise<UiUser> {
