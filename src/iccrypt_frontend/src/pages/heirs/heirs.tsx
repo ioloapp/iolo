@@ -8,7 +8,7 @@ import {selectHeirs} from "../../redux/heirs/heirsSelectors";
 import {heirsActions, loadHeirsThunk} from "../../redux/heirs/heirsSlice";
 import AddEditHeirDialog from "../../components/heir/add-edit-heir-dialog";
 import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
-import {UiUser, UserType} from "../../services/IcTypesForUi";
+import {UiUser, UiUserType} from "../../services/IcTypesForUi";
 import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined';
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -30,7 +30,6 @@ export function Heirs() {
     }, [heirs])
 
     const [filteredHeirs, setFilteredHeirs] = useState(heirs)
-
     const deleteHeir = (heir: UiUser) => {
         dispatch(heirsActions.updateHeirToAdd(heir));
         dispatch(heirsActions.openDeleteDialog());
@@ -46,7 +45,7 @@ export function Heirs() {
         if(searchString.length === 0){
             setFilteredHeirs(heirs);
         }else {
-            setFilteredHeirs(heirs.filter(s => s.name.toLowerCase().indexOf(searchString) >= 0 || s.firstname.toLowerCase().indexOf(searchString) >= 0 || s.email.toLowerCase().indexOf(searchString) >= 0))
+            setFilteredHeirs(heirs.filter(s => s.name.toLowerCase().indexOf(searchString) >= 0 || s.email.toLowerCase().indexOf(searchString) >= 0))
         }
     }
 
@@ -73,7 +72,7 @@ export function Heirs() {
                                         </IconButton>
                                     </>
                                 }>
-                                    {heir.type === UserType.Person &&
+                                    {heir.type === UiUserType.Person &&
                                             <>
                                                 <ListItemAvatar>
                                                 <Avatar>
@@ -82,12 +81,12 @@ export function Heirs() {
                                             </ListItemAvatar>
 
                                             <ListItemText
-                                                primary={`${heir.firstname} ${heir.name}`}
+                                                primary={`${heir.name}`}
                                                 secondary={heir.email}
                                             />
                                         </>
                                     }
-                                    {heir.type === UserType.Company &&
+                                    {heir.type === UiUserType.Company &&
                                         <>
                                             <ListItemAvatar>
                                                 <Avatar>

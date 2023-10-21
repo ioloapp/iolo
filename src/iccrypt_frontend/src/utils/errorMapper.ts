@@ -19,6 +19,8 @@ export function mapError(input: Error): ICCryptError{
             throw new ICCryptError(input['UserDoesNotExist'])
         } else if (input.hasOwnProperty('UserVaultDoesNotExist')) {
             throw new ICCryptError(input['UserVaultDoesNotExist'])
+        } else if (input.name === 'PrincipalCreationFailed') {
+            throw new ICCryptError(input.name);
         }
         throw input;
     }

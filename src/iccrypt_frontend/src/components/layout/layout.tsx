@@ -7,12 +7,14 @@ import {Settings} from '../../pages/settings/settings';
 import {Login} from '../../pages/login/login';
 import * as React from 'react';
 import {Onboarding} from '../../pages/onboarding/onboarding';
-import {selectUserAccountExisting, selectUserLoggedIn} from "../../redux/user/userSelectors";
+import {
+    selectUserAccountExistingForCurrentUser,
+    selectUserLoggedIn
+} from "../../redux/user/userSelectors";
 
 function Layout() {
-
     const isLoggedIn = selectUserLoggedIn();
-    const isAccountExisting = selectUserAccountExisting();
+    const isAccountExisting = selectUserAccountExistingForCurrentUser();
 
     if (!isLoggedIn) {
         return <Login/>

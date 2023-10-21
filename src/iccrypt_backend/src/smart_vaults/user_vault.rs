@@ -1,7 +1,8 @@
-use candid::{CandidType, Deserialize};
+use candid::{CandidType, Deserialize, Principal};
 use serde::Serialize;
 
 use std::collections::BTreeMap;
+use crate::common::user::{User};
 
 use super::secret::{Secret, SecretID, SecretSymmetricCryptoMaterial};
 use super::testament::{Testament, TestamentID};
@@ -25,6 +26,7 @@ pub struct UserVault {
     /// which itself is derived by vetkd.
     key_box: KeyBox, // TODO: make getter and setter
     testaments: BTreeMap<TestamentID, Testament>,
+    heirs: BTreeMap<Principal, User>,
 }
 
 impl Default for UserVault {
@@ -44,6 +46,7 @@ impl UserVault {
             secrets: BTreeMap::new(),
             key_box: BTreeMap::new(),
             testaments: BTreeMap::new(),
+            heirs: BTreeMap::new(),
         }
     }
 
@@ -157,6 +160,46 @@ impl UserVault {
         self.date_modified = time::get_current_time();
         Ok(())
     }
+
+    pub fn heirs(&self) -> &BTreeMap<Principal, User> {
+        &self.heirs
+    }
+
+    pub fn get_heir(&self, user_id: &Principal) -> Result<&User, SmartVaultErr> {
+        self.heirs
+            .get(user_id)
+            .ok_or_else(|| SmartVaultErr::UserDoesNotExist(user_id.to_string()))
+    }
+
+    pub fn add_heir(&mut self, user: User) -> Result<&User, SmartVaultErr> {
+        if self.heirs.insert(*user.id(), user.clone()).is_some() {
+            Err(SmartVaultErr::UserAlreadyExists(user.id().to_string()))
+        } else {
+            self.date_modified = time::get_current_time();
+            self.get_heir(user.id())
+        }
+    }
+
+    pub fn update_heir(&mut self, user: User) -> Result<User, SmartVaultErr> {
+        let uid = user.id().clone();
+        if !self.heirs.contains_key(user.id()) {
+            return Err(SmartVaultErr::UserDoesNotExist(user.id().to_string()));
+        }
+
+        self.heirs.insert(uid.clone(), user);
+        self.date_modified = time::get_current_time();
+        Ok(self.heirs.get(&uid).unwrap().clone())
+    }
+
+    pub fn remove_heir(&mut self, user_id: &Principal) -> Result<(), SmartVaultErr> {
+        if !self.heirs.contains_key(user_id) {
+            return Err(SmartVaultErr::UserDoesNotExist(user_id.to_string()));
+        }
+        self.heirs.remove(user_id);
+        self.date_modified = time::get_current_time();
+        Ok(())
+    }
+
 }
 
 #[cfg(test)]

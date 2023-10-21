@@ -1,4 +1,3 @@
-
 type AddSecretArgs = record {
   id : text;
   url : opt text;
@@ -16,17 +15,24 @@ type AddTestamentArgs = record {
   secrets : vec text;
   key_box : vec record { text; SecretSymmetricCryptoMaterial };
 };
-type Result = variant { Ok : Secret; Err : SmartVaultErr };
-type Result_1 = variant { Ok : Testament; Err : SmartVaultErr };
-type Result_2 = variant { Ok : User; Err : SmartVaultErr };
+type AddUserArgs = record {
+  id : principal;
+  user_type : opt UserType;
+  name : opt text;
+  email : opt text;
+};
+type Result = variant { Ok : User; Err : SmartVaultErr };
+type Result_1 = variant { Ok : Secret; Err : SmartVaultErr };
+type Result_2 = variant { Ok : Testament; Err : SmartVaultErr };
 type Result_3 = variant { Ok; Err : SmartVaultErr };
-type Result_4 = variant { Ok : vec SecretListEntry; Err : SmartVaultErr };
-type Result_5 = variant {
+type Result_4 = variant { Ok : vec User; Err : SmartVaultErr };
+type Result_5 = variant { Ok : vec SecretListEntry; Err : SmartVaultErr };
+type Result_6 = variant {
   Ok : SecretSymmetricCryptoMaterial;
   Err : SmartVaultErr;
 };
-type Result_6 = variant { Ok : vec TestamentListEntry; Err : SmartVaultErr };
-type Result_7 = variant {
+type Result_7 = variant { Ok : vec TestamentListEntry; Err : SmartVaultErr };
+type Result_8 = variant {
   Ok : vec record { principal; text };
   Err : SmartVaultErr;
 };
@@ -93,15 +99,15 @@ type User = record {
   name : opt text;
   date_last_login : opt nat64;
   email : opt text;
-  user_vault_id : nat;
-  first_name : opt text;
+  user_vault_id : opt nat;
   date_modified : nat64;
 };
 type UserType = variant { Company; Person };
 service : {
-  add_secret : (AddSecretArgs) -> (Result);
-  add_testament : (AddTestamentArgs) -> (Result_1);
-  create_user : () -> (Result_2);
+  add_heir : (AddUserArgs) -> (Result);
+  add_secret : (AddSecretArgs) -> (Result_1);
+  add_testament : (AddTestamentArgs) -> (Result_2);
+  create_user : () -> (Result);
   delete_user : () -> (Result_3);
   encrypted_ibe_decryption_key_for_caller : (vec nat8) -> (text);
   encrypted_symmetric_key_for_caller : (vec nat8) -> (text);
@@ -109,19 +115,22 @@ service : {
       text,
     );
   encrypted_symmetric_key_for_uservault : (vec nat8) -> (text);
-  get_secret : (text) -> (Result) query;
-  get_secret_list : () -> (Result_4) query;
-  get_secret_symmetric_crypto_material : (text) -> (Result_5) query;
-  get_testament : (text) -> (Result_1) query;
-  get_testament_list_as_testator : () -> (Result_6) query;
-  get_testaments_as_heir : () -> (Result_7) query;
+  get_heir_list : () -> (Result_4) query;
+  get_secret : (text) -> (Result_1) query;
+  get_secret_list : () -> (Result_5) query;
+  get_secret_symmetric_crypto_material : (text) -> (Result_6) query;
+  get_testament : (text) -> (Result_2) query;
+  get_testament_list_as_testator : () -> (Result_7) query;
+  get_testaments_as_heir : () -> (Result_8) query;
   ibe_encryption_key : () -> (text);
   is_user_vault_existing : () -> (bool) query;
+  remove_heir : (principal) -> (Result_3);
   remove_secret : (text) -> (Result_3);
   remove_testament : (text) -> (Result_3);
   symmetric_key_verification_key : () -> (text);
-  update_secret : (Secret) -> (Result);
-  update_testament : (Testament) -> (Result_1);
+  update_heir : (User) -> (Result);
+  update_secret : (Secret) -> (Result_1);
+  update_testament : (Testament) -> (Result_2);
   what_time_is_it : () -> (nat64) query;
   who_am_i : () -> (text) query;
 }

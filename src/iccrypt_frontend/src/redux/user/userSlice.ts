@@ -3,6 +3,7 @@ import {initialState, UserState} from "./userState";
 import IcCryptService from "../../services/IcCryptService";
 import {User} from "../../../../declarations/iccrypt_backend/iccrypt_backend.did";
 import {RootState} from "../store";
+import {UiUser} from "../../services/IcTypesForUi";
 
 const icCryptService = new IcCryptService();
 export const loginUserThunk = createAsyncThunk<UserState, void, { state: RootState }>(
@@ -18,9 +19,9 @@ export const loginUserThunk = createAsyncThunk<UserState, void, { state: RootSta
         }
     });
 
-export const createUserThunk = createAsyncThunk<User, void, { state: RootState }>(
+export const createUserThunk = createAsyncThunk<UiUser, void, { state: RootState }>(
     'user/create',
-    async (_, {rejectWithValue}): Promise<User> => {
+    async (_, {rejectWithValue}): Promise<UiUser> => {
         try {
             return icCryptService.createUser();
         } catch (e) {
@@ -60,13 +61,12 @@ export const userSlice = createSlice({
             })
             .addCase(createUserThunk.fulfilled, (state, action) => {
                 state.loginStatus = 'succeeded';
-                state.userVaultExisting = action.payload.user_vault_id != undefined;
+                state.userVaultExisting = action.payload.userVaultId != undefined;
             })
             .addCase(createUserThunk.rejected, (state, action) => {
                 state.loginStatus = 'failed';
                 state.error = action.error.message;
             });
-        ;
     },
 })
 

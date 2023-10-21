@@ -15,8 +15,8 @@ export interface UiSecret extends UiSecretListEntry {
     username?: string,
     password?: string,
     notes?: string,
-    date_created?: Date,
-    date_modified?: Date,
+    dateCreated?: Date,
+    dateModified?: Date,
 }
 
 export interface UiTestamentListEntry {
@@ -26,21 +26,25 @@ export interface UiTestamentListEntry {
 }
 
 export interface UiTestament extends UiTestamentListEntry {
-    secrets?: UiSecretListEntry[],
+    secrets?: string[],
     heirs?: Array<UiUser>,
-    date_created?: Date,
-    date_modified?: Date,
+    dateCreated?: Date,
+    dateModified?: Date,
 }
 
-export enum UserType {
+export enum UiUserType {
     Person = "Person",
     Company = "Company",
 }
 
 export interface UiUser {
     id?: string,
-    type?: UserType,
+    type?: UiUserType,
     name?: string,
-    firstname?: string,
     email?: string,
+    userVaultId?: bigint,
+    dateCreated?: Date,
+    dateModified?: Date,
+    dateLastLogin?: Date,
+
 }

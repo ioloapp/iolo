@@ -10,7 +10,7 @@ import {useSelector} from "react-redux";
 import {useAppDispatch} from "../../redux/hooks";
 import AddIcon from "@mui/icons-material/Add";
 import {Fab, FormControl, MenuItem, Select, Typography} from "@mui/material";
-import {UiUser, UserType} from "../../services/IcTypesForUi";
+import {UiUser, UiUserType} from "../../services/IcTypesForUi";
 import {selectHeirToAdd, selectShowAddHeirDialog, selectShowEditHeirDialog} from "../../redux/heirs/heirsSelectors";
 import {addHeirThunk, heirsActions, updateHeirThunk} from "../../redux/heirs/heirsSlice";
 
@@ -68,10 +68,10 @@ export default function AddEditHeirDialog() {
                             label="Category"
                             onChange={e => updateHeirToAdd({
                                 ...heirToAdd,
-                                type: UserType[e.target.value as keyof typeof UserType]
+                                type: UiUserType[e.target.value as keyof typeof UiUserType]
                             })}
                         >
-                            {Object.keys(UserType)
+                            {Object.keys(UiUserType)
                                 .map(key => {
                                     return <MenuItem key={key} value={key}>{key}</MenuItem>
                                 })
@@ -95,24 +95,8 @@ export default function AddEditHeirDialog() {
                             })}
                         />
                     </FormControl>
-                    {heirToAdd.type === UserType.Person &&
+                    {heirToAdd.type === UiUserType.Person &&
                         <>
-                            <FormControl fullWidth>
-                                <TextField
-                                    autoFocus
-                                    margin="dense"
-                                    id="firstname"
-                                    label="Firstname"
-                                    InputLabelProps={{ shrink: true }}
-                                    fullWidth
-                                    variant="standard"
-                                    value={heirToAdd.firstname}
-                                    onChange={e => updateHeirToAdd({
-                                        ...heirToAdd,
-                                        firstname: e.target.value
-                                    })}
-                                />
-                            </FormControl>
                             <FormControl fullWidth>
                                 <TextField
                                     autoFocus
@@ -131,7 +115,7 @@ export default function AddEditHeirDialog() {
                             </FormControl>
                         </>
                     }
-                    {heirToAdd.type === UserType.Company &&
+                    {heirToAdd.type === UiUserType.Company &&
                         <FormControl fullWidth>
                             <TextField
                                 autoFocus

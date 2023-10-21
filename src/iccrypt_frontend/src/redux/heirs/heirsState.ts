@@ -1,4 +1,4 @@
-import {UiUser, UserType} from "../../services/IcTypesForUi";
+import {UiUser, UiUserType} from "../../services/IcTypesForUi";
 
 export interface HeirsState {
     heirsList: UiUser[],
@@ -15,10 +15,9 @@ export interface HeirsState {
 export const initialState: HeirsState = {
     heirsList: [],
     heirToAdd: {
-        type: UserType.Person,
+        type: UiUserType.Person,
         id: '',
         name: '',
-        firstname: '',
         email: ''
     },
     addState: 'init',

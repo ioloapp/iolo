@@ -2,7 +2,7 @@ import {Box, IconButton, List, Typography} from "@mui/material";
 import * as React from "react";
 import {useEffect, useState} from "react";
 import {useAppDispatch} from "../../redux/hooks";
-import {decryptAndShowSecretThunk, loadSecretsThunk, secretsActions} from "../../redux/secrets/secretsSlice";
+import {getSecretThunk, loadSecretsThunk, secretsActions} from "../../redux/secrets/secretsSlice";
 import {PageLayout} from "../../components/layout/page-layout";
 import PasswordIcon from '@mui/icons-material/Password';
 import NotesIcon from '@mui/icons-material/Notes';
@@ -38,7 +38,7 @@ export function Secrets() {
     }
 
     const editItem = (secret: UiSecretListEntry) => {
-        dispatch(decryptAndShowSecretThunk(secret.id));
+        dispatch(getSecretThunk(secret.id));
     }
 
     const filterSecretList = (search: string) => {

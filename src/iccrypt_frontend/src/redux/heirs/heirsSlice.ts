@@ -7,26 +7,24 @@ import {mapError} from "../../utils/errorMapper";
 
 const icCryptService = new IcCryptService();
 
-export const addHeirThunk = createAsyncThunk<UiUser, UiUser, { state: RootState }>('heirs/add',
+export const addHeirThunk = createAsyncThunk<UiUser, UiUser, {
+    state: RootState }
+>('heirs/add',
     async (heir, {rejectWithValue}) => {
-        console.log('add heir', heir)
         try {
-            const result = await icCryptService.addHeir(heir);
-            console.log('result', result)
-            return result;
+            return await icCryptService.addHeir(heir);
         } catch (e) {
             rejectWithValue(e)
         }
     }
 );
 
-export const updateHeirThunk = createAsyncThunk<UiUser, UiUser, { state: RootState }>('heirs/update',
+export const updateHeirThunk = createAsyncThunk<UiUser, UiUser, {
+    state: RootState }
+>('heirs/update',
     async (heir, {rejectWithValue}) => {
-        console.log('update heir', heir)
         try {
-            const result = await icCryptService.updateHeir(heir);
-            console.log('result', result)
-            return result;
+            return await icCryptService.updateHeir(heir);
         } catch (e) {
             rejectWithValue(e)
         }
@@ -37,7 +35,6 @@ export const deleteHeirThunk = createAsyncThunk<string, UiUser, {
     state: RootState
 }>('heirs/delete',
     async (heir, {rejectWithValue}) => {
-        console.log('delete heir', heir)
         try {
             await icCryptService.deleteHeir(heir.id);
             return heir.id;
@@ -47,12 +44,12 @@ export const deleteHeirThunk = createAsyncThunk<string, UiUser, {
     }
 );
 
-export const loadHeirsThunk = createAsyncThunk<UiUser[], void, { state: RootState }>('heirs/load',
+export const loadHeirsThunk = createAsyncThunk<UiUser[], void, {
+    state: RootState }
+>('heirs/load',
     async (_, {rejectWithValue}) => {
         try {
-            const result = await icCryptService.getHeirsList();
-            console.log('result', result)
-            return result;
+            return await icCryptService.getHeirsList();
         } catch (e) {
             rejectWithValue(e)
         }

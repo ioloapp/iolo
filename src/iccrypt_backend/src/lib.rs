@@ -14,6 +14,7 @@ use crate::smart_vaults::testament::AddTestamentArgs;
 use crate::smart_vaults::testament::Testament;
 use crate::smart_vaults::testament::TestamentID;
 use crate::smart_vaults::testament::TestamentListEntry;
+use crate::common::user::AddUserArgs;
 use candid::candid_method;
 use candid::Principal;
 

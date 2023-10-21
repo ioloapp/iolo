@@ -18,21 +18,29 @@ export interface AddTestamentArgs {
   'secrets' : Array<string>,
   'key_box' : Array<[string, SecretSymmetricCryptoMaterial]>,
 }
-export type Result = { 'Ok' : Secret } |
+export interface AddUserArgs {
+  'id' : Principal,
+  'user_type' : [] | [UserType],
+  'name' : [] | [string],
+  'email' : [] | [string],
+}
+export type Result = { 'Ok' : User } |
   { 'Err' : SmartVaultErr };
-export type Result_1 = { 'Ok' : Testament } |
+export type Result_1 = { 'Ok' : Secret } |
   { 'Err' : SmartVaultErr };
-export type Result_2 = { 'Ok' : User } |
+export type Result_2 = { 'Ok' : Testament } |
   { 'Err' : SmartVaultErr };
 export type Result_3 = { 'Ok' : null } |
   { 'Err' : SmartVaultErr };
-export type Result_4 = { 'Ok' : Array<SecretListEntry> } |
+export type Result_4 = { 'Ok' : Array<User> } |
   { 'Err' : SmartVaultErr };
-export type Result_5 = { 'Ok' : SecretSymmetricCryptoMaterial } |
+export type Result_5 = { 'Ok' : Array<SecretListEntry> } |
   { 'Err' : SmartVaultErr };
-export type Result_6 = { 'Ok' : Array<TestamentListEntry> } |
+export type Result_6 = { 'Ok' : SecretSymmetricCryptoMaterial } |
   { 'Err' : SmartVaultErr };
-export type Result_7 = { 'Ok' : Array<[Principal, string]> } |
+export type Result_7 = { 'Ok' : Array<TestamentListEntry> } |
+  { 'Err' : SmartVaultErr };
+export type Result_8 = { 'Ok' : Array<[Principal, string]> } |
   { 'Err' : SmartVaultErr };
 export interface Secret {
   'id' : string,
@@ -97,16 +105,16 @@ export interface User {
   'name' : [] | [string],
   'date_last_login' : [] | [bigint],
   'email' : [] | [string],
-  'user_vault_id' : bigint,
-  'first_name' : [] | [string],
+  'user_vault_id' : [] | [bigint],
   'date_modified' : bigint,
 }
 export type UserType = { 'Company' : null } |
   { 'Person' : null };
 export interface _SERVICE {
-  'add_secret' : ActorMethod<[AddSecretArgs], Result>,
-  'add_testament' : ActorMethod<[AddTestamentArgs], Result_1>,
-  'create_user' : ActorMethod<[], Result_2>,
+  'add_heir' : ActorMethod<[AddUserArgs], Result>,
+  'add_secret' : ActorMethod<[AddSecretArgs], Result_1>,
+  'add_testament' : ActorMethod<[AddTestamentArgs], Result_2>,
+  'create_user' : ActorMethod<[], Result>,
   'delete_user' : ActorMethod<[], Result_3>,
   'encrypted_ibe_decryption_key_for_caller' : ActorMethod<
     [Uint8Array | number[]],
@@ -124,19 +132,22 @@ export interface _SERVICE {
     [Uint8Array | number[]],
     string
   >,
-  'get_secret' : ActorMethod<[string], Result>,
-  'get_secret_list' : ActorMethod<[], Result_4>,
-  'get_secret_symmetric_crypto_material' : ActorMethod<[string], Result_5>,
-  'get_testament' : ActorMethod<[string], Result_1>,
-  'get_testament_list_as_testator' : ActorMethod<[], Result_6>,
-  'get_testaments_as_heir' : ActorMethod<[], Result_7>,
+  'get_heir_list' : ActorMethod<[], Result_4>,
+  'get_secret' : ActorMethod<[string], Result_1>,
+  'get_secret_list' : ActorMethod<[], Result_5>,
+  'get_secret_symmetric_crypto_material' : ActorMethod<[string], Result_6>,
+  'get_testament' : ActorMethod<[string], Result_2>,
+  'get_testament_list_as_testator' : ActorMethod<[], Result_7>,
+  'get_testaments_as_heir' : ActorMethod<[], Result_8>,
   'ibe_encryption_key' : ActorMethod<[], string>,
   'is_user_vault_existing' : ActorMethod<[], boolean>,
+  'remove_heir' : ActorMethod<[Principal], Result_3>,
   'remove_secret' : ActorMethod<[string], Result_3>,
   'remove_testament' : ActorMethod<[string], Result_3>,
   'symmetric_key_verification_key' : ActorMethod<[], string>,
-  'update_secret' : ActorMethod<[Secret], Result>,
-  'update_testament' : ActorMethod<[Testament], Result_1>,
+  'update_heir' : ActorMethod<[User], Result>,
+  'update_secret' : ActorMethod<[Secret], Result_1>,
+  'update_testament' : ActorMethod<[Testament], Result_2>,
   'what_time_is_it' : ActorMethod<[], bigint>,
   'who_am_i' : ActorMethod<[], string>,
 }

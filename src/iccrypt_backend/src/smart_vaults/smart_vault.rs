@@ -4,9 +4,10 @@ use candid::{candid_method, Principal};
 use ic_cdk::{post_upgrade, pre_upgrade, storage};
 
 use crate::common::error::SmartVaultErr;
-use crate::common::user::User;
+use crate::common::user::{AddUserArgs, User};
 use crate::common::uuid::UUID;
 use crate::smart_vaults::user_registry::UserRegistry;
+use crate::smart_vaults::user_vault::UserVaultID;
 use crate::utils::caller::get_caller;
 
 use super::master_vault::MasterVault;
@@ -260,6 +261,65 @@ pub fn remove_testament(testament_id: String) -> Result<(), SmartVaultErr> {
     })
 }
 
+#[ic_cdk_macros::update]
+#[candid_method(update)]
+pub fn add_heir(args: AddUserArgs) -> Result<User, SmartVaultErr> {
+    let principal = get_caller();
+    let user_vault_id: UUID = get_vault_id_for(principal)?;
+
+    MASTERVAULT.with(|ms: &RefCell<MasterVault>| -> Result<User, SmartVaultErr> {
+        let mut master_vault = ms.borrow_mut();
+        master_vault.add_heir(&user_vault_id, args)
+    })
+}
+
+#[ic_cdk_macros::query]
+#[candid_method(query)]
+pub fn get_heir_list() -> Result<Vec<User>, SmartVaultErr> {
+    let principal = get_caller();
+    let user_vault_id: UUID = get_vault_id_for(principal)?;
+
+    MASTERVAULT.with(|mv: &RefCell<MasterVault>| {
+        let heirs: Vec<User> = mv
+            .borrow()
+            .get_user_vault(&user_vault_id)?
+            .heirs()
+            .clone()
+            .into_values()
+            .collect();
+        Ok(heirs
+            .into_iter()
+            .map(User::from)
+            .collect())
+    })
+}
+
+#[ic_cdk_macros::update]
+#[candid_method(update)]
+pub fn update_heir(u: User) -> Result<User, SmartVaultErr> {
+    let principal = get_caller();
+    let user_vault_id: UUID = get_vault_id_for(principal)?;
+
+    MASTERVAULT.with(
+        |ms: &RefCell<MasterVault>| -> Result<User, SmartVaultErr> {
+            let mut master_vault = ms.borrow_mut();
+            master_vault.update_user_heir(&user_vault_id, u)
+        },
+    )
+}
+
+#[ic_cdk_macros::update]
+#[candid_method(update)]
+pub fn remove_heir(user_id: Principal) -> Result<(), SmartVaultErr> {
+    let principal = get_caller();
+    let user_vault_id: UUID = get_vault_id_for(principal)?;
+
+    MASTERVAULT.with(|ms: &RefCell<MasterVault>| -> Result<(), SmartVaultErr> {
+        let mut master_vault = ms.borrow_mut();
+        master_vault.remove_user_heir(&user_vault_id, &user_id)
+    })
+}
+
 #[ic_cdk_macros::query]
 #[candid_method(query)]
 pub fn is_user_vault_existing() -> bool {
@@ -270,12 +330,14 @@ pub fn is_user_vault_existing() -> bool {
     false
 }
 
-fn get_vault_id_for(principal: Principal) -> Result<UUID, SmartVaultErr> {
+fn get_vault_id_for(principal: Principal) -> Result<UserVaultID, SmartVaultErr> {
     USER_REGISTRY.with(
         |ur: &RefCell<UserRegistry>| -> Result<UUID, SmartVaultErr> {
             let user_registry = ur.borrow();
             let user = user_registry.get_user(&principal)?;
-            Ok(*user.user_vault_id())
+
+            user.user_vault_id.ok_or_else(|| SmartVaultErr::UserVaultDoesNotExist("".to_string()))
+
         },
     )
 }

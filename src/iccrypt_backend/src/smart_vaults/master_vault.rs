@@ -1,8 +1,9 @@
 use std::{cell::RefCell, collections::BTreeMap};
 
-use candid::{CandidType, Deserialize};
+use candid::{CandidType, Deserialize, Principal};
 
-use crate::common::{error::SmartVaultErr, uuid::UUID};
+use crate::common::{error::SmartVaultErr,uuid::UUID};
+use crate::common::user::{AddUserArgs, User};
 
 use super::{
     secret::{AddSecretArgs, Secret},
@@ -163,13 +164,55 @@ impl MasterVault {
         let user_vault = self.user_vaults.get_mut(vault_id).unwrap();
         user_vault.remove_testament(testament_id)
     }
+
+    // Add a user to the address_book
+    pub fn add_heir(
+        &mut self,
+        vault_id: &UUID,
+        aua: AddUserArgs,
+    ) -> Result<User, SmartVaultErr> {
+        if !self.user_vaults.contains_key(vault_id) {
+            return Err(SmartVaultErr::UserVaultDoesNotExist(vault_id.to_string()));
+        }
+
+        let user_vault = self.user_vaults.get_mut(vault_id).unwrap();
+        let user: User = aua.clone().into();
+        let added_user = user_vault.add_heir(user)?;
+
+        Ok(added_user.clone())
+    }
+
+    pub fn update_user_heir (
+        &mut self,
+        vault_id: &UUID,
+        u: User,
+    ) -> Result<User, SmartVaultErr> {
+        if !self.user_vaults.contains_key(vault_id) {
+            return Err(SmartVaultErr::UserVaultDoesNotExist(vault_id.to_string()));
+        }
+
+        let user_vault = self.user_vaults.get_mut(vault_id).unwrap();
+        user_vault.update_heir(u)
+    }
+
+    pub fn remove_user_heir(
+        &mut self,
+        vault_id: &UUID,
+        user_id: &Principal
+    ) -> Result<(), SmartVaultErr> {
+        if !self.user_vaults.contains_key(vault_id) {
+            return Err(SmartVaultErr::UserVaultDoesNotExist(vault_id.to_string()));
+        }
+
+        let user_vault = self.user_vaults.get_mut(vault_id).unwrap();
+        user_vault.remove_heir(user_id)
+    }
 }
 
 #[cfg(test)]
 mod tests {
 
     use super::*;
-    use crate::smart_vaults::secret::SecretSymmetricCryptoMaterial;
 
     #[test]
     fn utest_new_master_vault() {

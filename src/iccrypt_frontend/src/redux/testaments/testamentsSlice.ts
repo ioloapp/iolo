@@ -8,33 +8,21 @@ import {mapError} from "../../utils/errorMapper";
 const icCryptService = new IcCryptService();
 
 export const addTestamentThunk = createAsyncThunk<UiTestament, UiTestament, { state: RootState }>('testaments/add',
-    async (testament, {rejectWithValue}) => {
-        console.log('add testament', testament)
+    async (uiTestament, {rejectWithValue}) => {
         try {
-            const result = await icCryptService.addTestament(testament);
-            return {
-                ...testament,
-                id: result?.id,
-                date_created: result?.date_created ? new Date(result?.date_created.toString()) : new Date(),
-                date_modified: result?.date_modified ? new Date(result?.date_modified.toString()) : new Date()
-            } as UiTestament;
+            return await icCryptService.addTestament(uiTestament);
         } catch (e) {
             rejectWithValue(mapError(e))
         }
     }
 );
 
-export const updateTestamentThunk = createAsyncThunk<UiTestament, UiTestament, { state: RootState }>('testaments/update',
+export const updateTestamentThunk = createAsyncThunk<UiTestament, UiTestament, {
+    state: RootState }
+>('testaments/update',
     async (uiTestament, {rejectWithValue}) => {
-        console.log('update testament', uiTestament)
         try {
-            const result = await icCryptService.updateTestament(uiTestament);
-            return {
-                ...uiTestament,
-                id: result?.id,
-                date_created: result?.date_created ? new Date(result?.date_created.toString()) : new Date(),
-                date_modified: result?.date_modified ? new Date(result?.date_modified.toString()) : new Date()
-            } as UiTestament;
+            return await icCryptService.updateTestament(uiTestament);
         } catch (e) {
             rejectWithValue(mapError(e))
         }
@@ -46,7 +34,6 @@ export const deleteTestamentThunk = createAsyncThunk<string, UiTestament, {
     state: RootState
 }>('testaments/delete',
     async (testament, {rejectWithValue}) => {
-        console.log('delete testaments', testament)
         try {
             await icCryptService.deleteTestament(testament.id);
             return testament.id;
@@ -56,11 +43,15 @@ export const deleteTestamentThunk = createAsyncThunk<string, UiTestament, {
     }
 );
 
-export const loadTestamentsThunk = createAsyncThunk<UiTestamentListEntry[], void, { state: RootState }>('testaments/load',
-    async (_, {getState}) => {
-        console.log('getting testament list...')
-        const result = await icCryptService.getTestamentList();
-        return result;
+export const loadTestamentsThunk = createAsyncThunk<UiTestamentListEntry[], void, {
+    state: RootState
+}>('testaments/load',
+    async (_, {rejectWithValue}) => {
+        try {
+            return await icCryptService.getTestamentList();
+        } catch (e) {
+            rejectWithValue(mapError(e))
+        }
     }
 );
 

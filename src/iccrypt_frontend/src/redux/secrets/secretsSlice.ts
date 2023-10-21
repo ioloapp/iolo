@@ -1,6 +1,5 @@
 import {createAsyncThunk, createSlice} from '@reduxjs/toolkit';
 import {GroupedSecretList, initialState} from "./secretsState";
-import {Secret, SecretCategory, SecretListEntry} from "../../../../declarations/iccrypt_backend/iccrypt_backend.did";
 import IcCryptService from "../../services/IcCryptService";
 import {RootState} from "../store";
 import {UiSecret, UiSecretCategory, UiSecretListEntry} from "../../services/IcTypesForUi";
@@ -8,42 +7,36 @@ import {mapError} from "../../utils/errorMapper";
 
 const icCryptService = new IcCryptService();
 
-export const addSecretThunk = createAsyncThunk<Secret, UiSecret, {
+export const addSecretThunk = createAsyncThunk<UiSecret, UiSecret, {
     state: RootState
 }>('secrets/add',
     async (uiSecret: UiSecret, {rejectWithValue}) => {
         try {
-            const result: Secret = await icCryptService.addSecret(uiSecret);
-            console.log('result', result)
-            return result;
+            return await icCryptService.addSecret(uiSecret);
         } catch (e) {
             rejectWithValue(mapError(e))
         }
     }
 );
 
-export const decryptAndShowSecretThunk = createAsyncThunk<UiSecret, string, {
+export const getSecretThunk = createAsyncThunk<UiSecret, string, {
     state: RootState
-}>('secrets/decrypt',
+}>('secrets/get',
     async (secretId: string, {rejectWithValue}) => {
         try {
-            const result: UiSecret = await icCryptService.getSecret(secretId);
-            console.log('result', result)
-            return result;
+            return await icCryptService.getSecret(secretId);
         } catch (e) {
             rejectWithValue(mapError(e))
         }
     }
 );
 
-export const updateSecretThunk = createAsyncThunk<Secret, UiSecret, {
+export const updateSecretThunk = createAsyncThunk<UiSecret, UiSecret, {
     state: RootState
 }>('secrets/update',
-    async (secret: UiSecret, {rejectWithValue}) => {
+    async (uiSecret: UiSecret, {rejectWithValue}) => {
         try {
-            const result: Secret = await icCryptService.updateSecret(secret);
-            console.log('result', result)
-            return result;
+            return await icCryptService.updateSecret(uiSecret);
         } catch (e) {
             rejectWithValue(mapError(e))
         }
@@ -53,23 +46,21 @@ export const updateSecretThunk = createAsyncThunk<Secret, UiSecret, {
 export const deleteSecretThunk = createAsyncThunk<string, UiSecret, {
     state: RootState
 }>('secrets/delete',
-    async (secret, {rejectWithValue}) => {
+    async (uiSecret, {rejectWithValue}) => {
         try {
-            await icCryptService.deleteSecret(secret.id);
-            return secret.id;
+            await icCryptService.deleteSecret(uiSecret.id);
+            return uiSecret.id;
         } catch (e) {
             rejectWithValue(mapError(e))
         }
     }
 );
 
-export const loadSecretsThunk = createAsyncThunk<SecretListEntry[], void, {
+export const loadSecretsThunk = createAsyncThunk<UiSecretListEntry[], void, {
     state: RootState
 }>('secrets/load',
     async () => {
-        const result = await icCryptService.getSecretList();
-        console.log('loaded secrets', result)
-        return result;
+        return await icCryptService.getSecretList();
     }
 );
 
@@ -138,18 +129,18 @@ export const secretsSlice = createSlice({
                 state.dialogItemState = 'failed';
                 state.error = action.error.message;
             })
-            .addCase(decryptAndShowSecretThunk.pending, (state) => {
+            .addCase(getSecretThunk.pending, (state) => {
                 state.showAddDialog = false;
                 state.showEditDialog = true;
                 state.dialogItemState = 'loading';
             })
-            .addCase(decryptAndShowSecretThunk.fulfilled, (state, action) => {
+            .addCase(getSecretThunk.fulfilled, (state, action) => {
                 state.dialogItemState = 'succeeded';
                 state.secretToAdd = action.payload;
                 state.showAddDialog = false;
                 state.showEditDialog = true;
             })
-            .addCase(decryptAndShowSecretThunk.rejected, (state, action) => {
+            .addCase(getSecretThunk.rejected, (state, action) => {
                 state.dialogItemState = 'failed';
                 state.error = action.error.message;
                 state.showAddDialog = false;
@@ -185,23 +176,22 @@ export const secretsSlice = createSlice({
     },
 })
 
-const updateSecretInGroupedSecretList = (group: GroupedSecretList, secret: Secret): GroupedSecretList => {
+const updateSecretInGroupedSecretList = (group: GroupedSecretList, uiSecret: UiSecret): GroupedSecretList => {
     const newGroupedSecretList = {
         ...group
     }
-    const category = secret?.category && secret.category.length > 0 ? secret.category [0] as SecretCategory : undefined;
-    if (category?.hasOwnProperty('Password')) {
-        newGroupedSecretList.passwordList = newGroupedSecretList.passwordList.filter(s => s.id != secret.id);
-        newGroupedSecretList.passwordList.push(mapSecretListEntry(secret, UiSecretCategory.Password))
-    } else if (category?.hasOwnProperty('Note')) {
-        newGroupedSecretList.notesList = newGroupedSecretList.notesList.filter(s => s.id != secret.id);
-        newGroupedSecretList.notesList.push(mapSecretListEntry(secret, UiSecretCategory.Note));
-    } else if (category?.hasOwnProperty('Document')) {
-        newGroupedSecretList.documentsList = newGroupedSecretList.documentsList.filter(s => s.id != secret.id);
-        newGroupedSecretList.documentsList.push(mapSecretListEntry(secret, UiSecretCategory.Document));
+    if (uiSecret.category === UiSecretCategory.Password) {
+        newGroupedSecretList.passwordList = newGroupedSecretList.passwordList.filter(s => s.id != uiSecret.id);
+        newGroupedSecretList.passwordList.push(uiSecret)
+    } else if (uiSecret.category === UiSecretCategory.Note) {
+        newGroupedSecretList.notesList = newGroupedSecretList.notesList.filter(s => s.id != uiSecret.id);
+        newGroupedSecretList.notesList.push(uiSecret);
+    } else if (uiSecret.category === UiSecretCategory.Document) {
+        newGroupedSecretList.documentsList = newGroupedSecretList.documentsList.filter(s => s.id != uiSecret.id);
+        newGroupedSecretList.documentsList.push(uiSecret);
     } else {
-        newGroupedSecretList.othersList = newGroupedSecretList.othersList.filter(s => s.id != secret.id);
-        newGroupedSecretList.othersList.push(mapSecretListEntry(secret, undefined));
+        newGroupedSecretList.othersList = newGroupedSecretList.othersList.filter(s => s.id != uiSecret.id);
+        newGroupedSecretList.othersList.push(uiSecret);
     }
     return newGroupedSecretList;
 }
@@ -217,51 +207,40 @@ const removeSecretFromGroupedSecretList = (group: GroupedSecretList, secretId: s
     return newGroupedSecretList;
 }
 
-const addSecretToGroupedSecretList = (group: GroupedSecretList, secret: Secret): GroupedSecretList => {
+const addSecretToGroupedSecretList = (group: GroupedSecretList, uiSecret: UiSecret): GroupedSecretList => {
     const newGroupedSecretList = {
         ...group
     }
-    const category: SecretCategory = secret?.category && secret.category.length > 0 ? secret.category [0] as SecretCategory : undefined;
-    if (category?.hasOwnProperty('Password')) {
-        newGroupedSecretList.passwordList.push(mapSecretListEntry(secret, UiSecretCategory.Password))
-    } else if (category?.hasOwnProperty('Note')) {
-        newGroupedSecretList.notesList.push(mapSecretListEntry(secret, UiSecretCategory.Note));
-    } else if (category?.hasOwnProperty('Document')) {
-        newGroupedSecretList.documentsList.push(mapSecretListEntry(secret, UiSecretCategory.Document));
+
+    if (uiSecret.category === UiSecretCategory.Password) {
+        newGroupedSecretList.passwordList.push(uiSecret)
+    } else if (uiSecret.category === UiSecretCategory.Note) {
+        newGroupedSecretList.notesList.push(uiSecret);
+    } else if (uiSecret.category === UiSecretCategory.Document) {
+        newGroupedSecretList.documentsList.push(uiSecret);
     } else {
-        newGroupedSecretList.othersList.push(mapSecretListEntry(secret, undefined));
+        newGroupedSecretList.othersList.push(uiSecret);
     }
     return newGroupedSecretList;
 }
 
-const mapSecretListEntry = (secretListEntry: SecretListEntry, category: UiSecretCategory): UiSecretListEntry => {
-    return {
-        id: secretListEntry.id,
-        name: secretListEntry.name && secretListEntry.name.length > 0 ? secretListEntry.name[0] : undefined,
-        category,
-    }
-}
-
-const splitSecretListByCategory = (secretList: SecretListEntry[]): GroupedSecretList => {
+const splitSecretListByCategory = (uiSecretList: UiSecretListEntry[]): GroupedSecretList => {
     const passwordList: UiSecretListEntry[] = [];
     const notesList: UiSecretListEntry[] = [];
     const documentsList: UiSecretListEntry[] = [];
     const othersList: UiSecretListEntry[] = [];
 
-    if (secretList) {
-        secretList.forEach(secretListEntry => {
-            secretListEntry.category.forEach(cat => {
-                const category = cat as SecretCategory;
-                if (category.hasOwnProperty('Password')) {
-                    passwordList.push(mapSecretListEntry(secretListEntry, UiSecretCategory.Password))
-                } else if (category.hasOwnProperty('Note')) {
-                    notesList.push(mapSecretListEntry(secretListEntry, UiSecretCategory.Note));
-                } else if (category.hasOwnProperty('Document')) {
-                    documentsList.push(mapSecretListEntry(secretListEntry, UiSecretCategory.Document));
-                } else {
-                    othersList.push(mapSecretListEntry(secretListEntry, undefined));
-                }
-            })
+    if (uiSecretList) {
+        uiSecretList.forEach(uiSecretListEntry => {
+            if (uiSecretListEntry.category === UiSecretCategory.Password) {
+                passwordList.push(uiSecretListEntry)
+            } else if (uiSecretListEntry.category === UiSecretCategory.Note) {
+                notesList.push(uiSecretListEntry);
+            } else if (uiSecretListEntry.category === UiSecretCategory.Document) {
+                documentsList.push(uiSecretListEntry);
+            } else {
+                othersList.push(uiSecretListEntry);
+            }
         })
     }
 

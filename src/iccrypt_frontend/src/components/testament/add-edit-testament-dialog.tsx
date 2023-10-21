@@ -41,7 +41,7 @@ export default function AddEditTestamentDialog() {
     const heirsList = useSelector(selectHeirs);
     const secretsList = useSelector(selectSecrets);
     const currentUser = useSelector(selectCurrentUser);
-    const [selectedSecrets, setSelectedSecrets] = React.useState<string[]>(testamentToAdd.secrets ? testamentToAdd.secrets.map(secret => secret.id) : []);
+    const [selectedSecrets, setSelectedSecrets] = React.useState<string[]>(testamentToAdd.secrets ? testamentToAdd.secrets : []);
     const [selectedHeirs, setSelectedHeirs] = React.useState<string[]>(testamentToAdd.heirs ? testamentToAdd.heirs.map(heir => heir.id) : []);
 
     const handleClickOpen = () => {
@@ -72,7 +72,7 @@ export default function AddEditTestamentDialog() {
     const updateTestament = async () => {
         dispatch(updateTestamentThunk({
             ...testamentToAdd,
-            testator: currentUser
+            testator: currentUser,
         }));
     }
 
@@ -83,7 +83,8 @@ export default function AddEditTestamentDialog() {
         setSelectedSecrets(ids);
         dispatch(testamentsActions.updateTestamentToAdd({
             ...testamentToAdd,
-            secrets: [...ids.map(id => secretsList.find(s => s.id === id))]
+            secrets: ids
+
         }))
     };
 
