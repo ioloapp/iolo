@@ -192,6 +192,7 @@ pub fn add_testament(args: AddTestamentArgs) -> Result<Testament, SmartVaultErr>
 pub fn update_testament(t: Testament) -> Result<Testament, SmartVaultErr> {
     let principal = get_caller();
 
+    // Update testament in uservault
     let user_vault_id: UUID = get_vault_id_for(principal)?;
     MASTERVAULT.with(
         |ms: &RefCell<MasterVault>| -> Result<Testament, SmartVaultErr> {
@@ -199,6 +200,8 @@ pub fn update_testament(t: Testament) -> Result<Testament, SmartVaultErr> {
             master_vault.update_user_testament(&user_vault_id, t)
         },
     )
+
+    // TODO: Update testament registry with new or removed heirs
 }
 
 #[ic_cdk_macros::query]
@@ -222,7 +225,7 @@ pub fn get_testament(id: TestamentID) -> Result<Testament, SmartVaultErr> {
 pub fn get_testament_list_as_heir() -> Result<Option<Vec<TestamentListEntry>>, SmartVaultErr> {
     TESTAMENT_REGISTRY.with(
         |tr: &RefCell<TestamentRegistry>| -> Result<Option<Vec<TestamentListEntry>>, SmartVaultErr> {
-            let tles = tr.borrow().get_testaments_for_heir(get_caller()).cloned();
+            let tles = tr.borrow().get_testaments_for_heir(get_caller());
             Ok(tles)
         },
     )
