@@ -4,6 +4,7 @@ use candid::{CandidType, Deserialize, Principal};
 
 use crate::common::{error::SmartVaultErr,uuid::UUID};
 use crate::common::user::{AddUserArgs, User};
+use crate::smart_vaults::testament::TestamentListEntry;
 
 use super::{
     secret::{AddSecretArgs, Secret},
@@ -95,16 +96,20 @@ impl MasterVault {
         let heirs = testament.heirs().clone();
 
         let user_vault = self.user_vaults.get_mut(vault_id).unwrap();
-        user_vault.add_testament(testament)?;
+        user_vault.add_testament(testament.clone())?;
 
         // Add entry to testament registry (reverse index)
         TESTAMENT_REGISTRY.with(
             |tr: &RefCell<TestamentRegistry>| -> Result<(), SmartVaultErr> {
                 let mut testament_registry = tr.borrow_mut();
                 for h in heirs {
-                    testament_registry.add_testament_for_heir(h, testament_id.clone());
+                    let tle = TestamentListEntry {
+                        id: testament.id().clone(),
+                        name: testament.name().clone(),
+                        testator: testament.testator().clone(),
+                    };
+                    testament_registry.add_testament_for_heir(h, tle.clone());
                 }
-
                 Ok(())
             },
         )?;

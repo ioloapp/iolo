@@ -31,11 +31,11 @@ type Result_6 = variant {
   Ok : SecretSymmetricCryptoMaterial;
   Err : SmartVaultErr;
 };
-type Result_7 = variant { Ok : vec TestamentListEntry; Err : SmartVaultErr };
-type Result_8 = variant {
-  Ok : vec record { principal; text };
+type Result_7 = variant {
+  Ok : opt vec TestamentListEntry;
   Err : SmartVaultErr;
 };
+type Result_8 = variant { Ok : vec TestamentListEntry; Err : SmartVaultErr };
 type Secret = record {
   id : text;
   url : opt text;
@@ -120,8 +120,8 @@ service : {
   get_secret_list : () -> (Result_5) query;
   get_secret_symmetric_crypto_material : (text) -> (Result_6) query;
   get_testament : (text) -> (Result_2) query;
-  get_testament_list_as_testator : () -> (Result_7) query;
-  get_testaments_as_heir : () -> (Result_8) query;
+  get_testament_list_as_heir : () -> (Result_7) query;
+  get_testament_list_as_testator : () -> (Result_8) query;
   ibe_encryption_key : () -> (text);
   is_user_vault_existing : () -> (bool) query;
   remove_heir : (principal) -> (Result_3);

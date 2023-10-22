@@ -219,10 +219,11 @@ pub fn get_testament(id: TestamentID) -> Result<Testament, SmartVaultErr> {
 
 #[ic_cdk_macros::query]
 #[candid_method(query)]
-pub fn get_testaments_as_heir() -> Result<Vec<(Principal, TestamentID)>, SmartVaultErr> {
+pub fn get_testament_list_as_heir() -> Result<Option<Vec<TestamentListEntry>>, SmartVaultErr> {
     TESTAMENT_REGISTRY.with(
-        |tr: &RefCell<TestamentRegistry>| -> Result<Vec<(Principal, TestamentID)>, SmartVaultErr> {
-            tr.borrow().get_testaments_for_heir(get_caller()).cloned()
+        |tr: &RefCell<TestamentRegistry>| -> Result<Option<Vec<TestamentListEntry>>, SmartVaultErr> {
+            let tles = tr.borrow().get_testaments_for_heir(get_caller()).cloned();
+            Ok(tles)
         },
     )
 }

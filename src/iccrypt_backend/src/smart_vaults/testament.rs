@@ -86,6 +86,10 @@ impl Testament {
         &self.testator
     }
 
+    pub fn name(&self) -> &Option<String> {
+        &self.name
+    }
+
     pub fn heirs(&self) -> &HashSet<Principal> {
         &self.heirs
     }

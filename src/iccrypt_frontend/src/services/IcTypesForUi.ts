@@ -23,6 +23,7 @@ export interface UiTestamentListEntry {
     id?: string,
     name?: string,
     testator?: UiUser,
+    role?: UiTestamentListEntryRole
 }
 
 export interface UiTestament extends UiTestamentListEntry {
@@ -30,6 +31,11 @@ export interface UiTestament extends UiTestamentListEntry {
     heirs?: Array<UiUser>,
     dateCreated?: Date,
     dateModified?: Date,
+}
+
+export enum UiTestamentListEntryRole {
+    Testator = "Testator",
+    Heir = "Heir"
 }
 
 export enum UiUserType {

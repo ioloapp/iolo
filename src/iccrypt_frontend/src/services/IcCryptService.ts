@@ -1,7 +1,8 @@
 import {ActorSubclass, HttpAgent, Identity} from "@dfinity/agent";
 import {
     _SERVICE,
-    AddSecretArgs, AddTestamentArgs,
+    AddSecretArgs,
+    AddTestamentArgs,
     AddUserArgs,
     Result,
     Result_1,
@@ -11,6 +12,7 @@ import {
     Result_5,
     Result_6,
     Result_7,
+    Result_8,
     Secret,
     SecretCategory,
     SecretListEntry,
@@ -38,6 +40,7 @@ import {
     UiSecretListEntry,
     UiTestament,
     UiTestamentListEntry,
+    UiTestamentListEntryRole,
     UiUser,
     UiUserType
 } from "./IcTypesForUi";
@@ -220,17 +223,34 @@ class IcCryptService {
     }
 
     public async getTestamentList(): Promise<UiTestamentListEntry[]> {
-        const result: Result_7 = await this.actor.get_testament_list_as_testator();
-        if (result['Ok']) {
-            return result['Ok'].map((item: TestamentListEntry): UiTestamentListEntry  => {
+        const resultAsTestator: Result_8 = await this.actor.get_testament_list_as_testator();
+        let testamentsAsTestator: UiTestamentListEntry[] = [];
+        if (resultAsTestator['Ok']) {
+            testamentsAsTestator = resultAsTestator['Ok'].map((item: TestamentListEntry): UiTestamentListEntry  => {
                 return {
                     id: item.id,
                     name: item.name.length > 0 ? item.name[0] : undefined,
-                    testator: { id: item.testator.toString()}
+                    testator: { id: item.testator.toString()},
+                    role: UiTestamentListEntryRole.Testator
                 }
             });
-        }
-        throw mapError(result['Err']);
+        } else throw mapError(resultAsTestator['Err']);
+
+
+        const resultAsHeir: Result_7 = await this.actor.get_testament_list_as_heir();
+        let testamentsAsHeir: UiTestamentListEntry[] =  [];
+        if (resultAsHeir['Ok']) {
+            testamentsAsHeir = resultAsHeir['Ok'][0].map((item: TestamentListEntry): UiTestamentListEntry  => {
+                return {
+                    id: item.id,
+                    name: item.name.length > 0 ? item.name[0] : undefined,
+                    testator: { id: item.testator.toString()},
+                    role: UiTestamentListEntryRole.Heir
+                }
+            });
+        } else throw mapError(resultAsTestator['Err']);
+
+        return testamentsAsTestator.concat(testamentsAsHeir);
     }
 
     public async getTestament(id: string): Promise<UiTestament> {

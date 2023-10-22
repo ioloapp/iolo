@@ -107,11 +107,11 @@ export const idlFactory = ({ IDL }) => {
     'testator' : IDL.Principal,
   });
   const Result_7 = IDL.Variant({
-    'Ok' : IDL.Vec(TestamentListEntry),
+    'Ok' : IDL.Opt(IDL.Vec(TestamentListEntry)),
     'Err' : SmartVaultErr,
   });
   const Result_8 = IDL.Variant({
-    'Ok' : IDL.Vec(IDL.Tuple(IDL.Principal, IDL.Text)),
+    'Ok' : IDL.Vec(TestamentListEntry),
     'Err' : SmartVaultErr,
   });
   return IDL.Service({
@@ -149,8 +149,8 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'get_testament' : IDL.Func([IDL.Text], [Result_2], ['query']),
-    'get_testament_list_as_testator' : IDL.Func([], [Result_7], ['query']),
-    'get_testaments_as_heir' : IDL.Func([], [Result_8], ['query']),
+    'get_testament_list_as_heir' : IDL.Func([], [Result_7], ['query']),
+    'get_testament_list_as_testator' : IDL.Func([], [Result_8], ['query']),
     'ibe_encryption_key' : IDL.Func([], [IDL.Text], []),
     'is_user_vault_existing' : IDL.Func([], [IDL.Bool], ['query']),
     'remove_heir' : IDL.Func([IDL.Principal], [Result_3], []),
