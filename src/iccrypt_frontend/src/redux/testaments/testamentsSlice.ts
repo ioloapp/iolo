@@ -17,6 +17,17 @@ export const addTestamentThunk = createAsyncThunk<UiTestament, UiTestament, { st
     }
 );
 
+export const editTestamentThunk = createAsyncThunk<UiTestament, string, { state: RootState }>('testaments/edit',
+     (testamentId, {rejectWithValue, getState}) => {
+        console.log('edit testament', testamentId)
+        try {
+            return icCryptService.getTestament(testamentId);
+        } catch (e) {
+            rejectWithValue(mapError(e))
+        }
+    }
+);
+
 export const updateTestamentThunk = createAsyncThunk<UiTestament, UiTestament, {
     state: RootState }
 >('testaments/update',
@@ -117,6 +128,18 @@ export const testamentsSlice = createSlice({
                 state.addState = 'failed';
                 state.error = action.error.message;
                 state.showAddDialog = true;
+            })
+            .addCase(editTestamentThunk.pending, (state) => {
+                state.addState = 'loading';
+                state.showEditDialog = true;
+            })
+            .addCase(editTestamentThunk.fulfilled, (state, action) => {
+                state.addState = 'succeeded';
+                state.testamentToAdd = action.payload;
+            })
+            .addCase(editTestamentThunk.rejected, (state, action) => {
+                state.addState = 'failed';
+                state.error = action.error.message;
             })
             .addCase(updateTestamentThunk.pending, (state) => {
                 state.addState = 'loading';

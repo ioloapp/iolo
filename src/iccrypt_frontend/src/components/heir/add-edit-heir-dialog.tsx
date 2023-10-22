@@ -95,44 +95,22 @@ export default function AddEditHeirDialog() {
                             })}
                         />
                     </FormControl>
-                    {heirToAdd.type === UiUserType.Person &&
-                        <>
-                            <FormControl fullWidth>
-                                <TextField
-                                    autoFocus
-                                    margin="dense"
-                                    id="name"
-                                    label="Name"
-                                    InputLabelProps={{ shrink: true }}
-                                    fullWidth
-                                    variant="standard"
-                                    value={heirToAdd.name}
-                                    onChange={e => updateHeirToAdd({
-                                        ...heirToAdd,
-                                        name: e.target.value
-                                    })}
-                                />
-                            </FormControl>
-                        </>
-                    }
-                    {heirToAdd.type === UiUserType.Company &&
-                        <FormControl fullWidth>
-                            <TextField
-                                autoFocus
-                                margin="dense"
-                                id="name"
-                                label="Name"
-                                InputLabelProps={{ shrink: true }}
-                                fullWidth
-                                variant="standard"
-                                value={heirToAdd.name}
-                                onChange={e => updateHeirToAdd({
-                                    ...heirToAdd,
-                                    name: e.target.value
-                                })}
-                            />
-                        </FormControl>
-                    }
+                    <FormControl fullWidth>
+                        <TextField
+                            autoFocus
+                            margin="dense"
+                            id="name"
+                            label="Name"
+                            InputLabelProps={{ shrink: true }}
+                            fullWidth
+                            variant="standard"
+                            value={heirToAdd.name}
+                            onChange={e => updateHeirToAdd({
+                                ...heirToAdd,
+                                name: e.target.value
+                            })}
+                        />
+                    </FormControl>
                     <FormControl fullWidth>
                         <TextField
                             autoFocus

@@ -7,7 +7,7 @@ import {useSelector} from "react-redux";
 import {selectTestaments} from "../../redux/testaments/testamentsSelectors";
 import AddEditTestamentDialog from "../../components/testament/add-edit-testament-dialog";
 import HistoryEduOutlinedIcon from "@mui/icons-material/HistoryEduOutlined";
-import {loadTestamentsThunk, testamentsActions} from "../../redux/testaments/testamentsSlice";
+import {editTestamentThunk, loadTestamentsThunk, testamentsActions} from "../../redux/testaments/testamentsSlice";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteIcon from "@mui/icons-material/Delete";
 import {UiTestament} from "../../services/IcTypesForUi";
@@ -36,8 +36,7 @@ export function Testaments() {
     }
 
     const editTestament = (testament: UiTestament) => {
-        dispatch(testamentsActions.updateTestamentToAdd(testament));
-        dispatch(testamentsActions.openEditDialog());
+        dispatch(editTestamentThunk(testament.id));
     }
 
     const filterTestamentList = (search: string) => {

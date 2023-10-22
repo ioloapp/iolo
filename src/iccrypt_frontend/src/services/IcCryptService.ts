@@ -229,8 +229,8 @@ class IcCryptService {
             testamentsAsTestator = resultAsTestator['Ok'].map((item: TestamentListEntry): UiTestamentListEntry  => {
                 return {
                     id: item.id,
-                    name: item.name.length > 0 ? item.name[0] : undefined,
-                    testator: { id: item.testator.toString()},
+                    name: item.name?.length > 0 ? item.name[0] : undefined,
+                    testator: { id: item.testator?.toString()},
                     role: UiTestamentListEntryRole.Testator
                 }
             });
@@ -242,8 +242,8 @@ class IcCryptService {
             testamentsAsHeir = resultAsHeir['Ok'].map((item: TestamentListEntry): UiTestamentListEntry  => {
                 return {
                     id: item.id,
-                    name: item.name.length > 0 ? item.name[0] : undefined,
-                    testator: { id: item.testator.toString()},
+                    name: item.name?.length > 0 ? item.name[0] : undefined,
+                    testator: { id: item.testator?.toString()},
                     role: UiTestamentListEntryRole.Heir
                 }
             });
@@ -520,11 +520,11 @@ class IcCryptService {
     }
 
     private mapSecretCategoryToUiSecretCategory(category: SecretCategory) :UiSecretCategory {
-        if (category[0].hasOwnProperty('Password')) {
+        if (category.hasOwnProperty('Password')) {
             return UiSecretCategory.Password;
-        } else if (category[0].hasOwnProperty('Note')) {
+        } else if (category.hasOwnProperty('Note')) {
             return  UiSecretCategory.Note;
-        } else if (category[0].hasOwnProperty('Document')) {
+        } else if (category.hasOwnProperty('Document')) {
             return  UiSecretCategory.Document;
         }
     }
