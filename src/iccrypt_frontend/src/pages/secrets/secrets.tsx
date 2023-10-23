@@ -9,7 +9,7 @@ import NotesIcon from '@mui/icons-material/Notes';
 import DescriptionIcon from '@mui/icons-material/Description';
 import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 import {useSelector} from "react-redux";
-import {selectGroupedSecrets} from "../../redux/secrets/secretsSelectors";
+import {selectGroupedSecrets, selectSecretsError, selectSecretsListState} from "../../redux/secrets/secretsSelectors";
 import AddSecretDialog from "../../components/secret/add-secret-dialog";
 import {UiSecretListEntry} from "../../services/IcTypesForUi";
 import {SecretItem} from "./secret-item";
@@ -22,6 +22,8 @@ export function Secrets() {
 
     const dispatch = useAppDispatch();
     const groupedSecretList = useSelector(selectGroupedSecrets);
+    const secretsListState = useSelector(selectSecretsListState);
+    const secretsListError = useSelector(selectSecretsError);
 
     const [filteredSecretList, setFilteredSecretList] = useState(groupedSecretList)
 
@@ -44,9 +46,9 @@ export function Secrets() {
 
     const filterSecretList = (search: string) => {
         const searchString = search.toLowerCase();
-        if(searchString.length === 0){
+        if (searchString.length === 0) {
             setFilteredSecretList(groupedSecretList);
-        }else {
+        } else {
             setFilteredSecretList({
                 passwordList: groupedSecretList.passwordList.filter(s => s.name.toLowerCase().indexOf(searchString) >= 0),
                 documentsList: groupedSecretList.documentsList.filter(s => s.name.toLowerCase().indexOf(searchString) >= 0),
@@ -56,23 +58,34 @@ export function Secrets() {
         }
     }
 
+    const error = (): boolean => {
+        return secretsListState === 'failed';
+    }
+
     return (
         <PageLayout title="Wallet">
             <StyledAppBar position="sticky">
-                <SearchField id="outlined-basic" sx={{boxShadow: 'none'}} onChange={(e) => filterSecretList(e.target.value)}/>
+                <SearchField id="outlined-basic" sx={{boxShadow: 'none'}}
+                             onChange={(e) => filterSecretList(e.target.value)}/>
                 <IconButton size="large" aria-label="search" color="inherit">
                     <SearchIcon/>
                 </IconButton>
             </StyledAppBar>
             <Box sx={{width: '100%'}}>
-                {filteredSecretList &&
+                {error &&
+                    <Box>
+                        {secretsListError}
+                    </Box>
+                }
+                {!error && filteredSecretList &&
                     <>
                         {filteredSecretList.passwordList?.length > 0 &&
                             <Box>
                                 <Typography variant="h5">Passwords</Typography>
                                 <List dense={false}>
                                     {filteredSecretList.passwordList.map((secret: UiSecretListEntry) =>
-                                        <SecretItem key={secret.id} secret={secret} editAction={editItem} deleteAction={deleteItem}><PasswordIcon/></SecretItem>
+                                        <SecretItem key={secret.id} secret={secret} editAction={editItem}
+                                                    deleteAction={deleteItem}><PasswordIcon/></SecretItem>
                                     )}
                                 </List>
                             </Box>
@@ -82,7 +95,8 @@ export function Secrets() {
                                 <Typography variant="h5">Notes</Typography>
                                 <List dense={false}>
                                     {filteredSecretList.notesList.map((secret: UiSecretListEntry) =>
-                                        <SecretItem key={secret.id} secret={secret} editAction={editItem} deleteAction={deleteItem}><NotesIcon/></SecretItem>
+                                        <SecretItem key={secret.id} secret={secret} editAction={editItem}
+                                                    deleteAction={deleteItem}><NotesIcon/></SecretItem>
                                     )}
                                 </List>
                             </Box>
@@ -92,7 +106,8 @@ export function Secrets() {
                                 <Typography variant="h5">Documents</Typography>
                                 <List dense={false}>
                                     {filteredSecretList.documentsList.map((secret: UiSecretListEntry) =>
-                                        <SecretItem key={secret.id} secret={secret} editAction={editItem} deleteAction={deleteItem}><DescriptionIcon/></SecretItem>
+                                        <SecretItem key={secret.id} secret={secret} editAction={editItem}
+                                                    deleteAction={deleteItem}><DescriptionIcon/></SecretItem>
                                     )}
                                 </List>
                             </Box>
@@ -102,7 +117,8 @@ export function Secrets() {
                                 <Typography variant="h5">No Category</Typography>
                                 <List dense={false}>
                                     {filteredSecretList.othersList.map((secret: UiSecretListEntry) =>
-                                        <SecretItem key={secret.id} secret={secret} editAction={editItem} deleteAction={deleteItem}><QuestionMarkIcon/></SecretItem>
+                                        <SecretItem key={secret.id} secret={secret} editAction={editItem}
+                                                    deleteAction={deleteItem}><QuestionMarkIcon/></SecretItem>
                                     )}
                                 </List>
                             </Box>
@@ -111,7 +127,7 @@ export function Secrets() {
                 }
             </Box>
             <AddSecretDialog/>
-            <EditSecretDialog />
+            <EditSecretDialog/>
             <DeleteSecretDialog/>
         </PageLayout>);
 }

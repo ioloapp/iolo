@@ -4,7 +4,7 @@ import {useEffect, useState} from "react";
 import {PageLayout} from "../../components/layout/page-layout";
 import {useAppDispatch} from "../../redux/hooks";
 import {useSelector} from "react-redux";
-import {selectHeirs} from "../../redux/heirs/heirsSelectors";
+import {selectHeirError, selectHeirListState, selectHeirs} from "../../redux/heirs/heirsSelectors";
 import {heirsActions, loadHeirsThunk} from "../../redux/heirs/heirsSlice";
 import AddHeirDialog from "../../components/heir/add-heir-dialog";
 import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
@@ -21,6 +21,8 @@ export function Heirs() {
 
     const dispatch = useAppDispatch();
     const heirs = useSelector(selectHeirs);
+    const heirListState = useSelector(selectHeirListState);
+    const heirListError = useSelector(selectHeirError);
 
     useEffect(() => {
         dispatch(loadHeirsThunk())
@@ -50,6 +52,10 @@ export function Heirs() {
         }
     }
 
+    const error = (): boolean => {
+        return heirListState === 'failed';
+    }
+
     return (
         <PageLayout title="Heirs">
             <StyledAppBar position="sticky">
@@ -59,7 +65,12 @@ export function Heirs() {
                 </IconButton>
             </StyledAppBar>
             <Box>
-                {filteredHeirs &&
+                {error &&
+                    <Box>
+                        {heirListError}
+                    </Box>
+                }
+                {!error && filteredHeirs &&
                     <Box>
                         <List dense={false}>
                             {filteredHeirs.map((heir: UiUser) =>

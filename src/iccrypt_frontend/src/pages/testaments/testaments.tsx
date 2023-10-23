@@ -4,7 +4,11 @@ import {useEffect, useState} from "react";
 import {useAppDispatch} from "../../redux/hooks";
 import {PageLayout} from "../../components/layout/page-layout";
 import {useSelector} from "react-redux";
-import {selectTestaments} from "../../redux/testaments/testamentsSelectors";
+import {
+    selectTestamentError,
+    selectTestaments,
+    selectTestamentsListState
+} from "../../redux/testaments/testamentsSelectors";
 import AddTestamentDialog from "../../components/testament/add-testament-dialog";
 import HistoryEduOutlinedIcon from "@mui/icons-material/HistoryEduOutlined";
 import {editTestamentThunk, loadTestamentsThunk, testamentsActions} from "../../redux/testaments/testamentsSlice";
@@ -20,6 +24,8 @@ export function Testaments() {
 
     const dispatch = useAppDispatch();
     const testaments = useSelector(selectTestaments);
+    const testamentsListState = useSelector(selectTestamentsListState);
+    const testamentsListError = useSelector(selectTestamentError);
 
     useEffect(() => {
         dispatch(loadTestamentsThunk())
@@ -49,6 +55,10 @@ export function Testaments() {
         }
     }
 
+    const error = (): boolean => {
+        return testamentsListState === 'failed';
+    }
+
     return (
         <PageLayout title="Testaments">
             <StyledAppBar position="sticky">
@@ -59,7 +69,12 @@ export function Testaments() {
                 </IconButton>
             </StyledAppBar>
             <Box>
-                {filteredTestaments &&
+                {error &&
+                    <Box>
+                        {testamentsListError}
+                    </Box>
+                }
+                {!error && filteredTestaments &&
                     <Box>
                         <List dense={false}>
                             {filteredTestaments.flatMap(f => f ? [f] : []).map((testament: UiTestament) =>
