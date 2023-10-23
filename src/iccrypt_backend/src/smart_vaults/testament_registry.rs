@@ -18,7 +18,6 @@ impl TestamentRegistry {
     }
 
     pub fn add_testament_for_heir(&mut self, heir: Principal, testament_list_entry: TestamentListEntry) {
-
         self.registry
             .entry(heir)                               // Get the entry for the provided heir
             .or_insert_with(BTreeMap::new)  // If absent, insert a new BTreeMap for testators

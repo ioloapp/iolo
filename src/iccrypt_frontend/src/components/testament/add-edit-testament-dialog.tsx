@@ -120,10 +120,10 @@ export default function AddEditTestamentDialog() {
                 <AddIcon/>
             </Fab>
             <Dialog open={showAddTestamentDialog || showEditTestamentDialog} onClose={handleClose}>
-                <DialogTitle>Add Secret</DialogTitle>
+                <DialogTitle>{showAddTestamentDialog? `Add Testament` : `Edit Testament`}</DialogTitle>
                 <DialogContent>
                     <DialogContentText>
-                        To add a new testament choose the secrets, heirs and fill in the necessary information.
+                        To add/edit a testament choose the secrets, heirs and fill in the necessary information.
                     </DialogContentText>
                     <FormControl fullWidth>
                         <TextField

@@ -238,8 +238,8 @@ class IcCryptService {
 
         const resultAsHeir: Result_7 = await this.actor.get_testament_list_as_heir();
         let testamentsAsHeir: UiTestamentListEntry[] =  [];
-        if (resultAsHeir['Ok']) {
-            testamentsAsHeir = resultAsHeir['Ok'].map((item: TestamentListEntry): UiTestamentListEntry  => {
+        if (resultAsHeir['Ok'] && resultAsHeir['Ok'].length > 0) {
+            testamentsAsHeir = resultAsHeir['Ok'][0].map((item: TestamentListEntry): UiTestamentListEntry  => {
                 return {
                     id: item.id,
                     name: item.name?.length > 0 ? item.name[0] : undefined,
