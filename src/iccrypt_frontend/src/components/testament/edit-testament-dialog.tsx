@@ -9,8 +9,8 @@ import {
     selectTestamentError
 } from "../../redux/testaments/testamentsSelectors";
 import {selectCurrentUser} from "../../redux/user/userSelectors";
-import SecretDialogContent from "../secret/secret-dialog-content";
 import {BasicDialog} from "../dialog/basic-dialog";
+import TestamentDialogContent from "./testament-dialog-content";
 
 export default function EditTestamentDialog() {
     const dispatch = useAppDispatch();
@@ -45,7 +45,7 @@ export default function EditTestamentDialog() {
                      okButtonText="Update testament"
                      error={testamentError}
                      dialogItemState={dialogItemState}>
-            <SecretDialogContent/>
+            <TestamentDialogContent/>
         </BasicDialog>
     );
 }
