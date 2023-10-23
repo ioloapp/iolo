@@ -2,9 +2,9 @@ import * as React from 'react';
 import {useSelector} from "react-redux";
 import {useAppDispatch} from "../../redux/hooks";
 import {
+    selectHeirDialogItem,
+    selectHeirDialogItemState,
     selectHeirError,
-    selectHeirToAdd,
-    selectHeirToAddState,
     selectShowDeleteHeirDialog
 } from "../../redux/heirs/heirsSelectors";
 import {deleteHeirThunk, heirsActions} from "../../redux/heirs/heirsSlice";
@@ -13,9 +13,9 @@ import {BasicDialog} from "../dialog/basic-dialog";
 export default function DeleteHeirDialog() {
     const dispatch = useAppDispatch();
     const showDeleteHeirDialog: boolean = useSelector(selectShowDeleteHeirDialog);
-    const heirToAdd = useSelector(selectHeirToAdd);
+    const heirToAdd = useSelector(selectHeirDialogItem);
     const heirError = useSelector(selectHeirError);
-    const heirToAddState = useSelector(selectHeirToAddState);
+    const heirToAddState = useSelector(selectHeirDialogItemState);
 
     const handleClose = () => {
         dispatch(heirsActions.closeDeleteDialog());
@@ -30,15 +30,15 @@ export default function DeleteHeirDialog() {
     }
 
     return (
-        <BasicDialog  title="Delete Heir"
+        <BasicDialog  title="Delete heir"
                       leadText={`Are you sure you want to delete the heir ${heirToAdd.name}?`}
                       isOpen={showDeleteHeirDialog}
                       handleClose={handleClose}
                       cancelAction={cancelDeleteHeir}
                       okAction={deleteHeir}
-                      okButtonText="Delete Heir"
+                      okButtonText="Delete heir"
                       error={heirError}
-                      loadingState={heirToAddState}>
+                      dialogItemState={heirToAddState}>
         </BasicDialog>
     );
 }

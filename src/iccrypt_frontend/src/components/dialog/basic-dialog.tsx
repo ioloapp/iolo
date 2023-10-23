@@ -18,12 +18,12 @@ export interface BasicDialogProps {
     okButtonText: string;
     children: ReactElement | never[];
     error: string;
-    loadingState: string;
+    dialogItemState: string;
 }
 
-export const BasicDialog = ({title, leadText, isOpen, handleClose, cancelAction, okAction, okButtonText, children, error, loadingState}: BasicDialogProps) => {
+export const BasicDialog = ({title, leadText, isOpen, handleClose, cancelAction, okAction, okButtonText, children, error, dialogItemState}: BasicDialogProps) => {
 
-    const loading = loadingState === 'pending';
+    const loading = dialogItemState === 'pending';
 
     return (
         <Dialog open={isOpen} onClose={handleClose}>

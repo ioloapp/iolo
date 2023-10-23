@@ -34,7 +34,7 @@ export function Secrets() {
     }, [groupedSecretList])
 
     const deleteItem = (secret: UiSecretListEntry) => {
-        dispatch(secretsActions.updateSecretToAdd(secret));
+        dispatch(secretsActions.updateDialogItem(secret));
         dispatch(secretsActions.openDeleteDialog());
     }
 

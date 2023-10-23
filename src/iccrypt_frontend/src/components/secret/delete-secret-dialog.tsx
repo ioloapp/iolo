@@ -1,9 +1,9 @@
 import * as React from 'react';
 import {useSelector} from "react-redux";
 import {
+    selectDialogItem,
+    selectDialogItemState,
     selectSecretsError,
-    selectSecretsToAddState,
-    selectSecretToAdd,
     selectShowDeleteSecretDialog
 } from "../../redux/secrets/secretsSelectors";
 import {useAppDispatch} from "../../redux/hooks";
@@ -13,8 +13,8 @@ import {BasicDialog} from "../dialog/basic-dialog";
 export default function DeleteSecretDialog() {
     const dispatch = useAppDispatch();
     const showDeleteSecretDialog: boolean = useSelector(selectShowDeleteSecretDialog);
-    const secretToAdd = useSelector(selectSecretToAdd);
-    const secretToAddState = useSelector(selectSecretsToAddState);
+    const dialogItem = useSelector(selectDialogItem);
+    const dialogItemState = useSelector(selectDialogItemState);
     const secretError = useSelector(selectSecretsError);
 
     const handleClose = () => {
@@ -26,19 +26,19 @@ export default function DeleteSecretDialog() {
     }
 
     const deleteSecret = async () => {
-        dispatch(deleteSecretThunk(secretToAdd));
+        dispatch(deleteSecretThunk(dialogItem));
     }
 
     return (
-        <BasicDialog  title="Delete secret"
-                      leadText={`Are you sure you want to delete the secret ${secretToAdd.name}?`}
-                      isOpen={showDeleteSecretDialog}
-                      handleClose={handleClose}
-                      cancelAction={cancelDeleteSecret}
-                      okAction={deleteSecret}
-                      okButtonText="Delete secret"
-                      error={secretError}
-                      loadingState={secretToAddState}>
+        <BasicDialog title="Delete secret"
+                     leadText={`Are you sure you want to delete the secret ${dialogItem.name}?`}
+                     isOpen={showDeleteSecretDialog}
+                     handleClose={handleClose}
+                     cancelAction={cancelDeleteSecret}
+                     okAction={deleteSecret}
+                     okButtonText="Delete secret"
+                     error={secretError}
+                     dialogItemState={dialogItemState}>
         </BasicDialog>
     );
 }

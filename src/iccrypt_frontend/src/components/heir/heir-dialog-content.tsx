@@ -4,12 +4,12 @@ import {useSelector} from "react-redux";
 import {useAppDispatch} from "../../redux/hooks";
 import {FormControl, MenuItem, Select, Typography} from "@mui/material";
 import {UiUser, UiUserType} from "../../services/IcTypesForUi";
-import {selectHeirToAdd} from "../../redux/heirs/heirsSelectors";
+import {selectHeirDialogItem} from "../../redux/heirs/heirsSelectors";
 import {heirsActions} from "../../redux/heirs/heirsSlice";
 
 export default function HeirDialogContent() {
     const dispatch = useAppDispatch();
-    const heirToAdd = useSelector(selectHeirToAdd);
+    const dialogItem = useSelector(selectHeirDialogItem);
 
     const updateHeirToAdd = (heir: UiUser) => {
         dispatch(heirsActions.updateHeirToAdd(heir))
@@ -22,10 +22,10 @@ export default function HeirDialogContent() {
                 <Select
                     labelId="category-select-label"
                     id="category-select"
-                    value={heirToAdd.type}
+                    value={dialogItem.type}
                     label="Category"
                     onChange={e => updateHeirToAdd({
-                        ...heirToAdd,
+                        ...dialogItem,
                         type: UiUserType[e.target.value as keyof typeof UiUserType]
                     })}
                 >
@@ -46,9 +46,9 @@ export default function HeirDialogContent() {
                     InputLabelProps={{shrink: true}}
                     fullWidth
                     variant="standard"
-                    value={heirToAdd.id}
+                    value={dialogItem.id}
                     onChange={e => updateHeirToAdd({
-                        ...heirToAdd,
+                        ...dialogItem,
                         id: e.target.value
                     })}
                 />
@@ -62,9 +62,9 @@ export default function HeirDialogContent() {
                     InputLabelProps={{shrink: true}}
                     fullWidth
                     variant="standard"
-                    value={heirToAdd.name}
+                    value={dialogItem.name}
                     onChange={e => updateHeirToAdd({
-                        ...heirToAdd,
+                        ...dialogItem,
                         name: e.target.value
                     })}
                 />
@@ -78,9 +78,9 @@ export default function HeirDialogContent() {
                     InputLabelProps={{shrink: true}}
                     fullWidth
                     variant="standard"
-                    value={heirToAdd.email}
+                    value={dialogItem.email}
                     onChange={e => updateHeirToAdd({
-                        ...heirToAdd,
+                        ...dialogItem,
                         email: e.target.value
                     })}
                 />

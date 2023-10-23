@@ -58,7 +58,7 @@ export const loadHeirsThunk = createAsyncThunk<UiUser[], void, {
 
 // Define a type for the slice state
 export const heirsSlice = createSlice({
-    name: 'testaments',
+    name: 'heirs',
     initialState,
     reducers: {
         closeAddDialog: state => {
@@ -68,11 +68,11 @@ export const heirsSlice = createSlice({
             state.showAddDialog = true
         },
         cancelAddHeir: state => {
-            state.heirToAdd = initialState.heirToAdd;
+            state.dialogItem = initialState.dialogItem;
             state.showAddDialog = false;
         },
         cancelEditHeir: state => {
-            state.heirToAdd = initialState.heirToAdd;
+            state.dialogItem = initialState.dialogItem;
             state.showEditDialog = false;
         },
         openEditDialog: state => {
@@ -83,14 +83,14 @@ export const heirsSlice = createSlice({
         },
         closeDeleteDialog: state => {
             state.showDeleteDialog = false
-            state.heirToAdd = initialState.heirToAdd;
+            state.dialogItem = initialState.dialogItem;
         },
         cancelDeleteHeir: state => {
-            state.heirToAdd = initialState.heirToAdd;
+            state.dialogItem = initialState.dialogItem;
             state.showDeleteDialog = false;
         },
         updateHeirToAdd: (state, action: PayloadAction<UiUser>) => {
-            state.heirToAdd = action.payload;
+            state.dialogItem = action.payload;
         },
     },
     extraReducers: (builder) => {
@@ -107,43 +107,43 @@ export const heirsSlice = createSlice({
                 state.error = action.error.message;
             })
             .addCase(addHeirThunk.pending, (state) => {
-                state.addState = 'pending';
+                state.dialogItemState = 'pending';
                 state.showAddDialog = true;
             })
             .addCase(addHeirThunk.fulfilled, (state, action) => {
-                state.addState = 'succeeded';
+                state.dialogItemState = 'succeeded';
                 state.showAddDialog = false;
-                state.heirToAdd = initialState.heirToAdd;
+                state.dialogItem = initialState.dialogItem;
                 state.heirsList = [...state.heirsList, action.payload]
             })
             .addCase(addHeirThunk.rejected, (state, action) => {
-                state.addState = 'failed';
+                state.dialogItemState = 'failed';
                 state.error = action.error.message;
                 state.showAddDialog = true;
             })
             .addCase(updateHeirThunk.pending, (state) => {
-                state.addState = 'pending';
+                state.dialogItemState = 'pending';
             })
             .addCase(updateHeirThunk.fulfilled, (state, action) => {
-                state.addState = 'succeeded';
+                state.dialogItemState = 'succeeded';
                 state.showEditDialog = false;
-                state.heirToAdd = initialState.heirToAdd;
+                state.dialogItem = initialState.dialogItem;
                 state.heirsList = [...state.heirsList.filter(h => h.id != action.payload.id), action.payload]
             })
             .addCase(updateHeirThunk.rejected, (state, action) => {
-                state.addState = 'failed';
+                state.dialogItemState = 'failed';
                 state.error = action.error.message;
             })
             .addCase(deleteHeirThunk.pending, (state) => {
-                state.addState = 'pending';
+                state.dialogItemState = 'pending';
             })
             .addCase(deleteHeirThunk.fulfilled, (state, action) => {
-                state.addState = 'succeeded';
+                state.dialogItemState = 'succeeded';
                 state.showDeleteDialog = false;
                 state.heirsList = [...state.heirsList.filter(h => h.id != action.payload)]
             })
             .addCase(deleteHeirThunk.rejected, (state, action) => {
-                state.addState = 'failed';
+                state.dialogItemState = 'failed';
                 state.error = action.error.message;
             });
     },

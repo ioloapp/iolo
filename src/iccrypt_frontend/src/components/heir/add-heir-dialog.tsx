@@ -4,9 +4,9 @@ import {useAppDispatch} from "../../redux/hooks";
 import AddIcon from "@mui/icons-material/Add";
 import {Fab} from "@mui/material";
 import {
+    selectHeirDialogItem,
+    selectHeirDialogItemState,
     selectHeirError,
-    selectHeirToAdd,
-    selectHeirToAddState,
     selectShowAddHeirDialog
 } from "../../redux/heirs/heirsSelectors";
 import {addHeirThunk, heirsActions, updateHeirThunk} from "../../redux/heirs/heirsSlice";
@@ -16,8 +16,8 @@ import HeirDialogContent from "./heir-dialog-content";
 export default function AddHeirDialog() {
     const dispatch = useAppDispatch();
     const showAddHeirDialog = useSelector(selectShowAddHeirDialog);
-    const heirToAdd = useSelector(selectHeirToAdd);
-    const heirToAddState = useSelector(selectHeirToAddState);
+    const dialogItem = useSelector(selectHeirDialogItem);
+    const dialogItemState = useSelector(selectHeirDialogItemState);
     const heirError = useSelector(selectHeirError);
 
     const handleClickOpen = () => {
@@ -33,11 +33,11 @@ export default function AddHeirDialog() {
     }
 
     const createHeir = async () => {
-        dispatch(addHeirThunk(heirToAdd));
+        dispatch(addHeirThunk(dialogItem));
     }
 
     const updateHeir = async () => {
-        dispatch(updateHeirThunk(heirToAdd));
+        dispatch(updateHeirThunk(dialogItem));
     }
 
     return (
@@ -49,15 +49,15 @@ export default function AddHeirDialog() {
             }}>
                 <AddIcon/>
             </Fab>
-            <BasicDialog  title="Add Heir"
-            leadText="To add a new Heir enter the id of it and extend it with a known name."
+            <BasicDialog  title="Add heir"
+            leadText="To add a new heir enter the id of it and extend it with a known name."
             isOpen={showAddHeirDialog}
             handleClose={handleClose}
             cancelAction={cancelAddHeir}
             okAction={createHeir}
-            okButtonText="Add Heir"
+            okButtonText="Add heir"
             error={heirError}
-            loadingState={heirToAddState}>
+            dialogItemState={dialogItemState}>
                 <HeirDialogContent />
             </BasicDialog>
         </div>

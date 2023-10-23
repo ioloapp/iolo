@@ -1,7 +1,7 @@
 import * as React from 'react';
 import TextField from '@mui/material/TextField';
 import {useSelector} from "react-redux";
-import {selectSecretToAdd} from "../../redux/secrets/secretsSelectors";
+import {selectDialogItem} from "../../redux/secrets/secretsSelectors";
 import {useAppDispatch} from "../../redux/hooks";
 import {secretsActions} from "../../redux/secrets/secretsSlice";
 import {FormControl, MenuItem, Select, Typography} from "@mui/material";
@@ -9,10 +9,10 @@ import {UiSecret, UiSecretCategory} from "../../services/IcTypesForUi";
 
 export default function SecretDialogContent() {
     const dispatch = useAppDispatch();
-    const secretToAdd = useSelector(selectSecretToAdd);
+    const dialogItem = useSelector(selectDialogItem);
 
     const updateSecretToAdd = (secret: UiSecret) => {
-        dispatch(secretsActions.updateSecretToAdd(secret))
+        dispatch(secretsActions.updateDialogItem(secret))
     }
 
     return (
@@ -21,10 +21,10 @@ export default function SecretDialogContent() {
                 <Typography variant="body2">Category</Typography>
                 <Select
                     id="category-select"
-                    value={secretToAdd.category}
+                    value={dialogItem.category}
                     label="Category"
                     onChange={e => updateSecretToAdd({
-                        ...secretToAdd,
+                        ...dialogItem,
                         category: UiSecretCategory[e.target.value as keyof typeof UiSecretCategory]
                     })}
                 >
@@ -43,13 +43,13 @@ export default function SecretDialogContent() {
                     InputLabelProps={{shrink: true}}
                     fullWidth
                     variant="standard"
-                    value={secretToAdd.name}
+                    value={dialogItem.name}
                     onChange={e => updateSecretToAdd({
-                        ...secretToAdd,
+                        ...dialogItem,
                         name: e.target.value
                     })}
                 />
-                {secretToAdd.category === UiSecretCategory.Password &&
+                {dialogItem.category === UiSecretCategory.Password &&
                     <>
                         <TextField
                             autoFocus
@@ -59,9 +59,9 @@ export default function SecretDialogContent() {
                             InputLabelProps={{shrink: true}}
                             fullWidth
                             variant="standard"
-                            value={secretToAdd.username}
+                            value={dialogItem.username}
                             onChange={e => updateSecretToAdd({
-                                ...secretToAdd,
+                                ...dialogItem,
                                 username: e.target.value
                             })}
                         />
@@ -74,9 +74,9 @@ export default function SecretDialogContent() {
                             fullWidth
                             type="password"
                             variant="standard"
-                            value={secretToAdd.password}
+                            value={dialogItem.password}
                             onChange={e => updateSecretToAdd({
-                                ...secretToAdd,
+                                ...dialogItem,
                                 password: e.target.value
                             })}
                         />
@@ -88,9 +88,9 @@ export default function SecretDialogContent() {
                             InputLabelProps={{shrink: true}}
                             fullWidth
                             variant="standard"
-                            value={secretToAdd.url}
+                            value={dialogItem.url}
                             onChange={e => updateSecretToAdd({
-                                ...secretToAdd,
+                                ...dialogItem,
                                 url: e.target.value
                             })}
                         />
@@ -104,10 +104,10 @@ export default function SecretDialogContent() {
                     InputLabelProps={{shrink: true}}
                     fullWidth
                     variant="standard"
-                    value={secretToAdd.notes}
+                    value={dialogItem.notes}
                     multiline
                     onChange={e => updateSecretToAdd({
-                        ...secretToAdd,
+                        ...dialogItem,
                         notes: e.target.value
                     })}
                 />

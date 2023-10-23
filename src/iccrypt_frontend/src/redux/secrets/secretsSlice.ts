@@ -72,36 +72,36 @@ export const secretsSlice = createSlice({
         closeAddOrEditDialog: state => {
             state.showAddDialog = false;
             state.showEditDialog = false;
-            state.secretToAdd = initialState.secretToAdd;
+            state.dialogItem = initialState.dialogItem;
         },
         openAddDialog: state => {
             state.showAddDialog = true
-            state.secretToAdd = initialState.secretToAdd;
+            state.dialogItem = initialState.dialogItem;
         },
         openEditDialog: state => {
             state.showEditDialog = true
         },
         cancelAddSecret: state => {
             state.showAddDialog = false;
-            state.secretToAdd = initialState.secretToAdd;
+            state.dialogItem = initialState.dialogItem;
         },
         cancelEditSecret: state => {
             state.showEditDialog = false;
-            state.secretToAdd = initialState.secretToAdd;
+            state.dialogItem = initialState.dialogItem;
         },
         openDeleteDialog: state => {
             state.showDeleteDialog = true
         },
         closeDeleteDialog: state => {
             state.showDeleteDialog = false
-            state.secretToAdd = initialState.secretToAdd;
+            state.dialogItem = initialState.dialogItem;
         },
         cancelDeleteSecret: state => {
-            state.secretToAdd = initialState.secretToAdd;
+            state.dialogItem = initialState.dialogItem;
             state.showDeleteDialog = false;
         },
-        updateSecretToAdd: (state, action) => {
-            state.secretToAdd = action.payload;
+        updateDialogItem: (state, action) => {
+            state.dialogItem = action.payload;
         },
     },
     extraReducers: (builder) => {
@@ -112,7 +112,6 @@ export const secretsSlice = createSlice({
             .addCase(loadSecretsThunk.fulfilled, (state, action) => {
                 state.listItemsState = 'succeeded';
                 state.groupedSecretList = splitSecretListByCategory(action.payload);
-                state.secretList = [...state.groupedSecretList.passwordList, ...state.groupedSecretList.notesList, ...state.groupedSecretList.othersList, ...state.groupedSecretList.documentsList]
             })
             .addCase(loadSecretsThunk.rejected, (state, action) => {
                 state.listItemsState = 'failed';
@@ -124,9 +123,8 @@ export const secretsSlice = createSlice({
             .addCase(addSecretThunk.fulfilled, (state, action) => {
                 state.dialogItemState = 'succeeded';
                 state.showAddDialog = false;
-                state.secretToAdd = {};
+                state.dialogItem = {};
                 state.groupedSecretList = addSecretToGroupedSecretList(state.groupedSecretList, action.payload)
-                state.secretList = [...state.groupedSecretList.passwordList, ...state.groupedSecretList.notesList, ...state.groupedSecretList.othersList, ...state.groupedSecretList.documentsList]
             })
             .addCase(addSecretThunk.rejected, (state, action) => {
                 state.dialogItemState = 'failed';
@@ -139,7 +137,7 @@ export const secretsSlice = createSlice({
             })
             .addCase(getSecretThunk.fulfilled, (state, action) => {
                 state.dialogItemState = 'succeeded';
-                state.secretToAdd = action.payload;
+                state.dialogItem = action.payload;
                 state.showAddDialog = false;
                 state.showEditDialog = true;
             })
@@ -155,9 +153,8 @@ export const secretsSlice = createSlice({
             .addCase(updateSecretThunk.fulfilled, (state, action) => {
                 state.dialogItemState = 'succeeded';
                 state.showEditDialog = false;
-                state.secretToAdd = {};
+                state.dialogItem = {};
                 state.groupedSecretList = updateSecretInGroupedSecretList(state.groupedSecretList, action.payload)
-                state.secretList = [...state.groupedSecretList.passwordList, ...state.groupedSecretList.notesList, ...state.groupedSecretList.othersList, ...state.groupedSecretList.documentsList]
             })
             .addCase(updateSecretThunk.rejected, (state, action) => {
                 state.dialogItemState = 'failed';
@@ -170,7 +167,6 @@ export const secretsSlice = createSlice({
                 state.dialogItemState = 'succeeded';
                 state.showDeleteDialog = false;
                 state.groupedSecretList = removeSecretFromGroupedSecretList(state.groupedSecretList, action.payload)
-                state.secretList = [...state.groupedSecretList.passwordList, ...state.groupedSecretList.notesList, ...state.groupedSecretList.othersList, ...state.groupedSecretList.documentsList]
             })
             .addCase(deleteSecretThunk.rejected, (state, action) => {
                 state.dialogItemState = 'failed';

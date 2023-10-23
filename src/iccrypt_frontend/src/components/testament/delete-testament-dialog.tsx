@@ -3,9 +3,9 @@ import {useSelector} from "react-redux";
 import {useAppDispatch} from "../../redux/hooks";
 import {
     selectShowDeleteTestamentDialog,
-    selectTestamentError,
-    selectTestamentToAdd,
-    selectTestamentToAddState
+    selectTestamentDialogItem,
+    selectTestamentDialogItemState,
+    selectTestamentError
 } from "../../redux/testaments/testamentsSelectors";
 import {deleteTestamentThunk, testamentsActions} from "../../redux/testaments/testamentsSlice";
 import {BasicDialog} from "../dialog/basic-dialog";
@@ -13,9 +13,9 @@ import {BasicDialog} from "../dialog/basic-dialog";
 export default function DeleteTestamentDialog() {
     const dispatch = useAppDispatch();
     const showDeleteTestamentDialog: boolean = useSelector(selectShowDeleteTestamentDialog);
-    const testamentToAdd = useSelector(selectTestamentToAdd);
+    const dialogItem = useSelector(selectTestamentDialogItem);
     const testamentError = useSelector(selectTestamentError);
-    const testamentToAddState = useSelector(selectTestamentToAddState);
+    const dialogItemState = useSelector(selectTestamentDialogItemState);
 
     const handleClose = () => {
         dispatch(testamentsActions.closeDeleteDialog());
@@ -26,19 +26,19 @@ export default function DeleteTestamentDialog() {
     }
 
     const deleteTestament = async () => {
-        dispatch(deleteTestamentThunk(testamentToAdd));
+        dispatch(deleteTestamentThunk(dialogItem));
     }
 
     return (
         <BasicDialog  title="Delete testament"
-                      leadText={`Are you sure you want to delete the testament ${testamentToAdd.name}?`}
+                      leadText={`Are you sure you want to delete the testament ${dialogItem.name}?`}
                       isOpen={showDeleteTestamentDialog}
                       handleClose={handleClose}
                       cancelAction={cancelDeleteTestament}
                       okAction={deleteTestament}
                       okButtonText="Delete testament"
                       error={testamentError}
-                      loadingState={testamentToAddState}>
+                      dialogItemState={dialogItemState}>
         </BasicDialog>
     );
 }

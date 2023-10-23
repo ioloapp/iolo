@@ -78,11 +78,11 @@ export const testamentsSlice = createSlice({
             state.showAddDialog = true
         },
         cancelAddTestament: state => {
-            state.testamentToAdd = initialState.testamentToAdd;
+            state.dialogItem = initialState.dialogItem;
             state.showAddDialog = false;
         },
         cancelEditTestament: state => {
-            state.testamentToAdd = initialState.testamentToAdd;
+            state.dialogItem = initialState.dialogItem;
             state.showEditDialog = false;
         },
         openEditDialog: state => {
@@ -93,14 +93,14 @@ export const testamentsSlice = createSlice({
         },
         closeDeleteDialog: state => {
             state.showDeleteDialog = false
-            state.testamentToAdd = initialState.testamentToAdd;
+            state.dialogItem = initialState.dialogItem;
         },
         cancelDeleteTestament: state => {
-            state.testamentToAdd = initialState.testamentToAdd;
+            state.dialogItem = initialState.dialogItem;
             state.showDeleteDialog = false;
         },
-        updateTestamentToAdd: (state, action: PayloadAction<UiTestament>) => {
-            state.testamentToAdd = action.payload;
+        updateDialogItem: (state, action: PayloadAction<UiTestament>) => {
+            state.dialogItem = action.payload;
         },
     },
     extraReducers: (builder) => {
@@ -118,55 +118,55 @@ export const testamentsSlice = createSlice({
                 state.error = action.error.message;
             })
             .addCase(addTestamentThunk.pending, (state) => {
-                state.addState = 'pending';
+                state.dialogItemState = 'pending';
                 state.showAddDialog = true;
             })
             .addCase(addTestamentThunk.fulfilled, (state, action) => {
-                state.addState = 'succeeded';
+                state.dialogItemState = 'succeeded';
                 state.showAddDialog = false;
-                state.testamentToAdd = initialState.testamentToAdd;
+                state.dialogItem = initialState.dialogItem;
                 state.testamentsList = [...state.testamentsList, action.payload]
             })
             .addCase(addTestamentThunk.rejected, (state, action) => {
-                state.addState = 'failed';
+                state.dialogItemState = 'failed';
                 state.error = action.error.message;
                 state.showAddDialog = true;
             })
             .addCase(editTestamentThunk.pending, (state) => {
-                state.addState = 'pending';
+                state.dialogItemState = 'pending';
                 state.showEditDialog = true;
             })
             .addCase(editTestamentThunk.fulfilled, (state, action) => {
-                state.addState = 'succeeded';
-                state.testamentToAdd = action.payload;
+                state.dialogItemState = 'succeeded';
+                state.dialogItem = action.payload;
             })
             .addCase(editTestamentThunk.rejected, (state, action) => {
-                state.addState = 'failed';
+                state.dialogItemState = 'failed';
                 state.error = action.error.message;
             })
             .addCase(updateTestamentThunk.pending, (state) => {
-                state.addState = 'pending';
+                state.dialogItemState = 'pending';
             })
             .addCase(updateTestamentThunk.fulfilled, (state, action) => {
-                state.addState = 'succeeded';
+                state.dialogItemState = 'succeeded';
                 state.showEditDialog = false;
-                state.testamentToAdd = initialState.testamentToAdd;
+                state.dialogItem = initialState.dialogItem;
                 state.testamentsList = [...state.testamentsList.filter(h => h.id != action.payload.id), action.payload]
             })
             .addCase(updateTestamentThunk.rejected, (state, action) => {
-                state.addState = 'failed';
+                state.dialogItemState = 'failed';
                 state.error = action.error.message;
             })
             .addCase(deleteTestamentThunk.pending, (state) => {
-                state.addState = 'pending';
+                state.dialogItemState = 'pending';
             })
             .addCase(deleteTestamentThunk.fulfilled, (state, action) => {
-                state.addState = 'succeeded';
+                state.dialogItemState = 'succeeded';
                 state.showDeleteDialog = false;
                 state.testamentsList = [...state.testamentsList.filter(h => h.id != action.payload)]
             })
             .addCase(deleteTestamentThunk.rejected, (state, action) => {
-                state.addState = 'failed';
+                state.dialogItemState = 'failed';
                 state.error = action.error.message;
             });
     },

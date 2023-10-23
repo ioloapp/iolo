@@ -1,9 +1,9 @@
 import * as React from 'react';
 import {useSelector} from "react-redux";
 import {
+    selectDialogItem,
+    selectDialogItemState,
     selectSecretsError,
-    selectSecretsToAddState,
-    selectSecretToAdd,
     selectShowEditSecretDialog
 } from "../../redux/secrets/secretsSelectors";
 import {useAppDispatch} from "../../redux/hooks";
@@ -16,8 +16,8 @@ import SecretDialogContent from "./secret-dialog-content";
 export default function EditSecretDialog() {
     const dispatch = useAppDispatch();
     const showEditSecretDialog: boolean = useSelector(selectShowEditSecretDialog);
-    const secretToAdd = useSelector(selectSecretToAdd);
-    const secretToAddState = useSelector(selectSecretsToAddState);
+    const dialogItem = useSelector(selectDialogItem);
+    const dialogItemState = useSelector(selectDialogItemState);
     const secretError = useSelector(selectSecretsError);
 
     const handleClickOpen = () => {
@@ -33,7 +33,7 @@ export default function EditSecretDialog() {
     }
 
     const updateSecret = async () => {
-        dispatch(updateSecretThunk(secretToAdd));
+        dispatch(updateSecretThunk(dialogItem));
     }
 
     return (
@@ -53,7 +53,7 @@ export default function EditSecretDialog() {
                          okAction={updateSecret}
                          okButtonText="Update secret"
                          error={secretError}
-                         loadingState={secretToAddState}>
+                         dialogItemState={dialogItemState}>
                 <SecretDialogContent/>
             </BasicDialog>
         </div>

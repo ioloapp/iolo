@@ -6,9 +6,9 @@ import {Fab} from "@mui/material";
 import {addTestamentThunk, testamentsActions} from "../../redux/testaments/testamentsSlice";
 import {
     selectShowAddTestamentDialog,
-    selectTestamentError,
-    selectTestamentToAdd,
-    selectTestamentToAddState
+    selectTestamentDialogItem,
+    selectTestamentDialogItemState,
+    selectTestamentError
 } from "../../redux/testaments/testamentsSelectors";
 import {selectCurrentUser} from "../../redux/user/userSelectors";
 import SecretDialogContent from "../secret/secret-dialog-content";
@@ -17,9 +17,9 @@ import {BasicDialog} from "../dialog/basic-dialog";
 export default function AddTestamentDialog() {
     const dispatch = useAppDispatch();
     const showAddTestamentDialog = useSelector(selectShowAddTestamentDialog);
-    const testamentToAdd = useSelector(selectTestamentToAdd);
+    const dialogItem = useSelector(selectTestamentDialogItem);
     const testamentError = useSelector(selectTestamentError);
-    const testamentToAddState = useSelector(selectTestamentToAddState);
+    const dialogItemState = useSelector(selectTestamentDialogItemState);
     const currentUser = useSelector(selectCurrentUser);
 
     const handleClickOpen = () => {
@@ -36,7 +36,7 @@ export default function AddTestamentDialog() {
 
     const createTestament = async () => {
         dispatch(addTestamentThunk({
-            ...testamentToAdd,
+            ...dialogItem,
             testator: currentUser
         }));
     }
@@ -58,7 +58,7 @@ export default function AddTestamentDialog() {
                          okAction={createTestament}
                          okButtonText="Add testament"
                          error={testamentError}
-                         loadingState={testamentToAddState}>
+                         dialogItemState={dialogItemState}>
                 <SecretDialogContent/>
             </BasicDialog>
         </div>

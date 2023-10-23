@@ -8,9 +8,8 @@ export interface GroupedSecretList {
 }
 
 export interface SecretsState {
-    secretList: UiSecretListEntry[],
     groupedSecretList: GroupedSecretList,
-    secretToAdd: UiSecret
+    dialogItem: UiSecret
     dialogItemState: string,
     listItemsState: string,
     error?: string;
@@ -21,14 +20,13 @@ export interface SecretsState {
 
 // Define the initial state using that type
 export const initialState: SecretsState = {
-    secretList: [],
     groupedSecretList: {
         passwordList: [],
         notesList: [],
         documentsList: [],
         othersList: []
     },
-    secretToAdd: {
+    dialogItem: {
         category: UiSecretCategory.Password,
         name: '',
         username: '',

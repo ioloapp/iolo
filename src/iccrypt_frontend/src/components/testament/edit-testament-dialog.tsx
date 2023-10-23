@@ -4,9 +4,9 @@ import {useAppDispatch} from "../../redux/hooks";
 import {testamentsActions, updateTestamentThunk} from "../../redux/testaments/testamentsSlice";
 import {
     selectShowEditTestamentDialog,
-    selectTestamentError,
-    selectTestamentToAdd,
-    selectTestamentToAddState
+    selectTestamentDialogItem,
+    selectTestamentDialogItemState,
+    selectTestamentError
 } from "../../redux/testaments/testamentsSelectors";
 import {selectCurrentUser} from "../../redux/user/userSelectors";
 import SecretDialogContent from "../secret/secret-dialog-content";
@@ -15,9 +15,9 @@ import {BasicDialog} from "../dialog/basic-dialog";
 export default function EditTestamentDialog() {
     const dispatch = useAppDispatch();
     const showEditTestamentDialog = useSelector(selectShowEditTestamentDialog);
-    const testamentToAdd = useSelector(selectTestamentToAdd);
+    const dialogItem = useSelector(selectTestamentDialogItem);
     const testamentError = useSelector(selectTestamentError);
-    const testamentToAddState = useSelector(selectTestamentToAddState);
+    const dialogItemState = useSelector(selectTestamentDialogItemState);
     const currentUser = useSelector(selectCurrentUser);
 
     const handleClose = () => {
@@ -30,7 +30,7 @@ export default function EditTestamentDialog() {
 
     const updateTestament = async () => {
         dispatch(updateTestamentThunk({
-            ...testamentToAdd,
+            ...dialogItem,
             testator: currentUser,
         }));
     }
@@ -44,7 +44,7 @@ export default function EditTestamentDialog() {
                      okAction={updateTestament}
                      okButtonText="Update testament"
                      error={testamentError}
-                     loadingState={testamentToAddState}>
+                     dialogItemState={dialogItemState}>
             <SecretDialogContent/>
         </BasicDialog>
     );

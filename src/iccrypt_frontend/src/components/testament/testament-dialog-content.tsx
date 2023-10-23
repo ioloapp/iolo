@@ -16,19 +16,19 @@ import {
 } from "@mui/material";
 import {UiTestament} from "../../services/IcTypesForUi";
 import {testamentsActions} from "../../redux/testaments/testamentsSlice";
-import {selectTestamentToAdd} from "../../redux/testaments/testamentsSelectors";
+import {selectTestamentDialogItem} from "../../redux/testaments/testamentsSelectors";
 import {selectHeirs} from "../../redux/heirs/heirsSelectors";
 
 export default function TestamentDialogContent() {
     const dispatch = useAppDispatch();
-    const testamentToAdd = useSelector(selectTestamentToAdd);
+    const dialogItem = useSelector(selectTestamentDialogItem);
     const groupedSecretList = useSelector(selectGroupedSecrets);
     const heirsList = useSelector(selectHeirs);
-    const [selectedSecrets, setSelectedSecrets] = React.useState<string[]>(testamentToAdd.secrets ? testamentToAdd.secrets : []);
-    const [selectedHeirs, setSelectedHeirs] = React.useState<string[]>(testamentToAdd.heirs ? testamentToAdd.heirs.map(heir => heir.id) : []);
+    const [selectedSecrets, setSelectedSecrets] = React.useState<string[]>(dialogItem.secrets ? dialogItem.secrets : []);
+    const [selectedHeirs, setSelectedHeirs] = React.useState<string[]>(dialogItem.heirs ? dialogItem.heirs.map(heir => heir.id) : []);
 
     const updateTestamentToAdd = (testament: UiTestament) => {
-        dispatch(testamentsActions.updateTestamentToAdd(testament))
+        dispatch(testamentsActions.updateDialogItem(testament))
     }
 
     const handleSecretChange = (event: SelectChangeEvent<typeof selectedSecrets>) => {
@@ -36,8 +36,8 @@ export default function TestamentDialogContent() {
         let ids = typeof value === 'string' ? value.split(',') : value;
         ids = ids.flatMap(f => f ? [f] : []);
         setSelectedSecrets(ids);
-        dispatch(testamentsActions.updateTestamentToAdd({
-            ...testamentToAdd,
+        dispatch(testamentsActions.updateDialogItem({
+            ...dialogItem,
             secrets: ids
 
         }))
@@ -48,8 +48,8 @@ export default function TestamentDialogContent() {
         let ids = typeof value === 'string' ? value.split(',') : value;
         ids = ids.flatMap(f => f ? [f] : [])
         setSelectedHeirs(ids);
-        dispatch(testamentsActions.updateTestamentToAdd({
-            ...testamentToAdd,
+        dispatch(testamentsActions.updateDialogItem({
+            ...dialogItem,
             heirs: [...ids.map(id => heirsList.find(h => h.id === id))]
         }))
     };
@@ -76,9 +76,9 @@ export default function TestamentDialogContent() {
                     InputLabelProps={{shrink: true}}
                     fullWidth
                     variant="standard"
-                    value={testamentToAdd.name}
+                    value={dialogItem.name}
                     onChange={e => updateTestamentToAdd({
-                        ...testamentToAdd,
+                        ...dialogItem,
                         name: e.target.value
                     })}
                 />

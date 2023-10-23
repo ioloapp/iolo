@@ -2,9 +2,9 @@ import * as React from 'react';
 import {useSelector} from "react-redux";
 import {useAppDispatch} from "../../redux/hooks";
 import {
+    selectHeirDialogItem,
+    selectHeirDialogItemState,
     selectHeirError,
-    selectHeirToAdd,
-    selectHeirToAddState,
     selectShowEditHeirDialog
 } from "../../redux/heirs/heirsSelectors";
 import {heirsActions, updateHeirThunk} from "../../redux/heirs/heirsSlice";
@@ -14,8 +14,8 @@ import HeirDialogContent from "./heir-dialog-content";
 export default function EditHeirDialog() {
     const dispatch = useAppDispatch();
     const showEditHeirDialog = useSelector(selectShowEditHeirDialog);
-    const heirToAdd = useSelector(selectHeirToAdd);
-    const heirToAddState = useSelector(selectHeirToAddState);
+    const heirToAdd = useSelector(selectHeirDialogItem);
+    const heirToAddState = useSelector(selectHeirDialogItemState);
     const heirError = useSelector(selectHeirError);
 
     const handleClose = () => {
@@ -31,15 +31,15 @@ export default function EditHeirDialog() {
     }
 
     return (
-            <BasicDialog  title="Edit Heir"
-            leadText="Update your hire information"
+            <BasicDialog  title="Edit heir"
+            leadText="Update the information of your heir."
             isOpen={showEditHeirDialog}
             handleClose={handleClose}
             cancelAction={cancelEditHeir}
             okAction={updateHeir}
-            okButtonText="Update Heir"
+            okButtonText="Update heir"
             error={heirError}
-            loadingState={heirToAddState}>
+            dialogItemState={heirToAddState}>
                 <HeirDialogContent />
             </BasicDialog>
     );
