@@ -16,6 +16,7 @@ import DeleteHeirDialog from "../../components/heir/delete-heir-dialog";
 import {SearchField, StyledAppBar} from "../../components/layout/search-bar";
 import SearchIcon from "@mui/icons-material/Search";
 import EditHeirDialog from "../../components/heir/edit-heir-dialog";
+import {Error} from "../../components/error/error";
 
 export function Heirs() {
 
@@ -66,9 +67,7 @@ export function Heirs() {
             </StyledAppBar>
             <Box>
                 {error &&
-                    <Box>
-                        {heirListError}
-                    </Box>
+                    <Error error={heirListError} />
                 }
                 {!error && filteredHeirs &&
                     <Box>

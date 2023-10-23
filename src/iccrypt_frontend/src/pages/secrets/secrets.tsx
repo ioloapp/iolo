@@ -17,6 +17,7 @@ import DeleteSecretDialog from "../../components/secret/delete-secret-dialog";
 import SearchIcon from "@mui/icons-material/Search";
 import {SearchField, StyledAppBar} from "../../components/layout/search-bar";
 import EditSecretDialog from "../../components/secret/edit-secret-dialog";
+import {Error} from "../../components/error/error";
 
 export function Secrets() {
 
@@ -73,9 +74,7 @@ export function Secrets() {
             </StyledAppBar>
             <Box sx={{width: '100%'}}>
                 {error &&
-                    <Box>
-                        {secretsListError}
-                    </Box>
+                    <Error error={secretsListError} />
                 }
                 {!error && filteredSecretList &&
                     <>

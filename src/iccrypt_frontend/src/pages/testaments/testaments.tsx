@@ -19,6 +19,7 @@ import DeleteTestamentDialog from "../../components/testament/delete-testament-d
 import {SearchField, StyledAppBar} from "../../components/layout/search-bar";
 import SearchIcon from "@mui/icons-material/Search";
 import EditTestamentDialog from "../../components/testament/edit-testament-dialog";
+import {Error} from "../../components/error/error";
 
 export function Testaments() {
 
@@ -70,9 +71,7 @@ export function Testaments() {
             </StyledAppBar>
             <Box>
                 {error &&
-                    <Box>
-                        {testamentsListError}
-                    </Box>
+                    <Error error={testamentsListError} />
                 }
                 {!error && filteredTestaments &&
                     <Box>
