@@ -255,7 +255,9 @@ class IcCryptService {
                     role: UiTestamentListEntryRole.Heir
                 }
             });
-        } else throw mapError(resultAsTestator['Err']);
+        } else if (resultAsHeir['Err']) {
+            throw mapError(resultAsTestator['Err']);
+        }
 
         return testamentsAsTestator.concat(testamentsAsHeir);
     }
