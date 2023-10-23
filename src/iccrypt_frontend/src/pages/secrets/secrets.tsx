@@ -59,7 +59,7 @@ export function Secrets() {
         }
     }
 
-    const error = (): boolean => {
+    const hasError = (): boolean => {
         return secretsListState === 'failed';
     }
 
@@ -73,10 +73,10 @@ export function Secrets() {
                 </IconButton>
             </StyledAppBar>
             <Box sx={{width: '100%'}}>
-                {error &&
+                {hasError() &&
                     <Error error={secretsListError} />
                 }
-                {!error && filteredSecretList &&
+                {!hasError() && filteredSecretList &&
                     <>
                         {filteredSecretList.passwordList?.length > 0 &&
                             <Box>

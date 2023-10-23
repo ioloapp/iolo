@@ -56,7 +56,7 @@ export function Testaments() {
         }
     }
 
-    const error = (): boolean => {
+    const hasError = (): boolean => {
         return testamentsListState === 'failed';
     }
 
@@ -70,10 +70,10 @@ export function Testaments() {
                 </IconButton>
             </StyledAppBar>
             <Box>
-                {error &&
+                {hasError() &&
                     <Error error={testamentsListError} />
                 }
-                {!error && filteredTestaments &&
+                {!hasError() && filteredTestaments &&
                     <Box>
                         <List dense={false}>
                             {filteredTestaments.flatMap(f => f ? [f] : []).map((testament: UiTestament) =>

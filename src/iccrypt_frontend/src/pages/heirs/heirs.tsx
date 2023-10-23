@@ -53,7 +53,8 @@ export function Heirs() {
         }
     }
 
-    const error = (): boolean => {
+    const hasError = (): boolean => {
+        console.log('heirListState', heirListState)
         return heirListState === 'failed';
     }
 
@@ -66,10 +67,10 @@ export function Heirs() {
                 </IconButton>
             </StyledAppBar>
             <Box>
-                {error &&
+                {hasError() &&
                     <Error error={heirListError} />
                 }
-                {!error && filteredHeirs &&
+                {!hasError() && filteredHeirs &&
                     <Box>
                         <List dense={false}>
                             {filteredHeirs.map((heir: UiUser) =>
