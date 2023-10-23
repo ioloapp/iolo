@@ -4,8 +4,12 @@ import {useEffect, useState} from "react";
 import {useAppDispatch} from "../../redux/hooks";
 import {PageLayout} from "../../components/layout/page-layout";
 import {useSelector} from "react-redux";
-import {selectTestaments} from "../../redux/testaments/testamentsSelectors";
-import AddEditTestamentDialog from "../../components/testament/add-edit-testament-dialog";
+import {
+    selectTestamentError,
+    selectTestaments,
+    selectTestamentsListState
+} from "../../redux/testaments/testamentsSelectors";
+import AddTestamentDialog from "../../components/testament/add-testament-dialog";
 import HistoryEduOutlinedIcon from "@mui/icons-material/HistoryEduOutlined";
 import {editTestamentThunk, loadTestamentsThunk, testamentsActions} from "../../redux/testaments/testamentsSlice";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
@@ -14,11 +18,15 @@ import {UiTestament} from "../../services/IcTypesForUi";
 import DeleteTestamentDialog from "../../components/testament/delete-testament-dialog";
 import {SearchField, StyledAppBar} from "../../components/layout/search-bar";
 import SearchIcon from "@mui/icons-material/Search";
+import EditTestamentDialog from "../../components/testament/edit-testament-dialog";
+import {Error} from "../../components/error/error";
 
 export function Testaments() {
 
     const dispatch = useAppDispatch();
     const testaments = useSelector(selectTestaments);
+    const testamentsListState = useSelector(selectTestamentsListState);
+    const testamentsListError = useSelector(selectTestamentError);
 
     useEffect(() => {
         dispatch(loadTestamentsThunk())
@@ -31,7 +39,7 @@ export function Testaments() {
     const [filteredTestaments, setFilteredTestaments] = useState(testaments)
 
     const deleteTestament = (testament: UiTestament) => {
-        dispatch(testamentsActions.updateTestamentToAdd(testament));
+        dispatch(testamentsActions.updateDialogItem(testament));
         dispatch(testamentsActions.openDeleteDialog());
     }
 
@@ -41,32 +49,42 @@ export function Testaments() {
 
     const filterTestamentList = (search: string) => {
         const searchString = search.toLowerCase();
-        if(searchString.length === 0){
+        if (searchString.length === 0) {
             setFilteredTestaments(testaments);
-        }else {
+        } else {
             setFilteredTestaments(testaments.filter(s => s.name.toLowerCase().indexOf(searchString) >= 0))
         }
+    }
+
+    const hasError = (): boolean => {
+        return testamentsListState === 'failed';
     }
 
     return (
         <PageLayout title="Testaments">
             <StyledAppBar position="sticky">
-                <SearchField id="outlined-basic" sx={{boxShadow: 'none'}} onChange={(e) => filterTestamentList(e.target.value)}/>
+                <SearchField id="outlined-basic" sx={{boxShadow: 'none'}}
+                             onChange={(e) => filterTestamentList(e.target.value)}/>
                 <IconButton size="large" aria-label="search" color="inherit">
                     <SearchIcon/>
                 </IconButton>
             </StyledAppBar>
             <Box>
-                {filteredTestaments &&
+                {hasError() &&
+                    <Error error={testamentsListError} />
+                }
+                {!hasError() && filteredTestaments &&
                     <Box>
                         <List dense={false}>
                             {filteredTestaments.flatMap(f => f ? [f] : []).map((testament: UiTestament) =>
                                 <ListItem key={testament.id} secondaryAction={
                                     <>
-                                        <IconButton edge="end" aria-label="delete" onClick={() => editTestament(testament)}>
+                                        <IconButton edge="end" aria-label="delete"
+                                                    onClick={() => editTestament(testament)}>
                                             <EditOutlinedIcon/>
                                         </IconButton>
-                                        <IconButton edge="end" aria-label="delete" onClick={() => deleteTestament(testament)}>
+                                        <IconButton edge="end" aria-label="delete"
+                                                    onClick={() => deleteTestament(testament)}>
                                             <DeleteIcon/>
                                         </IconButton>
                                     </>
@@ -85,8 +103,9 @@ export function Testaments() {
                     </Box>
                 }
             </Box>
-            <AddEditTestamentDialog/>
-            <DeleteTestamentDialog />
+            <AddTestamentDialog/>
+            <EditTestamentDialog/>
+            <DeleteTestamentDialog/>
         </PageLayout>
     );
 }

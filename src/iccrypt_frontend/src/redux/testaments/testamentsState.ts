@@ -2,8 +2,8 @@ import {UiTestament} from "../../services/IcTypesForUi";
 
 export interface TestamentsState {
     testamentsList: UiTestament[],
-    testamentToAdd: UiTestament
-    addState: string,
+    dialogItem: UiTestament
+    dialogItemState: string,
     loadingState: string,
     error?: string;
     showAddDialog: boolean;
@@ -14,12 +14,12 @@ export interface TestamentsState {
 // Define the initial state using that type
 export const initialState: TestamentsState = {
     testamentsList: [],
-    testamentToAdd: {
+    dialogItem: {
         name: '',
         secrets: [],
         heirs: []
     },
-    addState: 'init',
+    dialogItemState: 'init',
     loadingState: 'init',
     showAddDialog: false,
     showEditDialog: false,

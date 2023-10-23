@@ -1,44 +1,44 @@
 import * as React from 'react';
-import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogTitle from '@mui/material/DialogTitle';
 import {useSelector} from "react-redux";
 import {useAppDispatch} from "../../redux/hooks";
-import {selectShowDeleteTestamentDialog, selectTestamentToAdd} from "../../redux/testaments/testamentsSelectors";
+import {
+    selectShowDeleteTestamentDialog,
+    selectTestamentDialogItem,
+    selectTestamentDialogItemState,
+    selectTestamentError
+} from "../../redux/testaments/testamentsSelectors";
 import {deleteTestamentThunk, testamentsActions} from "../../redux/testaments/testamentsSlice";
+import {BasicDialog} from "../dialog/basic-dialog";
 
 export default function DeleteTestamentDialog() {
     const dispatch = useAppDispatch();
     const showDeleteTestamentDialog: boolean = useSelector(selectShowDeleteTestamentDialog);
-    const testamentToAdd = useSelector(selectTestamentToAdd);
+    const dialogItem = useSelector(selectTestamentDialogItem);
+    const testamentError = useSelector(selectTestamentError);
+    const dialogItemState = useSelector(selectTestamentDialogItemState);
 
     const handleClose = () => {
         dispatch(testamentsActions.closeDeleteDialog());
     };
 
-    const cancelAddSecret = () => {
+    const cancelDeleteTestament = () => {
         dispatch(testamentsActions.cancelDeleteTestament())
     }
 
-    const deleteSecret = async () => {
-        dispatch(deleteTestamentThunk(testamentToAdd));
+    const deleteTestament = async () => {
+        dispatch(deleteTestamentThunk(dialogItem));
     }
 
     return (
-        <Dialog open={showDeleteTestamentDialog} onClose={handleClose}>
-            <DialogTitle>Delete Secret</DialogTitle>
-            <DialogContent>
-                <DialogContentText>
-                    Are you sure you want to delete the testament {testamentToAdd.name}?
-                </DialogContentText>
-            </DialogContent>
-            <DialogActions>
-                <Button onClick={cancelAddSecret}>Cancel</Button>
-                <Button onClick={deleteSecret}>Delete Testament</Button>
-            </DialogActions>
-        </Dialog>
+        <BasicDialog  title="Delete testament"
+                      leadText={`Are you sure you want to delete the testament ${dialogItem.name}?`}
+                      isOpen={showDeleteTestamentDialog}
+                      handleClose={handleClose}
+                      cancelAction={cancelDeleteTestament}
+                      okAction={deleteTestament}
+                      okButtonText="Delete testament"
+                      error={testamentError}
+                      dialogItemState={dialogItemState}>
+        </BasicDialog>
     );
 }

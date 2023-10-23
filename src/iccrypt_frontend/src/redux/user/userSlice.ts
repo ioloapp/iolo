@@ -45,7 +45,7 @@ export const userSlice = createSlice({
     extraReducers: (builder) => {
         builder
             .addCase(loginUserThunk.pending, (state) => {
-                state.loginStatus = 'loading';
+                state.loginStatus = 'pending';
             })
             .addCase(loginUserThunk.fulfilled, (state, action) => {
                 state.loginStatus = 'succeeded';

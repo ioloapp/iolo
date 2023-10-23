@@ -4,9 +4,9 @@ import {useEffect, useState} from "react";
 import {PageLayout} from "../../components/layout/page-layout";
 import {useAppDispatch} from "../../redux/hooks";
 import {useSelector} from "react-redux";
-import {selectHeirs} from "../../redux/heirs/heirsSelectors";
+import {selectHeirError, selectHeirListState, selectHeirs} from "../../redux/heirs/heirsSelectors";
 import {heirsActions, loadHeirsThunk} from "../../redux/heirs/heirsSlice";
-import AddEditHeirDialog from "../../components/heir/add-edit-heir-dialog";
+import AddHeirDialog from "../../components/heir/add-heir-dialog";
 import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
 import {UiUser, UiUserType} from "../../services/IcTypesForUi";
 import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined';
@@ -15,11 +15,15 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import DeleteHeirDialog from "../../components/heir/delete-heir-dialog";
 import {SearchField, StyledAppBar} from "../../components/layout/search-bar";
 import SearchIcon from "@mui/icons-material/Search";
+import EditHeirDialog from "../../components/heir/edit-heir-dialog";
+import {Error} from "../../components/error/error";
 
 export function Heirs() {
 
     const dispatch = useAppDispatch();
     const heirs = useSelector(selectHeirs);
+    const heirListState = useSelector(selectHeirListState);
+    const heirListError = useSelector(selectHeirError);
 
     useEffect(() => {
         dispatch(loadHeirsThunk())
@@ -49,6 +53,11 @@ export function Heirs() {
         }
     }
 
+    const hasError = (): boolean => {
+        console.log('heirListState', heirListState)
+        return heirListState === 'failed';
+    }
+
     return (
         <PageLayout title="Heirs">
             <StyledAppBar position="sticky">
@@ -58,7 +67,10 @@ export function Heirs() {
                 </IconButton>
             </StyledAppBar>
             <Box>
-                {filteredHeirs &&
+                {hasError() &&
+                    <Error error={heirListError} />
+                }
+                {!hasError() && filteredHeirs &&
                     <Box>
                         <List dense={false}>
                             {filteredHeirs.map((heir: UiUser) =>
@@ -106,7 +118,8 @@ export function Heirs() {
                     </Box>
                 }
             </Box>
-            <AddEditHeirDialog/>
+            <AddHeirDialog />
+            <EditHeirDialog />
             <DeleteHeirDialog />
         </PageLayout>
     )
