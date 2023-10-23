@@ -1,7 +1,6 @@
 import {createAsyncThunk, createSlice} from '@reduxjs/toolkit';
 import {initialState, UserState} from "./userState";
 import IcCryptService from "../../services/IcCryptService";
-import {User} from "../../../../declarations/iccrypt_backend/iccrypt_backend.did";
 import {RootState} from "../store";
 import {UiUser} from "../../services/IcTypesForUi";
 
@@ -11,7 +10,10 @@ export const loginUserThunk = createAsyncThunk<UserState, void, { state: RootSta
     async (_, {rejectWithValue}): Promise<UserState> => {
         const principal = await icCryptService.login();
         if (principal) {
-            const userVaultExisting = await icCryptService.isUserVaultExisting()
+            const userVaultExisting = await icCryptService.isUserVaultExisting();
+            if (userVaultExisting) {
+                const user = await icCryptService.updateUserLoginDate();
+            }
             return {
                 principal: principal.toText(),
                 userVaultExisting
@@ -23,7 +25,8 @@ export const createUserThunk = createAsyncThunk<UiUser, void, { state: RootState
     'user/create',
     async (_, {rejectWithValue}): Promise<UiUser> => {
         try {
-            return icCryptService.createUser();
+            let user =  await icCryptService.createUser();
+            return user;
         } catch (e) {
             rejectWithValue(e.message);
         }

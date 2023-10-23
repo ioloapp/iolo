@@ -3,7 +3,7 @@ use std::collections::BTreeMap;
 use candid::{CandidType, Principal};
 use serde::Deserialize;
 
-use crate::smart_vaults::testament::{Testament, TestamentListEntry};
+use crate::smart_vaults::testament::{TestamentListEntry};
 
 #[derive(Debug, CandidType, Deserialize)]
 pub struct TestamentRegistry {

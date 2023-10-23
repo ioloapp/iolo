@@ -60,6 +60,25 @@ pub fn create_user() -> Result<User, SmartVaultErr> {
 
 #[ic_cdk_macros::update]
 #[candid_method(update)]
+pub fn update_user_login_date() -> Result<User, SmartVaultErr> {
+
+    // Update the login date
+    USER_REGISTRY.with(
+        |ur: &RefCell<UserRegistry>| -> Result<User, SmartVaultErr> {
+            let mut user_registry = ur.borrow_mut();
+            match user_registry.get_user_mut(&get_caller()) {
+                Ok(u) => {
+                    u.update_login_date();
+                    Ok(u.clone())
+                },
+                Err(e) => Err(e),
+            }
+        },
+    )
+}
+
+#[ic_cdk_macros::update]
+#[candid_method(update)]
 pub fn delete_user() -> Result<(), SmartVaultErr> {
     let principal = get_caller();
 

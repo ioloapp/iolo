@@ -160,6 +160,7 @@ export const idlFactory = ({ IDL }) => {
     'update_heir' : IDL.Func([User], [Result], []),
     'update_secret' : IDL.Func([Secret], [Result_1], []),
     'update_testament' : IDL.Func([Testament], [Result_2], []),
+    'update_user_login_date' : IDL.Func([], [Result], []),
     'what_time_is_it' : IDL.Func([], [IDL.Nat64], ['query']),
     'who_am_i' : IDL.Func([], [IDL.Text], ['query']),
   });

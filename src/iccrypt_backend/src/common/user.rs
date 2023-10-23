@@ -1,4 +1,5 @@
 use candid::{CandidType, Deserialize, Principal};
+use ic_cdk::api::time;
 use serde::Serialize;
 
 use crate::{smart_vaults::user_vault::UserVaultID, utils::time};
@@ -56,7 +57,7 @@ impl User {
             user_type: None,
             date_created: now,
             date_modified: now,
-            date_last_login: None,
+            date_last_login: Some(now),
             user_vault_id: None
         }
     }
@@ -71,6 +72,13 @@ impl User {
 
     pub fn set_user_vault(&mut self, user_vault_id: UserVaultID) {
         self.user_vault_id = Some(user_vault_id);
+        self.date_modified = time::get_current_time();
+    }
+
+    pub fn update_login_date(&mut self) {
+        let now = time::get_current_time();
+        self.date_last_login = Some(now);
+        self.date_modified = now;
     }
 
     pub fn new_random_with_seed(seed: u8) -> User {
