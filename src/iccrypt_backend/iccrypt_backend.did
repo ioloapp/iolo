@@ -131,6 +131,7 @@ service : {
   update_heir : (User) -> (Result);
   update_secret : (Secret) -> (Result_1);
   update_testament : (Testament) -> (Result_2);
+  update_user_login_date : () -> (Result);
   what_time_is_it : () -> (nat64) query;
   who_am_i : () -> (text) query;
 }

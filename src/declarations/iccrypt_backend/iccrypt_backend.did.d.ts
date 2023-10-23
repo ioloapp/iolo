@@ -148,6 +148,7 @@ export interface _SERVICE {
   'update_heir' : ActorMethod<[User], Result>,
   'update_secret' : ActorMethod<[Secret], Result_1>,
   'update_testament' : ActorMethod<[Testament], Result_2>,
+  'update_user_login_date' : ActorMethod<[], Result>,
   'what_time_is_it' : ActorMethod<[], bigint>,
   'who_am_i' : ActorMethod<[], string>,
 }

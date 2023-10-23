@@ -105,6 +105,14 @@ class IcCryptService {
         throw mapError(result['Err']);
     }
 
+    public async updateUserLoginDate(): Promise<UiUser> {
+        let result: Result = await this.actor.update_user_login_date();
+        if (result['Ok']) {
+            return this.mapUserToUiUser(result['Ok']);
+        }
+        throw mapError(result['Err']);
+    }
+
     public async deleteUser(): Promise<void> {
         const result: Result_3 = await this.actor.delete_user();
         if (result['Ok'] === null) {

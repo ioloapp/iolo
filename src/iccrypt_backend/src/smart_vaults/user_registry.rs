@@ -41,6 +41,12 @@ impl UserRegistry {
             .remove(user_id)
             .ok_or_else(|| SmartVaultErr::UserDeletionFailed(user_id.to_string()))
     }
+
+    pub fn get_user_mut(&mut self, user_id: &Principal) -> Result<&mut User, SmartVaultErr> {
+        self.users
+            .get_mut(user_id)
+            .ok_or_else(|| SmartVaultErr::UserDoesNotExist(user_id.to_string()))
+    }
 }
 
 #[cfg(test)]
