@@ -6,7 +6,7 @@ import {useAppDispatch} from "../../redux/hooks";
 import {useSelector} from "react-redux";
 import {selectHeirs} from "../../redux/heirs/heirsSelectors";
 import {heirsActions, loadHeirsThunk} from "../../redux/heirs/heirsSlice";
-import AddEditHeirDialog from "../../components/heir/add-edit-heir-dialog";
+import AddHeirDialog from "../../components/heir/add-heir-dialog";
 import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
 import {UiUser, UiUserType} from "../../services/IcTypesForUi";
 import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined';
@@ -15,6 +15,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import DeleteHeirDialog from "../../components/heir/delete-heir-dialog";
 import {SearchField, StyledAppBar} from "../../components/layout/search-bar";
 import SearchIcon from "@mui/icons-material/Search";
+import EditHeirDialog from "../../components/heir/edit-heir-dialog";
 
 export function Heirs() {
 
@@ -106,7 +107,8 @@ export function Heirs() {
                     </Box>
                 }
             </Box>
-            <AddEditHeirDialog/>
+            <AddHeirDialog />
+            <EditHeirDialog />
             <DeleteHeirDialog />
         </PageLayout>
     )

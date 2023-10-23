@@ -1,7 +1,6 @@
 import {createAsyncThunk, createSlice} from '@reduxjs/toolkit';
 import {initialState, UserState} from "./userState";
 import IcCryptService from "../../services/IcCryptService";
-import {User} from "../../../../declarations/iccrypt_backend/iccrypt_backend.did";
 import {RootState} from "../store";
 import {UiUser} from "../../services/IcTypesForUi";
 
@@ -42,7 +41,7 @@ export const userSlice = createSlice({
     extraReducers: (builder) => {
         builder
             .addCase(loginUserThunk.pending, (state) => {
-                state.loginStatus = 'loading';
+                state.loginStatus = 'pending';
             })
             .addCase(loginUserThunk.fulfilled, (state, action) => {
                 state.loginStatus = 'succeeded';

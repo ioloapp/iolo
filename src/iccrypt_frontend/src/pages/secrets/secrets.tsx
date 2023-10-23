@@ -10,12 +10,13 @@ import DescriptionIcon from '@mui/icons-material/Description';
 import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 import {useSelector} from "react-redux";
 import {selectGroupedSecrets} from "../../redux/secrets/secretsSelectors";
-import AddEditSecretDialog from "../../components/secret/add-edit-secret-dialog";
+import AddSecretDialog from "../../components/secret/add-secret-dialog";
 import {UiSecretListEntry} from "../../services/IcTypesForUi";
 import {SecretItem} from "./secret-item";
 import DeleteSecretDialog from "../../components/secret/delete-secret-dialog";
 import SearchIcon from "@mui/icons-material/Search";
 import {SearchField, StyledAppBar} from "../../components/layout/search-bar";
+import EditSecretDialog from "../../components/secret/edit-secret-dialog";
 
 export function Secrets() {
 
@@ -66,42 +67,42 @@ export function Secrets() {
             <Box sx={{width: '100%'}}>
                 {filteredSecretList &&
                     <>
-                        {filteredSecretList.passwordList &&
+                        {filteredSecretList.passwordList?.length > 0 &&
                             <Box>
                                 <Typography variant="h5">Passwords</Typography>
                                 <List dense={false}>
                                     {filteredSecretList.passwordList.map((secret: UiSecretListEntry) =>
-                                        <SecretItem secret={secret} editAction={editItem} deleteAction={deleteItem}><PasswordIcon/></SecretItem>
+                                        <SecretItem key={secret.id} secret={secret} editAction={editItem} deleteAction={deleteItem}><PasswordIcon/></SecretItem>
                                     )}
                                 </List>
                             </Box>
                         }
-                        {filteredSecretList.notesList &&
+                        {filteredSecretList.notesList?.length > 0 &&
                             <Box>
                                 <Typography variant="h5">Notes</Typography>
                                 <List dense={false}>
                                     {filteredSecretList.notesList.map((secret: UiSecretListEntry) =>
-                                        <SecretItem secret={secret} editAction={editItem} deleteAction={deleteItem}><NotesIcon/></SecretItem>
+                                        <SecretItem key={secret.id} secret={secret} editAction={editItem} deleteAction={deleteItem}><NotesIcon/></SecretItem>
                                     )}
                                 </List>
                             </Box>
                         }
-                        {filteredSecretList.documentsList &&
+                        {filteredSecretList.documentsList?.length > 0 &&
                             <Box>
                                 <Typography variant="h5">Documents</Typography>
                                 <List dense={false}>
                                     {filteredSecretList.documentsList.map((secret: UiSecretListEntry) =>
-                                        <SecretItem secret={secret} editAction={editItem} deleteAction={deleteItem}><DescriptionIcon/></SecretItem>
+                                        <SecretItem key={secret.id} secret={secret} editAction={editItem} deleteAction={deleteItem}><DescriptionIcon/></SecretItem>
                                     )}
                                 </List>
                             </Box>
                         }
-                        {filteredSecretList.othersList &&
+                        {filteredSecretList.othersList?.length > 0 &&
                             <Box>
                                 <Typography variant="h5">No Category</Typography>
                                 <List dense={false}>
                                     {filteredSecretList.othersList.map((secret: UiSecretListEntry) =>
-                                        <SecretItem secret={secret} editAction={editItem} deleteAction={deleteItem}><QuestionMarkIcon/></SecretItem>
+                                        <SecretItem key={secret.id} secret={secret} editAction={editItem} deleteAction={deleteItem}><QuestionMarkIcon/></SecretItem>
                                     )}
                                 </List>
                             </Box>
@@ -109,7 +110,8 @@ export function Secrets() {
                     </>
                 }
             </Box>
-            <AddEditSecretDialog/>
+            <AddSecretDialog/>
+            <EditSecretDialog />
             <DeleteSecretDialog/>
         </PageLayout>);
 }

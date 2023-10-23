@@ -9,3 +9,7 @@ export const selectShowEditHeirDialog = (state: RootState)  => state.heirs.showE
 export const selectShowDeleteHeirDialog = (state: RootState)  => state.heirs.showDeleteDialog;
 
 export const selectHeirToAdd = (state: RootState)  => state.heirs.heirToAdd;
+
+export const selectHeirError = (state: RootState)  => state.heirs.error;
+
+export const selectHeirToAddState = (state: RootState)  => state.heirs.addState;

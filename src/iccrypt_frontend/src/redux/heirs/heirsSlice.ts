@@ -70,6 +70,9 @@ export const heirsSlice = createSlice({
         cancelAddHeir: state => {
             state.heirToAdd = initialState.heirToAdd;
             state.showAddDialog = false;
+        },
+        cancelEditHeir: state => {
+            state.heirToAdd = initialState.heirToAdd;
             state.showEditDialog = false;
         },
         openEditDialog: state => {
@@ -93,7 +96,7 @@ export const heirsSlice = createSlice({
     extraReducers: (builder) => {
         builder
             .addCase(loadHeirsThunk.pending, (state) => {
-                state.loadingState = 'loading';
+                state.loadingState = 'pending';
             })
             .addCase(loadHeirsThunk.fulfilled, (state, action) => {
                 state.loadingState = 'succeeded';
@@ -104,7 +107,7 @@ export const heirsSlice = createSlice({
                 state.error = action.error.message;
             })
             .addCase(addHeirThunk.pending, (state) => {
-                state.addState = 'loading';
+                state.addState = 'pending';
                 state.showAddDialog = true;
             })
             .addCase(addHeirThunk.fulfilled, (state, action) => {
@@ -119,7 +122,7 @@ export const heirsSlice = createSlice({
                 state.showAddDialog = true;
             })
             .addCase(updateHeirThunk.pending, (state) => {
-                state.addState = 'loading';
+                state.addState = 'pending';
             })
             .addCase(updateHeirThunk.fulfilled, (state, action) => {
                 state.addState = 'succeeded';
@@ -132,7 +135,7 @@ export const heirsSlice = createSlice({
                 state.error = action.error.message;
             })
             .addCase(deleteHeirThunk.pending, (state) => {
-                state.addState = 'loading';
+                state.addState = 'pending';
             })
             .addCase(deleteHeirThunk.fulfilled, (state, action) => {
                 state.addState = 'succeeded';

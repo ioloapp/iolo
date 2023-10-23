@@ -72,29 +72,32 @@ export const secretsSlice = createSlice({
         closeAddOrEditDialog: state => {
             state.showAddDialog = false;
             state.showEditDialog = false;
-            state.secretToAdd = {...initialState.secretToAdd};
+            state.secretToAdd = initialState.secretToAdd;
         },
         openAddDialog: state => {
             state.showAddDialog = true
-            state.secretToAdd = {...initialState.secretToAdd};
+            state.secretToAdd = initialState.secretToAdd;
         },
         openEditDialog: state => {
             state.showEditDialog = true
         },
         cancelAddSecret: state => {
             state.showAddDialog = false;
+            state.secretToAdd = initialState.secretToAdd;
+        },
+        cancelEditSecret: state => {
             state.showEditDialog = false;
-            state.secretToAdd = {...initialState.secretToAdd};
+            state.secretToAdd = initialState.secretToAdd;
         },
         openDeleteDialog: state => {
             state.showDeleteDialog = true
         },
         closeDeleteDialog: state => {
             state.showDeleteDialog = false
-            state.secretToAdd = {...initialState.secretToAdd};
+            state.secretToAdd = initialState.secretToAdd;
         },
         cancelDeleteSecret: state => {
-            state.secretToAdd = {...initialState.secretToAdd};
+            state.secretToAdd = initialState.secretToAdd;
             state.showDeleteDialog = false;
         },
         updateSecretToAdd: (state, action) => {
@@ -104,7 +107,7 @@ export const secretsSlice = createSlice({
     extraReducers: (builder) => {
         builder
             .addCase(loadSecretsThunk.pending, (state) => {
-                state.listItemsState = 'loading';
+                state.listItemsState = 'pending';
             })
             .addCase(loadSecretsThunk.fulfilled, (state, action) => {
                 state.listItemsState = 'succeeded';
@@ -116,7 +119,7 @@ export const secretsSlice = createSlice({
                 state.error = action.error.message;
             })
             .addCase(addSecretThunk.pending, (state) => {
-                state.dialogItemState = 'loading';
+                state.dialogItemState = 'pending';
             })
             .addCase(addSecretThunk.fulfilled, (state, action) => {
                 state.dialogItemState = 'succeeded';
@@ -132,7 +135,7 @@ export const secretsSlice = createSlice({
             .addCase(getSecretThunk.pending, (state) => {
                 state.showAddDialog = false;
                 state.showEditDialog = true;
-                state.dialogItemState = 'loading';
+                state.dialogItemState = 'pending';
             })
             .addCase(getSecretThunk.fulfilled, (state, action) => {
                 state.dialogItemState = 'succeeded';
@@ -147,7 +150,7 @@ export const secretsSlice = createSlice({
                 state.showEditDialog = false;
             })
             .addCase(updateSecretThunk.pending, (state) => {
-                state.dialogItemState = 'loading';
+                state.dialogItemState = 'pending';
             })
             .addCase(updateSecretThunk.fulfilled, (state, action) => {
                 state.dialogItemState = 'succeeded';
@@ -161,7 +164,7 @@ export const secretsSlice = createSlice({
                 state.error = action.error.message;
             })
             .addCase(deleteSecretThunk.pending, (state) => {
-                state.dialogItemState = 'loading';
+                state.dialogItemState = 'pending';
             })
             .addCase(deleteSecretThunk.fulfilled, (state, action) => {
                 state.dialogItemState = 'succeeded';

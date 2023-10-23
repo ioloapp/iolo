@@ -6,6 +6,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
+import {CircularProgress, Typography} from "@mui/material";
 
 export interface BasicDialogProps {
     title: string;
@@ -15,23 +16,34 @@ export interface BasicDialogProps {
     cancelAction: () => void;
     okAction: () => void;
     okButtonText: string;
-    children: ReactElement;
+    children: ReactElement | never[];
     error: string;
+    loadingState: string;
 }
 
-export const BasicDialog = ({ title, leadText, isOpen, handleClose, cancelAction, okAction, okButtonText, children}: BasicDialogProps) => {
+export const BasicDialog = ({title, leadText, isOpen, handleClose, cancelAction, okAction, okButtonText, children, error, loadingState}: BasicDialogProps) => {
 
-return (
-    <Dialog open={isOpen} onClose={handleClose}>
-        <DialogTitle>{title}</DialogTitle>
-        <DialogContent>
-            <DialogContentText>{leadText}</DialogContentText>
-            {children}
-        </DialogContent>
-        <DialogActions>
-            <Button onClick={cancelAction}>Cancel</Button>
-            <Button onClick={okAction}>{okButtonText}</Button>
-        </DialogActions>
-    </Dialog>
-);
+    const loading = loadingState === 'pending';
+
+    return (
+        <Dialog open={isOpen} onClose={handleClose}>
+            <DialogTitle>{title}</DialogTitle>
+            <DialogContent>
+                <DialogContentText>{leadText}</DialogContentText>
+                {loading && <CircularProgress/>}
+                {!loading && error &&
+                    <Typography>{error}</Typography>
+                }
+                {!loading && !error &&
+                    <>{children}</>
+                }
+            </DialogContent>
+            {!loading &&
+                <DialogActions>
+                    <Button onClick={cancelAction}>Cancel</Button>
+                    {!error && <Button onClick={okAction}>{okButtonText}</Button>}
+                </DialogActions>
+            }
+        </Dialog>
+    );
 }
