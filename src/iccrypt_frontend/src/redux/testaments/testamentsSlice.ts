@@ -111,7 +111,6 @@ export const testamentsSlice = createSlice({
             })
             .addCase(loadTestamentsThunk.fulfilled, (state, action) => {
                 state.loadingState = 'succeeded';
-                //state.testamentsList = mapUiTestaments(action.payload)
                 state.testamentsList = action.payload
             })
             .addCase(loadTestamentsThunk.rejected, (state, action) => {

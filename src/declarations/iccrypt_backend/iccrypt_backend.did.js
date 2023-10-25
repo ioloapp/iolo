@@ -69,15 +69,18 @@ export const idlFactory = ({ IDL }) => {
     'heirs' : IDL.Vec(IDL.Principal),
     'name' : IDL.Opt(IDL.Text),
     'secrets' : IDL.Vec(IDL.Text),
+    'condition_arg' : IDL.Nat64,
     'key_box' : IDL.Vec(IDL.Tuple(IDL.Text, SecretSymmetricCryptoMaterial)),
   });
   const Testament = IDL.Record({
     'id' : IDL.Text,
     'heirs' : IDL.Vec(IDL.Principal),
     'date_created' : IDL.Nat64,
+    'condition_status' : IDL.Bool,
     'name' : IDL.Opt(IDL.Text),
     'testator' : IDL.Principal,
     'secrets' : IDL.Vec(IDL.Text),
+    'condition_arg' : IDL.Nat64,
     'key_box' : IDL.Vec(IDL.Tuple(IDL.Text, SecretSymmetricCryptoMaterial)),
     'date_modified' : IDL.Nat64,
   });
@@ -103,6 +106,7 @@ export const idlFactory = ({ IDL }) => {
   });
   const TestamentListEntry = IDL.Record({
     'id' : IDL.Text,
+    'condition_status' : IDL.Bool,
     'name' : IDL.Opt(IDL.Text),
     'testator' : IDL.Principal,
   });

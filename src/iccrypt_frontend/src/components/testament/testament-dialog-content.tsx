@@ -149,6 +149,21 @@ export default function TestamentDialogContent() {
                     ))}
                 </Select>
             </FormControl>
+            <FormControl fullWidth>
+                <TextField
+                    margin="dense"
+                    id="conditionArg"
+                    label="Condition Arg"
+                    InputLabelProps={{shrink: true}}
+                    fullWidth
+                    variant="standard"
+                    value={dialogItem.conditionArg}
+                    onChange={e => updateTestamentToAdd({
+                        ...dialogItem,
+                        conditionArg: e.target.value
+                    })}
+                />
+            </FormControl>
         </>
     );
 }

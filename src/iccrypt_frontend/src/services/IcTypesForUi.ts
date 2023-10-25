@@ -24,11 +24,13 @@ export interface UiTestamentListEntry {
     name?: string,
     testator?: UiUser,
     role?: UiTestamentListEntryRole
+    conditionStatus?: boolean,
 }
 
 export interface UiTestament extends UiTestamentListEntry {
     secrets?: string[],
     heirs?: Array<UiUser>,
+    conditionArg: bigint,
     dateCreated?: Date,
     dateModified?: Date,
 }

@@ -1,7 +1,7 @@
-import {UiTestament} from "../../services/IcTypesForUi";
+import {UiTestament, UiTestamentListEntry} from "../../services/IcTypesForUi";
 
 export interface TestamentsState {
-    testamentsList: UiTestament[],
+    testamentsList: UiTestamentListEntry[],
     dialogItem: UiTestament
     dialogItemState: string,
     loadingState: string,
@@ -17,7 +17,8 @@ export const initialState: TestamentsState = {
     dialogItem: {
         name: '',
         secrets: [],
-        heirs: []
+        heirs: [],
+        conditionArg: BigInt(0),
     },
     dialogItemState: 'init',
     loadingState: 'init',

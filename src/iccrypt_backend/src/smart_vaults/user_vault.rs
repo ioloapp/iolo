@@ -118,11 +118,15 @@ impl UserVault {
         Ok(self.secrets.get(&sid).unwrap().clone())
     }
 
-    pub fn update_testament(&mut self, t: Testament) -> Result<Testament, SmartVaultErr> {
+    pub fn update_testament(&mut self, mut t: Testament) -> Result<Testament, SmartVaultErr> {
         if !self.testaments.contains_key(t.id()) {
             return Err(SmartVaultErr::SecretDoesNotExist(t.id().to_string()));
         }
         let tid = t.id().clone();
+
+        // condition_status cannot be updated
+        t.set_condition_status(self.testaments.get(t.id()).unwrap().condition_status().clone());
+
         self.testaments.insert(t.id().clone(), t);
         self.date_modified = time::get_current_time();
         Ok(self.testaments.get(&tid).unwrap().clone())

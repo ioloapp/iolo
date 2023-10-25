@@ -13,6 +13,7 @@ type AddTestamentArgs = record {
   heirs : vec principal;
   name : opt text;
   secrets : vec text;
+  condition_arg : nat64;
   key_box : vec record { text; SecretSymmetricCryptoMaterial };
 };
 type AddUserArgs = record {
@@ -77,9 +78,11 @@ type Testament = record {
   id : text;
   heirs : vec principal;
   date_created : nat64;
+  condition_status : bool;
   name : opt text;
   testator : principal;
   secrets : vec text;
+  condition_arg : nat64;
   key_box : vec record { text; SecretSymmetricCryptoMaterial };
   date_modified : nat64;
 };
@@ -89,6 +92,7 @@ type TestamentKeyDerviationArgs = record {
 };
 type TestamentListEntry = record {
   id : text;
+  condition_status : bool;
   name : opt text;
   testator : principal;
 };

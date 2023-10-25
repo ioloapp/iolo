@@ -1,5 +1,4 @@
 use candid::{CandidType, Deserialize, Principal};
-use ic_cdk::api::time;
 use serde::Serialize;
 
 use crate::{smart_vaults::user_vault::UserVaultID, utils::time};

@@ -209,6 +209,7 @@ class IcCryptService {
             key_box: testament.key_box,
             name: testament.name,
             secrets: testament.secrets,
+            condition_arg: testament.condition_arg
         }
 
         // Add testament
@@ -239,7 +240,8 @@ class IcCryptService {
                     id: item.id,
                     name: item.name?.length > 0 ? item.name[0] : undefined,
                     testator: { id: item.testator?.toString()},
-                    role: UiTestamentListEntryRole.Testator
+                    role: UiTestamentListEntryRole.Testator,
+                    conditionStatus: item.condition_status,
                 }
             });
         } else throw mapError(resultAsTestator['Err']);
@@ -252,13 +254,13 @@ class IcCryptService {
                     id: item.id,
                     name: item.name?.length > 0 ? item.name[0] : undefined,
                     testator: { id: item.testator?.toString()},
-                    role: UiTestamentListEntryRole.Heir
+                    role: UiTestamentListEntryRole.Heir,
+                    conditionStatus: item.condition_status,
                 }
             });
         } else if (resultAsHeir['Err']) {
             throw mapError(resultAsTestator['Err']);
         }
-
         return testamentsAsTestator.concat(testamentsAsHeir);
     }
 
@@ -476,7 +478,6 @@ class IcCryptService {
                 notes: [encryptedNotes],
                 symmetric_crypto_material: symmetricCryptoMaterial
             }
-            console.log('encrypted secret to add: ', encryptedSecret)
             return encryptedSecret
         } catch (e) {
             throw mapError(e)
@@ -511,7 +512,6 @@ class IcCryptService {
                 date_created: 0n, // will be ignored by update_secret function in backend
                 date_modified: 0n // will be ignored by update_secret function in backend
             }
-            console.log('encrypted secret to update: ', encryptedSecret)
             return encryptedSecret
         } catch (e) {
             throw mapError(e)
@@ -579,6 +579,8 @@ class IcCryptService {
             testator: Principal.fromText(uiTestament.testator.id),
             secrets: uiTestament.secrets,
             key_box: keyBox,
+            condition_arg: BigInt(uiTestament.conditionArg),
+            condition_status: uiTestament.conditionStatus,
             date_created: uiTestament.dateCreated ? this.dateToNanosecondsInBigint(uiTestament.dateCreated) : 0n,
             date_modified: uiTestament.dateModified ? this.dateToNanosecondsInBigint(uiTestament.dateModified) : 0n,
         }
@@ -591,6 +593,8 @@ class IcCryptService {
             testator: { id: testament.testator.toString() },
             secrets: testament.secrets,
             heirs: testament.heirs.map((item) => {return {id: item.toString()}}),
+            conditionArg: testament.condition_arg,
+            conditionStatus: testament.condition_status,
             dateCreated: this.nanosecondsInBigintToDate(testament.date_created),
             dateModified: this.nanosecondsInBigintToDate(testament.date_modified),
         };

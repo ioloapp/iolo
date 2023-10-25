@@ -16,6 +16,7 @@ export interface AddTestamentArgs {
   'heirs' : Array<Principal>,
   'name' : [] | [string],
   'secrets' : Array<string>,
+  'condition_arg' : bigint,
   'key_box' : Array<[string, SecretSymmetricCryptoMaterial]>,
 }
 export interface AddUserArgs {
@@ -83,9 +84,11 @@ export interface Testament {
   'id' : string,
   'heirs' : Array<Principal>,
   'date_created' : bigint,
+  'condition_status' : boolean,
   'name' : [] | [string],
   'testator' : Principal,
   'secrets' : Array<string>,
+  'condition_arg' : bigint,
   'key_box' : Array<[string, SecretSymmetricCryptoMaterial]>,
   'date_modified' : bigint,
 }
@@ -95,6 +98,7 @@ export interface TestamentKeyDerviationArgs {
 }
 export interface TestamentListEntry {
   'id' : string,
+  'condition_status' : boolean,
   'name' : [] | [string],
   'testator' : Principal,
 }

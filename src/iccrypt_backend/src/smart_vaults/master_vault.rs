@@ -107,6 +107,7 @@ impl MasterVault {
                         id: testament.id().clone(),
                         name: testament.name().clone(),
                         testator: testament.testator().clone(),
+                        condition_status: testament.condition_status().clone()
                     };
                     testament_registry.add_testament_for_heir(h, tle.clone());
                 }

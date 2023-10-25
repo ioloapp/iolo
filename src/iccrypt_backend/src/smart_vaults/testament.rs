@@ -25,6 +25,8 @@ pub struct Testament {
     /// This key is itself encrypted using the Testament decryption key,
     /// which itself is derived by vetkd.
     key_box: KeyBox,
+    condition_status: bool,
+    condition_arg: u64 // currently only for max difference to last_login_date, in seconds
 }
 
 /// The struct provided by the backend when calling "create_secret". It contains:
@@ -35,6 +37,7 @@ pub struct AddTestamentArgs {
     heirs: HashSet<Principal>,
     secrets: HashSet<SecretID>,
     key_box: KeyBox,
+    condition_arg: u64
 }
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone, PartialEq)]
@@ -42,6 +45,7 @@ pub struct TestamentListEntry {
     pub id: TestamentID,
     pub name: Option<String>,
     pub testator: Principal,
+    pub condition_status: bool
 }
 
 impl From<Testament> for TestamentListEntry {
@@ -49,7 +53,8 @@ impl From<Testament> for TestamentListEntry {
         TestamentListEntry {
             id: t.id().into(),
             name: t.name,
-            testator: t.testator.clone()
+            testator: t.testator.clone(),
+            condition_status: t.condition_status,
         }
     }
 }
@@ -67,6 +72,8 @@ impl Testament {
             heirs: HashSet::new(),
             secrets: HashSet::new(),
             key_box: BTreeMap::new(),
+            condition_arg: 0,
+            condition_status: false
         }
     }
 
@@ -98,6 +105,18 @@ impl Testament {
         &self.secrets
     }
 
+    pub fn condition_arg(&self) -> &u64{
+        &self.condition_arg
+    }
+
+    pub fn condition_status(&self) -> &bool{
+        &self.condition_status
+    }
+
+    pub fn set_condition_status(&mut self, status: bool) {
+        self.condition_status = status;
+        self.date_modified = time::get_current_time();
+    }
     /// Returns whether the value was newly inserted. That is:
     /// - If heirs did not previously contain this heir, true is returned.
     /// - If heirs already contained this heir, false is returned, and the set is not modified.
@@ -135,6 +154,7 @@ impl From<AddTestamentArgs> for Testament {
         new_testament.heirs = ata.heirs;
         new_testament.secrets = ata.secrets;
         new_testament.key_box = ata.key_box;
+        new_testament.condition_arg = ata.condition_arg;
         new_testament
     }
 }
