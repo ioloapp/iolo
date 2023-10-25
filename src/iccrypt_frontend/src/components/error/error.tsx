@@ -15,8 +15,8 @@ export const Error = ({error}: ErrorProps) => {
             justifyContent: 'center',
             flexDirection: 'column'
         }}>
-            <Typography variant="h5" color="red">Error</Typography>
-            <Typography variant="body2" color="red">{error}</Typography>
+            <Typography variant="h5" color="#FFB267">Error</Typography>
+            <Typography variant="body2" color="#FFB267">{error}</Typography>
         </Box>
     );
 }

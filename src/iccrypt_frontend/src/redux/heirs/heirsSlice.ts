@@ -97,6 +97,7 @@ export const heirsSlice = createSlice({
         builder
             .addCase(loadHeirsThunk.pending, (state) => {
                 state.loadingState = 'pending';
+                state.error = undefined;
             })
             .addCase(loadHeirsThunk.fulfilled, (state, action) => {
                 state.loadingState = 'succeeded';
@@ -108,6 +109,7 @@ export const heirsSlice = createSlice({
             })
             .addCase(addHeirThunk.pending, (state) => {
                 state.dialogItemState = 'pending';
+                state.error = undefined;
                 state.showAddDialog = true;
             })
             .addCase(addHeirThunk.fulfilled, (state, action) => {
@@ -123,6 +125,7 @@ export const heirsSlice = createSlice({
             })
             .addCase(updateHeirThunk.pending, (state) => {
                 state.dialogItemState = 'pending';
+                state.error = undefined;
             })
             .addCase(updateHeirThunk.fulfilled, (state, action) => {
                 state.dialogItemState = 'succeeded';
@@ -136,6 +139,7 @@ export const heirsSlice = createSlice({
             })
             .addCase(deleteHeirThunk.pending, (state) => {
                 state.dialogItemState = 'pending';
+                state.error = undefined;
             })
             .addCase(deleteHeirThunk.fulfilled, (state, action) => {
                 state.dialogItemState = 'succeeded';

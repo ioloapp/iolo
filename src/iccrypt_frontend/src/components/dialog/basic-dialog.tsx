@@ -6,7 +6,9 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
-import {CircularProgress, Typography} from "@mui/material";
+import {CircularProgress} from "@mui/material";
+import {Error} from "../error/error";
+import './basic-dialog.css';
 
 export interface BasicDialogProps {
     title: string;
@@ -27,23 +29,21 @@ export const BasicDialog = ({title, leadText, isOpen, handleClose, cancelAction,
 
     return (
         <Dialog open={isOpen} onClose={handleClose}>
-            <DialogTitle>{title}</DialogTitle>
+            {loading && <div className="popup-loading"><div className="popup-loader"><CircularProgress/></div></div>}
+            <DialogTitle className="popup-title">{title}</DialogTitle>
             <DialogContent>
                 <DialogContentText>{leadText}</DialogContentText>
-                {loading && <CircularProgress/>}
-                {!loading && error &&
-                    <Typography>{error}</Typography>
+                {error &&
+                    <Error error={error}/>
                 }
-                {!loading && !error &&
+                {!error &&
                     <>{children}</>
                 }
             </DialogContent>
-            {!loading &&
-                <DialogActions>
-                    <Button onClick={cancelAction}>Cancel</Button>
-                    {!error && <Button onClick={okAction}>{okButtonText}</Button>}
-                </DialogActions>
-            }
+            <DialogActions>
+                <Button onClick={cancelAction}>Cancel</Button>
+                {!error && <Button onClick={okAction}>{okButtonText}</Button>}
+            </DialogActions>
         </Dialog>
     );
 }
