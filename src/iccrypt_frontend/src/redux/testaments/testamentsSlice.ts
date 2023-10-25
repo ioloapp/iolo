@@ -107,6 +107,7 @@ export const testamentsSlice = createSlice({
         builder
             .addCase(loadTestamentsThunk.pending, (state) => {
                 state.loadingState = 'pending';
+                state.error = undefined;
             })
             .addCase(loadTestamentsThunk.fulfilled, (state, action) => {
                 state.loadingState = 'succeeded';
@@ -119,6 +120,7 @@ export const testamentsSlice = createSlice({
             })
             .addCase(addTestamentThunk.pending, (state) => {
                 state.dialogItemState = 'pending';
+                state.error = undefined;
                 state.showAddDialog = true;
             })
             .addCase(addTestamentThunk.fulfilled, (state, action) => {
@@ -134,6 +136,7 @@ export const testamentsSlice = createSlice({
             })
             .addCase(editTestamentThunk.pending, (state) => {
                 state.dialogItemState = 'pending';
+                state.error = undefined;
                 state.showEditDialog = true;
             })
             .addCase(editTestamentThunk.fulfilled, (state, action) => {
@@ -146,6 +149,7 @@ export const testamentsSlice = createSlice({
             })
             .addCase(updateTestamentThunk.pending, (state) => {
                 state.dialogItemState = 'pending';
+                state.error = undefined;
             })
             .addCase(updateTestamentThunk.fulfilled, (state, action) => {
                 state.dialogItemState = 'succeeded';
@@ -159,6 +163,7 @@ export const testamentsSlice = createSlice({
             })
             .addCase(deleteTestamentThunk.pending, (state) => {
                 state.dialogItemState = 'pending';
+                state.error = undefined;
             })
             .addCase(deleteTestamentThunk.fulfilled, (state, action) => {
                 state.dialogItemState = 'succeeded';
