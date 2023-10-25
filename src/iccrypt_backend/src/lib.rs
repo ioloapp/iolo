@@ -17,11 +17,16 @@ use crate::smart_vaults::testament::TestamentListEntry;
 use crate::common::user::AddUserArgs;
 use candid::candid_method;
 use candid::Principal;
+use crate::utils::login_date_condition;
 
 use crate::smart_vaults::secret::{AddSecretArgs, Secret};
 
 #[ic_cdk_macros::init]
-fn init() {}
+fn init() {
+
+    // initialize the timers for triggering the login date condition
+    login_date_condition::init_condition();
+}
 
 #[ic_cdk_macros::query]
 #[candid_method(query)]

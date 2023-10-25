@@ -11,13 +11,14 @@ crate-type = ["cdylib", "lib"]
 
 [dependencies]
 candid = "0.8.2"
-ic-cdk = { version = "0.6.10", features = ["timers"] }
+ic-cdk = { version = "0.6.10"}
 ic-cdk-macros = "0.6.8"
 ic-stable-structures = "0.3.0"
 serde = "1.0.150"
 anyhow = "1.0.68"
 cfg-if = "1.0.0"
 hex = "0.4.3"
+ic-cdk-timers = "0.5.1"
 
 
 [dev-dependencies]
