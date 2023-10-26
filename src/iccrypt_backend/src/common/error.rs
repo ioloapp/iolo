@@ -14,6 +14,7 @@ pub enum SmartVaultErr {
     SecretAlreadyExists(String),
     TestamentAlreadyExists(String),
     TestamentDoesNotExist(String),
+    InvalidTestamentCondition,
     NoTestamentsForHeir(String),
 }
 
@@ -62,6 +63,9 @@ impl Display for SmartVaultErr {
             }
             SmartVaultErr::NoTestamentsForHeir(id) => {
                 write!(f, "Failed to read testament for heir: {}", id)
+            }
+            SmartVaultErr::InvalidTestamentCondition => {
+                write!(f, "Testament cannot be read by heir because of wrong condition state")
             }
         }
     }

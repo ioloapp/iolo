@@ -9,6 +9,7 @@ use super::testament::{Testament, TestamentID};
 use crate::common::uuid::UUID;
 use crate::utils::time;
 use crate::SmartVaultErr;
+use crate::utils::caller::get_caller;
 
 pub type UserVaultID = UUID;
 pub type KeyBox = BTreeMap<SecretID, SecretSymmetricCryptoMaterial>;

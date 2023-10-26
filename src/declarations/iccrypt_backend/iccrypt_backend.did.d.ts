@@ -75,6 +75,7 @@ export type SmartVaultErr = { 'UserAlreadyExists' : string } |
   { 'SecretDoesNotExist' : string } |
   { 'TestamentAlreadyExists' : string } |
   { 'TestamentDoesNotExist' : string } |
+  { 'InvalidTestamentCondition' : null } |
   { 'UserVaultCreationFailed' : string } |
   { 'UserDoesNotExist' : string } |
   { 'UserVaultDoesNotExist' : string } |
@@ -140,7 +141,8 @@ export interface _SERVICE {
   'get_secret' : ActorMethod<[string], Result_1>,
   'get_secret_list' : ActorMethod<[], Result_5>,
   'get_secret_symmetric_crypto_material' : ActorMethod<[string], Result_6>,
-  'get_testament' : ActorMethod<[string], Result_2>,
+  'get_testament_as_heir' : ActorMethod<[string, Principal], Result_2>,
+  'get_testament_as_testator' : ActorMethod<[string], Result_2>,
   'get_testament_list_as_heir' : ActorMethod<[], Result_7>,
   'get_testament_list_as_testator' : ActorMethod<[], Result_8>,
   'ibe_encryption_key' : ActorMethod<[], string>,

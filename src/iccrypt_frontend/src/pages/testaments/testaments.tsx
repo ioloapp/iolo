@@ -44,7 +44,7 @@ export function Testaments() {
     }
 
     const editTestament = (testament: UiTestament) => {
-        dispatch(editTestamentThunk(testament.id));
+        dispatch(editTestamentThunk(testament));
     }
 
     const filterTestamentList = (search: string) => {

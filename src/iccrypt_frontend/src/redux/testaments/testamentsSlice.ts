@@ -2,8 +2,9 @@ import {createAsyncThunk, createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {initialState} from "./testamentsState";
 import IcCryptService from "../../services/IcCryptService";
 import {RootState} from "../store";
-import {UiTestament, UiTestamentListEntry} from "../../services/IcTypesForUi";
+import {UiTestament, UiTestamentListEntry, UiTestamentListEntryRole} from "../../services/IcTypesForUi";
 import {mapError} from "../../utils/errorMapper";
+import {Principal} from "@dfinity/principal";
 
 const icCryptService = new IcCryptService();
 
@@ -17,11 +18,15 @@ export const addTestamentThunk = createAsyncThunk<UiTestament, UiTestament, { st
     }
 );
 
-export const editTestamentThunk = createAsyncThunk<UiTestament, string, { state: RootState }>('testaments/edit',
-     (testamentId, {rejectWithValue, getState}) => {
-        console.log('edit testament', testamentId)
+export const editTestamentThunk = createAsyncThunk<UiTestament, UiTestament, { state: RootState }>('testaments/edit',
+     (uiTestament, {rejectWithValue, getState}) => {
         try {
-            return icCryptService.getTestament(testamentId);
+            if (uiTestament.role === UiTestamentListEntryRole.Testator) {
+                return icCryptService.getTestamentAsTestator(uiTestament.id);
+            } else {
+                return icCryptService.getTestamentAsHeir(uiTestament.id, Principal.fromText(uiTestament.testator.id));
+            }
+
         } catch (e) {
             rejectWithValue(mapError(e))
         }

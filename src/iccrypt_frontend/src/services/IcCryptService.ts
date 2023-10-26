@@ -264,8 +264,16 @@ class IcCryptService {
         return testamentsAsTestator.concat(testamentsAsHeir);
     }
 
-    public async getTestament(id: string): Promise<UiTestament> {
-        const result: Result_2 = await this.actor.get_testament(id);
+    public async getTestamentAsTestator(id: string): Promise<UiTestament> {
+        const result: Result_2 = await this.actor.get_testament_as_testator(id);
+        if (result['Ok']) {
+            return this.mapTestamentToUiTestament(result['Ok']);
+        }
+        throw mapError(result['Err']);
+    }
+
+    public async getTestamentAsHeir(id: string, testator: Principal): Promise<UiTestament> {
+        const result: Result_2 = await this.actor.get_testament_as_heir(id, testator);
         if (result['Ok']) {
             return this.mapTestamentToUiTestament(result['Ok']);
         }

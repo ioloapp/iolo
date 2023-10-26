@@ -68,6 +68,7 @@ type SmartVaultErr = variant {
   SecretDoesNotExist : text;
   TestamentAlreadyExists : text;
   TestamentDoesNotExist : text;
+  InvalidTestamentCondition;
   UserVaultCreationFailed : text;
   UserDoesNotExist : text;
   UserVaultDoesNotExist : text;
@@ -123,7 +124,8 @@ service : {
   get_secret : (text) -> (Result_1) query;
   get_secret_list : () -> (Result_5) query;
   get_secret_symmetric_crypto_material : (text) -> (Result_6) query;
-  get_testament : (text) -> (Result_2) query;
+  get_testament_as_heir : (text, principal) -> (Result_2) query;
+  get_testament_as_testator : (text) -> (Result_2) query;
   get_testament_list_as_heir : () -> (Result_7) query;
   get_testament_list_as_testator : () -> (Result_8) query;
   ibe_encryption_key : () -> (text);
