@@ -12,7 +12,6 @@ import {
     Result_5,
     Result_6,
     Result_7,
-    Result_8,
     Secret,
     SecretCategory,
     SecretListEntry,
@@ -232,7 +231,7 @@ class IcCryptService {
     }
 
     public async getTestamentList(): Promise<UiTestamentListEntry[]> {
-        const resultAsTestator: Result_8 = await this.actor.get_testament_list_as_testator();
+        const resultAsTestator: Result_7 = await this.actor.get_testament_list_as_testator();
         let testamentsAsTestator: UiTestamentListEntry[] = [];
         if (resultAsTestator['Ok']) {
             testamentsAsTestator = resultAsTestator['Ok'].map((item: TestamentListEntry): UiTestamentListEntry  => {
@@ -249,7 +248,7 @@ class IcCryptService {
         const resultAsHeir: Result_7 = await this.actor.get_testament_list_as_heir();
         let testamentsAsHeir: UiTestamentListEntry[] =  [];
         if (resultAsHeir['Ok'] && resultAsHeir['Ok'].length > 0) {
-            testamentsAsHeir = resultAsHeir['Ok'][0].map((item: TestamentListEntry): UiTestamentListEntry  => {
+            testamentsAsHeir = resultAsHeir['Ok'].map((item: TestamentListEntry): UiTestamentListEntry  => {
                 return {
                     id: item.id,
                     name: item.name?.length > 0 ? item.name[0] : undefined,
@@ -266,6 +265,7 @@ class IcCryptService {
 
     public async getTestamentAsTestator(id: string): Promise<UiTestament> {
         const result: Result_2 = await this.actor.get_testament_as_testator(id);
+        console.log("as testator: ", result)
         if (result['Ok']) {
             return this.mapTestamentToUiTestament(result['Ok']);
         }
@@ -273,7 +273,8 @@ class IcCryptService {
     }
 
     public async getTestamentAsHeir(id: string, testator: Principal): Promise<UiTestament> {
-        const result: Result_2 = await this.actor.get_testament_as_heir(id, testator);
+        const result: Result_2 = await this.actor.get_testament_as_heir(id);
+        console.log("as heir: ", result)
         if (result['Ok']) {
             return this.mapTestamentToUiTestament(result['Ok']);
         }
@@ -290,6 +291,8 @@ class IcCryptService {
 
     public async addHeir(heir: UiUser): Promise<UiUser> {
         console.log('start adding heir: ', heir);
+
+        // Check if it's a valid principal
         let principal = undefined;
         try {
             principal = Principal.fromText(heir.id);

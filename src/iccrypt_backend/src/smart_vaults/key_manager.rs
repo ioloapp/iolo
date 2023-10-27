@@ -1,7 +1,16 @@
 use std::{str::FromStr, vec};
+use std::cell::RefCell;
 
-use candid::{candid_method, CandidType};
+use candid::{candid_method, CandidType, Principal};
 use serde::{Deserialize, Serialize};
+use crate::common::error::SmartVaultErr;
+use crate::common::uuid::UUID;
+use crate::smart_vaults::master_vault::MasterVault;
+use crate::smart_vaults::smart_vault::{MASTERVAULT, TESTAMENT_REGISTRY};
+use crate::smart_vaults::testament::{Testament, TestamentID};
+use crate::smart_vaults::testament_registry::TestamentRegistry;
+use crate::smart_vaults::user_vault::UserVault;
+use crate::utils::caller::get_caller;
 
 use super::vetkd_types::{
     CanisterId, VetKDCurve, VetKDEncryptedKeyReply, VetKDEncryptedKeyRequest, VetKDKeyId,
@@ -20,7 +29,7 @@ pub struct TestamentKeyDerviationArgs {
 ///
 /// It uses the caller and a random Nonce value provided by the front-end.
 ///
-/// The key is encrypted using the provided encryption_publi_key.
+/// The key is encrypted using the provided encryption_public_key.
 #[ic_cdk_macros::update]
 #[candid_method(update)]
 async fn encrypted_symmetric_key_for_uservault(encryption_public_key: Vec<u8>) -> String {
@@ -46,7 +55,7 @@ async fn encrypted_symmetric_key_for_uservault(encryption_public_key: Vec<u8>) -
 
 /// Computes a fresh vetkd symmetric key to encrypt the secrets in a testament.
 ///
-/// The key is encrypted using the provided encryption_publi_key.
+/// The key is encrypted using the provided encryption_public_key.
 #[ic_cdk_macros::update]
 #[candid_method(update)]
 async fn encrypted_symmetric_key_for_testament(args: TestamentKeyDerviationArgs) -> String {
@@ -58,8 +67,33 @@ async fn encrypted_symmetric_key_for_testament(args: TestamentKeyDerviationArgs)
     let caller = ic_cdk::caller(); //.as_slice().to_vec();
 
     // check if caller has the right to derive this key
-    let caller_is_testator = true; // TODO
-    let caller_is_heir = true; // TODO
+    let mut caller_is_testator = true; // TODO
+    let mut caller_is_heir = true; // TODO
+
+    // Let's see if caller is testator
+    let result_1 = TESTAMENT_REGISTRY.with(
+        |tr: &RefCell<TestamentRegistry>| -> Option<Principal> {
+            let testament_registry = tr.borrow();
+            testament_registry.get_testator_of_testament(args.testament_id.clone())
+        },
+    );
+    if result_1.is_some() {
+        caller_is_testator = true;
+    } else {
+        // Let's see if caller is heir and testament condition is true
+        let result_2 = TESTAMENT_REGISTRY.with(
+            |tr: &RefCell<TestamentRegistry>| -> Result<(TestamentID, Principal), SmartVaultErr> {
+                let testament_registry = tr.borrow();
+                testament_registry.get_testament_id_as_heir(caller, args.testament_id.clone())
+            },
+        );
+        if result_2.is_ok() {
+            caller_is_heir = true;
+        }
+        // TODO check if testament has conditionStatus = true
+
+    }
+
 
     if !(caller_is_testator || caller_is_heir) {
         ic_cdk::trap(&format!(
@@ -68,10 +102,6 @@ async fn encrypted_symmetric_key_for_testament(args: TestamentKeyDerviationArgs)
         ));
     }
 
-    ic_cdk::println!("{:?}", ic_cdk::id());
-    ic_cdk::println!("{:?}", ic_cdk::id().to_string());
-    ic_cdk::println!("{:?}", ic_cdk::id().as_slice());
-    ic_cdk::println!("{:?}", ic_cdk::id().as_slice().to_vec());
     /*let mut derivation_id: Vec<u8> = ic_cdk::id().as_slice().to_vec();
     ic_cdk::println!(
         "backend id: {:?}, {:?}",

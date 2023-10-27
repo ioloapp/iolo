@@ -1,84 +1,95 @@
-use std::cell::RefCell;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashSet};
 
 use candid::{CandidType, Principal};
 use serde::Deserialize;
 use crate::common::error::SmartVaultErr;
-use crate::common::uuid::UUID;
-use crate::smart_vaults::master_vault::MasterVault;
-use crate::smart_vaults::smart_vault::{MASTERVAULT, USER_REGISTRY};
-
-use crate::smart_vaults::testament::{Testament, TestamentID, TestamentListEntry};
-use crate::smart_vaults::user_registry::UserRegistry;
+use crate::smart_vaults::testament::{Testament, TestamentID};
 
 #[derive(Debug, CandidType, Deserialize)]
 pub struct TestamentRegistry {
-    registry: BTreeMap<Principal, BTreeMap<Principal, Vec<TestamentListEntry>>>,
+    heir_to_testaments: BTreeMap<Principal, HashSet<TestamentID>>,
+    testament_to_testator: BTreeMap<TestamentID, Principal>,
 }
+
 
 impl TestamentRegistry {
     pub fn new() -> Self {
         Self {
-            registry: BTreeMap::new(),
+            heir_to_testaments: BTreeMap::new(),
+            testament_to_testator: BTreeMap::new(),
         }
     }
 
-    pub fn add_testament_for_heir(&mut self, heir: Principal, testament_list_entry: TestamentListEntry) {
-        self.registry
-            .entry(heir)                               // Get the entry for the provided heir
-            .or_insert_with(BTreeMap::new)  // If absent, insert a new BTreeMap for testators
-            .entry(testament_list_entry.testator)     // Get the entry for the provided testator
-            .or_insert_with(Vec::new)               // If absent, insert a new empty vector
-            .push(testament_list_entry);
+    pub fn add_testament_to_registry(&mut self, testament: &Testament) {
+        for heir in testament.heirs() {
+            self.heir_to_testaments
+                .entry(heir.clone())
+                .or_insert_with(HashSet::new)
+                .insert(testament.id().clone());
+        }
+        self.testament_to_testator
+            .insert(testament.id().clone(), testament.testator().clone());
     }
 
-    pub fn get_testament_for_heir(
-        &self,
-        heir: Principal,
-        id: TestamentID,
-        testator: Principal
-    ) -> Result<Testament, SmartVaultErr> {
-        // Look up the heir in the outer BTreeMap.
-        if let Some(testator_map) = self.registry.get(&heir) {
-            // If the heir is found, look up the testator in the inner BTreeMap.
-            if let Some(testament_list) = testator_map.get(&testator) {
-                // Use iter().find() to get the matching TestamentListEntry.
-                if let Some(entry) = testament_list.iter().find(|&entry| entry.id == id) {
-                    let principal = entry.testator;
-                    let user_vault_id = USER_REGISTRY.with(
-                        |ur: &RefCell<UserRegistry>| -> Result<UUID, SmartVaultErr> {
-                            let user_registry = ur.borrow();
-                            let user = user_registry.get_user(&principal)?;
-
-                            user.user_vault_id.ok_or_else(|| SmartVaultErr::UserVaultDoesNotExist("".to_string()))
-                        },
-                    )?;
-                    let testament = MASTERVAULT.with(
-                        |mv: &RefCell<MasterVault>| -> Result<Testament, SmartVaultErr> {
-                            // NOTE: Adjust this part to get a reference, not an owned value.
-                            mv.borrow()
-                                .get_user_vault(&user_vault_id)?
-                                .get_testament(&id).cloned()
-                        },
-                    )?;
-
-                    return if testament.condition_status().clone() {
-                        Ok(testament.clone())
-                    } else {
-                        Err(SmartVaultErr::InvalidTestamentCondition)
-                    }
+    pub fn update_testament_in_registry(&mut self, testament_new: &Testament, testament_old: &Testament) {
+        // Delete all existing entries for old testament
+        for heir in testament_old.heirs() {
+            if let Some(testaments) = self.heir_to_testaments.get_mut(heir) {
+                testaments.remove(testament_old.id());
+                if testaments.is_empty() {
+                    self.heir_to_testaments.remove(heir);
                 }
             }
         }
-        Err(SmartVaultErr::TestamentDoesNotExist(id.to_string()))
+        self.testament_to_testator.remove(testament_old.id());
+
+        // Add new testament
+        self.add_testament_to_registry(testament_new);
     }
 
-    pub fn get_testaments_for_heir(
+    pub fn get_testament_id_as_heir (
         &self,
         heir: Principal,
-    ) -> Option<Vec<TestamentListEntry>> {
-        self.registry.get(&heir).map(|testator_map| {
-            testator_map.values().flat_map(|v| v.clone()).collect()
-        })
+        testament_id: TestamentID
+    ) -> Result<(TestamentID, Principal), SmartVaultErr> {
+        // Check if the heir exists in the map and contains the testament_id
+        if let Some(testament_ids) = self.heir_to_testaments.get(&heir) {
+            return if testament_ids.contains(&testament_id) {
+                // If testament_id is found for the heir, retrieve the associated testator
+                if let Some(testator) = self.testament_to_testator.get(&testament_id) {
+                    Ok((testament_id, testator.clone()))
+                } else {
+                    // Return an error if testament_id doesn't have a corresponding testator
+                    Err(SmartVaultErr::TestamentDoesNotExist(testament_id)) // Replace with appropriate error variant
+                }
+            } else {
+                // Return an error if heir doesn't have the specified testament_id
+                Err(SmartVaultErr::TestamentDoesNotExist(testament_id)) // Replace with appropriate error variant
+            }
+        }
+        // Return an error if the heir doesn't exist in the map
+        Err(SmartVaultErr::TestamentDoesNotExist(testament_id))
     }
-}
+
+    pub fn get_testament_ids_as_heir (
+        &self,
+        heir: Principal,
+    ) -> Vec<(TestamentID, Principal)> {
+        let mut result = Vec::new();
+
+        // Check if the heir exists
+        if let Some(testament_ids) = self.heir_to_testaments.get(&heir) {
+            // For each testament_id, get the corresponding testator
+            for testament_id in testament_ids {
+                if let Some(testator) = self.testament_to_testator.get(testament_id) {
+                    result.push((testament_id.clone(), testator.clone()));
+                }
+            }
+        }
+        result
+    }
+
+    pub fn get_testator_of_testament(&self, testament_id: TestamentID) -> Option<Principal> {
+        self.testament_to_testator.get(&testament_id).copied()
+    }
+ }

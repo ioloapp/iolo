@@ -4,7 +4,6 @@ use candid::{CandidType, Deserialize, Principal};
 
 use crate::common::{error::SmartVaultErr,uuid::UUID};
 use crate::common::user::{AddUserArgs, User};
-use crate::smart_vaults::testament::TestamentListEntry;
 
 use super::{
     secret::{AddSecretArgs, Secret},
@@ -92,9 +91,6 @@ impl MasterVault {
         }
 
         let testament: Testament = Testament::from(ata);
-        let testament_id = testament.id().clone();
-        let heirs = testament.heirs().clone();
-
         let user_vault = self.user_vaults.get_mut(vault_id).unwrap();
         user_vault.add_testament(testament.clone())?;
 
@@ -102,20 +98,12 @@ impl MasterVault {
         TESTAMENT_REGISTRY.with(
             |tr: &RefCell<TestamentRegistry>| -> Result<(), SmartVaultErr> {
                 let mut testament_registry = tr.borrow_mut();
-                for h in heirs {
-                    let tle = TestamentListEntry {
-                        id: testament.id().clone(),
-                        name: testament.name().clone(),
-                        testator: testament.testator().clone(),
-                        condition_status: testament.condition_status().clone()
-                    };
-                    testament_registry.add_testament_for_heir(h, tle.clone());
-                }
+                testament_registry.add_testament_to_registry(&testament);
                 Ok(())
             },
         )?;
 
-        Ok(user_vault.get_testament(&testament_id).unwrap().clone())
+        Ok(user_vault.get_testament(testament.id()).unwrap().clone())
     }
 
     pub fn update_user_testament(
@@ -127,6 +115,18 @@ impl MasterVault {
             return Err(SmartVaultErr::UserVaultDoesNotExist(vault_id.to_string()));
         }
         let user_vault = self.user_vaults.get_mut(vault_id).unwrap();
+
+        // Update testament registry
+        let t_old = user_vault.get_testament(&t.id())?;
+        TESTAMENT_REGISTRY.with(
+            |tr: &RefCell<TestamentRegistry>| -> Result<(), SmartVaultErr> {
+                let mut testament_registry = tr.borrow_mut();
+                testament_registry.update_testament_in_registry(&t, &t_old);
+                Ok(())
+            },
+        )?;
+
+        // Update real testament
         user_vault.update_testament(t)
     }
 

@@ -216,13 +216,11 @@ pub fn update_testament(t: Testament) -> Result<Testament, SmartVaultErr> {
             master_vault.update_user_testament(&user_vault_id, t)
         },
     )
-
-    // TODO: Update testament registry with new or removed heirs
 }
 
 #[ic_cdk_macros::query]
 #[candid_method(query)]
-pub fn get_testament_as_testator(id: TestamentID) -> Result<Testament, SmartVaultErr> {
+pub fn get_testament_as_testator(testament_id: TestamentID) -> Result<Testament, SmartVaultErr> {
     let principal = get_caller();
     let user_vault_id: UUID = get_vault_id_for(principal)?;
 
@@ -230,7 +228,7 @@ pub fn get_testament_as_testator(id: TestamentID) -> Result<Testament, SmartVaul
         |mv: &RefCell<MasterVault>| -> Result<Testament, SmartVaultErr> {
             mv.borrow()
                 .get_user_vault(&user_vault_id)?
-                .get_testament(&id)
+                .get_testament(&testament_id)
                 .cloned()
         },
     )
@@ -238,23 +236,54 @@ pub fn get_testament_as_testator(id: TestamentID) -> Result<Testament, SmartVaul
 
 #[ic_cdk_macros::query]
 #[candid_method(query)]
-pub fn get_testament_as_heir(id: TestamentID, testator: Principal) -> Result<Testament, SmartVaultErr> {
-    TESTAMENT_REGISTRY.with(
-        |tr: &RefCell<TestamentRegistry>| -> Result<Testament, SmartVaultErr> {
-            tr.borrow().get_testament_for_heir(get_caller(), id, testator)
+pub fn get_testament_as_heir(testament_id: TestamentID) -> Result<Testament, SmartVaultErr> {
+    let result_tr = TESTAMENT_REGISTRY.with(
+        |tr: &RefCell<TestamentRegistry>| -> Result<(TestamentID, Principal), SmartVaultErr> {
+            let testament_registry = tr.borrow();
+            testament_registry.get_testament_id_as_heir(get_caller(), testament_id.clone())
         },
-    )
+    )?;
+
+    let user_vault_id: UUID = get_vault_id_for(result_tr.1)?;
+    let result_mv = MASTERVAULT.with(
+        |mv: &RefCell<MasterVault>| -> Result<Testament, SmartVaultErr> {
+            mv.borrow()
+                .get_user_vault(&user_vault_id)?
+                .get_testament(&testament_id)
+                .cloned()
+        },
+    )?;
+    if result_mv.condition_status().clone() {
+        Ok(result_mv)
+    } else {
+        Err(SmartVaultErr::TestamentDoesNotExist(testament_id))
+    }
 }
 
 #[ic_cdk_macros::query]
 #[candid_method(query)]
-pub fn get_testament_list_as_heir() -> Result<Option<Vec<TestamentListEntry>>, SmartVaultErr> {
-    TESTAMENT_REGISTRY.with(
-        |tr: &RefCell<TestamentRegistry>| -> Result<Option<Vec<TestamentListEntry>>, SmartVaultErr> {
-            let tles = tr.borrow().get_testaments_for_heir(get_caller());
-            Ok(tles)
+pub fn get_testament_list_as_heir() -> Result<Vec<TestamentListEntry>, SmartVaultErr> {
+    let result_tr = TESTAMENT_REGISTRY.with(
+        |tr: &RefCell<TestamentRegistry>| -> Vec<(TestamentID, Principal)> {
+            let testament_registry = tr.borrow();
+            testament_registry.get_testament_ids_as_heir(get_caller())
         },
-    )
+    );
+    let mut response = Vec::new();
+    for item in result_tr {
+        let user_vault_id: UUID = get_vault_id_for(item.1.clone())?;
+        let result_mv = MASTERVAULT.with(
+            |mv: &RefCell<MasterVault>| -> Result<Testament, SmartVaultErr> {
+                mv.borrow()
+                    .get_user_vault(&user_vault_id)?
+                    .get_testament(&item.0)
+                    .cloned()
+            },
+        )?;
+        let entry = TestamentListEntry::from(result_mv);
+        response.push(entry)
+    }
+   Ok(response)
 }
 
 #[ic_cdk_macros::query]
