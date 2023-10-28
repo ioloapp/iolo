@@ -18,6 +18,21 @@ export const addTestamentThunk = createAsyncThunk<UiTestament, UiTestament, { st
     }
 );
 
+export const viewTestamentThunk = createAsyncThunk<UiTestament, UiTestament, { state: RootState }>('testaments/view',
+    (uiTestament, {rejectWithValue, getState}) => {
+        try {
+            if (uiTestament.role === UiTestamentListEntryRole.Testator) {
+                return icCryptService.getTestamentAsTestator(uiTestament.id);
+            } else {
+                return icCryptService.getTestamentAsHeir(uiTestament.id, Principal.fromText(uiTestament.testator.id));
+            }
+
+        } catch (e) {
+            rejectWithValue(mapError(e))
+        }
+    }
+);
+
 export const editTestamentThunk = createAsyncThunk<UiTestament, UiTestament, { state: RootState }>('testaments/edit',
      (uiTestament, {rejectWithValue, getState}) => {
         try {
@@ -79,6 +94,12 @@ export const testamentsSlice = createSlice({
         closeAddDialog: state => {
             state.showAddDialog = false
         },
+        closeViewDialog: state => {
+            state.showViewDialog = false
+        },
+        closeEditDialog: state => {
+            state.showEditDialog = false
+        },
         openAddDialog: state => {
             state.showAddDialog = true
         },
@@ -137,6 +158,19 @@ export const testamentsSlice = createSlice({
                 state.dialogItemState = 'failed';
                 state.error = action.error.message;
                 state.showAddDialog = true;
+            })
+            .addCase(viewTestamentThunk.pending, (state) => {
+                state.dialogItemState = 'pending';
+                state.error = undefined;
+                state.showViewDialog = true;
+            })
+            .addCase(viewTestamentThunk.fulfilled, (state, action) => {
+                state.dialogItemState = 'succeeded';
+                state.dialogItem = action.payload;
+            })
+            .addCase(viewTestamentThunk.rejected, (state, action) => {
+                state.dialogItemState = 'failed';
+                state.error = action.error.message;
             })
             .addCase(editTestamentThunk.pending, (state) => {
                 state.dialogItemState = 'pending';

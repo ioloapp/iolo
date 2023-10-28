@@ -277,6 +277,7 @@ class IcCryptService {
 
     public async getTestamentAsTestator(id: string): Promise<UiTestament> {
         const result: Result_2 = await (await this.getActor()).get_testament_as_testator(id);
+        console.log('r', result);
         if (result['Ok']) {
             return this.mapTestamentToUiTestament(result['Ok']);
         }
@@ -614,7 +615,7 @@ class IcCryptService {
             testator: { id: testament.testator.toString() },
             secrets: testament.secrets,
             heirs: testament.heirs.map((item) => {return {id: item.toString()}}),
-            conditionArg: testament.condition_arg,
+            conditionArg: Number(testament.condition_arg),
             conditionStatus: testament.condition_status,
             dateCreated: this.nanosecondsInBigintToDate(testament.date_created),
             dateModified: this.nanosecondsInBigintToDate(testament.date_modified),

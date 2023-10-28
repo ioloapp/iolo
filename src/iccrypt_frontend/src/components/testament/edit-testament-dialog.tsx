@@ -10,7 +10,7 @@ import {
 } from "../../redux/testaments/testamentsSelectors";
 import {selectCurrentUser} from "../../redux/user/userSelectors";
 import {BasicDialog} from "../dialog/basic-dialog";
-import TestamentDialogContent from "./testament-dialog-content";
+import {TestamentDialogContent} from './testament-dialog-content';
 
 export default function EditTestamentDialog() {
     const dispatch = useAppDispatch();
@@ -21,7 +21,7 @@ export default function EditTestamentDialog() {
     const currentUser = useSelector(selectCurrentUser);
 
     const handleClose = () => {
-        dispatch(testamentsActions.closeAddDialog());
+        dispatch(testamentsActions.closeEditDialog());
     };
 
     const cancelEditTestament = () => {
