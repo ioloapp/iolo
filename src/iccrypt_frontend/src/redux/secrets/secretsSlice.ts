@@ -129,7 +129,7 @@ export const secretsSlice = createSlice({
             .addCase(addSecretThunk.fulfilled, (state, action) => {
                 state.dialogItemState = 'succeeded';
                 state.showAddDialog = false;
-                state.dialogItem = {};
+                state.dialogItem = initialState.dialogItem;
                 state.groupedSecretList = addSecretToGroupedSecretList(state.groupedSecretList, action.payload)
             })
             .addCase(addSecretThunk.rejected, (state, action) => {
@@ -161,7 +161,7 @@ export const secretsSlice = createSlice({
             .addCase(updateSecretThunk.fulfilled, (state, action) => {
                 state.dialogItemState = 'succeeded';
                 state.showEditDialog = false;
-                state.dialogItem = {};
+                state.dialogItem = initialState.dialogItem;
                 state.groupedSecretList = updateSecretInGroupedSecretList(state.groupedSecretList, action.payload)
             })
             .addCase(updateSecretThunk.rejected, (state, action) => {
