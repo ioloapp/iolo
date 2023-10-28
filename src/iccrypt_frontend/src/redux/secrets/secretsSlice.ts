@@ -59,8 +59,12 @@ export const deleteSecretThunk = createAsyncThunk<string, UiSecret, {
 export const loadSecretsThunk = createAsyncThunk<UiSecretListEntry[], void, {
     state: RootState
 }>('secrets/load',
-    async () => {
-        return await icCryptService.getSecretList();
+    async (_, {rejectWithValue}) => {
+        try {
+            return await icCryptService.getSecretList();
+        } catch (e) {
+            rejectWithValue(mapError(e))
+        }
     }
 );
 
