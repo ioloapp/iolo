@@ -4,14 +4,12 @@ import {Backdrop, Box, Button, CircularProgress, Container, Typography} from "@m
 import * as React from "react";
 import {createUserThunk, userActions} from "../../redux/user/userSlice";
 import {PageLayout} from "../../components/layout/page-layout";
-import {useNavigate} from "react-router-dom";
 
 
 export function Onboarding() {
 
 
     const dispatch = useAppDispatch();
-    const navigate = useNavigate();
     const [loadingIconIsOpen, setLoadingIcon] = React.useState(false);
 
     // Login/Logout
@@ -19,7 +17,6 @@ export function Onboarding() {
         setLoadingIcon(true);
         dispatch(createUserThunk())
         setLoadingIcon(false);
-        navigate("/");
     }
 
     async function logoutUser() {
