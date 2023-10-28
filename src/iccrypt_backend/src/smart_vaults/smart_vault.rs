@@ -256,7 +256,7 @@ pub fn get_testament_as_heir(testament_id: TestamentID) -> Result<Testament, Sma
     if result_mv.condition_status().clone() {
         Ok(result_mv)
     } else {
-        Err(SmartVaultErr::TestamentDoesNotExist(testament_id))
+        Err(SmartVaultErr::InvalidTestamentCondition)
     }
 }
 
@@ -269,6 +269,7 @@ pub fn get_testament_list_as_heir() -> Result<Vec<TestamentListEntry>, SmartVaul
             testament_registry.get_testament_ids_as_heir(get_caller())
         },
     );
+
     let mut response = Vec::new();
     for item in result_tr {
         let user_vault_id: UUID = get_vault_id_for(item.1.clone())?;
@@ -283,7 +284,7 @@ pub fn get_testament_list_as_heir() -> Result<Vec<TestamentListEntry>, SmartVaul
         let entry = TestamentListEntry::from(result_mv);
         response.push(entry)
     }
-   Ok(response)
+    Ok(response)
 }
 
 #[ic_cdk_macros::query]

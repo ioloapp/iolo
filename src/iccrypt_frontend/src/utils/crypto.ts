@@ -5,6 +5,7 @@ import {
     _SERVICE,
 } from "../../../declarations/iccrypt_backend/iccrypt_backend.did";
 import {Principal} from "@dfinity/principal";
+import {mapError} from "./errorMapper";
 
 const hex_decode = (hexString: string) =>
     Uint8Array.from(hexString.match(/.{1,2}/g).map((byte) => parseInt(byte, 16)));
@@ -51,6 +52,9 @@ export async function get_aes_256_gcm_key_for_testament(id: string, actor: Actor
     const seed = window.crypto.getRandomValues(new Uint8Array(32));
     const tsk = new vetkd.TransportSecretKey(seed);
     const ek_bytes_hex = await iccrypt_backend.encrypted_symmetric_key_for_testament({encryption_public_key: tsk.public_key(), testament_id: id});
+    if (!ek_bytes_hex['Ok']) {
+        throw mapError(ek_bytes_hex['Err']);
+    }
     const pk_bytes_hex = await iccrypt_backend.symmetric_key_verification_key();
 
     /*const backendPrincipal = new TextEncoder().encode(process.env.ICCRYPT_BACKEND_CANISTER_ID);
@@ -64,7 +68,7 @@ export async function get_aes_256_gcm_key_for_testament(id: string, actor: Actor
 
     try {
         const result = tsk.decrypt_and_hash(
-            hex_decode(ek_bytes_hex),
+            hex_decode(ek_bytes_hex['Ok']),
             hex_decode(pk_bytes_hex),
             derivationId,
             32,

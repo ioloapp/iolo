@@ -26,13 +26,14 @@ type Result = variant { Ok : User; Err : SmartVaultErr };
 type Result_1 = variant { Ok : Secret; Err : SmartVaultErr };
 type Result_2 = variant { Ok : Testament; Err : SmartVaultErr };
 type Result_3 = variant { Ok; Err : SmartVaultErr };
-type Result_4 = variant { Ok : vec User; Err : SmartVaultErr };
-type Result_5 = variant { Ok : vec SecretListEntry; Err : SmartVaultErr };
-type Result_6 = variant {
+type Result_4 = variant { Ok : text; Err : SmartVaultErr };
+type Result_5 = variant { Ok : vec User; Err : SmartVaultErr };
+type Result_6 = variant { Ok : vec SecretListEntry; Err : SmartVaultErr };
+type Result_7 = variant {
   Ok : SecretSymmetricCryptoMaterial;
   Err : SmartVaultErr;
 };
-type Result_7 = variant { Ok : vec TestamentListEntry; Err : SmartVaultErr };
+type Result_8 = variant { Ok : vec TestamentListEntry; Err : SmartVaultErr };
 type Secret = record {
   id : text;
   url : opt text;
@@ -70,6 +71,7 @@ type SmartVaultErr = variant {
   UserVaultDoesNotExist : text;
   SecretAlreadyExists : text;
   NoTestamentsForHeir : text;
+  KeyGenerationNotAllowed;
 };
 type Testament = record {
   id : text;
@@ -113,17 +115,17 @@ service : {
   encrypted_ibe_decryption_key_for_caller : (vec nat8) -> (text);
   encrypted_symmetric_key_for_caller : (vec nat8) -> (text);
   encrypted_symmetric_key_for_testament : (TestamentKeyDerviationArgs) -> (
-      text,
+      Result_4,
     );
   encrypted_symmetric_key_for_uservault : (vec nat8) -> (text);
-  get_heir_list : () -> (Result_4) query;
+  get_heir_list : () -> (Result_5) query;
   get_secret : (text) -> (Result_1) query;
-  get_secret_list : () -> (Result_5) query;
-  get_secret_symmetric_crypto_material : (text) -> (Result_6) query;
+  get_secret_list : () -> (Result_6) query;
+  get_secret_symmetric_crypto_material : (text) -> (Result_7) query;
   get_testament_as_heir : (text) -> (Result_2) query;
   get_testament_as_testator : (text) -> (Result_2) query;
-  get_testament_list_as_heir : () -> (Result_7) query;
-  get_testament_list_as_testator : () -> (Result_7) query;
+  get_testament_list_as_heir : () -> (Result_8) query;
+  get_testament_list_as_testator : () -> (Result_8) query;
   ibe_encryption_key : () -> (text);
   is_user_vault_existing : () -> (bool) query;
   remove_heir : (principal) -> (Result_3);

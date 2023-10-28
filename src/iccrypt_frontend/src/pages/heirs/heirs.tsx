@@ -54,7 +54,6 @@ export function Heirs() {
     }
 
     const hasError = (): boolean => {
-        console.log('heirListState', heirListState)
         return heirListState === 'failed';
     }
 

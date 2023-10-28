@@ -6,11 +6,10 @@ use serde::{Deserialize, Serialize};
 use crate::common::error::SmartVaultErr;
 use crate::common::uuid::UUID;
 use crate::smart_vaults::master_vault::MasterVault;
-use crate::smart_vaults::smart_vault::{MASTERVAULT, TESTAMENT_REGISTRY};
+use crate::smart_vaults::smart_vault::{MASTERVAULT, TESTAMENT_REGISTRY, USER_REGISTRY};
 use crate::smart_vaults::testament::{Testament, TestamentID};
 use crate::smart_vaults::testament_registry::TestamentRegistry;
-use crate::smart_vaults::user_vault::UserVault;
-use crate::utils::caller::get_caller;
+use crate::smart_vaults::user_registry::UserRegistry;
 
 use super::vetkd_types::{
     CanisterId, VetKDCurve, VetKDEncryptedKeyReply, VetKDEncryptedKeyRequest, VetKDKeyId,
@@ -58,7 +57,7 @@ async fn encrypted_symmetric_key_for_uservault(encryption_public_key: Vec<u8>) -
 /// The key is encrypted using the provided encryption_public_key.
 #[ic_cdk_macros::update]
 #[candid_method(update)]
-async fn encrypted_symmetric_key_for_testament(args: TestamentKeyDerviationArgs) -> String {
+async fn encrypted_symmetric_key_for_testament(args: TestamentKeyDerviationArgs) -> Result<String, SmartVaultErr> {
     ic_cdk::println!(
         "encrypted_symmetric_key_for_testament with testament id: {:?}",
         &args.testament_id,
@@ -67,39 +66,57 @@ async fn encrypted_symmetric_key_for_testament(args: TestamentKeyDerviationArgs)
     let caller = ic_cdk::caller(); //.as_slice().to_vec();
 
     // check if caller has the right to derive this key
-    let mut caller_is_testator = true; // TODO
-    let mut caller_is_heir = true; // TODO
+    let mut key_can_be_generated = false;
 
-    // Let's see if caller is testator
+    // Let's see if the testament is existing
     let result_1 = TESTAMENT_REGISTRY.with(
         |tr: &RefCell<TestamentRegistry>| -> Option<Principal> {
             let testament_registry = tr.borrow();
             testament_registry.get_testator_of_testament(args.testament_id.clone())
         },
     );
-    if result_1.is_some() {
-        caller_is_testator = true;
+    if result_1.is_none() {
+        // No testament with this id is existing, we can easily create a vetkey
+        key_can_be_generated = true;
     } else {
-        // Let's see if caller is heir and testament condition is true
-        let result_2 = TESTAMENT_REGISTRY.with(
-            |tr: &RefCell<TestamentRegistry>| -> Result<(TestamentID, Principal), SmartVaultErr> {
-                let testament_registry = tr.borrow();
-                testament_registry.get_testament_id_as_heir(caller, args.testament_id.clone())
-            },
-        );
-        if result_2.is_ok() {
-            caller_is_heir = true;
-        }
-        // TODO check if testament has conditionStatus = true
+        // Testament is existing, further checks are needed
+        if result_1.unwrap() == caller {
+            // Caller is testator, all good
+            key_can_be_generated = true;
+        } else {
+            // Let's see if caller is heir
+            let result_2 = TESTAMENT_REGISTRY.with(
+                |tr: &RefCell<TestamentRegistry>| -> Result<(TestamentID, Principal), SmartVaultErr> {
+                    let testament_registry = tr.borrow();
+                    testament_registry.get_testament_id_as_heir(caller, args.testament_id.clone())
+                },
+            )?;
 
+            // Caller is heir, let's see if the associated testament is in correct condition status.
+            let result_3 = USER_REGISTRY.with(
+                |ur: &RefCell<UserRegistry>| -> Result<UUID, SmartVaultErr> {
+                    let user_registry = ur.borrow();
+                    let user = user_registry.get_user(&result_2.1)?;
+                    user.user_vault_id.ok_or_else(|| SmartVaultErr::UserVaultDoesNotExist("".to_string()))
+                },
+            )?;
+            let result_4 = MASTERVAULT.with(
+                |mv: &RefCell<MasterVault>| -> Result<Testament, SmartVaultErr> {
+                    mv.borrow()
+                        .get_user_vault(&result_3)?
+                        .get_testament(&args.testament_id)
+                        .cloned()
+                },
+            )?;
+            if *result_4.condition_status() {
+                key_can_be_generated = true;
+            }
+        }
     }
 
 
-    if !(caller_is_testator || caller_is_heir) {
-        ic_cdk::trap(&format!(
-            "Caller {:?} is not allowed to see testament {:?}",
-            caller, &args.testament_id
-        ));
+    if !(key_can_be_generated) {
+        return Err(SmartVaultErr::KeyGenerationNotAllowed);
     }
 
     /*let mut derivation_id: Vec<u8> = ic_cdk::id().as_slice().to_vec();
@@ -132,7 +149,8 @@ async fn encrypted_symmetric_key_for_testament(args: TestamentKeyDerviationArgs)
     .await
     .expect("call to vetkd_encrypted_key failed");
 
-    hex::encode(response.encrypted_key)
+    let response = hex::encode(response.encrypted_key);
+    Ok(response)
 }
 
 /*

@@ -29,6 +29,7 @@ export const idlFactory = ({ IDL }) => {
     'UserVaultDoesNotExist' : IDL.Text,
     'SecretAlreadyExists' : IDL.Text,
     'NoTestamentsForHeir' : IDL.Text,
+    'KeyGenerationNotAllowed' : IDL.Null,
   });
   const Result = IDL.Variant({ 'Ok' : User, 'Err' : SmartVaultErr });
   const SecretSymmetricCryptoMaterial = IDL.Record({
@@ -91,17 +92,18 @@ export const idlFactory = ({ IDL }) => {
     'encryption_public_key' : IDL.Vec(IDL.Nat8),
     'testament_id' : IDL.Text,
   });
-  const Result_4 = IDL.Variant({ 'Ok' : IDL.Vec(User), 'Err' : SmartVaultErr });
+  const Result_4 = IDL.Variant({ 'Ok' : IDL.Text, 'Err' : SmartVaultErr });
+  const Result_5 = IDL.Variant({ 'Ok' : IDL.Vec(User), 'Err' : SmartVaultErr });
   const SecretListEntry = IDL.Record({
     'id' : IDL.Text,
     'name' : IDL.Opt(IDL.Text),
     'category' : IDL.Opt(SecretCategory),
   });
-  const Result_5 = IDL.Variant({
+  const Result_6 = IDL.Variant({
     'Ok' : IDL.Vec(SecretListEntry),
     'Err' : SmartVaultErr,
   });
-  const Result_6 = IDL.Variant({
+  const Result_7 = IDL.Variant({
     'Ok' : SecretSymmetricCryptoMaterial,
     'Err' : SmartVaultErr,
   });
@@ -111,7 +113,7 @@ export const idlFactory = ({ IDL }) => {
     'name' : IDL.Opt(IDL.Text),
     'testator' : IDL.Principal,
   });
-  const Result_7 = IDL.Variant({
+  const Result_8 = IDL.Variant({
     'Ok' : IDL.Vec(TestamentListEntry),
     'Err' : SmartVaultErr,
   });
@@ -133,7 +135,7 @@ export const idlFactory = ({ IDL }) => {
       ),
     'encrypted_symmetric_key_for_testament' : IDL.Func(
         [TestamentKeyDerviationArgs],
-        [IDL.Text],
+        [Result_4],
         [],
       ),
     'encrypted_symmetric_key_for_uservault' : IDL.Func(
@@ -141,18 +143,18 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Text],
         [],
       ),
-    'get_heir_list' : IDL.Func([], [Result_4], ['query']),
+    'get_heir_list' : IDL.Func([], [Result_5], ['query']),
     'get_secret' : IDL.Func([IDL.Text], [Result_1], ['query']),
-    'get_secret_list' : IDL.Func([], [Result_5], ['query']),
+    'get_secret_list' : IDL.Func([], [Result_6], ['query']),
     'get_secret_symmetric_crypto_material' : IDL.Func(
         [IDL.Text],
-        [Result_6],
+        [Result_7],
         ['query'],
       ),
     'get_testament_as_heir' : IDL.Func([IDL.Text], [Result_2], ['query']),
     'get_testament_as_testator' : IDL.Func([IDL.Text], [Result_2], ['query']),
-    'get_testament_list_as_heir' : IDL.Func([], [Result_7], ['query']),
-    'get_testament_list_as_testator' : IDL.Func([], [Result_7], ['query']),
+    'get_testament_list_as_heir' : IDL.Func([], [Result_8], ['query']),
+    'get_testament_list_as_testator' : IDL.Func([], [Result_8], ['query']),
     'ibe_encryption_key' : IDL.Func([], [IDL.Text], []),
     'is_user_vault_existing' : IDL.Func([], [IDL.Bool], ['query']),
     'remove_heir' : IDL.Func([IDL.Principal], [Result_3], []),

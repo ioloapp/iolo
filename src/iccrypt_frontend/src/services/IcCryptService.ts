@@ -11,7 +11,7 @@ import {
     Result_4,
     Result_5,
     Result_6,
-    Result_7,
+    Result_7, Result_8,
     Secret,
     SecretCategory,
     SecretListEntry,
@@ -121,7 +121,7 @@ class IcCryptService {
     }
 
     public async getSecretList(): Promise<UiSecretListEntry[]> {
-        const result: Result_5 = await this.actor.get_secret_list();
+        const result: Result_6 = await this.actor.get_secret_list();
         if (result['Ok']) {
             return result['Ok'].map((secretListEntry: SecretListEntry): UiSecretListEntry => {
                 return {
@@ -160,7 +160,7 @@ class IcCryptService {
 
     public async updateSecret(uiSecret: UiSecret): Promise<UiSecret> {
         console.log('start updating secret...')
-        const resultSymmetricCryptoMaterial: Result_6 = await this.actor.get_secret_symmetric_crypto_material(uiSecret.id);
+        const resultSymmetricCryptoMaterial: Result_7 = await this.actor.get_secret_symmetric_crypto_material(uiSecret.id);
         let symmetricCryptoMaterial: SecretSymmetricCryptoMaterial;
         if (resultSymmetricCryptoMaterial['Ok']) {
             symmetricCryptoMaterial = resultSymmetricCryptoMaterial['Ok'];
@@ -231,7 +231,7 @@ class IcCryptService {
     }
 
     public async getTestamentList(): Promise<UiTestamentListEntry[]> {
-        const resultAsTestator: Result_7 = await this.actor.get_testament_list_as_testator();
+        const resultAsTestator: Result_8 = await this.actor.get_testament_list_as_testator();
         let testamentsAsTestator: UiTestamentListEntry[] = [];
         if (resultAsTestator['Ok']) {
             testamentsAsTestator = resultAsTestator['Ok'].map((item: TestamentListEntry): UiTestamentListEntry  => {
@@ -245,7 +245,7 @@ class IcCryptService {
             });
         } else throw mapError(resultAsTestator['Err']);
 
-        const resultAsHeir: Result_7 = await this.actor.get_testament_list_as_heir();
+        const resultAsHeir: Result_8 = await this.actor.get_testament_list_as_heir();
         let testamentsAsHeir: UiTestamentListEntry[] =  [];
         if (resultAsHeir['Ok'] && resultAsHeir['Ok'].length > 0) {
             testamentsAsHeir = resultAsHeir['Ok'].map((item: TestamentListEntry): UiTestamentListEntry  => {
@@ -265,7 +265,6 @@ class IcCryptService {
 
     public async getTestamentAsTestator(id: string): Promise<UiTestament> {
         const result: Result_2 = await this.actor.get_testament_as_testator(id);
-        console.log("as testator: ", result)
         if (result['Ok']) {
             return this.mapTestamentToUiTestament(result['Ok']);
         }
@@ -274,7 +273,6 @@ class IcCryptService {
 
     public async getTestamentAsHeir(id: string, testator: Principal): Promise<UiTestament> {
         const result: Result_2 = await this.actor.get_testament_as_heir(id);
-        console.log("as heir: ", result)
         if (result['Ok']) {
             return this.mapTestamentToUiTestament(result['Ok']);
         }
@@ -316,7 +314,7 @@ class IcCryptService {
     }
 
     public async getHeirsList(): Promise<UiUser[]> {
-        const result: Result_4 = await this.actor.get_heir_list();
+        const result: Result_5 = await this.actor.get_heir_list();
         if (result['Ok']) {
             return result['Ok'].map((item) => this.mapUserToUiUser(item)) ;
         }
@@ -564,7 +562,7 @@ class IcCryptService {
         // Create key_box by encrypting symmetric secrets key with testament vetKey
         let keyBox = new Array<[string, SecretSymmetricCryptoMaterial]>;
         for (const item of uiTestament.secrets) {
-            const result: Result_6 = await this.actor.get_secret_symmetric_crypto_material(item);
+            const result: Result_7 = await this.actor.get_secret_symmetric_crypto_material(item);
             if (result['Ok']) {
                 // Decrypt symmetric key with uservault vetKey
                 const decryptedSymmetricKey = await aes_gcm_decrypt(result['Ok'].encrypted_symmetric_key as Uint8Array, uservaultVetKey, result['Ok'].iv as Uint8Array);

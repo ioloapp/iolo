@@ -16,6 +16,7 @@ pub enum SmartVaultErr {
     TestamentDoesNotExist(String),
     InvalidTestamentCondition,
     NoTestamentsForHeir(String),
+    KeyGenerationNotAllowed,
 }
 
 impl Display for SmartVaultErr {
@@ -66,6 +67,9 @@ impl Display for SmartVaultErr {
             }
             SmartVaultErr::InvalidTestamentCondition => {
                 write!(f, "Testament cannot be read by heir because of wrong condition state")
+            }
+            SmartVaultErr::KeyGenerationNotAllowed => {
+                write!(f, "Key cannot be generated because some conditions are not met")
             }
         }
     }

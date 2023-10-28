@@ -33,13 +33,15 @@ export type Result_2 = { 'Ok' : Testament } |
   { 'Err' : SmartVaultErr };
 export type Result_3 = { 'Ok' : null } |
   { 'Err' : SmartVaultErr };
-export type Result_4 = { 'Ok' : Array<User> } |
+export type Result_4 = { 'Ok' : string } |
   { 'Err' : SmartVaultErr };
-export type Result_5 = { 'Ok' : Array<SecretListEntry> } |
+export type Result_5 = { 'Ok' : Array<User> } |
   { 'Err' : SmartVaultErr };
-export type Result_6 = { 'Ok' : SecretSymmetricCryptoMaterial } |
+export type Result_6 = { 'Ok' : Array<SecretListEntry> } |
   { 'Err' : SmartVaultErr };
-export type Result_7 = { 'Ok' : Array<TestamentListEntry> } |
+export type Result_7 = { 'Ok' : SecretSymmetricCryptoMaterial } |
+  { 'Err' : SmartVaultErr };
+export type Result_8 = { 'Ok' : Array<TestamentListEntry> } |
   { 'Err' : SmartVaultErr };
 export interface Secret {
   'id' : string,
@@ -78,7 +80,8 @@ export type SmartVaultErr = { 'UserAlreadyExists' : string } |
   { 'UserDoesNotExist' : string } |
   { 'UserVaultDoesNotExist' : string } |
   { 'SecretAlreadyExists' : string } |
-  { 'NoTestamentsForHeir' : string };
+  { 'NoTestamentsForHeir' : string } |
+  { 'KeyGenerationNotAllowed' : null };
 export interface Testament {
   'id' : string,
   'heirs' : Array<Principal>,
@@ -129,20 +132,20 @@ export interface _SERVICE {
   >,
   'encrypted_symmetric_key_for_testament' : ActorMethod<
     [TestamentKeyDerviationArgs],
-    string
+    Result_4
   >,
   'encrypted_symmetric_key_for_uservault' : ActorMethod<
     [Uint8Array | number[]],
     string
   >,
-  'get_heir_list' : ActorMethod<[], Result_4>,
+  'get_heir_list' : ActorMethod<[], Result_5>,
   'get_secret' : ActorMethod<[string], Result_1>,
-  'get_secret_list' : ActorMethod<[], Result_5>,
-  'get_secret_symmetric_crypto_material' : ActorMethod<[string], Result_6>,
+  'get_secret_list' : ActorMethod<[], Result_6>,
+  'get_secret_symmetric_crypto_material' : ActorMethod<[string], Result_7>,
   'get_testament_as_heir' : ActorMethod<[string], Result_2>,
   'get_testament_as_testator' : ActorMethod<[string], Result_2>,
-  'get_testament_list_as_heir' : ActorMethod<[], Result_7>,
-  'get_testament_list_as_testator' : ActorMethod<[], Result_7>,
+  'get_testament_list_as_heir' : ActorMethod<[], Result_8>,
+  'get_testament_list_as_testator' : ActorMethod<[], Result_8>,
   'ibe_encryption_key' : ActorMethod<[], string>,
   'is_user_vault_existing' : ActorMethod<[], boolean>,
   'remove_heir' : ActorMethod<[Principal], Result_3>,
