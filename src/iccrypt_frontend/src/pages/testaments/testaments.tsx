@@ -28,6 +28,10 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import {Error} from "../../components/error/error";
 import ViewTestamentDialog from "../../components/testament/view-testament-dialog";
+import {selectSecretsListState} from "../../redux/secrets/secretsSelectors";
+import {loadSecretsThunk} from "../../redux/secrets/secretsSlice";
+import {loadHeirsThunk} from "../../redux/heirs/heirsSlice";
+import {selectHeirListState} from "../../redux/heirs/heirsSelectors";
 
 export function Testaments() {
 
@@ -35,8 +39,16 @@ export function Testaments() {
     const testaments = useSelector(selectTestaments);
     const testamentsListState = useSelector(selectTestamentsListState);
     const testamentsListError = useSelector(selectTestamentError);
+    const secretsListState = useSelector(selectSecretsListState);
+    const heirsListState = useSelector(selectHeirListState);
 
     useEffect(() => {
+        if(secretsListState === 'init'){
+            dispatch(loadSecretsThunk())
+        }
+        if(heirsListState === 'init'){
+            dispatch(loadHeirsThunk())
+        }
         dispatch(loadTestamentsThunk())
     }, [])
 
