@@ -116,7 +116,9 @@ export const heirsSlice = createSlice({
                 state.dialogItemState = 'succeeded';
                 state.showAddDialog = false;
                 state.dialogItem = initialState.dialogItem;
-                state.heirsList = [...state.heirsList, action.payload]
+                if(action.payload) {
+                    state.heirsList = [...state.heirsList, action.payload]
+                }
             })
             .addCase(addHeirThunk.rejected, (state, action) => {
                 state.dialogItemState = 'failed';
@@ -131,7 +133,9 @@ export const heirsSlice = createSlice({
                 state.dialogItemState = 'succeeded';
                 state.showEditDialog = false;
                 state.dialogItem = initialState.dialogItem;
-                state.heirsList = [...state.heirsList.filter(h => h.id != action.payload.id), action.payload]
+                if(action.payload) {
+                    state.heirsList = [...state.heirsList.filter(h => h.id != action.payload.id), action.payload]
+                }
             })
             .addCase(updateHeirThunk.rejected, (state, action) => {
                 state.dialogItemState = 'failed';
@@ -144,7 +148,9 @@ export const heirsSlice = createSlice({
             .addCase(deleteHeirThunk.fulfilled, (state, action) => {
                 state.dialogItemState = 'succeeded';
                 state.showDeleteDialog = false;
-                state.heirsList = [...state.heirsList.filter(h => h.id != action.payload)]
+                if(action.payload) {
+                    state.heirsList = [...state.heirsList.filter(h => h.id != action.payload)]
+                }
             })
             .addCase(deleteHeirThunk.rejected, (state, action) => {
                 state.dialogItemState = 'failed';

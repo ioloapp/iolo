@@ -226,7 +226,7 @@ class IcCryptService {
         // Add testament
         const result = await (await this.getActor()).add_testament(testamentArgs);
         if (result['Ok']) {
-            return this.mapTestamentToUiTestament(result['Ok']);
+            return this.mapTestamentToUiTestament(result['Ok'], UiTestamentListEntryRole.Testator);
         } else throw mapError(result['Err']);
 
     }
@@ -238,7 +238,7 @@ class IcCryptService {
         // Update testament
         const result = await (await this.getActor()).update_testament(testament);
         if (result['Ok']) {
-            return this.mapTestamentToUiTestament(result['Ok']);
+            return this.mapTestamentToUiTestament(result['Ok'], UiTestamentListEntryRole.Testator);
         } else throw mapError(result['Err']);
     }
 
@@ -279,7 +279,7 @@ class IcCryptService {
         const result: Result_2 = await (await this.getActor()).get_testament_as_testator(id);
         console.log('r', result);
         if (result['Ok']) {
-            return this.mapTestamentToUiTestament(result['Ok']);
+            return this.mapTestamentToUiTestament(result['Ok'], UiTestamentListEntryRole.Testator);
         }
         throw mapError(result['Err']);
     }
@@ -287,7 +287,7 @@ class IcCryptService {
     public async getTestamentAsHeir(id: string, testator: Principal): Promise<UiTestament> {
         const result: Result_2 = await (await this.getActor()).get_testament_as_heir(id);
         if (result['Ok']) {
-            return this.mapTestamentToUiTestament(result['Ok']);
+            return this.mapTestamentToUiTestament(result['Ok'], UiTestamentListEntryRole.Heir);
         }
         throw mapError(result['Err']);
     }
@@ -608,7 +608,7 @@ class IcCryptService {
         }
     }
 
-    private mapTestamentToUiTestament(testament: Testament): UiTestament {
+    private mapTestamentToUiTestament(testament: Testament, role: UiTestamentListEntryRole): UiTestament {
         return {
             id: testament.id,
             name: testament.name.length > 0 ? testament.name[0] : undefined,
@@ -619,6 +619,7 @@ class IcCryptService {
             conditionStatus: testament.condition_status,
             dateCreated: this.nanosecondsInBigintToDate(testament.date_created),
             dateModified: this.nanosecondsInBigintToDate(testament.date_modified),
+            role
         };
     }
 
