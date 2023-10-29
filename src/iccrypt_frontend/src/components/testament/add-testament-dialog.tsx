@@ -12,7 +12,7 @@ import {
 } from "../../redux/testaments/testamentsSelectors";
 import {selectCurrentUser} from "../../redux/user/userSelectors";
 import {BasicDialog} from "../dialog/basic-dialog";
-import TestamentDialogContent from "./testament-dialog-content";
+import {TestamentDialogContent} from './testament-dialog-content';
 
 export default function AddTestamentDialog() {
     const dispatch = useAppDispatch();

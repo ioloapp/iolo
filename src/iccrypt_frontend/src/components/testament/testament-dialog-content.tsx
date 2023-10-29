@@ -1,4 +1,5 @@
 import * as React from 'react';
+import {FC} from 'react';
 import TextField from '@mui/material/TextField';
 import {useSelector} from "react-redux";
 import {selectGroupedSecrets} from "../../redux/secrets/secretsSelectors";
@@ -19,7 +20,11 @@ import {testamentsActions} from "../../redux/testaments/testamentsSlice";
 import {selectTestamentDialogItem} from "../../redux/testaments/testamentsSelectors";
 import {selectHeirs} from "../../redux/heirs/heirsSelectors";
 
-export default function TestamentDialogContent() {
+
+export interface TestamentDialogContentProps {
+    readonly?: boolean;
+}
+export const TestamentDialogContent: FC<TestamentDialogContentProps> = ({readonly}) => {
     const dispatch = useAppDispatch();
     const dialogItem = useSelector(selectTestamentDialogItem);
     const groupedSecretList = useSelector(selectGroupedSecrets);
@@ -77,6 +82,7 @@ export default function TestamentDialogContent() {
                     fullWidth
                     variant="standard"
                     value={dialogItem.name}
+                    disabled={readonly}
                     onChange={e => updateTestamentToAdd({
                         ...dialogItem,
                         name: e.target.value
@@ -94,6 +100,7 @@ export default function TestamentDialogContent() {
                     input={<OutlinedInput label="Secrets"/>}
                     renderValue={(selected) => selected.join(', ')}
                     MenuProps={MenuProps}
+                    disabled={readonly}
                 >
                     {groupedSecretList.passwordList?.length > 0 &&
                         <Divider textAlign="left">Passwords</Divider>}
@@ -140,6 +147,7 @@ export default function TestamentDialogContent() {
                     input={<OutlinedInput label="Heirs"/>}
                     renderValue={(selected) => selected.join(', ')}
                     MenuProps={MenuProps}
+                    disabled={readonly}
                 >
                     {heirsList.map((heir) => (
                         <MenuItem key={heir.id} value={heir.id}>
@@ -158,6 +166,7 @@ export default function TestamentDialogContent() {
                     fullWidth
                     variant="standard"
                     value={dialogItem.conditionArg}
+                    disabled={readonly}
                     onChange={e => updateTestamentToAdd({
                         ...dialogItem,
                         conditionArg: e.target.value

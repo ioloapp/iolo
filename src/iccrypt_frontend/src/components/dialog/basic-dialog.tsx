@@ -15,9 +15,9 @@ export interface BasicDialogProps {
     leadText: string;
     isOpen: boolean;
     handleClose: () => void;
-    cancelAction: () => void;
-    okAction: () => void;
-    okButtonText: string;
+    cancelAction?: () => void;
+    okAction?: () => void;
+    okButtonText?: string;
     children: ReactElement | never[];
     error: string;
     dialogItemState: string;
@@ -41,8 +41,9 @@ export const BasicDialog = ({title, leadText, isOpen, handleClose, cancelAction,
                 }
             </DialogContent>
             <DialogActions>
-                <Button onClick={cancelAction}>Cancel</Button>
-                {!error && <Button onClick={okAction}>{okButtonText}</Button>}
+                {cancelAction && <Button onClick={cancelAction}>Cancel</Button>}
+                {!cancelAction && <Button onClick={handleClose}>Close</Button>}
+                {!error && okAction && <Button onClick={okAction}>{okButtonText}</Button>}
             </DialogActions>
         </Dialog>
     );

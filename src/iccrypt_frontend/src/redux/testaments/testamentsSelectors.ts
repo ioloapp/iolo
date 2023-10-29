@@ -6,6 +6,8 @@ export const selectTestamentsListState = (state: RootState)  => state.testaments
 
 export const selectShowAddTestamentDialog = (state: RootState)  => state.testaments.showAddDialog;
 
+export const selectShowViewTestamentDialog = (state: RootState)  => state.testaments.showViewDialog;
+
 export const selectShowEditTestamentDialog = (state: RootState)  => state.testaments.showEditDialog;
 
 export const selectShowDeleteTestamentDialog = (state: RootState)  => state.testaments.showDeleteDialog;

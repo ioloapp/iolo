@@ -7,6 +7,7 @@ export interface TestamentsState {
     loadingState: string,
     error?: string;
     showAddDialog: boolean;
+    showViewDialog: boolean;
     showEditDialog: boolean;
     showDeleteDialog: boolean;
 }
@@ -18,11 +19,12 @@ export const initialState: TestamentsState = {
         name: '',
         secrets: [],
         heirs: [],
-        conditionArg: BigInt(0),
+        conditionArg: 0,
     },
     dialogItemState: 'init',
     loadingState: 'init',
     showAddDialog: false,
+    showViewDialog: false,
     showEditDialog: false,
     showDeleteDialog: false
 }

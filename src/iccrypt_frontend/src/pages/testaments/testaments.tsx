@@ -11,15 +11,27 @@ import {
 } from "../../redux/testaments/testamentsSelectors";
 import AddTestamentDialog from "../../components/testament/add-testament-dialog";
 import HistoryEduOutlinedIcon from "@mui/icons-material/HistoryEduOutlined";
-import {editTestamentThunk, loadTestamentsThunk, testamentsActions} from "../../redux/testaments/testamentsSlice";
+import {
+    editTestamentThunk,
+    loadTestamentsThunk,
+    testamentsActions,
+    viewTestamentThunk
+} from "../../redux/testaments/testamentsSlice";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteIcon from "@mui/icons-material/Delete";
-import {UiTestament} from "../../services/IcTypesForUi";
+import {UiTestament, UiTestamentListEntryRole} from "../../services/IcTypesForUi";
 import DeleteTestamentDialog from "../../components/testament/delete-testament-dialog";
 import {SearchField, StyledAppBar} from "../../components/layout/search-bar";
 import SearchIcon from "@mui/icons-material/Search";
 import EditTestamentDialog from "../../components/testament/edit-testament-dialog";
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import {Error} from "../../components/error/error";
+import ViewTestamentDialog from "../../components/testament/view-testament-dialog";
+import {selectSecretsListState} from "../../redux/secrets/secretsSelectors";
+import {loadSecretsThunk} from "../../redux/secrets/secretsSlice";
+import {loadHeirsThunk} from "../../redux/heirs/heirsSlice";
+import {selectHeirListState} from "../../redux/heirs/heirsSelectors";
 
 export function Testaments() {
 
@@ -27,8 +39,16 @@ export function Testaments() {
     const testaments = useSelector(selectTestaments);
     const testamentsListState = useSelector(selectTestamentsListState);
     const testamentsListError = useSelector(selectTestamentError);
+    const secretsListState = useSelector(selectSecretsListState);
+    const heirsListState = useSelector(selectHeirListState);
 
     useEffect(() => {
+        if(secretsListState === 'init'){
+            dispatch(loadSecretsThunk())
+        }
+        if(heirsListState === 'init'){
+            dispatch(loadHeirsThunk())
+        }
         dispatch(loadTestamentsThunk())
     }, [])
 
@@ -41,6 +61,10 @@ export function Testaments() {
     const deleteTestament = (testament: UiTestament) => {
         dispatch(testamentsActions.updateDialogItem(testament));
         dispatch(testamentsActions.openDeleteDialog());
+    }
+
+    const viewTestament = (testament: UiTestament) => {
+        dispatch(viewTestamentThunk(testament));
     }
 
     const editTestament = (testament: UiTestament) => {
@@ -71,7 +95,7 @@ export function Testaments() {
             </StyledAppBar>
             <Box>
                 {hasError() &&
-                    <Error error={testamentsListError} />
+                    <Error error={testamentsListError}/>
                 }
                 {!hasError() && filteredTestaments &&
                     <Box>
@@ -79,14 +103,34 @@ export function Testaments() {
                             {filteredTestaments.flatMap(f => f ? [f] : []).map((testament: UiTestament) =>
                                 <ListItem key={testament.id} secondaryAction={
                                     <>
-                                        <IconButton edge="end" aria-label="delete"
-                                                    onClick={() => editTestament(testament)}>
-                                            <EditOutlinedIcon/>
-                                        </IconButton>
-                                        <IconButton edge="end" aria-label="delete"
-                                                    onClick={() => deleteTestament(testament)}>
-                                            <DeleteIcon/>
-                                        </IconButton>
+                                        {
+                                            testament.role === UiTestamentListEntryRole.Testator &&
+                                            <>
+                                                <IconButton edge="end" aria-label="view"
+                                                            onClick={() => viewTestament(testament)}>
+                                                    <VisibilityOutlinedIcon/>
+                                                </IconButton>
+                                                <IconButton edge="end" aria-label="edit"
+                                                            onClick={() => editTestament(testament)}>
+                                                    <EditOutlinedIcon/>
+                                                </IconButton>
+                                                <IconButton edge="end" aria-label="delete"
+                                                            onClick={() => deleteTestament(testament)}>
+                                                    <DeleteIcon/>
+                                                </IconButton>
+                                            </>
+                                        }
+                                        {
+                                            testament.role === UiTestamentListEntryRole.Heir && !testament.conditionStatus &&
+                                            <LockOutlinedIcon />
+                                        }
+                                        {
+                                            testament.role === UiTestamentListEntryRole.Heir && testament.conditionStatus &&
+                                            <IconButton edge="end" aria-label="view"
+                                                        onClick={() => viewTestament(testament)}>
+                                                <VisibilityOutlinedIcon/>
+                                            </IconButton>
+                                        }
                                     </>
                                 }>
                                     <ListItemAvatar>
@@ -96,6 +140,7 @@ export function Testaments() {
                                     </ListItemAvatar>
                                     <ListItemText
                                         primary={testament.name}
+                                        secondary={testament.role === UiTestamentListEntryRole.Heir ? `Testator: ${testament.testator.id}` : ''}
                                     />
                                 </ListItem>,
                             )}
@@ -104,6 +149,7 @@ export function Testaments() {
                 }
             </Box>
             <AddTestamentDialog/>
+            <ViewTestamentDialog/>
             <EditTestamentDialog/>
             <DeleteTestamentDialog/>
         </PageLayout>
