@@ -47,6 +47,18 @@ impl UserRegistry {
             .get_mut(user_id)
             .ok_or_else(|| SmartVaultErr::UserDoesNotExist(user_id.to_string()))
     }
+
+    pub fn get_all_last_login_dates(&self) -> Vec<(Principal, u64)> {
+        self.users.iter()
+            .filter_map(|(principal, user)| {
+                if let Some(login_date) = user.date_last_login {
+                    Some((principal.clone(), login_date))
+                } else {
+                    None
+                }
+            })
+            .collect()
+    }
 }
 
 #[cfg(test)]
