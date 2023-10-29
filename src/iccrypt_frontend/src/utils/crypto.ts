@@ -1,5 +1,4 @@
 import * as vetkd from "ic-vetkd-utils";
-import {iccrypt_backend} from "../../../declarations/iccrypt_backend";
 import {Actor, ActorSubclass} from "@dfinity/agent";
 import {
     _SERVICE,
@@ -33,7 +32,7 @@ export async function get_aes_256_gcm_key_for_uservault(principal: Principal, ac
     const seed = window.crypto.getRandomValues(new Uint8Array(32));
     const tsk = new vetkd.TransportSecretKey(seed);
     const ek_bytes_hex = await actor.encrypted_symmetric_key_for_uservault(tsk.public_key());
-    const pk_bytes_hex = await iccrypt_backend.symmetric_key_verification_key();
+    const pk_bytes_hex = await actor.symmetric_key_verification_key();
     try {
         const result = tsk.decrypt_and_hash(
             hex_decode(ek_bytes_hex),
@@ -51,11 +50,11 @@ export async function get_aes_256_gcm_key_for_uservault(principal: Principal, ac
 export async function get_aes_256_gcm_key_for_testament(id: string, actor: ActorSubclass<_SERVICE>) {
     const seed = window.crypto.getRandomValues(new Uint8Array(32));
     const tsk = new vetkd.TransportSecretKey(seed);
-    const ek_bytes_hex = await iccrypt_backend.encrypted_symmetric_key_for_testament({encryption_public_key: tsk.public_key(), testament_id: id});
+    const ek_bytes_hex = await actor.encrypted_symmetric_key_for_testament({encryption_public_key: tsk.public_key(), testament_id: id});
     if (!ek_bytes_hex['Ok']) {
         throw mapError(ek_bytes_hex['Err']);
     }
-    const pk_bytes_hex = await iccrypt_backend.symmetric_key_verification_key();
+    const pk_bytes_hex = await actor.symmetric_key_verification_key();
 
     /*const backendPrincipal = new TextEncoder().encode(process.env.ICCRYPT_BACKEND_CANISTER_ID);
     console.log("backend principal: ",backendPrincipal)

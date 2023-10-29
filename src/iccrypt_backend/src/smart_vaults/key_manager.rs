@@ -58,11 +58,6 @@ async fn encrypted_symmetric_key_for_uservault(encryption_public_key: Vec<u8>) -
 #[ic_cdk_macros::update]
 #[candid_method(update)]
 async fn encrypted_symmetric_key_for_testament(args: TestamentKeyDerviationArgs) -> Result<String, SmartVaultErr> {
-    ic_cdk::println!(
-        "encrypted_symmetric_key_for_testament with testament id: {:?}",
-        &args.testament_id,
-    );
-
     let caller = ic_cdk::caller(); //.as_slice().to_vec();
 
     // check if caller has the right to derive this key
@@ -75,6 +70,7 @@ async fn encrypted_symmetric_key_for_testament(args: TestamentKeyDerviationArgs)
             testament_registry.get_testator_of_testament(args.testament_id.clone())
         },
     );
+
     if result_1.is_none() {
         // No testament with this id is existing, we can easily create a vetkey
         key_can_be_generated = true;
