@@ -1,61 +1,88 @@
 import * as React from 'react';
-import {FC} from 'react';
+import {FC, useEffect} from 'react';
 import TextField from '@mui/material/TextField';
 import {useSelector} from "react-redux";
 import {selectGroupedSecrets} from "../../redux/secrets/secretsSelectors";
 import {useAppDispatch} from "../../redux/hooks";
-import {
-    Checkbox,
-    Divider,
-    FormControl,
-    ListItemText,
-    MenuItem,
-    OutlinedInput,
-    Select,
-    SelectChangeEvent,
-    Typography
-} from "@mui/material";
-import {UiTestament} from "../../services/IcTypesForUi";
+import {FormControl, Typography} from "@mui/material";
+import {UiSecretListEntry, UiTestament, UiUser} from "../../services/IcTypesForUi";
 import {testamentsActions} from "../../redux/testaments/testamentsSlice";
 import {selectTestamentDialogItem} from "../../redux/testaments/testamentsSelectors";
 import {selectHeirs} from "../../redux/heirs/heirsSelectors";
+import {SelectList, SelectListItem} from "../selectlist/select-list";
 
 
 export interface TestamentDialogContentProps {
     readonly?: boolean;
 }
+
+interface SelectedHeir extends SelectListItem, UiUser {
+}
+
+interface SelectedSecret extends SelectListItem, UiSecretListEntry {
+}
+
 export const TestamentDialogContent: FC<TestamentDialogContentProps> = ({readonly}) => {
     const dispatch = useAppDispatch();
     const dialogItem = useSelector(selectTestamentDialogItem);
     const groupedSecretList = useSelector(selectGroupedSecrets);
     const heirsList = useSelector(selectHeirs);
-    const [selectedSecrets, setSelectedSecrets] = React.useState<string[]>(dialogItem.secrets ? dialogItem.secrets : []);
-    const [selectedHeirs, setSelectedHeirs] = React.useState<string[]>(dialogItem.heirs ? dialogItem.heirs.map(heir => heir.id) : []);
+    const [selectedSecrets, setSelectedSecrets] = React.useState<SelectedSecret[]>([]);
+    const [selectedHeirs, setSelectedHeirs] = React.useState<SelectedHeir[]>([]);
+
+    useEffect(() => {
+        const selectedHeirs = heirsList.map(h => {
+            const heir = dialogItem.heirs.find(dh => dh.id === h.id);
+            return heir ? {...h, selected: true} : {...h, selected: false};
+        })
+        setSelectedHeirs(selectedHeirs)
+        const selectedSecrets = [...groupedSecretList.passwordList, ...groupedSecretList.notesList, ...groupedSecretList.documentsList, ...groupedSecretList.othersList].map(s => {
+            const secret = dialogItem.secrets.find(ds => ds === s.id);
+            return secret ? {...s, selected: true} : {...s, selected: false};
+        })
+        setSelectedSecrets(selectedSecrets)
+    }, [dialogItem]);
 
     const updateTestamentToAdd = (testament: UiTestament) => {
         dispatch(testamentsActions.updateDialogItem(testament))
     }
 
-    const handleSecretChange = (event: SelectChangeEvent<typeof selectedSecrets>) => {
-        const {target: {value}} = event;
-        let ids = typeof value === 'string' ? value.split(',') : value;
-        ids = ids.flatMap(f => f ? [f] : []);
-        setSelectedSecrets(ids);
+    const handleSecretChange = (secret: SelectedSecret) => {
+        const oldState = dialogItem.secrets.find(s => s === secret.id);
+        let secrets: string[];
+        if (oldState) {
+            //not selected
+            console.log('secret.id', secret.id)
+            secrets = dialogItem.secrets.filter(s => s !== secret.id);
+            setSelectedSecrets(selectedSecrets.map(s => s.id !== secret.id ? s : {...s, selected: false}));
+        }else{
+            //selected
+            secrets = [...dialogItem.secrets, secret.id]
+            setSelectedSecrets(selectedSecrets.map(s => s.id !== secret.id ? s : {...s, selected: true}));
+        }
+        //Add
         dispatch(testamentsActions.updateDialogItem({
             ...dialogItem,
-            secrets: ids
-
+            secrets
         }))
     };
 
-    const handleHeirChange = (event: SelectChangeEvent<typeof selectedHeirs>) => {
-        const {target: {value}} = event;
-        let ids = typeof value === 'string' ? value.split(',') : value;
-        ids = ids.flatMap(f => f ? [f] : [])
-        setSelectedHeirs(ids);
+    const handleHeirChange = (heir: SelectedHeir) => {
+        const oldState = dialogItem.heirs.find(s => s.id === heir.id);
+        let heirs: SelectedHeir[];
+        if (oldState) {
+            //not selected
+            heirs = dialogItem.heirs.filter(s => s.id !== heir.id)
+            setSelectedHeirs(selectedHeirs.map(s => s.id !== heir.id ? s : {...s, selected: false}));
+        }else{
+            //selected
+            heirs = [...dialogItem.heirs, heir]
+            setSelectedHeirs(selectedHeirs.map(s => s.id !== heir.id ? s : {...s, selected: true}));
+        }
+        //Add
         dispatch(testamentsActions.updateDialogItem({
             ...dialogItem,
-            heirs: [...ids.map(id => heirsList.find(h => h.id === id))]
+            heirs: heirs
         }))
     };
 
@@ -91,71 +118,11 @@ export const TestamentDialogContent: FC<TestamentDialogContentProps> = ({readonl
             </FormControl>
             <FormControl fullWidth>
                 <Typography variant="body2">Secrets</Typography>
-                <Select
-                    labelId="secrets-multiple-checkbox-label"
-                    id="secrets-multiple-checkbox"
-                    multiple
-                    value={selectedSecrets}
-                    onChange={handleSecretChange}
-                    input={<OutlinedInput label="Secrets"/>}
-                    renderValue={(selected) => selected.join(', ')}
-                    MenuProps={MenuProps}
-                    disabled={readonly}
-                >
-                    {groupedSecretList.passwordList?.length > 0 &&
-                        <Divider textAlign="left">Passwords</Divider>}
-                    {groupedSecretList.passwordList.map((secret) => (
-                        <MenuItem key={secret.id} value={secret.id}>
-                            <Checkbox checked={selectedSecrets.indexOf(secret.id) > -1}/>
-                            <ListItemText primary={secret.name}/>
-                        </MenuItem>
-                    ))}
-
-                    {groupedSecretList.notesList?.length > 0 && <Divider textAlign="left">Notes</Divider>}
-                    {groupedSecretList.notesList.map((secret) => (
-                        <MenuItem key={secret.id} value={secret.id}>
-                            <Checkbox checked={selectedSecrets.indexOf(secret.id) > -1}/>
-                            <ListItemText primary={secret.name}/>
-                        </MenuItem>
-                    ))}
-
-                    {groupedSecretList.documentsList?.length > 0 &&
-                        <Divider textAlign="left">Documents</Divider>}
-                    {groupedSecretList.documentsList.map((secret) => (
-                        <MenuItem key={secret.id} value={secret.id}>
-                            <Checkbox checked={selectedSecrets.indexOf(secret.id) > -1}/>
-                            <ListItemText primary={secret.name}/>
-                        </MenuItem>
-                    ))}
-
-                    {groupedSecretList.othersList?.length > 0 && <Divider textAlign="left">Others</Divider>}
-                    {groupedSecretList.othersList.map((secret) => (
-                        <MenuItem key={secret.id} value={secret.id}>
-                            <Checkbox checked={selectedSecrets.indexOf(secret.id) > -1}/>
-                            <ListItemText primary={secret.name}/>
-                        </MenuItem>
-                    ))}
-                </Select>
+                <SelectList handleToggle={handleSecretChange} listItem={selectedSecrets} readonly={readonly}/>
             </FormControl>
             <FormControl fullWidth>
                 <Typography variant="body2">Heirs</Typography>
-                <Select
-                    id="heirs-multiple-checkbox"
-                    multiple
-                    value={selectedHeirs}
-                    onChange={handleHeirChange}
-                    input={<OutlinedInput label="Heirs"/>}
-                    renderValue={(selected) => selected.join(', ')}
-                    MenuProps={MenuProps}
-                    disabled={readonly}
-                >
-                    {heirsList.map((heir) => (
-                        <MenuItem key={heir.id} value={heir.id}>
-                            <Checkbox checked={selectedHeirs.indexOf(heir.id) > -1}/>
-                            <ListItemText primary={heir.name}/>
-                        </MenuItem>
-                    ))}
-                </Select>
+                <SelectList handleToggle={handleHeirChange} listItem={selectedHeirs} readonly={readonly}/>
             </FormControl>
             <FormControl fullWidth>
                 <TextField
