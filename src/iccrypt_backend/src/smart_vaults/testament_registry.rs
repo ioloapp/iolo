@@ -20,6 +20,18 @@ impl TestamentRegistry {
         }
     }
 
+    pub fn remove_testament_from_registry(&mut self, testament: &Testament) {
+        for heir in testament.heirs() {
+            if let Some(testament_ids) = self.heir_to_testaments.get_mut(heir) {
+                testament_ids.remove(testament.id());
+                if testament_ids.is_empty() {
+                    self.heir_to_testaments.remove(heir);
+                }
+            }
+        }
+        self.testament_to_testator.remove(testament.id());
+    }
+
     pub fn add_testament_to_registry(&mut self, testament: &Testament) {
         for heir in testament.heirs() {
             self.heir_to_testaments

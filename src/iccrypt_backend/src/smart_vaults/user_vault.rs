@@ -154,7 +154,7 @@ impl UserVault {
             .ok_or_else(|| SmartVaultErr::TestamentDoesNotExist(testament_id.to_string()))
     }
 
-    pub fn remove_testament(&mut self, testament_id: &str) -> Result<(), SmartVaultErr> {
+    pub fn remove_testament(&mut self, testament_id: &TestamentID) -> Result<(), SmartVaultErr> {
         if !self.testaments.contains_key(testament_id) {
             return Err(SmartVaultErr::TestamentDoesNotExist(
                 testament_id.to_string(),

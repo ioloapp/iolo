@@ -4,6 +4,7 @@ use candid::{CandidType, Deserialize, Principal};
 
 use crate::common::{error::SmartVaultErr,uuid::UUID};
 use crate::common::user::{AddUserArgs, User};
+use crate::smart_vaults::testament::TestamentID;
 
 use super::{
     secret::{AddSecretArgs, Secret},
@@ -161,13 +162,21 @@ impl MasterVault {
     pub fn remove_user_testament(
         &mut self,
         vault_id: &UUID,
-        testament_id: &str,
+        testament_id: &TestamentID,
     ) -> Result<(), SmartVaultErr> {
         if !self.user_vaults.contains_key(vault_id) {
             return Err(SmartVaultErr::UserVaultDoesNotExist(vault_id.to_string()));
         }
 
         let user_vault = self.user_vaults.get_mut(vault_id).unwrap();
+        let testament = user_vault.get_testament(testament_id)?;
+        TESTAMENT_REGISTRY.with(
+            |tr: &RefCell<TestamentRegistry>| -> Result<(), SmartVaultErr> {
+                let mut testament_registry = tr.borrow_mut();
+                testament_registry.remove_testament_from_registry(testament);
+                Ok(())
+            },
+        )?;
         user_vault.remove_testament(testament_id)
     }
 
