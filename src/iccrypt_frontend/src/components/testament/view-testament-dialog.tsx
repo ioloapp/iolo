@@ -9,6 +9,8 @@ import {
 } from "../../redux/testaments/testamentsSelectors";
 import {BasicDialog} from "../dialog/basic-dialog";
 import {TestamentDialogContent} from './testament-dialog-content';
+import {SelectListItem} from "../selectlist/select-list";
+import {getSecretInViewModeThunk} from "../../redux/secrets/secretsSlice";
 
 export default function ViewTestamentDialog() {
     const dispatch = useAppDispatch();
@@ -20,6 +22,10 @@ export default function ViewTestamentDialog() {
         dispatch(testamentsActions.closeViewDialog());
     };
 
+    const viewSecret = (value: SelectListItem) => {
+        dispatch(getSecretInViewModeThunk(value.id))
+    }
+
 
     return (
         <BasicDialog title="View testament"
@@ -28,7 +34,7 @@ export default function ViewTestamentDialog() {
                      handleClose={handleClose}
                      error={testamentError}
                      dialogItemState={dialogItemState}>
-            <TestamentDialogContent readonly={true}/>
+            <TestamentDialogContent readonly={true} viewSecret={viewSecret}/>
         </BasicDialog>
     );
 }

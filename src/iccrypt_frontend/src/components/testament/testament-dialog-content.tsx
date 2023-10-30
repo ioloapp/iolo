@@ -13,6 +13,7 @@ import {SelectList, SelectListItem} from "../selectlist/select-list";
 
 
 export interface TestamentDialogContentProps {
+    viewSecret?: (value: SelectListItem) => any;
     readonly?: boolean;
 }
 
@@ -22,7 +23,7 @@ interface SelectedHeir extends SelectListItem, UiUser {
 interface SelectedSecret extends SelectListItem, UiSecretListEntry {
 }
 
-export const TestamentDialogContent: FC<TestamentDialogContentProps> = ({readonly}) => {
+export const TestamentDialogContent: FC<TestamentDialogContentProps> = ({readonly, viewSecret}) => {
     const dispatch = useAppDispatch();
     const dialogItem: UiTestamentResponse = useSelector(selectTestamentDialogItem);
     const groupedSecretList = useSelector(selectGroupedSecrets);
@@ -117,7 +118,7 @@ export const TestamentDialogContent: FC<TestamentDialogContentProps> = ({readonl
             </FormControl>
             <FormControl fullWidth>
                 <Typography variant="body2">Secrets</Typography>
-                <SelectList handleToggle={handleSecretChange} listItem={selectedSecrets} readonly={readonly}/>
+                <SelectList handleToggle={handleSecretChange} listItem={selectedSecrets} readonly={readonly} viewItem={viewSecret}/>
             </FormControl>
             <FormControl fullWidth>
                 <Typography variant="body2">Heirs</Typography>

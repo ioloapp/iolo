@@ -13,6 +13,7 @@ export interface SecretsState {
     dialogItemState: string,
     listItemsState: string,
     error?: string;
+    showViewDialog: boolean;
     showAddDialog: boolean;
     showEditDialog: boolean;
     showDeleteDialog: boolean;
@@ -35,6 +36,7 @@ export const initialState: SecretsState = {
     },
     dialogItemState: 'init',
     listItemsState: 'init',
+    showViewDialog: false,
     showAddDialog: false,
     showEditDialog: false,
     showDeleteDialog: false

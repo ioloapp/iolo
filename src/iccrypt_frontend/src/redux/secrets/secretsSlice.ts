@@ -31,6 +31,18 @@ export const getSecretThunk = createAsyncThunk<UiSecret, string, {
     }
 );
 
+export const getSecretInViewModeThunk = createAsyncThunk<UiSecret, string, {
+    state: RootState
+}>('secrets/getView',
+    async (secretId: string, {rejectWithValue}) => {
+        try {
+            return await icCryptService.getSecret(secretId);
+        } catch (e) {
+            rejectWithValue(mapError(e))
+        }
+    }
+);
+
 export const updateSecretThunk = createAsyncThunk<UiSecret, UiSecret, {
     state: RootState
 }>('secrets/update',
@@ -110,6 +122,14 @@ export const secretsSlice = createSlice({
         updateDialogItem: (state, action) => {
             state.dialogItem = action.payload;
         },
+        openViewDialog: state => {
+            state.showViewDialog = true
+            state.error = undefined;
+        },
+        closeViewDialog: state => {
+            state.showViewDialog = false
+            state.error = undefined;
+        },
     },
     extraReducers: (builder) => {
         builder
@@ -143,6 +163,7 @@ export const secretsSlice = createSlice({
                 state.showAddDialog = false;
                 state.showEditDialog = true;
                 state.dialogItemState = 'pending';
+                state.dialogItem = initialState.dialogItem;
                 state.error = undefined;
             })
             .addCase(getSecretThunk.fulfilled, (state, action) => {
@@ -156,6 +177,20 @@ export const secretsSlice = createSlice({
                 state.error = action.error.message;
                 state.showAddDialog = false;
                 state.showEditDialog = false;
+            })
+            .addCase(getSecretInViewModeThunk.pending, (state) => {
+                state.showViewDialog = true;
+                state.dialogItem = initialState.dialogItem;
+                state.dialogItemState = 'pending';
+                state.error = undefined;
+            })
+            .addCase(getSecretInViewModeThunk.fulfilled, (state, action) => {
+                state.dialogItemState = 'succeeded';
+                state.dialogItem = action.payload;
+            })
+            .addCase(getSecretInViewModeThunk.rejected, (state, action) => {
+                state.dialogItemState = 'failed';
+                state.error = action.error.message;
             })
             .addCase(updateSecretThunk.pending, (state) => {
                 state.dialogItemState = 'pending';

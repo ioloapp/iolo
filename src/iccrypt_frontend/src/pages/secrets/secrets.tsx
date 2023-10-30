@@ -2,7 +2,12 @@ import {Box, IconButton, List, Typography} from "@mui/material";
 import * as React from "react";
 import {useEffect, useState} from "react";
 import {useAppDispatch} from "../../redux/hooks";
-import {getSecretThunk, loadSecretsThunk, secretsActions} from "../../redux/secrets/secretsSlice";
+import {
+    getSecretInViewModeThunk,
+    getSecretThunk,
+    loadSecretsThunk,
+    secretsActions
+} from "../../redux/secrets/secretsSlice";
 import {PageLayout} from "../../components/layout/page-layout";
 import PasswordIcon from '@mui/icons-material/Password';
 import NotesIcon from '@mui/icons-material/Notes';
@@ -18,6 +23,8 @@ import SearchIcon from "@mui/icons-material/Search";
 import {SearchField, StyledAppBar} from "../../components/layout/search-bar";
 import EditSecretDialog from "../../components/secret/edit-secret-dialog";
 import {Error} from "../../components/error/error";
+import {SelectListItem} from "../../components/selectlist/select-list";
+import ViewSecretDialog from "../../components/secret/view-secret-dialog";
 
 export function Secrets() {
 
@@ -43,6 +50,10 @@ export function Secrets() {
 
     const editItem = (secret: UiSecretListEntry) => {
         dispatch(getSecretThunk(secret.id));
+    }
+
+    const viewItem = (value: SelectListItem) => {
+        dispatch(getSecretInViewModeThunk(value.id))
     }
 
     const filterSecretList = (search: string) => {
@@ -83,7 +94,7 @@ export function Secrets() {
                                 <Typography variant="h5">Passwords</Typography>
                                 <List dense={false}>
                                     {filteredSecretList.passwordList.map((secret: UiSecretListEntry) =>
-                                        <SecretItem key={secret.id} secret={secret} editAction={editItem}
+                                        <SecretItem key={secret.id} secret={secret} editAction={editItem} viewAction={viewItem}
                                                     deleteAction={deleteItem}><PasswordIcon/></SecretItem>
                                     )}
                                 </List>
@@ -94,7 +105,7 @@ export function Secrets() {
                                 <Typography variant="h5">Notes</Typography>
                                 <List dense={false}>
                                     {filteredSecretList.notesList.map((secret: UiSecretListEntry) =>
-                                        <SecretItem key={secret.id} secret={secret} editAction={editItem}
+                                        <SecretItem key={secret.id} secret={secret} editAction={editItem} viewAction={viewItem}
                                                     deleteAction={deleteItem}><NotesIcon/></SecretItem>
                                     )}
                                 </List>
@@ -105,7 +116,7 @@ export function Secrets() {
                                 <Typography variant="h5">Documents</Typography>
                                 <List dense={false}>
                                     {filteredSecretList.documentsList.map((secret: UiSecretListEntry) =>
-                                        <SecretItem key={secret.id} secret={secret} editAction={editItem}
+                                        <SecretItem key={secret.id} secret={secret} editAction={editItem} viewAction={viewItem}
                                                     deleteAction={deleteItem}><DescriptionIcon/></SecretItem>
                                     )}
                                 </List>
@@ -116,7 +127,7 @@ export function Secrets() {
                                 <Typography variant="h5">No Category</Typography>
                                 <List dense={false}>
                                     {filteredSecretList.othersList.map((secret: UiSecretListEntry) =>
-                                        <SecretItem key={secret.id} secret={secret} editAction={editItem}
+                                        <SecretItem key={secret.id} secret={secret} editAction={editItem} viewAction={viewItem}
                                                     deleteAction={deleteItem}><QuestionMarkIcon/></SecretItem>
                                     )}
                                 </List>
@@ -125,6 +136,7 @@ export function Secrets() {
                     </>
                 }
             </Box>
+            <ViewSecretDialog />
             <AddSecretDialog/>
             <EditSecretDialog/>
             <DeleteSecretDialog/>

@@ -32,6 +32,7 @@ import {selectSecretsListState} from "../../redux/secrets/secretsSelectors";
 import {loadSecretsThunk} from "../../redux/secrets/secretsSlice";
 import {loadHeirsThunk} from "../../redux/heirs/heirsSlice";
 import {selectHeirListState} from "../../redux/heirs/heirsSelectors";
+import ViewSecretDialog from "../../components/secret/view-secret-dialog";
 
 export function Testaments() {
 
@@ -148,6 +149,7 @@ export function Testaments() {
                     </Box>
                 }
             </Box>
+            <ViewSecretDialog />
             <AddTestamentDialog/>
             <ViewTestamentDialog/>
             <EditTestamentDialog/>

@@ -11,7 +11,7 @@ import {addSecretThunk, secretsActions} from "../../redux/secrets/secretsSlice";
 import AddIcon from "@mui/icons-material/Add";
 import {Fab} from "@mui/material";
 import {BasicDialog} from "../dialog/basic-dialog";
-import SecretDialogContent from "./secret-dialog-content";
+import {SecretDialogContent} from './secret-dialog-content';
 
 export default function AddSecretDialog() {
     const dispatch = useAppDispatch();

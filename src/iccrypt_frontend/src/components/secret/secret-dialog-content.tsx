@@ -1,4 +1,5 @@
 import * as React from 'react';
+import {FC} from 'react';
 import TextField from '@mui/material/TextField';
 import {useSelector} from "react-redux";
 import {selectDialogItem} from "../../redux/secrets/secretsSelectors";
@@ -7,7 +8,11 @@ import {secretsActions} from "../../redux/secrets/secretsSlice";
 import {FormControl, MenuItem, Select, Typography} from "@mui/material";
 import {UiSecret, UiSecretCategory} from "../../services/IcTypesForUi";
 
-export default function SecretDialogContent() {
+export interface SecretDialogContentProps {
+    readonly? : boolean;
+}
+
+export const SecretDialogContent : FC<SecretDialogContentProps> = ({readonly}) => {
     const dispatch = useAppDispatch();
     const dialogItem = useSelector(selectDialogItem);
 
@@ -23,6 +28,7 @@ export default function SecretDialogContent() {
                     id="category-select"
                     value={dialogItem.category}
                     label="Category"
+                    disabled={readonly}
                     onChange={e => updateSecretToAdd({
                         ...dialogItem,
                         category: UiSecretCategory[e.target.value as keyof typeof UiSecretCategory]
@@ -44,6 +50,7 @@ export default function SecretDialogContent() {
                     fullWidth
                     variant="standard"
                     value={dialogItem.name}
+                    disabled={readonly}
                     onChange={e => updateSecretToAdd({
                         ...dialogItem,
                         name: e.target.value
@@ -60,6 +67,7 @@ export default function SecretDialogContent() {
                             fullWidth
                             variant="standard"
                             value={dialogItem.username}
+                            disabled={readonly}
                             onChange={e => updateSecretToAdd({
                                 ...dialogItem,
                                 username: e.target.value
@@ -72,9 +80,10 @@ export default function SecretDialogContent() {
                             label="Password"
                             InputLabelProps={{shrink: true}}
                             fullWidth
-                            type="password"
+                            type={readonly ? "text" : "password"}
                             variant="standard"
                             value={dialogItem.password}
+                            disabled={readonly}
                             onChange={e => updateSecretToAdd({
                                 ...dialogItem,
                                 password: e.target.value
@@ -89,6 +98,7 @@ export default function SecretDialogContent() {
                             fullWidth
                             variant="standard"
                             value={dialogItem.url}
+                            disabled={readonly}
                             onChange={e => updateSecretToAdd({
                                 ...dialogItem,
                                 url: e.target.value
@@ -105,6 +115,7 @@ export default function SecretDialogContent() {
                     fullWidth
                     variant="standard"
                     value={dialogItem.notes}
+                    disabled={readonly}
                     multiline
                     onChange={e => updateSecretToAdd({
                         ...dialogItem,

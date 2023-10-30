@@ -1,6 +1,7 @@
-import {Checkbox, List, ListItem, ListItemButton, ListItemIcon, ListItemText} from "@mui/material";
+import {Checkbox, IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText} from "@mui/material";
 import * as React from "react";
 import {FC} from "react";
+import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 
 
 export interface SelectListItem {
@@ -14,10 +15,11 @@ export interface SelectListItem {
 export interface SelectListProps {
     listItem: SelectListItem[];
     handleToggle: (value: SelectListItem) => any;
+    viewItem?: (value: SelectListItem) => any;
     readonly?: boolean
 }
 
-export const SelectList: FC<SelectListProps> = ({handleToggle, listItem, readonly}) => {
+export const SelectList: FC<SelectListProps> = ({handleToggle, listItem, readonly, viewItem}) => {
 
     return (
         <List sx={{width: '100%', bgcolor: 'background.paper', maxHeight: '200px', overflowY: 'scroll'}}>
@@ -25,6 +27,12 @@ export const SelectList: FC<SelectListProps> = ({handleToggle, listItem, readonl
                 return (
                     <ListItem
                         key={item.id}
+                        secondaryAction={
+                            viewItem &&
+                            <IconButton edge="end" aria-label="view secret" onClick={() => viewItem(item)}>
+                                <VisibilityOutlinedIcon/>
+                            </IconButton>
+                        }
                         disablePadding
                     >
                         <ListItemButton role={undefined} onClick={() => handleToggle(item)} dense>

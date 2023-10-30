@@ -1,46 +1,33 @@
 import * as React from 'react';
 import {useSelector} from "react-redux";
 import {
-    selectDialogItem,
     selectDialogItemState,
     selectSecretsError,
-    selectShowEditSecretDialog
+    selectShowViewSecretDialog
 } from "../../redux/secrets/secretsSelectors";
 import {useAppDispatch} from "../../redux/hooks";
-import {secretsActions, updateSecretThunk} from "../../redux/secrets/secretsSlice";
+import {secretsActions} from "../../redux/secrets/secretsSlice";
 import {BasicDialog} from "../dialog/basic-dialog";
 import {SecretDialogContent} from './secret-dialog-content';
 
-export default function EditSecretDialog() {
+export default function ViewSecretDialog() {
     const dispatch = useAppDispatch();
-    const showEditSecretDialog: boolean = useSelector(selectShowEditSecretDialog);
-    const dialogItem = useSelector(selectDialogItem);
+    const showViewSecretDialog: boolean = useSelector(selectShowViewSecretDialog);
     const dialogItemState = useSelector(selectDialogItemState);
     const secretError = useSelector(selectSecretsError);
 
     const handleClose = () => {
-        dispatch(secretsActions.closeAddOrEditDialog());
+        dispatch(secretsActions.closeViewDialog());
     };
-
-    const cancelEditSecret = () => {
-        dispatch(secretsActions.cancelEditSecret())
-    }
-
-    const updateSecret = async () => {
-        dispatch(updateSecretThunk(dialogItem));
-    }
 
     return (
         <BasicDialog title="Edit secret"
                      leadText="Edit your secret"
-                     isOpen={showEditSecretDialog}
+                     isOpen={showViewSecretDialog}
                      handleClose={handleClose}
-                     cancelAction={cancelEditSecret}
-                     okAction={updateSecret}
-                     okButtonText="Update secret"
                      error={secretError}
                      dialogItemState={dialogItemState}>
-            <SecretDialogContent/>
+            <SecretDialogContent readonly={true}/>
         </BasicDialog>
     );
 }
