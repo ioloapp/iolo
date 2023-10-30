@@ -49,21 +49,21 @@ export const TestamentDialogContent: FC<TestamentDialogContentProps> = ({readonl
 
     const handleSecretChange = (secret: SelectedSecret) => {
         const oldState = dialogItem.secrets.find(s => s.id === secret.id);
-        let secrets: string[];
+        let secrets: UiSecretListEntry[];
         if (oldState) {
             //not selected
-            secrets = dialogItem.secrets.filter(s => s.id !== secret.id).map(s => s.id);
+            secrets = dialogItem.secrets.filter(s => s.id !== secret.id);
             setSelectedSecrets(selectedSecrets.map(s => s.id !== secret.id ? s : {...s, selected: false}));
         }else{
             //selected
-            secrets = [...dialogItem.secrets.map(s => s.id), secret.id]
+            secrets = [...dialogItem.secrets, secret]
             setSelectedSecrets(selectedSecrets.map(s => s.id !== secret.id ? s : {...s, selected: true}));
         }
         //Add
         dispatch(testamentsActions.updateDialogItem({
             ...dialogItem,
             secrets
-        }))
+        } as UiTestamentResponse))
     };
 
     const handleHeirChange = (heir: SelectedHeir) => {

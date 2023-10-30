@@ -106,6 +106,7 @@ export const testamentsSlice = createSlice({
         },
         openAddDialog: state => {
             state.showAddDialog = true
+            state.error = undefined
         },
         cancelAddTestament: state => {
             state.dialogItem = initialState.dialogItem;
@@ -117,9 +118,11 @@ export const testamentsSlice = createSlice({
         },
         openEditDialog: state => {
             state.showEditDialog = true
+            state.error = undefined
         },
         openDeleteDialog: state => {
             state.showDeleteDialog = true
+            state.error = undefined
         },
         closeDeleteDialog: state => {
             state.showDeleteDialog = false
