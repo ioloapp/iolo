@@ -1,7 +1,7 @@
 import {ICCryptError} from "../error/Errors";
 
 export function mapError(input: Error): ICCryptError{
-    console.log('error', input);
+    console.error('error', input);
     if(input) {
         if (input.hasOwnProperty('UserAlreadyExists')) {
             throw new ICCryptError(input['UserAlreadyExists'])

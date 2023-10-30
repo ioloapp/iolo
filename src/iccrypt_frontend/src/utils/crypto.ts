@@ -1,10 +1,9 @@
 import * as vetkd from "ic-vetkd-utils";
-import {Actor, ActorSubclass} from "@dfinity/agent";
-import {
-    _SERVICE,
-} from "../../../declarations/iccrypt_backend/iccrypt_backend.did";
+import {ActorSubclass} from "@dfinity/agent";
+import {_SERVICE,} from "../../../declarations/iccrypt_backend/iccrypt_backend.did";
 import {Principal} from "@dfinity/principal";
 import {mapError} from "./errorMapper";
+import {ICCryptError} from "../error/Errors";
 
 const hex_decode = (hexString: string) =>
     Uint8Array.from(hexString.match(/.{1,2}/g).map((byte) => parseInt(byte, 16)));
@@ -33,18 +32,14 @@ export async function get_aes_256_gcm_key_for_uservault(principal: Principal, ac
     const tsk = new vetkd.TransportSecretKey(seed);
     const ek_bytes_hex = await actor.encrypted_symmetric_key_for_uservault(tsk.public_key());
     const pk_bytes_hex = await actor.symmetric_key_verification_key();
-    try {
-        const result = tsk.decrypt_and_hash(
-            hex_decode(ek_bytes_hex),
-            hex_decode(pk_bytes_hex),
-            principal.toUint8Array(),
-            32,
-            new TextEncoder().encode("aes-256-gcm")
-        );
-        return result;
-    }catch(e){
-        console.error('failed', e)
-    }
+    const result = tsk.decrypt_and_hash(
+        hex_decode(ek_bytes_hex),
+        hex_decode(pk_bytes_hex),
+        principal.toUint8Array(),
+        32,
+        new TextEncoder().encode("aes-256-gcm")
+    );
+    return result;
 }
 
 export async function get_aes_256_gcm_key_for_testament(id: string, actor: ActorSubclass<_SERVICE>) {
@@ -56,13 +51,6 @@ export async function get_aes_256_gcm_key_for_testament(id: string, actor: Actor
     }
     const pk_bytes_hex = await actor.symmetric_key_verification_key();
 
-    /*const backendPrincipal = new TextEncoder().encode(process.env.ICCRYPT_BACKEND_CANISTER_ID);
-    console.log("backend principal: ",backendPrincipal)
-    const testamentId: Uint8Array = new TextEncoder().encode(id);
-    console.log("testament id: ", testamentId)
-    const derivationId = new Uint8Array(backendPrincipal.length + testamentId.length);
-    derivationId.set(backendPrincipal);
-    derivationId.set(testamentId, backendPrincipal.length);*/
     const derivationId: Uint8Array = new TextEncoder().encode(id);
 
     try {
@@ -74,26 +62,20 @@ export async function get_aes_256_gcm_key_for_testament(id: string, actor: Actor
             new TextEncoder().encode("aes-256-gcm")
         );
         return result;
-    }catch(e){
-        console.error('failed', e)
+    } catch (e) {
+        throw new ICCryptError(e.message)
     }
 }
 
 export async function aes_gcm_decrypt(ciphertext: Uint8Array, rawKey: Uint8Array, iv: Uint8Array): Promise<Uint8Array> {
-    //const iv: Uint8Array = ciphertext.slice(0, 12); // 96-bits; unique per message
-    //const encryptedContent: Uint8Array = ciphertext.slice(12);
-    try {
-        const encryptedContent: Uint8Array = ciphertext;
-        const aes_key: CryptoKey = await window.crypto.subtle.importKey("raw", rawKey, "AES-GCM", false, ["decrypt"]);
-        const decryptedContent: ArrayBuffer = await window.crypto.subtle.decrypt(
-            { name: "AES-GCM", iv: iv },
-            aes_key,
-            encryptedContent
-        );
-        return new Uint8Array(decryptedContent);}
-    catch (e) {
-        console.error('Decryption failed: ', e)
-    }
+    const encryptedContent: Uint8Array = ciphertext;
+    const aes_key: CryptoKey = await window.crypto.subtle.importKey("raw", rawKey, "AES-GCM", false, ["decrypt"]);
+    const decryptedContent: ArrayBuffer = await window.crypto.subtle.decrypt(
+        {name: "AES-GCM", iv: iv},
+        aes_key,
+        encryptedContent
+    );
+    return new Uint8Array(decryptedContent);
 }
 
 export async function aes_gcm_encrypt(plaintext: string | Uint8Array, rawKey: Uint8Array, iv: Uint8Array): Promise<Uint8Array> {
@@ -103,7 +85,7 @@ export async function aes_gcm_encrypt(plaintext: string | Uint8Array, rawKey: Ui
     const plaintextArray = typeof plaintext === 'string' ? new TextEncoder().encode(plaintext) : plaintext;
 
     const encryptedContent = await window.crypto.subtle.encrypt(
-        { name: "AES-GCM", iv: iv },
+        {name: "AES-GCM", iv: iv},
         aes_key,
         plaintextArray
     );

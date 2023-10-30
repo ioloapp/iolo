@@ -15,8 +15,8 @@ export interface UiSecret extends UiSecretListEntry {
     username?: string,
     password?: string,
     notes?: string,
-    dateCreated?: Date,
-    dateModified?: Date,
+    dateCreated?: string,
+    dateModified?: string,
 }
 
 export interface UiTestamentListEntry {
@@ -31,8 +31,8 @@ export interface UiTestament extends UiTestamentListEntry {
     secrets?: string[],
     heirs?: Array<UiUser>,
     conditionArg: number,
-    dateCreated?: Date,
-    dateModified?: Date,
+    dateCreated?: string,
+    dateModified?: string,
 }
 
 export interface UiTestamentResponse {
@@ -44,8 +44,8 @@ export interface UiTestamentResponse {
     secrets?: UiSecretListEntry[],
     heirs?: Array<UiUser>,
     conditionArg?: number,
-    dateCreated?: Date,
-    dateModified?: Date,
+    dateCreated?: string,
+    dateModified?: string,
 }
 
 export enum UiTestamentListEntryRole {
@@ -64,8 +64,8 @@ export interface UiUser {
     name?: string,
     email?: string,
     userVaultId?: bigint,
-    dateCreated?: Date,
-    dateModified?: Date,
-    dateLastLogin?: Date,
+    dateCreated?: string,
+    dateModified?: string,
+    dateLastLogin?: string,
 
 }

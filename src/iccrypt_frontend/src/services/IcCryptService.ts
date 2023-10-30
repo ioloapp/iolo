@@ -10,13 +10,15 @@ import {
     Result_5,
     Result_6,
     Result_7,
-    Result_8, Result_9,
+    Result_8,
+    Result_9,
     Secret,
     SecretCategory,
     SecretListEntry,
     SecretSymmetricCryptoMaterial,
-    Testament, TestamentResponse,
+    Testament,
     TestamentListEntry,
+    TestamentResponse,
     User,
     UserType
 } from "../../../declarations/iccrypt_backend/iccrypt_backend.did";
@@ -36,9 +38,10 @@ import {
     UiSecret,
     UiSecretCategory,
     UiSecretListEntry,
-    UiTestament, UiTestamentResponse,
+    UiTestament,
     UiTestamentListEntry,
     UiTestamentListEntryRole,
+    UiTestamentResponse,
     UiUser,
     UiUserType
 } from "./IcTypesForUi";
@@ -90,7 +93,7 @@ class IcCryptService {
                 onSuccess: async () => {
                     this.identity = this.authClient.getIdentity();
                     this.agent.replaceIdentity(this.identity);
-                    console.log("login with principal ", this.identity.getPrincipal().toString());
+                    console.debug("login with principal ", this.identity.getPrincipal().toString());
                     resolve();  // Resolve the promise
                 },
                 onError: async () => {
@@ -146,7 +149,7 @@ class IcCryptService {
     }
 
     public async getSecret(secretId: string): Promise<UiSecret> {
-        console.log('start getting secret...')
+        console.debug('start getting secret...')
         const result1 = (await this.getActor()).get_secret(secretId);
         const result2 = (await this.getActor()).get_secret_symmetric_crypto_material(secretId);
 
@@ -160,7 +163,7 @@ class IcCryptService {
     }
 
     public async addSecret(uiSecret: UiSecret): Promise<UiSecret> {
-        console.log('start adding secret...')
+        console.debug('start adding secret...')
         const encryptedSecret: AddSecretArgs = await this.encryptNewSecret(uiSecret)
         const result: Result_1 = await (await this.getActor()).add_secret(encryptedSecret);
         if (result['Ok']) {
@@ -170,7 +173,7 @@ class IcCryptService {
     }
 
     public async updateSecret(uiSecret: UiSecret): Promise<UiSecret> {
-        console.log('start updating secret...')
+        console.debug('start updating secret...')
         const resultSymmetricCryptoMaterial: Result_7 = await (await this.getActor()).get_secret_symmetric_crypto_material(uiSecret.id);
         let symmetricCryptoMaterial: SecretSymmetricCryptoMaterial;
         if (resultSymmetricCryptoMaterial['Ok']) {
@@ -210,7 +213,7 @@ class IcCryptService {
     }
 
     public async addTestament(uiTestament: UiTestament): Promise<UiTestament> {
-        console.log('start adding testament...');
+        console.debug('start adding testament...');
         uiTestament.id = uuidv4();
         const testament: Testament = await this.mapUiTestamentToTestament(uiTestament);
         const testamentArgs: AddTestamentArgs = {
@@ -231,7 +234,7 @@ class IcCryptService {
     }
 
     public async updateTestament(uiTestament: UiTestament): Promise<UiTestament> {
-        console.log('start updating testament...')
+        console.debug('start updating testament...')
         const testament: Testament = await this.mapUiTestamentToTestament(uiTestament);
 
         // Update testament
@@ -276,7 +279,7 @@ class IcCryptService {
 
     public async getTestamentAsTestator(id: string): Promise<UiTestamentResponse> {
         const result: Result_8 = await (await this.getActor()).get_testament_as_testator(id);
-        console.log('r', result);
+        console.debug('start get testament as testator', result);
         if (result['Ok']) {
             return this.mapTestamentResponseToUiTestamentResponse(result['Ok'], UiTestamentListEntryRole.Testator);
         }
@@ -300,7 +303,7 @@ class IcCryptService {
     }
 
     public async addHeir(heir: UiUser): Promise<UiUser> {
-        console.log('start adding heir: ', heir);
+        console.debug('start adding heir: ', heir);
 
         // Check if it's a valid principal
         let principal = undefined;
@@ -357,9 +360,9 @@ class IcCryptService {
             name: user.name.length > 0 ? user.name[0] : undefined,
             email: user.email.length > 0 ? user.email[0] : undefined,
             userVaultId: user.user_vault_id.length > 0 ? user.user_vault_id[0] : undefined,
-            dateLastLogin: user.date_last_login.length > 0 ? this.nanosecondsInBigintToDate(user.date_last_login[0]) : undefined,
-            dateCreated: this.nanosecondsInBigintToDate(user.date_created),
-            dateModified: this.nanosecondsInBigintToDate(user.date_modified),
+            dateLastLogin: user.date_last_login.length > 0 ? this.nanosecondsInBigintToIsoString(user.date_last_login[0]) : undefined,
+            dateCreated: this.nanosecondsInBigintToIsoString(user.date_created),
+            dateModified: this.nanosecondsInBigintToIsoString(user.date_modified),
         }
 
         if (user.user_type.length === 0) {
@@ -423,8 +426,8 @@ class IcCryptService {
             username: username,
             password: password,
             notes: notes,
-            dateCreated: this.nanosecondsInBigintToDate(secret.date_modified),
-            dateModified: this.nanosecondsInBigintToDate(secret.date_created),
+            dateCreated: this.nanosecondsInBigintToIsoString(secret.date_modified),
+            dateModified: this.nanosecondsInBigintToIsoString(secret.date_created),
         };
 
         if (secret.category.length === 0) {
@@ -442,14 +445,14 @@ class IcCryptService {
         return uiSecret;
     }
 
-    private nanosecondsInBigintToDate(nanoseconds: BigInt): Date {
+    private nanosecondsInBigintToIsoString(nanoseconds: BigInt): string {
         const number = Number(nanoseconds);
         const milliseconds = Number(number / 1000000);
-        return new Date(milliseconds);
+        return new Date(milliseconds).toISOString();
     }
 
-    private dateToNanosecondsInBigint(date: Date): bigint {
-        return BigInt(date.getTime()) * 1000000n;
+    private dateToNanosecondsInBigint(isoDate: string): bigint {
+        return BigInt(new Date(isoDate).getTime()) * 1000000n;
     }
 
     private async encryptNewSecret(uiSecret: UiSecret): Promise<AddSecretArgs> {
@@ -616,8 +619,8 @@ class IcCryptService {
             heirs: testament.heirs.map((item) => {return {id: item.toString()}}),
             conditionArg: Number(testament.condition_arg),
             conditionStatus: testament.condition_status,
-            dateCreated: this.nanosecondsInBigintToDate(testament.date_created),
-            dateModified: this.nanosecondsInBigintToDate(testament.date_modified),
+            dateCreated: this.nanosecondsInBigintToIsoString(testament.date_created),
+            dateModified: this.nanosecondsInBigintToIsoString(testament.date_modified),
             role
         };
     }
@@ -648,8 +651,8 @@ class IcCryptService {
             heirs: testament.heirs.map((item) => {return {id: item.toString()}}),
             conditionArg: Number(testament.condition_arg),
             conditionStatus: testament.condition_status,
-            dateCreated: this.nanosecondsInBigintToDate(testament.date_created),
-            dateModified: this.nanosecondsInBigintToDate(testament.date_modified),
+            dateCreated: this.nanosecondsInBigintToIsoString(testament.date_created),
+            dateModified: this.nanosecondsInBigintToIsoString(testament.date_modified),
             role
         };
     }
