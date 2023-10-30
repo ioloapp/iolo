@@ -9,11 +9,12 @@ import {
 } from "../../redux/testaments/testamentsSelectors";
 import {deleteTestamentThunk, testamentsActions} from "../../redux/testaments/testamentsSlice";
 import {BasicDialog} from "../dialog/basic-dialog";
+import {UiTestamentResponse} from "../../services/IcTypesForUi";
 
 export default function DeleteTestamentDialog() {
     const dispatch = useAppDispatch();
     const showDeleteTestamentDialog: boolean = useSelector(selectShowDeleteTestamentDialog);
-    const dialogItem = useSelector(selectTestamentDialogItem);
+    const dialogItem: UiTestamentResponse = useSelector(selectTestamentDialogItem);
     const testamentError = useSelector(selectTestamentError);
     const dialogItemState = useSelector(selectTestamentDialogItemState);
 
@@ -26,7 +27,7 @@ export default function DeleteTestamentDialog() {
     }
 
     const deleteTestament = async () => {
-        dispatch(deleteTestamentThunk(dialogItem));
+        dispatch(deleteTestamentThunk(dialogItem.id));
     }
 
     return (

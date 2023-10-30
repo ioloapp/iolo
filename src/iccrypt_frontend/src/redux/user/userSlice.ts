@@ -64,7 +64,7 @@ export const userSlice = createSlice({
             })
             .addCase(createUserThunk.fulfilled, (state, action) => {
                 state.loginStatus = 'succeeded';
-                state.userVaultExisting = action.payload.userVaultId != undefined;
+                state.userVaultExisting = action.payload?.userVaultId != undefined;
             })
             .addCase(createUserThunk.rejected, (state, action) => {
                 state.loginStatus = 'failed';

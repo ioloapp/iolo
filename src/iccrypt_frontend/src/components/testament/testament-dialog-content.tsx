@@ -24,7 +24,7 @@ interface SelectedSecret extends SelectListItem, UiSecretListEntry {
 
 export const TestamentDialogContent: FC<TestamentDialogContentProps> = ({readonly}) => {
     const dispatch = useAppDispatch();
-    const dialogItem = useSelector(selectTestamentDialogItem);
+    const dialogItem: UiTestamentResponse = useSelector(selectTestamentDialogItem);
     const groupedSecretList = useSelector(selectGroupedSecrets);
     const heirsList = useSelector(selectHeirs);
     const [selectedSecrets, setSelectedSecrets] = React.useState<SelectedSecret[]>([]);
@@ -52,11 +52,11 @@ export const TestamentDialogContent: FC<TestamentDialogContentProps> = ({readonl
         let secrets: string[];
         if (oldState) {
             //not selected
-            secrets = dialogItem.secrets.filter(s => s.id !== secret.id);
+            secrets = dialogItem.secrets.filter(s => s.id !== secret.id).map(s => s.id);
             setSelectedSecrets(selectedSecrets.map(s => s.id !== secret.id ? s : {...s, selected: false}));
         }else{
             //selected
-            secrets = [...dialogItem.secrets, secret]
+            secrets = [...dialogItem.secrets.map(s => s.id), secret.id]
             setSelectedSecrets(selectedSecrets.map(s => s.id !== secret.id ? s : {...s, selected: true}));
         }
         //Add
@@ -68,7 +68,7 @@ export const TestamentDialogContent: FC<TestamentDialogContentProps> = ({readonl
 
     const handleHeirChange = (heir: SelectedHeir) => {
         const oldState = dialogItem.heirs.find(s => s.id === heir.id);
-        let heirs: SelectedHeir[];
+        let heirs: UiUser[];
         if (oldState) {
             //not selected
             heirs = dialogItem.heirs.filter(s => s.id !== heir.id)
@@ -135,7 +135,7 @@ export const TestamentDialogContent: FC<TestamentDialogContentProps> = ({readonl
                     disabled={readonly}
                     onChange={e => updateTestamentToAdd({
                         ...dialogItem,
-                        conditionArg: e.target.value
+                        conditionArg: e.target.value ? Number(e.target.value): undefined
                     })}
                 />
             </FormControl>

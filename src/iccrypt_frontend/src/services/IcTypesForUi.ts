@@ -30,7 +30,7 @@ export interface UiTestamentListEntry {
 export interface UiTestament extends UiTestamentListEntry {
     secrets?: string[],
     heirs?: Array<UiUser>,
-    conditionArg: number,
+    conditionArg?: number,
     dateCreated?: string,
     dateModified?: string,
 }

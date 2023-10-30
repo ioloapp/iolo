@@ -65,13 +65,13 @@ export const updateTestamentThunk = createAsyncThunk<UiTestament, UiTestament, {
 );
 
 
-export const deleteTestamentThunk = createAsyncThunk<string, UiTestament, {
+export const deleteTestamentThunk = createAsyncThunk<string, string, {
     state: RootState
 }>('testaments/delete',
-    async (testament, {rejectWithValue}) => {
+    async (testamentId, {rejectWithValue}) => {
         try {
-            await icCryptService.deleteTestament(testament.id);
-            return testament.id;
+            await icCryptService.deleteTestament(testamentId);
+            return testamentId;
         } catch (e) {
             rejectWithValue(mapError(e))
         }

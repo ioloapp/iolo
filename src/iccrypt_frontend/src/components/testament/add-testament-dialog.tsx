@@ -13,11 +13,12 @@ import {
 import {selectCurrentUser} from "../../redux/user/userSelectors";
 import {BasicDialog} from "../dialog/basic-dialog";
 import {TestamentDialogContent} from './testament-dialog-content';
+import {UiTestament, UiTestamentResponse} from "../../services/IcTypesForUi";
 
 export default function AddTestamentDialog() {
     const dispatch = useAppDispatch();
     const showAddTestamentDialog = useSelector(selectShowAddTestamentDialog);
-    const dialogItem = useSelector(selectTestamentDialogItem);
+    const dialogItem: UiTestamentResponse = useSelector(selectTestamentDialogItem);
     const testamentError = useSelector(selectTestamentError);
     const dialogItemState = useSelector(selectTestamentDialogItemState);
     const currentUser = useSelector(selectCurrentUser);
@@ -37,8 +38,9 @@ export default function AddTestamentDialog() {
     const createTestament = async () => {
         dispatch(addTestamentThunk({
             ...dialogItem,
-            testator: currentUser
-        }));
+            testator: currentUser,
+            secrets: dialogItem.secrets.map(s => s.id)
+        } as UiTestament));
     }
 
     return (
