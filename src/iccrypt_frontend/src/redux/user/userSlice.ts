@@ -1,13 +1,19 @@
 import {createAsyncThunk, createSlice} from '@reduxjs/toolkit';
-import {initialState, UserState} from "./userState";
+import {initialState} from "./userState";
 import IcCryptService from "../../services/IcCryptService";
 import {RootState} from "../store";
 import {UiUser} from "../../services/IcTypesForUi";
 
 const icCryptService = new IcCryptService();
-export const loginUserThunk = createAsyncThunk<UserState, void, { state: RootState }>(
+
+export interface UserLogin {
+    principal: string,
+    userVaultExisting: boolean
+}
+
+export const loginUserThunk = createAsyncThunk<UserLogin, void, { state: RootState }>(
     'user/login',
-    async (_, {rejectWithValue}): Promise<UserState> => {
+    async (_, {rejectWithValue}): Promise<UserLogin> => {
         const principal = await icCryptService.login();
         if (principal) {
             const userVaultExisting = await icCryptService.isUserVaultExisting();
@@ -25,7 +31,7 @@ export const createUserThunk = createAsyncThunk<UiUser, void, { state: RootState
     'user/create',
     async (_, {rejectWithValue}): Promise<UiUser> => {
         try {
-            let user =  await icCryptService.createUser();
+            let user = await icCryptService.createUser();
             return user;
         } catch (e) {
             rejectWithValue(e.message);

@@ -5,3 +5,5 @@ export const selectUserLoggedIn = () => useAppSelector(({user}) => user.principa
 export const selectUserAccountExistingForCurrentUser = () => useAppSelector(({user}) => user.userVaultExisting);
 
 export const selectCurrentUser = () => useAppSelector(({user}) => user.user)
+
+export const selectLoginStatus = () => useAppSelector(({user}) => user.loginStatus)
