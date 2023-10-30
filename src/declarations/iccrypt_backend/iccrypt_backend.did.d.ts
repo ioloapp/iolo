@@ -41,7 +41,9 @@ export type Result_6 = { 'Ok' : Array<SecretListEntry> } |
   { 'Err' : SmartVaultErr };
 export type Result_7 = { 'Ok' : SecretSymmetricCryptoMaterial } |
   { 'Err' : SmartVaultErr };
-export type Result_8 = { 'Ok' : Array<TestamentListEntry> } |
+export type Result_8 = { 'Ok' : TestamentResponse } |
+  { 'Err' : SmartVaultErr };
+export type Result_9 = { 'Ok' : Array<TestamentListEntry> } |
   { 'Err' : SmartVaultErr };
 export interface Secret {
   'id' : string,
@@ -104,6 +106,18 @@ export interface TestamentListEntry {
   'name' : [] | [string],
   'testator' : Principal,
 }
+export interface TestamentResponse {
+  'id' : string,
+  'heirs' : Array<Principal>,
+  'date_created' : bigint,
+  'condition_status' : boolean,
+  'name' : [] | [string],
+  'testator' : Principal,
+  'secrets' : Array<SecretListEntry>,
+  'condition_arg' : bigint,
+  'key_box' : Array<[string, SecretSymmetricCryptoMaterial]>,
+  'date_modified' : bigint,
+}
 export interface User {
   'id' : Principal,
   'user_type' : [] | [UserType],
@@ -142,10 +156,10 @@ export interface _SERVICE {
   'get_secret' : ActorMethod<[string], Result_1>,
   'get_secret_list' : ActorMethod<[], Result_6>,
   'get_secret_symmetric_crypto_material' : ActorMethod<[string], Result_7>,
-  'get_testament_as_heir' : ActorMethod<[string], Result_2>,
-  'get_testament_as_testator' : ActorMethod<[string], Result_2>,
-  'get_testament_list_as_heir' : ActorMethod<[], Result_8>,
-  'get_testament_list_as_testator' : ActorMethod<[], Result_8>,
+  'get_testament_as_heir' : ActorMethod<[string], Result_8>,
+  'get_testament_as_testator' : ActorMethod<[string], Result_8>,
+  'get_testament_list_as_heir' : ActorMethod<[], Result_9>,
+  'get_testament_list_as_testator' : ActorMethod<[], Result_9>,
   'ibe_encryption_key' : ActorMethod<[], string>,
   'is_user_vault_existing' : ActorMethod<[], boolean>,
   'remove_heir' : ActorMethod<[Principal], Result_3>,

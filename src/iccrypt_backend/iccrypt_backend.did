@@ -33,7 +33,8 @@ type Result_7 = variant {
   Ok : SecretSymmetricCryptoMaterial;
   Err : SmartVaultErr;
 };
-type Result_8 = variant { Ok : vec TestamentListEntry; Err : SmartVaultErr };
+type Result_8 = variant { Ok : TestamentResponse; Err : SmartVaultErr };
+type Result_9 = variant { Ok : vec TestamentListEntry; Err : SmartVaultErr };
 type Secret = record {
   id : text;
   url : opt text;
@@ -95,6 +96,18 @@ type TestamentListEntry = record {
   name : opt text;
   testator : principal;
 };
+type TestamentResponse = record {
+  id : text;
+  heirs : vec principal;
+  date_created : nat64;
+  condition_status : bool;
+  name : opt text;
+  testator : principal;
+  secrets : vec SecretListEntry;
+  condition_arg : nat64;
+  key_box : vec record { text; SecretSymmetricCryptoMaterial };
+  date_modified : nat64;
+};
 type User = record {
   id : principal;
   user_type : opt UserType;
@@ -122,10 +135,10 @@ service : {
   get_secret : (text) -> (Result_1) query;
   get_secret_list : () -> (Result_6) query;
   get_secret_symmetric_crypto_material : (text) -> (Result_7) query;
-  get_testament_as_heir : (text) -> (Result_2) query;
-  get_testament_as_testator : (text) -> (Result_2) query;
-  get_testament_list_as_heir : () -> (Result_8) query;
-  get_testament_list_as_testator : () -> (Result_8) query;
+  get_testament_as_heir : (text) -> (Result_8) query;
+  get_testament_as_testator : (text) -> (Result_8) query;
+  get_testament_list_as_heir : () -> (Result_9) query;
+  get_testament_list_as_testator : () -> (Result_9) query;
   ibe_encryption_key : () -> (text);
   is_user_vault_existing : () -> (bool) query;
   remove_heir : (principal) -> (Result_3);

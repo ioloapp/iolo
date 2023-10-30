@@ -35,6 +35,19 @@ export interface UiTestament extends UiTestamentListEntry {
     dateModified?: Date,
 }
 
+export interface UiTestamentResponse {
+    id?: string,
+    name?: string,
+    testator?: UiUser,
+    role?: UiTestamentListEntryRole
+    conditionStatus?: boolean,
+    secrets?: UiSecretListEntry[],
+    heirs?: Array<UiUser>,
+    conditionArg: number,
+    dateCreated?: Date,
+    dateModified?: Date,
+}
+
 export enum UiTestamentListEntryRole {
     Testator = "Testator",
     Heir = "Heir"

@@ -107,13 +107,29 @@ export const idlFactory = ({ IDL }) => {
     'Ok' : SecretSymmetricCryptoMaterial,
     'Err' : SmartVaultErr,
   });
+  const TestamentResponse = IDL.Record({
+    'id' : IDL.Text,
+    'heirs' : IDL.Vec(IDL.Principal),
+    'date_created' : IDL.Nat64,
+    'condition_status' : IDL.Bool,
+    'name' : IDL.Opt(IDL.Text),
+    'testator' : IDL.Principal,
+    'secrets' : IDL.Vec(SecretListEntry),
+    'condition_arg' : IDL.Nat64,
+    'key_box' : IDL.Vec(IDL.Tuple(IDL.Text, SecretSymmetricCryptoMaterial)),
+    'date_modified' : IDL.Nat64,
+  });
+  const Result_8 = IDL.Variant({
+    'Ok' : TestamentResponse,
+    'Err' : SmartVaultErr,
+  });
   const TestamentListEntry = IDL.Record({
     'id' : IDL.Text,
     'condition_status' : IDL.Bool,
     'name' : IDL.Opt(IDL.Text),
     'testator' : IDL.Principal,
   });
-  const Result_8 = IDL.Variant({
+  const Result_9 = IDL.Variant({
     'Ok' : IDL.Vec(TestamentListEntry),
     'Err' : SmartVaultErr,
   });
@@ -151,10 +167,10 @@ export const idlFactory = ({ IDL }) => {
         [Result_7],
         ['query'],
       ),
-    'get_testament_as_heir' : IDL.Func([IDL.Text], [Result_2], ['query']),
-    'get_testament_as_testator' : IDL.Func([IDL.Text], [Result_2], ['query']),
-    'get_testament_list_as_heir' : IDL.Func([], [Result_8], ['query']),
-    'get_testament_list_as_testator' : IDL.Func([], [Result_8], ['query']),
+    'get_testament_as_heir' : IDL.Func([IDL.Text], [Result_8], ['query']),
+    'get_testament_as_testator' : IDL.Func([IDL.Text], [Result_8], ['query']),
+    'get_testament_list_as_heir' : IDL.Func([], [Result_9], ['query']),
+    'get_testament_list_as_testator' : IDL.Func([], [Result_9], ['query']),
     'ibe_encryption_key' : IDL.Func([], [IDL.Text], []),
     'is_user_vault_existing' : IDL.Func([], [IDL.Bool], ['query']),
     'remove_heir' : IDL.Func([IDL.Principal], [Result_3], []),

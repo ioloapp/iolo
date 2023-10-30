@@ -2,6 +2,7 @@ use std::collections::{BTreeMap, HashSet};
 
 use candid::{CandidType, Principal};
 use serde::{Deserialize, Serialize};
+use crate::smart_vaults::secret::SecretListEntry;
 
 use crate::utils::{caller::get_caller, time};
 
@@ -155,6 +156,55 @@ impl From<AddTestamentArgs> for Testament {
         new_testament.secrets = ata.secrets;
         new_testament.key_box = ata.key_box;
         new_testament.condition_arg = ata.condition_arg;
+        new_testament
+    }
+}
+
+#[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
+pub struct TestamentResponse {
+    id: TestamentID,
+    name: Option<String>,
+    date_created: u64,
+    date_modified: u64,
+    testator: Principal,
+    heirs: HashSet<Principal>,
+    secrets: HashSet<SecretListEntry>,
+    key_box: KeyBox,
+    condition_status: bool,
+    condition_arg: u64 // currently only for max difference to last_login_date, in seconds
+}
+
+impl TestamentResponse {
+    pub fn new(id: String) -> Self {
+        let now: u64 = time::get_current_time();
+        Self {
+            id,
+            name: None,
+            date_created: now,
+            date_modified: now,
+            testator: get_caller(),
+            heirs: HashSet::new(),
+            secrets: HashSet::new(),
+            key_box: BTreeMap::new(),
+            condition_arg: 0,
+            condition_status: false
+        }
+    }
+
+    pub fn secrets(&mut self) -> &mut HashSet<SecretListEntry> {
+        &mut self.secrets
+    }
+}
+
+impl From<Testament> for TestamentResponse {
+    fn from(t: Testament) -> Self {
+        let mut new_testament = TestamentResponse::new(t.id);
+        new_testament.name = t.name;
+        new_testament.testator = t.testator;
+        new_testament.heirs = t.heirs;
+        new_testament.key_box = t.key_box;
+        new_testament.condition_arg = t.condition_arg;
+        new_testament.condition_status = t.condition_status;
         new_testament
     }
 }

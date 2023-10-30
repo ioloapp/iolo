@@ -1,8 +1,8 @@
-import {UiTestament, UiTestamentListEntry} from "../../services/IcTypesForUi";
+import {UiTestamentListEntry, UiTestamentResponse} from "../../services/IcTypesForUi";
 
 export interface TestamentsState {
     testamentsList: UiTestamentListEntry[],
-    dialogItem: UiTestament
+    dialogItem: UiTestamentResponse
     dialogItemState: string,
     loadingState: string,
     error?: string;

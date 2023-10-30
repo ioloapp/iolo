@@ -2,7 +2,12 @@ import {createAsyncThunk, createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {initialState} from "./testamentsState";
 import IcCryptService from "../../services/IcCryptService";
 import {RootState} from "../store";
-import {UiTestament, UiTestamentListEntry, UiTestamentListEntryRole} from "../../services/IcTypesForUi";
+import {
+    UiTestament,
+    UiTestamentListEntry,
+    UiTestamentListEntryRole,
+    UiTestamentResponse
+} from "../../services/IcTypesForUi";
 import {mapError} from "../../utils/errorMapper";
 import {Principal} from "@dfinity/principal";
 
@@ -18,13 +23,13 @@ export const addTestamentThunk = createAsyncThunk<UiTestament, UiTestament, { st
     }
 );
 
-export const viewTestamentThunk = createAsyncThunk<UiTestament, UiTestament, { state: RootState }>('testaments/view',
+export const viewTestamentThunk = createAsyncThunk<UiTestamentResponse, UiTestament, { state: RootState }>('testaments/view',
     (uiTestament, {rejectWithValue, getState}) => {
         try {
             if (uiTestament.role === UiTestamentListEntryRole.Testator) {
                 return icCryptService.getTestamentAsTestator(uiTestament.id);
             } else {
-                return icCryptService.getTestamentAsHeir(uiTestament.id, Principal.fromText(uiTestament.testator.id));
+                return icCryptService.getTestamentAsHeir(uiTestament.id);
             }
 
         } catch (e) {
@@ -33,13 +38,13 @@ export const viewTestamentThunk = createAsyncThunk<UiTestament, UiTestament, { s
     }
 );
 
-export const editTestamentThunk = createAsyncThunk<UiTestament, UiTestament, { state: RootState }>('testaments/edit',
+export const editTestamentThunk = createAsyncThunk<UiTestamentResponse, UiTestament, { state: RootState }>('testaments/edit',
      (uiTestament, {rejectWithValue, getState}) => {
         try {
             if (uiTestament.role === UiTestamentListEntryRole.Testator) {
                 return icCryptService.getTestamentAsTestator(uiTestament.id);
             } else {
-                return icCryptService.getTestamentAsHeir(uiTestament.id, Principal.fromText(uiTestament.testator.id));
+                return icCryptService.getTestamentAsHeir(uiTestament.id);
             }
 
         } catch (e) {

@@ -6,17 +6,16 @@ import {
     AddUserArgs,
     Result,
     Result_1,
-    Result_2,
     Result_3,
     Result_5,
     Result_6,
     Result_7,
-    Result_8,
+    Result_8, Result_9,
     Secret,
     SecretCategory,
     SecretListEntry,
     SecretSymmetricCryptoMaterial,
-    Testament,
+    Testament, TestamentResponse,
     TestamentListEntry,
     User,
     UserType
@@ -37,7 +36,7 @@ import {
     UiSecret,
     UiSecretCategory,
     UiSecretListEntry,
-    UiTestament,
+    UiTestament, UiTestamentResponse,
     UiTestamentListEntry,
     UiTestamentListEntryRole,
     UiUser,
@@ -243,7 +242,7 @@ class IcCryptService {
     }
 
     public async getTestamentList(): Promise<UiTestamentListEntry[]> {
-        const resultAsTestator: Result_8 = await (await this.getActor()).get_testament_list_as_testator();
+        const resultAsTestator: Result_9 = await (await this.getActor()).get_testament_list_as_testator();
         let testamentsAsTestator: UiTestamentListEntry[] = [];
         if (resultAsTestator['Ok']) {
             testamentsAsTestator = resultAsTestator['Ok'].map((item: TestamentListEntry): UiTestamentListEntry  => {
@@ -257,7 +256,7 @@ class IcCryptService {
             });
         } else throw mapError(resultAsTestator['Err']);
 
-        const resultAsHeir: Result_8 = await (await this.getActor()).get_testament_list_as_heir();
+        const resultAsHeir: Result_9 = await (await this.getActor()).get_testament_list_as_heir();
         let testamentsAsHeir: UiTestamentListEntry[] =  [];
         if (resultAsHeir['Ok'] && resultAsHeir['Ok'].length > 0) {
             testamentsAsHeir = resultAsHeir['Ok'].map((item: TestamentListEntry): UiTestamentListEntry  => {
@@ -275,19 +274,19 @@ class IcCryptService {
         return testamentsAsTestator.concat(testamentsAsHeir);
     }
 
-    public async getTestamentAsTestator(id: string): Promise<UiTestament> {
-        const result: Result_2 = await (await this.getActor()).get_testament_as_testator(id);
+    public async getTestamentAsTestator(id: string): Promise<UiTestamentResponse> {
+        const result: Result_8 = await (await this.getActor()).get_testament_as_testator(id);
         console.log('r', result);
         if (result['Ok']) {
-            return this.mapTestamentToUiTestament(result['Ok'], UiTestamentListEntryRole.Testator);
+            return this.mapTestamentResponseToUiTestamentResponse(result['Ok'], UiTestamentListEntryRole.Testator);
         }
         throw mapError(result['Err']);
     }
 
-    public async getTestamentAsHeir(id: string, testator: Principal): Promise<UiTestament> {
-        const result: Result_2 = await (await this.getActor()).get_testament_as_heir(id);
+    public async getTestamentAsHeir(id: string): Promise<UiTestamentResponse> {
+        const result: Result_8 = await (await this.getActor()).get_testament_as_heir(id);
         if (result['Ok']) {
-            return this.mapTestamentToUiTestament(result['Ok'], UiTestamentListEntryRole.Heir);
+            return this.mapTestamentResponseToUiTestamentResponse(result['Ok'], UiTestamentListEntryRole.Heir);
         }
         throw mapError(result['Err']);
     }
@@ -614,6 +613,38 @@ class IcCryptService {
             name: testament.name.length > 0 ? testament.name[0] : undefined,
             testator: { id: testament.testator.toString() },
             secrets: testament.secrets,
+            heirs: testament.heirs.map((item) => {return {id: item.toString()}}),
+            conditionArg: Number(testament.condition_arg),
+            conditionStatus: testament.condition_status,
+            dateCreated: this.nanosecondsInBigintToDate(testament.date_created),
+            dateModified: this.nanosecondsInBigintToDate(testament.date_modified),
+            role
+        };
+    }
+
+    private mapTestamentResponseToUiTestamentResponse(testament: TestamentResponse, role: UiTestamentListEntryRole): UiTestamentResponse {
+        let secrets: UiSecretListEntry[] = testament.secrets.map((item) => {
+            let category = undefined;
+            if (item.category.length > 0) {
+                if (item.category[0].hasOwnProperty('Password')) {
+                    category = UiSecretCategory.Password;
+                } else if (item.category[0].hasOwnProperty('Note')) {
+                    category = UiSecretCategory.Note;
+                } if (item.category[0].hasOwnProperty('Document')) {
+                    category = UiSecretCategory.Document;
+                }
+            }
+            return {
+                id: item.id,
+                name: item.name.length > 0 ? item.name[0] : undefined,
+                category: category,
+            }
+        })
+        return {
+            id: testament.id,
+            name: testament.name.length > 0 ? testament.name[0] : undefined,
+            testator: { id: testament.testator.toString() },
+            secrets: secrets,
             heirs: testament.heirs.map((item) => {return {id: item.toString()}}),
             conditionArg: Number(testament.condition_arg),
             conditionStatus: testament.condition_status,

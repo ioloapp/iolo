@@ -12,6 +12,7 @@ use crate::smart_vaults::secret::SecretListEntry;
 use crate::smart_vaults::secret::SecretSymmetricCryptoMaterial;
 use crate::smart_vaults::testament::AddTestamentArgs;
 use crate::smart_vaults::testament::Testament;
+use crate::smart_vaults::testament::TestamentResponse;
 use crate::smart_vaults::testament::TestamentID;
 use crate::smart_vaults::testament::TestamentListEntry;
 use crate::common::user::AddUserArgs;

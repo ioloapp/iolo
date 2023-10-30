@@ -1,4 +1,5 @@
 use std::cell::RefCell;
+use std::result;
 
 use candid::{candid_method, Principal};
 use ic_cdk::{post_upgrade, pre_upgrade, storage};
@@ -6,6 +7,7 @@ use ic_cdk::{post_upgrade, pre_upgrade, storage};
 use crate::common::error::SmartVaultErr;
 use crate::common::user::{AddUserArgs, User};
 use crate::common::uuid::UUID;
+use crate::smart_vaults::testament::TestamentResponse;
 use crate::smart_vaults::user_registry::UserRegistry;
 use crate::smart_vaults::user_vault::UserVaultID;
 use crate::utils::caller::get_caller;
@@ -220,23 +222,41 @@ pub fn update_testament(t: Testament) -> Result<Testament, SmartVaultErr> {
 
 #[ic_cdk_macros::query]
 #[candid_method(query)]
-pub fn get_testament_as_testator(testament_id: TestamentID) -> Result<Testament, SmartVaultErr> {
+pub fn get_testament_as_testator(testament_id: TestamentID) -> Result<TestamentResponse, SmartVaultErr> {
     let principal = get_caller();
     let user_vault_id: UUID = get_vault_id_for(principal)?;
 
-    MASTERVAULT.with(
+    let result = MASTERVAULT.with(
         |mv: &RefCell<MasterVault>| -> Result<Testament, SmartVaultErr> {
             mv.borrow()
                 .get_user_vault(&user_vault_id)?
                 .get_testament(&testament_id)
                 .cloned()
         },
-    )
+    )?;
+    let mut testament_for_testator = TestamentResponse::from(result.clone());
+    for secret in result.secrets() {
+        let result_mv_2 = MASTERVAULT.with(
+            |mv: &RefCell<MasterVault>| -> Result<Secret, SmartVaultErr> {
+                mv.borrow()
+                    .get_user_vault(&user_vault_id)?
+                    .get_secret(secret)
+                    .cloned()
+            },
+        )?;
+        let secret_list_entry = SecretListEntry {
+            id: result_mv_2.id().clone(),
+            category: result_mv_2.category(),
+            name: result_mv_2.name(),
+        };
+        testament_for_testator.secrets().insert(secret_list_entry);
+    }
+    Ok(testament_for_testator)
 }
 
 #[ic_cdk_macros::query]
 #[candid_method(query)]
-pub fn get_testament_as_heir(testament_id: TestamentID) -> Result<Testament, SmartVaultErr> {
+pub fn get_testament_as_heir(testament_id: TestamentID) -> Result<TestamentResponse, SmartVaultErr> {
     let result_tr = TESTAMENT_REGISTRY.with(
         |tr: &RefCell<TestamentRegistry>| -> Result<(TestamentID, Principal), SmartVaultErr> {
             let testament_registry = tr.borrow();
@@ -254,7 +274,26 @@ pub fn get_testament_as_heir(testament_id: TestamentID) -> Result<Testament, Sma
         },
     )?;
     if result_mv.condition_status().clone() {
-        Ok(result_mv)
+        // Get more secret data for heirs...
+        let testator_vault_id = get_vault_id_for(*result_mv.testator())?;
+        let mut testament_for_heir = TestamentResponse::from(result_mv.clone());
+        for secret in result_mv.secrets() {
+            let result_mv_2 = MASTERVAULT.with(
+                |mv: &RefCell<MasterVault>| -> Result<Secret, SmartVaultErr> {
+                    mv.borrow()
+                        .get_user_vault(&testator_vault_id)?
+                        .get_secret(secret)
+                        .cloned()
+                },
+            )?;
+            let secret_list_entry = SecretListEntry {
+                id: result_mv_2.id().clone(),
+                category: result_mv_2.category(),
+                name: result_mv_2.name(),
+            };
+            testament_for_heir.secrets().insert(secret_list_entry);
+        }
+        Ok(testament_for_heir)
     } else {
         Err(SmartVaultErr::InvalidTestamentCondition)
     }

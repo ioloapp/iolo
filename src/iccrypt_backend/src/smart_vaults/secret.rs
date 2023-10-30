@@ -5,7 +5,7 @@ use crate::utils::time;
 
 pub type SecretID = String;
 
-#[derive(Debug, CandidType, Deserialize, Serialize, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, CandidType, Deserialize, Serialize, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum SecretCategory {
     Password,
     Note,
@@ -56,7 +56,7 @@ impl From<AddSecretArgs> for Secret {
     }
 }
 
-#[derive(Debug, CandidType, Deserialize, Serialize, Clone, PartialEq)]
+#[derive(Debug, CandidType, Deserialize, Serialize, Clone, PartialEq, Eq, Hash)]
 pub struct SecretListEntry {
     pub id: SecretID,
     pub category: Option<SecretCategory>,
