@@ -66,6 +66,7 @@ export const heirsSlice = createSlice({
         },
         openAddDialog: state => {
             state.showAddDialog = true
+            state.error = undefined;
         },
         cancelAddHeir: state => {
             state.dialogItem = initialState.dialogItem;
@@ -77,9 +78,11 @@ export const heirsSlice = createSlice({
         },
         openEditDialog: state => {
             state.showEditDialog = true
+            state.error = undefined;
         },
         openDeleteDialog: state => {
             state.showDeleteDialog = true
+            state.error = undefined;
         },
         closeDeleteDialog: state => {
             state.showDeleteDialog = false

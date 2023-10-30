@@ -81,9 +81,11 @@ export const secretsSlice = createSlice({
         openAddDialog: state => {
             state.showAddDialog = true
             state.dialogItem = initialState.dialogItem;
+            state.error = undefined;
         },
         openEditDialog: state => {
             state.showEditDialog = true
+            state.error = undefined;
         },
         cancelAddSecret: state => {
             state.showAddDialog = false;
@@ -95,6 +97,7 @@ export const secretsSlice = createSlice({
         },
         openDeleteDialog: state => {
             state.showDeleteDialog = true
+            state.error = undefined;
         },
         closeDeleteDialog: state => {
             state.showDeleteDialog = false
