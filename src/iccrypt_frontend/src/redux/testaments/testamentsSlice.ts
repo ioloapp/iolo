@@ -9,7 +9,6 @@ import {
     UiTestamentResponse
 } from "../../services/IcTypesForUi";
 import {mapError} from "../../utils/errorMapper";
-import {Principal} from "@dfinity/principal";
 
 const icCryptService = new IcCryptService();
 
@@ -130,7 +129,7 @@ export const testamentsSlice = createSlice({
             state.dialogItem = initialState.dialogItem;
             state.showDeleteDialog = false;
         },
-        updateDialogItem: (state, action: PayloadAction<UiTestament>) => {
+        updateDialogItem: (state, action: PayloadAction<UiTestamentResponse>) => {
             state.dialogItem = action.payload;
         },
     },

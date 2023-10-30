@@ -43,7 +43,7 @@ export interface UiTestamentResponse {
     conditionStatus?: boolean,
     secrets?: UiSecretListEntry[],
     heirs?: Array<UiUser>,
-    conditionArg: number,
+    conditionArg?: number,
     dateCreated?: Date,
     dateModified?: Date,
 }

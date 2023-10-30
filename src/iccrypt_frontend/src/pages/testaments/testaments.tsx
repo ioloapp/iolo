@@ -59,7 +59,7 @@ export function Testaments() {
     const [filteredTestaments, setFilteredTestaments] = useState(testaments)
 
     const deleteTestament = (testament: UiTestament) => {
-        dispatch(testamentsActions.updateDialogItem(testament));
+        dispatch(testamentsActions.updateDialogItem({id: testament.id, name: testament.name}));
         dispatch(testamentsActions.openDeleteDialog());
     }
 

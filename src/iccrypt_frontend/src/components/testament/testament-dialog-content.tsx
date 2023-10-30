@@ -5,7 +5,7 @@ import {useSelector} from "react-redux";
 import {selectGroupedSecrets} from "../../redux/secrets/secretsSelectors";
 import {useAppDispatch} from "../../redux/hooks";
 import {FormControl, Typography} from "@mui/material";
-import {UiSecretListEntry, UiTestament, UiUser} from "../../services/IcTypesForUi";
+import {UiSecretListEntry, UiTestamentResponse, UiUser} from "../../services/IcTypesForUi";
 import {testamentsActions} from "../../redux/testaments/testamentsSlice";
 import {selectTestamentDialogItem} from "../../redux/testaments/testamentsSelectors";
 import {selectHeirs} from "../../redux/heirs/heirsSelectors";
@@ -37,27 +37,26 @@ export const TestamentDialogContent: FC<TestamentDialogContentProps> = ({readonl
         })
         setSelectedHeirs(selectedHeirs)
         const selectedSecrets = [...groupedSecretList.passwordList, ...groupedSecretList.notesList, ...groupedSecretList.documentsList, ...groupedSecretList.othersList].map(s => {
-            const secret = dialogItem.secrets.find(ds => ds === s.id);
+            const secret = dialogItem.secrets.find(ds => ds.id === s.id);
             return secret ? {...s, selected: true} : {...s, selected: false};
         })
         setSelectedSecrets(selectedSecrets)
     }, [dialogItem]);
 
-    const updateTestamentToAdd = (testament: UiTestament) => {
+    const updateTestamentToAdd = (testament: UiTestamentResponse) => {
         dispatch(testamentsActions.updateDialogItem(testament))
     }
 
     const handleSecretChange = (secret: SelectedSecret) => {
-        const oldState = dialogItem.secrets.find(s => s === secret.id);
+        const oldState = dialogItem.secrets.find(s => s.id === secret.id);
         let secrets: string[];
         if (oldState) {
             //not selected
-            console.log('secret.id', secret.id)
-            secrets = dialogItem.secrets.filter(s => s !== secret.id);
+            secrets = dialogItem.secrets.filter(s => s.id !== secret.id);
             setSelectedSecrets(selectedSecrets.map(s => s.id !== secret.id ? s : {...s, selected: false}));
         }else{
             //selected
-            secrets = [...dialogItem.secrets, secret.id]
+            secrets = [...dialogItem.secrets, secret]
             setSelectedSecrets(selectedSecrets.map(s => s.id !== secret.id ? s : {...s, selected: true}));
         }
         //Add
