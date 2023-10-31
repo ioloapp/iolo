@@ -4,7 +4,10 @@ use std::{
     time::Duration,
 };
 use candid::Principal;
-use crate::smart_vaults::smart_vault::{USER_REGISTRY};
+use crate::common::error::SmartVaultErr;
+use crate::common::uuid::UUID;
+use crate::smart_vaults::master_vault::MasterVault;
+use crate::smart_vaults::smart_vault::{MASTERVAULT, USER_REGISTRY};
 use crate::smart_vaults::user_registry::UserRegistry;
 use crate::utils::time;
 
@@ -39,16 +42,45 @@ fn periodic_task() {
         },
     );
 
-
     let current_time: u64 = time::get_current_time();
-    let max_last_login_time: u64 = 60 * 1000000000; // in nanoseconds
 
-    // iterate over all last login dates
+    // iterate over all existing users
     for (principal, last_login_date) in &users {
-        if last_login_date < &current_time.saturating_sub(max_last_login_time) {
-            // Last login date earlier than allowed, set condition status of all user testaments to true
-            ic_cdk::println!("Last login date of user {:?} is older than 60s, condition status of all its testaments is set to true", principal.to_text());
-            // TODO
+
+        // Get user vault id
+        let user_vault_id = USER_REGISTRY.with(
+            |ur: &RefCell<UserRegistry>| -> Result<UUID, SmartVaultErr> {
+                let user_registry = ur.borrow();
+                let user = user_registry.get_user(&principal)?;
+                user.user_vault_id.ok_or_else(|| SmartVaultErr::UserVaultDoesNotExist(principal.to_text()))
+            },
+        );
+        if let Err(e) = &user_vault_id {
+            ic_cdk::println!("ERROR: {:?}", e);
         }
+
+        MASTERVAULT.with(|ms: &RefCell<MasterVault>| -> () {
+            let mut master_vault = ms.borrow_mut();
+
+            // Get all testaments for principal
+            let testaments = master_vault.get_user_testament_list_mut(&user_vault_id.unwrap());
+            if let Err(e) = &testaments {
+                ic_cdk::println!("ERROR: {:?}", e);
+            }
+
+            // Iterate over testaments and update condition status
+            for testament in testaments.unwrap() {
+
+                // Check last login date
+                let max_last_login_time: u64 = testament.condition_arg() * 1000000000; // in nanoseconds
+                if last_login_date < &current_time.saturating_sub(max_last_login_time) {
+                    // Last login date earlier than allowed, set condition status of all user testaments to true
+                    ic_cdk::println!("Last login date of user {:?} is older than {:?} seconds, condition status of all its testaments is set to true", principal.to_text(), testament.condition_arg());
+                    testament.set_condition_status(true);
+                } else {
+                    ic_cdk::println!("Last login date of user {:?} is NOT older than {:?} seconds!", principal.to_text(), testament.condition_arg());
+                }
+            }
+        });
     }
 }

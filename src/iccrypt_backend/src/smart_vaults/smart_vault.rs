@@ -1,5 +1,4 @@
 use std::cell::RefCell;
-use std::result;
 
 use candid::{candid_method, Principal};
 use ic_cdk::{post_upgrade, pre_upgrade, storage};

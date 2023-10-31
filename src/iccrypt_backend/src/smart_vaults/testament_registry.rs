@@ -11,7 +11,6 @@ pub struct TestamentRegistry {
     testament_to_testator: BTreeMap<TestamentID, Principal>,
 }
 
-
 impl TestamentRegistry {
     pub fn new() -> Self {
         Self {

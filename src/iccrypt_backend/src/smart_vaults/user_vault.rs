@@ -136,6 +136,10 @@ impl UserVault {
         &self.testaments
     }
 
+    pub fn testaments_mut(&mut self) -> &mut BTreeMap<TestamentID, Testament> {
+        &mut self.testaments
+    }
+
     pub fn add_testament(&mut self, testament: Testament) -> Result<(), SmartVaultErr> {
         if self.testaments.contains_key(testament.id()) {
             return Err(SmartVaultErr::SecretAlreadyExists(

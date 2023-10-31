@@ -131,6 +131,18 @@ impl MasterVault {
         user_vault.update_testament(t)
     }
 
+    pub fn get_user_testament_list_mut(
+        &mut self,
+        vault_id: &UUID,
+    ) -> Result<Vec<&mut Testament>, SmartVaultErr> {
+        if !self.user_vaults.contains_key(vault_id) {
+            return Err(SmartVaultErr::UserVaultDoesNotExist(vault_id.to_string()));
+        }
+        let user_vault = self.user_vaults.get_mut(vault_id).unwrap();
+
+        Ok(user_vault.testaments_mut().values_mut().collect())
+    }
+
     pub fn update_user_secret(
         &mut self,
         vault_id: &UUID,
