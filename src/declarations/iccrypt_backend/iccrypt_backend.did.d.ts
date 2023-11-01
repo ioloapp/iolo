@@ -154,6 +154,7 @@ export interface _SERVICE {
   >,
   'get_heir_list' : ActorMethod<[], Result_5>,
   'get_secret' : ActorMethod<[string], Result_1>,
+  'get_secret_as_heir' : ActorMethod<[string, string], Result_1>,
   'get_secret_list' : ActorMethod<[], Result_6>,
   'get_secret_symmetric_crypto_material' : ActorMethod<[string], Result_7>,
   'get_testament_as_heir' : ActorMethod<[string], Result_8>,

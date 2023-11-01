@@ -142,6 +142,48 @@ pub fn get_secret(sid: SecretID) -> Result<Secret, SmartVaultErr> {
     )
 }
 
+#[ic_cdk_macros::query]
+#[candid_method(query)]
+pub fn get_secret_as_heir(sid: SecretID, testament_id: TestamentID) -> Result<Secret, SmartVaultErr> {
+    let principal = get_caller();
+
+    // Verify that heir belongs to testament
+    let result_tr = TESTAMENT_REGISTRY.with(
+        |tr: &RefCell<TestamentRegistry>| -> Result<(TestamentID, Principal), SmartVaultErr> {
+            let testament_registry = tr.borrow();
+            testament_registry.get_testament_id_as_heir(principal, testament_id.clone())
+        },
+    )?;
+
+    // Get user vault of testator
+    let user_vault_id: UUID = get_vault_id_for(result_tr.1)?;
+
+    // Read testament
+    let result_mv = MASTERVAULT.with(
+        |mv: &RefCell<MasterVault>| -> Result<Testament, SmartVaultErr> {
+            mv.borrow()
+                .get_user_vault(&user_vault_id)?
+                .get_testament(&testament_id)
+                .cloned()
+        },
+    )?;
+
+    // Check that heir is allowed to read testament
+    if result_mv.condition_status().clone() {
+        // Read secret in testator user vault
+        MASTERVAULT.with(
+            |mv: &RefCell<MasterVault>| -> Result<Secret, SmartVaultErr> {
+                mv.borrow()
+                    .get_user_vault(&user_vault_id)?
+                    .get_secret(&sid)
+                    .cloned()
+            },
+        )
+    } else {
+        Err(SmartVaultErr::InvalidTestamentCondition)
+    }
+}
+
 #[ic_cdk_macros::update]
 #[candid_method(update)]
 pub fn remove_secret(secret_id: String) -> Result<(), SmartVaultErr> {
@@ -256,6 +298,7 @@ pub fn get_testament_as_testator(testament_id: TestamentID) -> Result<TestamentR
 #[ic_cdk_macros::query]
 #[candid_method(query)]
 pub fn get_testament_as_heir(testament_id: TestamentID) -> Result<TestamentResponse, SmartVaultErr> {
+    // Verify that heir belongs to testament
     let result_tr = TESTAMENT_REGISTRY.with(
         |tr: &RefCell<TestamentRegistry>| -> Result<(TestamentID, Principal), SmartVaultErr> {
             let testament_registry = tr.borrow();
@@ -263,7 +306,10 @@ pub fn get_testament_as_heir(testament_id: TestamentID) -> Result<TestamentRespo
         },
     )?;
 
+    // Get user vault of testator
     let user_vault_id: UUID = get_vault_id_for(result_tr.1)?;
+
+    // Read testament
     let result_mv = MASTERVAULT.with(
         |mv: &RefCell<MasterVault>| -> Result<Testament, SmartVaultErr> {
             mv.borrow()
@@ -272,6 +318,8 @@ pub fn get_testament_as_heir(testament_id: TestamentID) -> Result<TestamentRespo
                 .cloned()
         },
     )?;
+
+    // Check that heir is allowed to read testament
     if result_mv.condition_status().clone() {
         // Get more secret data for heirs...
         let testator_vault_id = get_vault_id_for(*result_mv.testator())?;

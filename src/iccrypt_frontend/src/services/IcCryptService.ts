@@ -162,6 +162,20 @@ class IcCryptService {
         } else throw mapError(value1['Err']);
     }
 
+    public async getSecretAsHeir(secretId: string, testamentId: string): Promise<UiSecret> {
+        console.debug('start getting secret for heir...')
+        const result1 = (await this.getActor()).get_secret_as_heir(secretId, testamentId);
+        const result2 = (await this.getActor()).get_secret_symmetric_crypto_material(secretId);
+
+        // Wait for both promises to complete
+        const [value1, value2] = await Promise.all([result1, result2]);
+
+        // Now you can use value1 and value2
+        if (value1['Ok'] && value2['Ok']) {
+            return this.mapEncryptedSecretToUiSecret(value1['Ok'], value2['Ok']);
+        } else throw mapError(value1['Err']);
+    }
+
     public async addSecret(uiSecret: UiSecret): Promise<UiSecret> {
         console.debug('start adding secret...')
         const encryptedSecret: AddSecretArgs = await this.encryptNewSecret(uiSecret)
