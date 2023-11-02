@@ -194,6 +194,7 @@ class IcCryptService {
     public async updateSecret(uiSecret: UiSecret): Promise<UiSecret> {
         console.debug('start updating secret...')
         const resultSymmetricCryptoMaterial: Result_7 = await (await this.getActor()).get_secret_symmetric_crypto_material(uiSecret.id);
+
         let symmetricCryptoMaterial: SecretSymmetricCryptoMaterial;
         if (resultSymmetricCryptoMaterial['Ok']) {
             symmetricCryptoMaterial = resultSymmetricCryptoMaterial['Ok'];
@@ -325,9 +326,8 @@ class IcCryptService {
         console.debug('start adding heir: ', heir);
 
         // Check if it's a valid principal
-        let principal = undefined;
         try {
-            principal = Principal.fromText(heir.id);
+            Principal.fromText(heir.id);
         } catch (e) {
             throw mapError(new Error('PrincipalCreationFailed'));
         }
@@ -417,17 +417,16 @@ class IcCryptService {
 
         // Decrypt attributes
         let decryptedUsername = undefined;
-        if (secret.username[0].length > 0) {
+        if (secret.username.length > 0) {
             decryptedUsername = await aes_gcm_decrypt(secret.username[0] as Uint8Array, decryptedSymmetricKey, keyMaterial.username_decryption_nonce[0] as Uint8Array);
         }
-
         let decryptedPassword = undefined;
-        if (secret.password[0].length > 0) {
+        if (secret.password.length > 0) {
             decryptedPassword = await aes_gcm_decrypt(secret.password[0] as Uint8Array, decryptedSymmetricKey, keyMaterial.password_decryption_nonce[0] as Uint8Array);
         }
 
         let decryptedNotes = undefined;
-        if (secret.notes[0].length > 0) {
+        if (secret.notes.length > 0) {
             decryptedNotes = await aes_gcm_decrypt(secret.notes[0] as Uint8Array, decryptedSymmetricKey, keyMaterial.notes_decryption_nonce[0] as Uint8Array);
         }
 
@@ -482,22 +481,21 @@ class IcCryptService {
             const encryptedSymmetricKey = await aes_gcm_encrypt(symmetricKey, uservaultVetKey, ivSymmetricKey);
 
             // Encrypt optional secret attributes
-            let ivUsername = new Uint8Array(0);
             let encryptedUsername = new Uint8Array(0);
+            const ivUsername = window.crypto.getRandomValues(new Uint8Array(12)); // Always create an iv because if the username is added later as an update operation we need the key material
             if (uiSecret.username) {
-                ivUsername = window.crypto.getRandomValues(new Uint8Array(12)); // 96-bits; unique per message
                 encryptedUsername = await aes_gcm_encrypt(uiSecret.username, symmetricKey, ivUsername);
             }
-            let ivPassword = new Uint8Array(0);
+
             let encryptedPassword = new Uint8Array(0);
+            const ivPassword = window.crypto.getRandomValues(new Uint8Array(12)); // Always create an iv because if the password is added later as an update operation we need the key material
             if (uiSecret.password) {
-                ivPassword = window.crypto.getRandomValues(new Uint8Array(12)); // 96-bits; unique per message
                 encryptedPassword = await aes_gcm_encrypt(uiSecret.password, symmetricKey, ivPassword);
             }
-            let ivNotes = new Uint8Array(0);
+
             let encryptedNotes = new Uint8Array(0);
+            const ivNotes = window.crypto.getRandomValues(new Uint8Array(12)); // Always create an iv because if the note is added later as an update operation we need the key material
             if (uiSecret.notes) {
-                ivNotes = window.crypto.getRandomValues(new Uint8Array(12)); // 96-bits; unique per message
                 encryptedNotes = await aes_gcm_encrypt(uiSecret.notes, symmetricKey, ivNotes);
             }
 
@@ -509,17 +507,16 @@ class IcCryptService {
                 notes_decryption_nonce: [ivNotes],
             };
 
-            const encryptedSecret: AddSecretArgs = {
+            return {
                 id: uuidv4(),
-                url: uiSecret.url ? [uiSecret.url]: [],
+                url: uiSecret.url ? [uiSecret.url] : [],
                 name: [uiSecret.name],
                 category: [this.mapUiSecretCategoryToSecretCategory(uiSecret.category)],
-                username: [encryptedUsername],
-                password: [encryptedPassword],
-                notes: [encryptedNotes],
+                username: encryptedUsername.length > 0 ? [encryptedUsername] : [],
+                password: encryptedPassword.length > 0 ? [encryptedPassword] : [],
+                notes: encryptedNotes.length > 0 ? [encryptedNotes] : [],
                 symmetric_crypto_material: symmetricCryptoMaterial
             }
-            return encryptedSecret
         } catch (e) {
             throw mapError(e)
         }
@@ -528,7 +525,6 @@ class IcCryptService {
     private async encryptExistingSecret(uiSecret: UiSecret, symmetricKey:  Uint8Array, ivUsername: Uint8Array, ivPassword: Uint8Array, ivNotes: Uint8Array): Promise<Secret> {
         // When updating existing secrets the existing encryption key and the existing ivs must be used
         try {
-
             // Encrypt optional secret attributes
             let encryptedUsername = new Uint8Array(0);
             if (uiSecret.username) {
@@ -542,18 +538,17 @@ class IcCryptService {
             if (uiSecret.notes) {
                 encryptedNotes = await aes_gcm_encrypt(uiSecret.notes, symmetricKey, ivNotes);
             }
-            const encryptedSecret: Secret = {
+            return {
                 id: uiSecret.id,
                 url: uiSecret.url ? [uiSecret.url] : [],
                 name: [uiSecret.name],
                 category: [this.mapUiSecretCategoryToSecretCategory(uiSecret.category)],
-                username: [encryptedUsername],
-                password: [encryptedPassword],
-                notes: [encryptedNotes],
+                username: encryptedUsername.length > 0 ? [encryptedUsername] : [],
+                password: encryptedPassword.length > 0 ? [encryptedPassword] : [],
+                notes: encryptedNotes.length > 0 ? [encryptedNotes] : [],
                 date_created: 0n, // will be ignored by update_secret function in backend
                 date_modified: 0n // will be ignored by update_secret function in backend
             }
-            return encryptedSecret
         } catch (e) {
             throw mapError(e)
         }
