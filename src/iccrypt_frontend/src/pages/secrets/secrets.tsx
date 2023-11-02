@@ -53,7 +53,7 @@ export function Secrets() {
     }
 
     const viewItem = (value: SelectListItem) => {
-        dispatch(getSecretInViewModeThunk(value.id))
+        dispatch(getSecretInViewModeThunk({secretId: value.id}))
     }
 
     const filterSecretList = (search: string) => {

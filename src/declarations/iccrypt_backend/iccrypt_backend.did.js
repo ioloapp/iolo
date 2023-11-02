@@ -172,6 +172,11 @@ export const idlFactory = ({ IDL }) => {
         [Result_7],
         ['query'],
       ),
+    'get_secret_symmetric_crypto_material_as_heir' : IDL.Func(
+        [IDL.Text, IDL.Text],
+        [Result_7],
+        ['query'],
+      ),
     'get_testament_as_heir' : IDL.Func([IDL.Text], [Result_8], ['query']),
     'get_testament_as_testator' : IDL.Func([IDL.Text], [Result_8], ['query']),
     'get_testament_list_as_heir' : IDL.Func([], [Result_9], ['query']),

@@ -219,7 +219,7 @@ pub fn get_secret_list() -> Result<Vec<SecretListEntry>, SmartVaultErr> {
 
 #[ic_cdk_macros::query]
 #[candid_method(query)]
-pub fn get_secret_symmetric_crypto_material(
+pub fn get_secret_symmetric_crypto_material (
     sid: SecretID,
 ) -> Result<SecretSymmetricCryptoMaterial, SmartVaultErr> {
     let principal = get_caller();
@@ -231,6 +231,45 @@ pub fn get_secret_symmetric_crypto_material(
         let sdm: &SecretSymmetricCryptoMaterial = uv.key_box().get(&sid).unwrap();
         Ok(sdm.clone())
     })
+}
+
+#[ic_cdk_macros::query]
+#[candid_method(query)]
+pub fn get_secret_symmetric_crypto_material_as_heir (
+    secret_id: SecretID,
+    testament_id: TestamentID
+) -> Result<SecretSymmetricCryptoMaterial, SmartVaultErr> {
+    let principal = get_caller();
+
+    // Verify that heir belongs to testament
+    let result_tr = TESTAMENT_REGISTRY.with(
+        |tr: &RefCell<TestamentRegistry>| -> Result<(TestamentID, Principal), SmartVaultErr> {
+            let testament_registry = tr.borrow();
+            testament_registry.get_testament_id_as_heir(principal, testament_id.clone())
+        },
+    )?;
+
+    // Get user vault of testator
+    let user_vault_id: UUID = get_vault_id_for(result_tr.1)?;
+
+    // Read testament
+    let result_mv = MASTERVAULT.with(
+        |mv: &RefCell<MasterVault>| -> Result<Testament, SmartVaultErr> {
+            mv.borrow()
+                .get_user_vault(&user_vault_id)?
+                .get_testament(&testament_id)
+                .cloned()
+        },
+    )?;
+
+    // Check that heir is allowed to read testament
+    if result_mv.condition_status().clone() {
+        // Read secret crypto material from testament
+
+        Ok(result_mv.key_box().get(&secret_id).unwrap().clone())
+    } else {
+        Err(SmartVaultErr::InvalidTestamentCondition)
+    }
 }
 
 #[ic_cdk_macros::update]

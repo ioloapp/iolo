@@ -136,6 +136,9 @@ service : {
   get_secret_as_heir : (text, text) -> (Result_1) query;
   get_secret_list : () -> (Result_6) query;
   get_secret_symmetric_crypto_material : (text) -> (Result_7) query;
+  get_secret_symmetric_crypto_material_as_heir : (text, text) -> (
+      Result_7,
+    ) query;
   get_testament_as_heir : (text) -> (Result_8) query;
   get_testament_as_testator : (text) -> (Result_8) query;
   get_testament_list_as_heir : () -> (Result_9) query;

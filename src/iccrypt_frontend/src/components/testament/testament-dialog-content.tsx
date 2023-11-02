@@ -32,16 +32,21 @@ export const TestamentDialogContent: FC<TestamentDialogContentProps> = ({readonl
     const [selectedHeirs, setSelectedHeirs] = React.useState<SelectedHeir[]>([]);
 
     useEffect(() => {
-        const selectedHeirs = heirsList.map(h => {
-            const heir = dialogItem.heirs.find(dh => dh.id === h.id);
-            return heir ? {...h, selected: true} : {...h, selected: false};
-        })
-        setSelectedHeirs(selectedHeirs)
-        const selectedSecrets = [...groupedSecretList.passwordList, ...groupedSecretList.notesList, ...groupedSecretList.documentsList, ...groupedSecretList.othersList].map(s => {
-            const secret = dialogItem.secrets.find(ds => ds.id === s.id);
-            return secret ? {...s, selected: true} : {...s, selected: false};
-        })
-        setSelectedSecrets(selectedSecrets)
+        if(readonly){
+            setSelectedSecrets(dialogItem.secrets);
+            setSelectedHeirs(dialogItem.heirs);
+        }else {
+            const selectedHeirs = heirsList.map(h => {
+                const heir = dialogItem.heirs.find(dh => dh.id === h.id);
+                return heir ? {...h, selected: true} : {...h, selected: false};
+            })
+            setSelectedHeirs(selectedHeirs)
+            const selectedSecrets = [...groupedSecretList.passwordList, ...groupedSecretList.notesList, ...groupedSecretList.documentsList, ...groupedSecretList.othersList].map(s => {
+                const secret = dialogItem.secrets.find(ds => ds.id === s.id);
+                return secret ? {...s, selected: true} : {...s, selected: false};
+            })
+            setSelectedSecrets(selectedSecrets)
+        }
     }, [dialogItem]);
 
     const updateTestamentToAdd = (testament: UiTestamentResponse) => {

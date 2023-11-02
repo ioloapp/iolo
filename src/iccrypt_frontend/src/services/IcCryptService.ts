@@ -158,21 +158,26 @@ class IcCryptService {
 
         // Now you can use value1 and value2
         if (value1['Ok'] && value2['Ok']) {
-            return this.mapEncryptedSecretToUiSecret(value1['Ok'], value2['Ok']);
+            // Get the vetKey to decrypt the encryption key
+            const uservaultVetKey: Uint8Array = await get_aes_256_gcm_key_for_uservault(await this.getUserPrincipal(), (await this.getActor()));
+
+            return this.mapEncryptedSecretToUiSecret(value1['Ok'], value2['Ok'], uservaultVetKey);
         } else throw mapError(value1['Err']);
     }
 
     public async getSecretAsHeir(secretId: string, testamentId: string): Promise<UiSecret> {
         console.debug('start getting secret for heir...')
         const result1 = (await this.getActor()).get_secret_as_heir(secretId, testamentId);
-        const result2 = (await this.getActor()).get_secret_symmetric_crypto_material(secretId);
+        const result2 = (await this.getActor()).get_secret_symmetric_crypto_material_as_heir(secretId, testamentId);
 
         // Wait for both promises to complete
         const [value1, value2] = await Promise.all([result1, result2]);
 
         // Now you can use value1 and value2
         if (value1['Ok'] && value2['Ok']) {
-            return this.mapEncryptedSecretToUiSecret(value1['Ok'], value2['Ok']);
+            // Get the vetKey to decrypt the encryption key
+            const testamentVetKey: Uint8Array = await get_aes_256_gcm_key_for_testament(testamentId, (await this.getActor()));
+            return this.mapEncryptedSecretToUiSecret(value1['Ok'], value2['Ok'], testamentVetKey);
         } else throw mapError(value1['Err']);
     }
 
@@ -405,13 +410,10 @@ class IcCryptService {
         };
     }
 
-    private async mapEncryptedSecretToUiSecret(secret: Secret, keyMaterial: SecretSymmetricCryptoMaterial): Promise<UiSecret> {
-
-        // Get the vetKey to decrypt the encryption key
-        const uservaultVetKey: Uint8Array = await get_aes_256_gcm_key_for_uservault(await this.getUserPrincipal(), (await this.getActor()));
+    private async mapEncryptedSecretToUiSecret(secret: Secret, keyMaterial: SecretSymmetricCryptoMaterial, vetKey: Uint8Array): Promise<UiSecret> {
 
         // Decrypt symmetric key
-        const decryptedSymmetricKey = await aes_gcm_decrypt(keyMaterial.encrypted_symmetric_key as Uint8Array, uservaultVetKey, keyMaterial.iv as Uint8Array);
+        const decryptedSymmetricKey = await aes_gcm_decrypt(keyMaterial.encrypted_symmetric_key as Uint8Array, vetKey, keyMaterial.iv as Uint8Array);
 
         // Decrypt attributes
         let decryptedUsername = undefined;
@@ -423,6 +425,7 @@ class IcCryptService {
         if (secret.password[0].length > 0) {
             decryptedPassword = await aes_gcm_decrypt(secret.password[0] as Uint8Array, decryptedSymmetricKey, keyMaterial.password_decryption_nonce[0] as Uint8Array);
         }
+
         let decryptedNotes = undefined;
         if (secret.notes[0].length > 0) {
             decryptedNotes = await aes_gcm_decrypt(secret.notes[0] as Uint8Array, decryptedSymmetricKey, keyMaterial.notes_decryption_nonce[0] as Uint8Array);

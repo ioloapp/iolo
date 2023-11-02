@@ -30,13 +30,21 @@ export const getSecretThunk = createAsyncThunk<UiSecret, string, {
         }
     }
 );
-
-export const getSecretInViewModeThunk = createAsyncThunk<UiSecret, string, {
+export interface GetSecret {
+    secretId: string,
+    testamentId?: string
+}
+export const getSecretInViewModeThunk = createAsyncThunk<UiSecret, GetSecret, {
     state: RootState
 }>('secrets/getView',
-    async (secretId: string, {rejectWithValue}) => {
+    async (getSecret: GetSecret, {rejectWithValue}) => {
         try {
-            return await icCryptService.getSecret(secretId);
+            if (getSecret.testamentId) {
+                return await icCryptService.getSecretAsHeir(getSecret.secretId, getSecret.testamentId);
+            } else {
+                return await icCryptService.getSecret(getSecret.secretId);
+            }
+
         } catch (e) {
             rejectWithValue(mapError(e))
         }

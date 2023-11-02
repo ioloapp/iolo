@@ -5,7 +5,7 @@ import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 
 
 export interface SelectListItem {
-    selected: boolean,
+    selected?: boolean,
     name?: string,
     id?: string,
     readonly?: boolean
@@ -23,7 +23,7 @@ export const SelectList: FC<SelectListProps> = ({handleToggle, listItem, readonl
 
     return (
         <List sx={{width: '100%', bgcolor: 'background.paper', maxHeight: '200px', overflowY: 'scroll'}}>
-            {listItem?.filter(i => i.selected || !readonly).map((item) => {
+            {listItem?.map((item) => {
                 return (
                     <ListItem
                         key={item.id}
@@ -36,7 +36,7 @@ export const SelectList: FC<SelectListProps> = ({handleToggle, listItem, readonl
                         disablePadding
                     >
                         <ListItemButton role={undefined} onClick={() => handleToggle(item)} dense>
-                            <ListItemIcon>
+                            {!readonly && <ListItemIcon>
                                 <Checkbox
                                     edge="start"
                                     checked={item.selected}
@@ -44,7 +44,7 @@ export const SelectList: FC<SelectListProps> = ({handleToggle, listItem, readonl
                                     disableRipple
                                     disabled={readonly}
                                 />
-                            </ListItemIcon>
+                            </ListItemIcon>}
                             <ListItemText id={item.id} primary={item.name ? item.name : item.id}/>
                         </ListItemButton>
                     </ListItem>
