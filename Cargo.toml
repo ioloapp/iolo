@@ -1,3 +1,3 @@
 [workspace]
-members = ["src/iccrypt_backend", "tests/iccrypt-tests-rust", "src/system_api"]
+members = ["src/iolo_backend", "tests/iolo-tests-rust", "src/system_api"]
 resolver = "2"

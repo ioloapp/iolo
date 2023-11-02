@@ -1,5 +1,5 @@
 {
-  "name": "iccrypt_frontend",
+  "name": "iolo_frontend",
   "version": "0.1.0",
   "description": "Internet Computer starter application",
   "keywords": [
@@ -12,8 +12,8 @@
     "prebuild": "npm run generate",
     "start": "webpack serve --mode development --env development",
     "prestart": "npm run generate",
-    "generate": "dfx generate iccrypt_backend",
-    "test": "export CANISTER_ID_ICCRYPT_BACKEND=$(dfx canister id iccrypt_backend) && jest",
+    "generate": "dfx generate iolo_backend",
+    "test": "export CANISTER_ID_IOLO_BACKEND=$(dfx canister id iolo_backend) && jest",
     "_comment_for_test": "apparently 'createActor' from generated declarations (imported in utils.js) requires this env variable"
   },
   "engines": {

@@ -5,24 +5,24 @@
             "package": "vetkd_system_api",
             "type": "rust"
           },
-        "iccrypt_backend": {
-            "candid": "src/iccrypt_backend/iccrypt_backend.did",
-            "package": "iccrypt_backend",
+        "iolo_backend": {
+            "candid": "src/iolo_backend/iolo_backend.did",
+            "package": "iolo_backend",
             "type": "rust",
             "dependencies": [
                 "system_api"
               ]
         },
-        "iccrypt_frontend": {
+        "iolo_frontend": {
             "dependencies": [
-                "iccrypt_backend",
+                "iolo_backend",
                 "system_api"
             ],
             "frontend": {
-                "entrypoint": "src/iccrypt_frontend/src/index.html"
+                "entrypoint": "src/iolo_frontend/src/index.html"
             },
             "source": [
-                "dist/iccrypt_frontend/"
+                "dist/iolo_frontend/"
             ],
             "type": "assets"
         },

@@ -42,7 +42,7 @@ const isDevelopment = process.env.NODE_ENV !== "production";
 // Add Internet Identity URL 
 const internetIdentityUrl = network === "local" ? `http://127.0.0.1:4943/?canisterId=${canisterEnvVariables["INTERNET_IDENTITY_CANISTER_ID"]}` : `https://identity.ic0.app`
 
-const frontendDirectory = "iccrypt_frontend";
+const frontendDirectory = "iolo_frontend";
 
 const frontend_entry = path.join("src", frontendDirectory, "src", "index.html");
 

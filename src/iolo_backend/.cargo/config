@@ -1,0 +1,10 @@
+[alias]
+
+#unit tests
+ut = "test utest -- --nocapture"
+
+#integration tests -> have moved to /iolo/tests/iolo-tests
+#it = "test itest -- --nocapture"
+
+#getting the candid file (console output)
+candid = "test get_candid -- --nocapture"
