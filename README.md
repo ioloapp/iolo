@@ -1,8 +1,8 @@
-# IC Crypt
+# iolo
 
-Welcome to the IC Crypt
+Welcome to **iolo**
 
-Solving an ancient process in the new world of Web3: Inheritance! From simply granting your beloved ones access to your funds, all the way to setting up autonomous communities of heirs in the form of DAOs using state of the art technology and cryptography, IC Crypt provides you the peace of mind required in a most delicate matter.
+Solving an ancient process in the new world of Web3: Inheritance! From simply granting your beloved ones access to your funds, all the way to setting up autonomous communities of heirs in the form of DAOs using state of the art technology and cryptography, iolo provides you the peace of mind required in a most delicate matter.
 
 Link to the full medium paper: https://medium.com/blockwerk/ic-crypt-6617ef2044e6
 
@@ -13,7 +13,7 @@ Link to the full medium paper: https://medium.com/blockwerk/ic-crypt-6617ef2044e
 
 ## Running the project locally
 
-If you want to test the ic crypt project locally, you can use the following commands:
+If you want to test the iolo project locally, you can use the following commands:
 
 ```bash
 # Deploys all canisters locally
