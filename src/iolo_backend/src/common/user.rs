@@ -46,14 +46,14 @@ pub enum UserType {
 }
 
 impl User {
-    pub fn new(id: &Principal) -> Self {
+    pub fn new(id: &Principal, args: AddUserArgs) -> Self {
         let now = time::get_current_time();
 
         Self {
             id: *id,
-            name: None,
-            email: None,
-            user_type: None,
+            name: args.name,
+            email: args.email,
+            user_type: args.user_type,
             date_created: now,
             date_modified: now,
             date_last_login: Some(now),
@@ -78,13 +78,5 @@ impl User {
         let now = time::get_current_time();
         self.date_last_login = Some(now);
         self.date_modified = now;
-    }
-
-    pub fn new_random_with_seed(seed: u8) -> User {
-        let p = Principal::from_slice(&[
-            seed, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0,
-        ]);
-        User::new(&p)
     }
 }

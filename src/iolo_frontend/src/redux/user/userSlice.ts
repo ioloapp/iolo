@@ -27,12 +27,11 @@ export const loginUserThunk = createAsyncThunk<UserLogin, void, { state: RootSta
         }
     });
 
-export const createUserThunk = createAsyncThunk<UiUser, void, { state: RootState }>(
+export const createUserThunk = createAsyncThunk<UiUser, UiUser, { state: RootState }>(
     'user/create',
-    async (_, {rejectWithValue}): Promise<UiUser> => {
+    async (uiUser: UiUser, {rejectWithValue}): Promise<UiUser> => {
         try {
-            let user = await ioloService.createUser();
-            return user;
+            return await ioloService.createUser(uiUser);
         } catch (e) {
             rejectWithValue(e.message);
         }
@@ -71,6 +70,7 @@ export const userSlice = createSlice({
             .addCase(createUserThunk.fulfilled, (state, action) => {
                 state.loginStatus = 'succeeded';
                 state.userVaultExisting = action.payload?.userVaultId != undefined;
+                state.user = action.payload;
             })
             .addCase(createUserThunk.rejected, (state, action) => {
                 state.loginStatus = 'failed';

@@ -4,10 +4,10 @@ import {Backdrop, Box, Button, CircularProgress, Container, Typography} from "@m
 import * as React from "react";
 import {createUserThunk, userActions} from "../../redux/user/userSlice";
 import {PageLayout} from "../../components/layout/page-layout";
+import {UiUserType} from "../../services/IoloTypesForUi";
 
 
 export function Onboarding() {
-
 
     const dispatch = useAppDispatch();
     const [loadingIconIsOpen, setLoadingIcon] = React.useState(false);
@@ -15,7 +15,7 @@ export function Onboarding() {
     // Login/Logout
     async function createUser() {
         setLoadingIcon(true);
-        dispatch(createUserThunk())
+        dispatch(createUserThunk({email: 'foo@bar.com', type: UiUserType.Person, name: 'FooBar'}));
         setLoadingIcon(false);
     }
 
@@ -29,7 +29,7 @@ export function Onboarding() {
         <PageLayout title="Onboarding">
             <Container maxWidth="sm">
                 <Typography paragraph>
-                    It seems you have not yet created your IC Crypt account. You wanna go for one?
+                    It seems you have not yet created your iolo account. You wanna go for one?
                 </Typography>
                 <Box
                     sx={{

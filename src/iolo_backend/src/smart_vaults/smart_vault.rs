@@ -34,8 +34,8 @@ thread_local! {
 
 #[ic_cdk_macros::update]
 #[candid_method(update)]
-pub fn create_user() -> Result<User, SmartVaultErr> {
-    let mut new_user = User::new(&get_caller());
+pub fn create_user(args: AddUserArgs) -> Result<User, SmartVaultErr> {
+    let mut new_user = User::new(&get_caller(), args);
 
     // Let's create the user vault
     let new_user_vault_id: UUID =

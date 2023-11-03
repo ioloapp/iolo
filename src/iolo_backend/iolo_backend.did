@@ -123,7 +123,7 @@ service : {
   add_heir : (AddUserArgs) -> (Result);
   add_secret : (AddSecretArgs) -> (Result_1);
   add_testament : (AddTestamentArgs) -> (Result_2);
-  create_user : () -> (Result);
+  create_user : (AddUserArgs) -> (Result);
   delete_user : () -> (Result_3);
   encrypted_ibe_decryption_key_for_caller : (vec nat8) -> (text);
   encrypted_symmetric_key_for_caller : (vec nat8) -> (text);

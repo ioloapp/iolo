@@ -69,6 +69,7 @@ mod tests {
         common::{error::SmartVaultErr, user::User},
         smart_vaults::user_registry::UserRegistry,
     };
+    use crate::common::user::AddUserArgs;
 
     #[tokio::test]
     async fn utest_user_registry() {
@@ -81,7 +82,13 @@ mod tests {
             1, 2, 3, 4, 5, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         ]);
 
-        let new_user = User::new(&principal);
+        let args = AddUserArgs {
+            id: principal.clone(),
+            name: None,
+            email: None,
+            user_type: None,
+        };
+        let new_user = User::new(&principal, args);
 
         let mut user_registry: UserRegistry = UserRegistry::new();
 

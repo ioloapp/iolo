@@ -110,8 +110,15 @@ class IoloService {
         return this.authClient.getIdentity().getPrincipal();
     }
 
-    public async createUser(): Promise<UiUser> {
-        const result: Result = await (await this.getActor()).create_user();
+    public async createUser(uiUser: UiUser): Promise<UiUser> {
+        console.log("Start adding user...")
+        let args: AddUserArgs = {
+            id: Principal.anonymous(), // No principal needed, backend will take anyway the caller...
+            email: uiUser.email ? [uiUser.email] : [],
+            name: uiUser.name ? [uiUser.name] : [],
+            user_type: uiUser.type ? (uiUser.type === UiUserType.Person ? [{ 'Person' : null }] : [{ 'Company' : null }]) : []
+        }
+        const result: Result = await (await this.getActor()).create_user(args);
         if (result['Ok']) {
             return this.mapUserToUiUser(result['Ok']);
         }
@@ -122,14 +129,6 @@ class IoloService {
         let result: Result = await (await this.getActor()).update_user_login_date();
         if (result['Ok']) {
             return this.mapUserToUiUser(result['Ok']);
-        }
-        throw mapError(result['Err']);
-    }
-
-    public async deleteUser(): Promise<void> {
-        const result: Result_3 = await (await this.getActor()).delete_user();
-        if (result['Ok'] === null) {
-            return;
         }
         throw mapError(result['Err']);
     }
