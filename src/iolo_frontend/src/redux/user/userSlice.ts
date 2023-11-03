@@ -1,4 +1,4 @@
-import {createAsyncThunk, createSlice} from '@reduxjs/toolkit';
+import {createAsyncThunk, createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {initialState} from "./userState";
 import IoloService from "../../services/IoloService";
 import {RootState} from "../store";
@@ -45,6 +45,9 @@ export const userSlice = createSlice({
         logOut: (state) => {
             state.principal = undefined;
             state.userVaultExisting = undefined;
+        },
+        updateUser: (state, action: PayloadAction<UiUser>) => {
+            state.user = action.payload
         }
     },
     extraReducers: (builder) => {
@@ -56,6 +59,7 @@ export const userSlice = createSlice({
                 state.loginStatus = 'succeeded';
                 state.principal = action.payload.principal;
                 state.user = {
+                    ...initialState.user,
                     id: action.payload.principal
                 }
                 state.userVaultExisting = action.payload.userVaultExisting;

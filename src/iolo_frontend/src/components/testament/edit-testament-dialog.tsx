@@ -32,7 +32,6 @@ export default function EditTestamentDialog() {
     const updateTestament = async () => {
         dispatch(updateTestamentThunk({
             ...dialogItem,
-            testator: currentUser,
             secrets: dialogItem.secrets.map(s => s.id)
         }));
     }

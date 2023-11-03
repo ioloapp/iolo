@@ -1,8 +1,7 @@
 import {CssBaseline, ThemeProvider} from '@mui/material';
 import theme from './components/theme/theme';
-import Layout from './components/layout/layout';
+import {Layout} from './components/layout/layout';
 import './App.css';
-import { useAppSelector } from './redux/hooks';
 import * as React from 'react';
 
 function App() {

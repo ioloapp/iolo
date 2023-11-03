@@ -1,4 +1,4 @@
-import {UiUser} from "../../services/IoloTypesForUi";
+import {UiUser, UiUserType} from "../../services/IoloTypesForUi";
 
 export interface UserState {
     principal: string,
@@ -12,5 +12,8 @@ export interface UserState {
 export const initialState: UserState = {
     principal: undefined,
     userVaultExisting: false,
-    loginStatus: 'init'
+    loginStatus: 'init',
+    user: {
+        type: UiUserType.Person
+    }
 }

@@ -1,9 +1,9 @@
-import {useAppSelector} from "../hooks";
+import {RootState} from "../store";
 
-export const selectUserLoggedIn = () => useAppSelector(({user}) => user.principal != undefined);
+export const selectPrincipal = (state: RootState) => state.user.principal;
 
-export const selectUserAccountExistingForCurrentUser = () => useAppSelector(({user}) => user.userVaultExisting);
+export const selectUserAccountExistingForCurrentUser = (state: RootState) => state.user.userVaultExisting;
 
-export const selectCurrentUser = () => useAppSelector(({user}) => user.user)
+export const selectCurrentUser = (state: RootState) => state.user.user;
 
-export const selectLoginStatus = () => useAppSelector(({user}) => user.loginStatus)
+export const selectLoginStatus = () => (state: RootState) => state.user.loginStatus

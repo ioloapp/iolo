@@ -6,15 +6,14 @@ import {Heirs} from '../../pages/heirs/heirs';
 import {Settings} from '../../pages/settings/settings';
 import {Login} from '../../pages/login/login';
 import * as React from 'react';
+import {FC} from 'react';
 import {Onboarding} from '../../pages/onboarding/onboarding';
-import {
-    selectUserAccountExistingForCurrentUser,
-    selectUserLoggedIn
-} from "../../redux/user/userSelectors";
+import {selectPrincipal, selectUserAccountExistingForCurrentUser,} from "../../redux/user/userSelectors";
+import {useSelector} from "react-redux";
 
-function Layout() {
-    const isLoggedIn = selectUserLoggedIn();
-    const isAccountExisting = selectUserAccountExistingForCurrentUser();
+export const Layout: FC = () => {
+    const isLoggedIn = useSelector(selectPrincipal);
+    const isAccountExisting = useSelector(selectUserAccountExistingForCurrentUser);
 
     if (!isLoggedIn) {
         return <Login/>
@@ -36,5 +35,3 @@ function Layout() {
         </Router>
     );
 }
-
-export default Layout;

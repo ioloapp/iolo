@@ -1,28 +1,36 @@
 // IC
 import {useAppDispatch} from "../../redux/hooks";
-import {Backdrop, Box, Button, CircularProgress, Container, Typography} from "@mui/material";
+import {Backdrop, Box, Button, CircularProgress, Container, MenuItem, Select, Typography} from "@mui/material";
 import * as React from "react";
 import {createUserThunk, userActions} from "../../redux/user/userSlice";
 import {PageLayout} from "../../components/layout/page-layout";
-import {UiUserType} from "../../services/IoloTypesForUi";
+import {UiUser, UiUserType} from "../../services/IoloTypesForUi";
+import TextField from "@mui/material/TextField";
+import {useSelector} from "react-redux";
+import {selectCurrentUser} from "../../redux/user/userSelectors";
 
 
-export function Onboarding() {
+export const Onboarding = () => {
 
     const dispatch = useAppDispatch();
+    const currentUser = useSelector(selectCurrentUser);
     const [loadingIconIsOpen, setLoadingIcon] = React.useState(false);
 
     // Login/Logout
-    async function createUser() {
+    const createUser = () => {
         setLoadingIcon(true);
-        dispatch(createUserThunk({email: 'foo@bar.com', type: UiUserType.Person, name: 'FooBar'}));
+        dispatch(createUserThunk(currentUser));
         setLoadingIcon(false);
     }
 
-    async function logoutUser() {
+    const logoutUser = () => {
         setLoadingIcon(true);
         dispatch(userActions.logOut())
         setLoadingIcon(false);
+    }
+
+    const updateCurrentUser = (user: UiUser) => {
+        dispatch(userActions.updateUser(user))
     }
 
     return (
@@ -37,8 +45,55 @@ export function Onboarding() {
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
+                        flexDirection: 'column'
                     }}
                 >
+                    <Typography variant="body2">Type of user</Typography>
+                    <Select
+                        id="usertype-select"
+                        value={currentUser?.type}
+                        label="Type of user"
+                        onChange={e => updateCurrentUser({
+                            ...currentUser,
+                            type: UiUserType[e.target.value as keyof typeof UiUserType]
+                        })}
+                        sx={{width: '100%'}}
+                    >
+                        {Object.keys(UiUserType)
+                            .map(key => {
+                                return <MenuItem key={key} value={key}>{key}</MenuItem>
+                            })
+
+                        }
+                    </Select>
+                    <TextField
+                        autoFocus
+                        margin="dense"
+                        id="name"
+                        label="Name"
+                        InputLabelProps={{shrink: true}}
+                        fullWidth
+                        variant="standard"
+                        value={currentUser.name}
+                        onChange={e => updateCurrentUser({
+                            ...currentUser,
+                            name: e.target.value
+                        })}
+                    />
+                    <TextField
+                        autoFocus
+                        margin="dense"
+                        id="email"
+                        label="Email"
+                        InputLabelProps={{shrink: true}}
+                        fullWidth
+                        variant="standard"
+                        value={currentUser.email}
+                        onChange={e => updateCurrentUser({
+                            ...currentUser,
+                            email: e.target.value
+                        })}
+                    />
                     <Button variant="contained" sx={{m: '0px auto 0px auto'}} onClick={createUser}>
                         Create Account
                     </Button>
