@@ -20,7 +20,7 @@ export function Login() {
     }
 
     return (
-        <PageLayout title="IC Crypt">
+        <PageLayout title="IOLO">
             {loading &&
                 <Box
                     sx={{
