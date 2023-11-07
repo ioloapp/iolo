@@ -159,6 +159,7 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Text],
         [],
       ),
+    'get_current_user' : IDL.Func([], [Result], []),
     'get_heir_list' : IDL.Func([], [Result_5], ['query']),
     'get_secret' : IDL.Func([IDL.Text], [Result_1], ['query']),
     'get_secret_as_heir' : IDL.Func(

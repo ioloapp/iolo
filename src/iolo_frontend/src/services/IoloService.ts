@@ -125,6 +125,14 @@ class IoloService {
         throw mapError(result['Err']);
     }
 
+    public async getCurrentUser(): Promise<UiUser> {
+        const result: Result = await (await this.getActor()).get_current_user();
+        if (result['Ok']) {
+            return this.mapUserToUiUser(result['Ok']);
+        }
+        throw mapError(result['Err']);
+    }
+
     public async updateUserLoginDate(): Promise<UiUser> {
         let result: Result = await (await this.getActor()).update_user_login_date();
         if (result['Ok']) {

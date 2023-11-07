@@ -20,7 +20,7 @@ import {UiSecretListEntry} from "../../services/IoloTypesForUi";
 import {SecretItem} from "./secret-item";
 import DeleteSecretDialog from "../../components/secret/delete-secret-dialog";
 import SearchIcon from "@mui/icons-material/Search";
-import {SearchField, StyledAppBar} from "../../components/layout/search-bar";
+import {SearchField, StyledAppBar, UserProfile} from "../../components/layout/search-bar";
 import EditSecretDialog from "../../components/secret/edit-secret-dialog";
 import {Error} from "../../components/error/error";
 import {SelectListItem} from "../../components/selectlist/select-list";
@@ -82,6 +82,7 @@ export function Secrets() {
                 <IconButton size="large" aria-label="search" color="inherit">
                     <SearchIcon/>
                 </IconButton>
+                <UserProfile />
             </StyledAppBar>
             <Box sx={{width: '100%'}}>
                 {hasError() &&

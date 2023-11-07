@@ -13,7 +13,7 @@ import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined';
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteIcon from "@mui/icons-material/Delete";
 import DeleteHeirDialog from "../../components/heir/delete-heir-dialog";
-import {SearchField, StyledAppBar} from "../../components/layout/search-bar";
+import {SearchField, StyledAppBar, UserProfile} from "../../components/layout/search-bar";
 import SearchIcon from "@mui/icons-material/Search";
 import EditHeirDialog from "../../components/heir/edit-heir-dialog";
 import {Error} from "../../components/error/error";
@@ -64,6 +64,7 @@ export function Heirs() {
                 <IconButton size="large" aria-label="search" color="inherit">
                     <SearchIcon/>
                 </IconButton>
+                <UserProfile />
             </StyledAppBar>
             <Box>
                 {hasError() &&
