@@ -125,6 +125,7 @@ service : {
   add_testament : (AddTestamentArgs) -> (Result_2);
   create_user : (AddUserArgs) -> (Result);
   get_current_user: () -> (Result);
+  update_user : (User) -> (Result);
   delete_user : () -> (Result_3);
   encrypted_ibe_decryption_key_for_caller : (vec nat8) -> (text);
   encrypted_symmetric_key_for_caller : (vec nat8) -> (text);

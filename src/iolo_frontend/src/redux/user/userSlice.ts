@@ -47,6 +47,16 @@ export const createUserThunk = createAsyncThunk<UiUser, UiUser, { state: RootSta
         }
     });
 
+export const updateUserThunk = createAsyncThunk<UiUser, UiUser, { state: RootState }>(
+    'user/update',
+    async (uiUser: UiUser, {rejectWithValue}): Promise<UiUser> => {
+        try {
+            return await ioloService.updateUser(uiUser);
+        } catch (e) {
+            rejectWithValue(e.message);
+        }
+    });
+
 // Define a type for the slice state
 export const userSlice = createSlice({
     name: 'user',
@@ -98,6 +108,17 @@ export const userSlice = createSlice({
                 state.user = action.payload;
             })
             .addCase(getCurrentUserThunk.rejected, (state, action) => {
+                state.loginStatus = 'failed';
+                state.error = action.error.message;
+            })
+            .addCase(updateUserThunk.pending, (state) => {
+                state.loginStatus = 'pending';
+            })
+            .addCase(updateUserThunk.fulfilled, (state, action) => {
+                state.loginStatus = 'succeeded';
+                state.user = action.payload;
+            })
+            .addCase(updateUserThunk.rejected, (state, action) => {
                 state.loginStatus = 'failed';
                 state.error = action.error.message;
             });

@@ -133,6 +133,14 @@ class IoloService {
         throw mapError(result['Err']);
     }
 
+    public async updateUser(user: UiUser): Promise<UiUser> {
+        let result: Result = await (await this.getActor()).update_user(this.mapUiUserToUser(user));
+        if (result['Ok']) {
+            return this.mapUserToUiUser(result['Ok']);
+        }
+        throw mapError(result['Err']);
+    }
+
     public async updateUserLoginDate(): Promise<UiUser> {
         let result: Result = await (await this.getActor()).update_user_login_date();
         if (result['Ok']) {

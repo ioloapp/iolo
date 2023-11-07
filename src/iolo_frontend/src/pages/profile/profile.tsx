@@ -1,7 +1,7 @@
 import {Box, Button, MenuItem, Select, Typography} from "@mui/material";
 import * as React from "react";
 import {useEffect} from "react";
-import {getCurrentUserThunk, userActions} from "../../redux/user/userSlice";
+import {getCurrentUserThunk, updateUserThunk, userActions} from "../../redux/user/userSlice";
 import {useAppDispatch} from "../../redux/hooks";
 import {PageLayout} from "../../components/layout/page-layout";
 import {useSelector} from "react-redux";
@@ -26,7 +26,7 @@ export function Profile() {
     }
 
     const updateUser = () => {
-        console.log('TODO update user')
+        dispatch(updateUserThunk(currentUser));
     }
 
     return (
@@ -89,7 +89,7 @@ export function Profile() {
                         email: e.target.value
                     })}
                 />
-                <Button variant="contained" sx={{m: '0px auto 0px auto'}} onClick={updateUser}>
+                <Button variant="contained" sx={{m: '20px auto 0px auto'}} onClick={updateUser}>
                     Update User
                 </Button>
             </Box>
