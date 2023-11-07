@@ -61,7 +61,7 @@ export function Heirs() {
         <PageLayout title="Heirs">
             <StyledAppBar position="sticky">
                 <SearchField id="outlined-basic" sx={{boxShadow: 'none'}} onChange={(e) => filterHeirsList(e.target.value)}/>
-                <IconButton size="large" aria-label="search" color="inherit">
+                <IconButton size="large" aria-label="search" color="inherit" sx={{marginRight: '20px'}}>
                     <SearchIcon/>
                 </IconButton>
                 <UserProfile />
