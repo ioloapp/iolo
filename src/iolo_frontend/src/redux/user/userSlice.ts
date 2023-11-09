@@ -27,11 +27,31 @@ export const loginUserThunk = createAsyncThunk<UserLogin, void, { state: RootSta
         }
     });
 
+export const getCurrentUserThunk = createAsyncThunk<UiUser, void, { state: RootState }>(
+    'user/get-current',
+    async (_, {rejectWithValue}): Promise<UiUser> => {
+        try {
+            return await ioloService.getCurrentUser();
+        } catch (e) {
+            rejectWithValue(e.message);
+        }
+    });
+
 export const createUserThunk = createAsyncThunk<UiUser, UiUser, { state: RootState }>(
     'user/create',
     async (uiUser: UiUser, {rejectWithValue}): Promise<UiUser> => {
         try {
             return await ioloService.createUser(uiUser);
+        } catch (e) {
+            rejectWithValue(e.message);
+        }
+    });
+
+export const updateUserThunk = createAsyncThunk<UiUser, UiUser, { state: RootState }>(
+    'user/update',
+    async (uiUser: UiUser, {rejectWithValue}): Promise<UiUser> => {
+        try {
+            return await ioloService.updateUser(uiUser);
         } catch (e) {
             rejectWithValue(e.message);
         }
@@ -69,7 +89,7 @@ export const userSlice = createSlice({
                 state.error = action.error.message;
             })
             .addCase(createUserThunk.pending, (state) => {
-                state.loginStatus = 'creating';
+                state.loginStatus = 'pending';
             })
             .addCase(createUserThunk.fulfilled, (state, action) => {
                 state.loginStatus = 'succeeded';
@@ -77,6 +97,28 @@ export const userSlice = createSlice({
                 state.user = action.payload;
             })
             .addCase(createUserThunk.rejected, (state, action) => {
+                state.loginStatus = 'failed';
+                state.error = action.error.message;
+            })
+            .addCase(getCurrentUserThunk.pending, (state) => {
+                state.loginStatus = 'pending';
+            })
+            .addCase(getCurrentUserThunk.fulfilled, (state, action) => {
+                state.loginStatus = 'succeeded';
+                state.user = action.payload;
+            })
+            .addCase(getCurrentUserThunk.rejected, (state, action) => {
+                state.loginStatus = 'failed';
+                state.error = action.error.message;
+            })
+            .addCase(updateUserThunk.pending, (state) => {
+                state.loginStatus = 'pending';
+            })
+            .addCase(updateUserThunk.fulfilled, (state, action) => {
+                state.loginStatus = 'succeeded';
+                state.user = action.payload;
+            })
+            .addCase(updateUserThunk.rejected, (state, action) => {
                 state.loginStatus = 'failed';
                 state.error = action.error.message;
             });

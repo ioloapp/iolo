@@ -15,7 +15,7 @@ function AppBottomNavigation() {
             <BottomNavigationAction label="Wallet" icon={<LockOpenOutlinedIcon/>} component={Link} to="/" value="/"/>
             <BottomNavigationAction label="Testaments" icon={<HistoryEduOutlinedIcon/>} component={Link} to="/testaments" value="/testaments" />
             <BottomNavigationAction label="Heirs" icon={<PersonOutlinedIcon/>} component={Link} to="/heirs" value="/heirs"/>
-            <BottomNavigationAction label="Settings" icon={<SettingsOutlinedIcon/>} component={Link} to="/settings" value="/settings"/>
+            <BottomNavigationAction label="Rules" icon={<SettingsOutlinedIcon/>} component={Link} to="/rules" value="/rules"/>
         </BottomNavigation>
     );
 }

@@ -13,7 +13,7 @@ import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined';
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteIcon from "@mui/icons-material/Delete";
 import DeleteHeirDialog from "../../components/heir/delete-heir-dialog";
-import {SearchField, StyledAppBar} from "../../components/layout/search-bar";
+import {SearchField, StyledAppBar, UserProfile} from "../../components/layout/search-bar";
 import SearchIcon from "@mui/icons-material/Search";
 import EditHeirDialog from "../../components/heir/edit-heir-dialog";
 import {Error} from "../../components/error/error";
@@ -61,9 +61,10 @@ export function Heirs() {
         <PageLayout title="Heirs">
             <StyledAppBar position="sticky">
                 <SearchField id="outlined-basic" sx={{boxShadow: 'none'}} onChange={(e) => filterHeirsList(e.target.value)}/>
-                <IconButton size="large" aria-label="search" color="inherit">
+                <IconButton size="large" aria-label="search" color="inherit" sx={{marginRight: '20px'}}>
                     <SearchIcon/>
                 </IconButton>
+                <UserProfile />
             </StyledAppBar>
             <Box>
                 {hasError() &&

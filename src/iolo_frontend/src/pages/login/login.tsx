@@ -2,26 +2,26 @@
 import {useAppDispatch} from "../../redux/hooks";
 import {Box, Button, CircularProgress} from "@mui/material";
 import * as React from "react";
-import {useState} from "react";
 import {loginUserThunk} from "../../redux/user/userSlice";
 import {PageLayout} from "../../components/layout/page-layout";
+import {useSelector} from "react-redux";
+import {selectLoginStatus} from "../../redux/user/userSelectors";
 
 
 export function Login() {
 
     const dispatch = useAppDispatch();
 
-    const [loading, setLoading] = useState(false);
+    const loadingState = useSelector(selectLoginStatus);
 
     // Login/Logout
     async function handleLogin() {
-        setLoading(true);
         dispatch(loginUserThunk());
     }
 
     return (
         <PageLayout title="IOLO">
-            {loading &&
+            {loadingState === 'pending' &&
                 <Box
                     sx={{
                         flexGrow: 1,
@@ -33,7 +33,7 @@ export function Login() {
                     <CircularProgress/>
                 </Box>
             }
-            <Box
+            {loadingState !== 'pending' &&<Box
                 sx={{
                     flexGrow: 1,
                     display: 'flex',
@@ -42,7 +42,7 @@ export function Login() {
                 }}
             >
                 <Button variant="contained" onClick={handleLogin}>Log in</Button>
-            </Box>
+            </Box>}
         </PageLayout>
     );
 }

@@ -15,7 +15,7 @@ use super::master_vault::MasterVault;
 use super::secret::{
     AddSecretArgs, Secret, SecretID, SecretListEntry, SecretSymmetricCryptoMaterial,
 };
-use super::testament::{AddTestamentArgs, Testament, TestamentListEntry, TestamentID};
+use super::testament::{AddTestamentArgs, Testament, TestamentID, TestamentListEntry};
 use super::testament_registry::TestamentRegistry;
 
 thread_local! {
@@ -53,6 +53,43 @@ pub fn create_user(args: AddUserArgs) -> Result<User, SmartVaultErr> {
             let mut user_registry = ur.borrow_mut();
             match user_registry.add_user(new_user) {
                 Ok(u) => Ok(u.clone()),
+                Err(e) => Err(e),
+            }
+        },
+    )
+}
+
+#[ic_cdk_macros::query]
+#[candid_method(query)]
+pub fn get_current_user() -> Result<User, SmartVaultErr> {
+    // get current user
+    USER_REGISTRY.with(
+        |ur: &RefCell<UserRegistry>| -> Result<User, SmartVaultErr> {
+            let user_registry = ur.borrow();
+            match user_registry.get_user(&get_caller()) {
+                Ok(u) => {
+                    Ok(u.clone())
+                },
+                Err(e) => Err(e),
+            }
+        },
+    )
+}
+
+#[ic_cdk_macros::update]
+#[candid_method(update)]
+pub fn update_user(user: User) -> Result<User, SmartVaultErr> {
+
+    // Update the login date
+    USER_REGISTRY.with(
+        |ur: &RefCell<UserRegistry>| -> Result<User, SmartVaultErr> {
+            let mut user_registry = ur.borrow_mut();
+            match user_registry.get_user_mut(&get_caller()) {
+                Ok(u) => {
+                    u.name = user.name;
+                    u.email = user.email;
+                    Ok(u.clone())
+                },
                 Err(e) => Err(e),
             }
         },
