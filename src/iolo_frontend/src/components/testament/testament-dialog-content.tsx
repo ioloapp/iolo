@@ -133,7 +133,7 @@ export const TestamentDialogContent: FC<TestamentDialogContentProps> = ({readonl
                 <TextField
                     margin="dense"
                     id="conditionArg"
-                    label="Condition Arg"
+                    label="Max. logout time in seconds"
                     InputLabelProps={{shrink: true}}
                     fullWidth
                     variant="standard"
