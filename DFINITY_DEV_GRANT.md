@@ -1,8 +1,8 @@
-# IC Crypt - DFINITY Developer Grant Program - Milestones
+# IOLO - DFINITY Developer Grant Program - Milestones
 
-Welcome to the IC Crypt
+Welcome to the IOLO
 
-Solving an ancient process in the new world of Web3: Inheritance! From simply granting your beloved ones access to your funds, all the way to setting up autonomous communities of heirs in the form of DAOs using state of the art technology and cryptography, IC Crypt provides you the peace of mind required in a most delicate matter.
+Solving an ancient process in the new world of Web3: Inheritance! From simply granting your beloved ones access to your funds, all the way to setting up autonomous communities of heirs in the form of DAOs using state of the art technology and cryptography, IOLO provides you the peace of mind required in a most delicate matter.
 
 Link to the full medium paper: https://medium.com/blockwerk/ic-crypt-6617ef2044e6
 
@@ -23,9 +23,9 @@ For this milestone we will implement the full end-to-end encryption of the smart
 
 We will work together with Aisling and Greg closely and we will reuse the system API proposed in the early design specs.
 
-### Milestone 3. Setup IC Crypt as an SNS (DAO)
+### Milestone 3. Setup IOLO as an SNS (DAO)
 
-As the whole IC Crypto project heavily is based upon security and trust, we will set up IC Crypto as an SNS, decentralizing control of the repo and processes for the further evolution of the IC Crypt.
+As the whole IOLO project heavily is based upon security and trust, we will set up IOLO as an SNS, decentralizing control of the repo and processes for the further evolution of the IOLO.
 
 ## Outlook
 
