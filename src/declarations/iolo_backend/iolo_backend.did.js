@@ -159,7 +159,7 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Text],
         [],
       ),
-    'get_current_user' : IDL.Func([], [Result], []),
+    'get_current_user' : IDL.Func([], [Result], ['query']),
     'get_heir_list' : IDL.Func([], [Result_5], ['query']),
     'get_secret' : IDL.Func([IDL.Text], [Result_1], ['query']),
     'get_secret_as_heir' : IDL.Func(
@@ -187,6 +187,7 @@ export const idlFactory = ({ IDL }) => {
     'remove_heir' : IDL.Func([IDL.Principal], [Result_3], []),
     'remove_secret' : IDL.Func([IDL.Text], [Result_3], []),
     'remove_testament' : IDL.Func([IDL.Text], [Result_3], []),
+    'start_with_interval_secs' : IDL.Func([IDL.Nat64], [], []),
     'symmetric_key_verification_key' : IDL.Func([], [IDL.Text], []),
     'update_heir' : IDL.Func([User], [Result], []),
     'update_secret' : IDL.Func([Secret], [Result_1], []),

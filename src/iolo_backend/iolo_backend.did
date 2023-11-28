@@ -119,13 +119,11 @@ type User = record {
   date_modified : nat64;
 };
 type UserType = variant { Company; Person };
-service : {
+service : () -> {
   add_heir : (AddUserArgs) -> (Result);
   add_secret : (AddSecretArgs) -> (Result_1);
   add_testament : (AddTestamentArgs) -> (Result_2);
   create_user : (AddUserArgs) -> (Result);
-  get_current_user: () -> (Result);
-  update_user : (User) -> (Result);
   delete_user : () -> (Result_3);
   encrypted_ibe_decryption_key_for_caller : (vec nat8) -> (text);
   encrypted_symmetric_key_for_caller : (vec nat8) -> (text);
@@ -133,6 +131,7 @@ service : {
       Result_4,
     );
   encrypted_symmetric_key_for_uservault : (vec nat8) -> (text);
+  get_current_user : () -> (Result) query;
   get_heir_list : () -> (Result_5) query;
   get_secret : (text) -> (Result_1) query;
   get_secret_as_heir : (text, text) -> (Result_1) query;
@@ -150,10 +149,12 @@ service : {
   remove_heir : (principal) -> (Result_3);
   remove_secret : (text) -> (Result_3);
   remove_testament : (text) -> (Result_3);
+  start_with_interval_secs : (nat64) -> ();
   symmetric_key_verification_key : () -> (text);
   update_heir : (User) -> (Result);
   update_secret : (Secret) -> (Result_1);
   update_testament : (Testament) -> (Result_2);
+  update_user : (User) -> (Result);
   update_user_login_date : () -> (Result);
   what_time_is_it : () -> (nat64) query;
   who_am_i : () -> (text) query;

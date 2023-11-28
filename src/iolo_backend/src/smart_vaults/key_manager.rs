@@ -1,7 +1,7 @@
 use std::{str::FromStr, vec};
 use std::cell::RefCell;
 
-use candid::{candid_method, CandidType, Principal};
+use candid::{CandidType, Principal};
 use serde::{Deserialize, Serialize};
 use crate::common::error::SmartVaultErr;
 use crate::common::uuid::UUID;
@@ -30,7 +30,6 @@ pub struct TestamentKeyDerviationArgs {
 ///
 /// The key is encrypted using the provided encryption_public_key.
 #[ic_cdk_macros::update]
-#[candid_method(update)]
 async fn encrypted_symmetric_key_for_uservault(encryption_public_key: Vec<u8>) -> String {
     // debug_println_caller("encrypted_symmetric_key_for_caller");
 
@@ -56,7 +55,6 @@ async fn encrypted_symmetric_key_for_uservault(encryption_public_key: Vec<u8>) -
 ///
 /// The key is encrypted using the provided encryption_public_key.
 #[ic_cdk_macros::update]
-#[candid_method(update)]
 async fn encrypted_symmetric_key_for_testament(args: TestamentKeyDerviationArgs) -> Result<String, SmartVaultErr> {
     let caller = ic_cdk::caller(); //.as_slice().to_vec();
 
@@ -157,7 +155,6 @@ async fn encrypted_symmetric_key_for_testament(args: TestamentKeyDerviationArgs)
     authentication code (MAC) checking. To be verified.
 */
 #[ic_cdk_macros::update]
-#[candid_method(update)]
 async fn symmetric_key_verification_key() -> String {
     let request = VetKDPublicKeyRequest {
         canister_id: None,
@@ -178,7 +175,6 @@ async fn symmetric_key_verification_key() -> String {
 
 /// The key is encrypted using the provided encryption_publi_key.
 #[ic_cdk_macros::update]
-#[candid_method(update)]
 async fn encrypted_symmetric_key_for_caller(encryption_public_key: Vec<u8>) -> String {
     // debug_println_caller("encrypted_symmetric_key_for_caller");
 
@@ -201,7 +197,6 @@ async fn encrypted_symmetric_key_for_caller(encryption_public_key: Vec<u8>) -> S
 }
 
 #[ic_cdk_macros::update]
-#[candid_method(update)]
 async fn ibe_encryption_key() -> String {
     let request = VetKDPublicKeyRequest {
         canister_id: None,
@@ -221,7 +216,6 @@ async fn ibe_encryption_key() -> String {
 }
 
 #[ic_cdk_macros::update]
-#[candid_method(update)]
 async fn encrypted_ibe_decryption_key_for_caller(encryption_public_key: Vec<u8>) -> String {
     // debug_println_caller("encrypted_ibe_decryption_key_for_caller");
 

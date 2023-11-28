@@ -1,6 +1,6 @@
 use std::cell::RefCell;
 
-use candid::{candid_method, Principal};
+use candid::{Principal};
 use ic_cdk::{post_upgrade, pre_upgrade, storage};
 
 use crate::common::error::SmartVaultErr;
@@ -33,7 +33,6 @@ thread_local! {
 }
 
 #[ic_cdk_macros::update]
-#[candid_method(update)]
 pub fn create_user(args: AddUserArgs) -> Result<User, SmartVaultErr> {
     let mut new_user = User::new(&get_caller(), args);
 
@@ -60,7 +59,6 @@ pub fn create_user(args: AddUserArgs) -> Result<User, SmartVaultErr> {
 }
 
 #[ic_cdk_macros::query]
-#[candid_method(query)]
 pub fn get_current_user() -> Result<User, SmartVaultErr> {
     // get current user
     USER_REGISTRY.with(
@@ -77,7 +75,6 @@ pub fn get_current_user() -> Result<User, SmartVaultErr> {
 }
 
 #[ic_cdk_macros::update]
-#[candid_method(update)]
 pub fn update_user(user: User) -> Result<User, SmartVaultErr> {
 
     // Update the login date
@@ -97,7 +94,6 @@ pub fn update_user(user: User) -> Result<User, SmartVaultErr> {
 }
 
 #[ic_cdk_macros::update]
-#[candid_method(update)]
 pub fn update_user_login_date() -> Result<User, SmartVaultErr> {
 
     // Update the login date
@@ -116,7 +112,6 @@ pub fn update_user_login_date() -> Result<User, SmartVaultErr> {
 }
 
 #[ic_cdk_macros::update]
-#[candid_method(update)]
 pub fn delete_user() -> Result<(), SmartVaultErr> {
     let principal = get_caller();
     let user_vault_id: UUID = get_vault_id_for(principal)?;
@@ -137,7 +132,6 @@ pub fn delete_user() -> Result<(), SmartVaultErr> {
 }
 
 #[ic_cdk_macros::update]
-#[candid_method(update)]
 pub fn add_secret(args: AddSecretArgs) -> Result<Secret, SmartVaultErr> {
     let user_vault_id: UUID = get_vault_id_for(get_caller())?;
 
@@ -150,7 +144,6 @@ pub fn add_secret(args: AddSecretArgs) -> Result<Secret, SmartVaultErr> {
 }
 
 #[ic_cdk_macros::update]
-#[candid_method(update)]
 pub fn update_secret(s: Secret) -> Result<Secret, SmartVaultErr> {
     let principal = get_caller();
     let user_vault_id: UUID = get_vault_id_for(principal)?;
@@ -164,7 +157,6 @@ pub fn update_secret(s: Secret) -> Result<Secret, SmartVaultErr> {
 }
 
 #[ic_cdk_macros::query]
-#[candid_method(query)]
 pub fn get_secret(sid: SecretID) -> Result<Secret, SmartVaultErr> {
     let principal = get_caller();
     let user_vault_id: UUID = get_vault_id_for(principal)?;
@@ -180,7 +172,6 @@ pub fn get_secret(sid: SecretID) -> Result<Secret, SmartVaultErr> {
 }
 
 #[ic_cdk_macros::query]
-#[candid_method(query)]
 pub fn get_secret_as_heir(sid: SecretID, testament_id: TestamentID) -> Result<Secret, SmartVaultErr> {
     let principal = get_caller();
 
@@ -222,7 +213,6 @@ pub fn get_secret_as_heir(sid: SecretID, testament_id: TestamentID) -> Result<Se
 }
 
 #[ic_cdk_macros::update]
-#[candid_method(update)]
 pub fn remove_secret(secret_id: String) -> Result<(), SmartVaultErr> {
     let principal = get_caller();
     let user_vault_id: UUID = get_vault_id_for(principal)?;
@@ -234,7 +224,6 @@ pub fn remove_secret(secret_id: String) -> Result<(), SmartVaultErr> {
 }
 
 #[ic_cdk_macros::query]
-#[candid_method(query)]
 pub fn get_secret_list() -> Result<Vec<SecretListEntry>, SmartVaultErr> {
     let principal = get_caller();
     let user_vault_id: UUID = get_vault_id_for(principal)?;
@@ -255,7 +244,6 @@ pub fn get_secret_list() -> Result<Vec<SecretListEntry>, SmartVaultErr> {
 }
 
 #[ic_cdk_macros::query]
-#[candid_method(query)]
 pub fn get_secret_symmetric_crypto_material (
     sid: SecretID,
 ) -> Result<SecretSymmetricCryptoMaterial, SmartVaultErr> {
@@ -271,7 +259,6 @@ pub fn get_secret_symmetric_crypto_material (
 }
 
 #[ic_cdk_macros::query]
-#[candid_method(query)]
 pub fn get_secret_symmetric_crypto_material_as_heir (
     secret_id: SecretID,
     testament_id: TestamentID
@@ -310,7 +297,6 @@ pub fn get_secret_symmetric_crypto_material_as_heir (
 }
 
 #[ic_cdk_macros::update]
-#[candid_method(update)]
 pub fn add_testament(args: AddTestamentArgs) -> Result<Testament, SmartVaultErr> {
     let principal = get_caller();
     let user_vault_id: UUID = get_vault_id_for(principal)?;
@@ -324,7 +310,6 @@ pub fn add_testament(args: AddTestamentArgs) -> Result<Testament, SmartVaultErr>
 }
 
 #[ic_cdk_macros::update]
-#[candid_method(update)]
 pub fn update_testament(t: Testament) -> Result<Testament, SmartVaultErr> {
     let principal = get_caller();
     let user_vault_id: UUID = get_vault_id_for(principal)?;
@@ -338,7 +323,6 @@ pub fn update_testament(t: Testament) -> Result<Testament, SmartVaultErr> {
 }
 
 #[ic_cdk_macros::query]
-#[candid_method(query)]
 pub fn get_testament_as_testator(testament_id: TestamentID) -> Result<TestamentResponse, SmartVaultErr> {
     let principal = get_caller();
     let user_vault_id: UUID = get_vault_id_for(principal)?;
@@ -372,7 +356,6 @@ pub fn get_testament_as_testator(testament_id: TestamentID) -> Result<TestamentR
 }
 
 #[ic_cdk_macros::query]
-#[candid_method(query)]
 pub fn get_testament_as_heir(testament_id: TestamentID) -> Result<TestamentResponse, SmartVaultErr> {
     // Verify that heir belongs to testament
     let result_tr = TESTAMENT_REGISTRY.with(
@@ -423,7 +406,6 @@ pub fn get_testament_as_heir(testament_id: TestamentID) -> Result<TestamentRespo
 }
 
 #[ic_cdk_macros::query]
-#[candid_method(query)]
 pub fn get_testament_list_as_heir() -> Result<Vec<TestamentListEntry>, SmartVaultErr> {
     let result_tr = TESTAMENT_REGISTRY.with(
         |tr: &RefCell<TestamentRegistry>| -> Vec<(TestamentID, Principal)> {
@@ -450,7 +432,6 @@ pub fn get_testament_list_as_heir() -> Result<Vec<TestamentListEntry>, SmartVaul
 }
 
 #[ic_cdk_macros::query]
-#[candid_method(query)]
 pub fn get_testament_list_as_testator() -> Result<Vec<TestamentListEntry>, SmartVaultErr> {
     let principal = get_caller();
     let user_vault_id: UUID = get_vault_id_for(principal)?;
@@ -471,7 +452,6 @@ pub fn get_testament_list_as_testator() -> Result<Vec<TestamentListEntry>, Smart
 }
 
 #[ic_cdk_macros::update]
-#[candid_method(update)]
 pub fn remove_testament(testament_id: String) -> Result<(), SmartVaultErr> {
     let principal = get_caller();
     let user_vault_id: UUID = get_vault_id_for(principal)?;
@@ -483,7 +463,6 @@ pub fn remove_testament(testament_id: String) -> Result<(), SmartVaultErr> {
 }
 
 #[ic_cdk_macros::update]
-#[candid_method(update)]
 pub fn add_heir(args: AddUserArgs) -> Result<User, SmartVaultErr> {
     let principal = get_caller();
     let user_vault_id: UUID = get_vault_id_for(principal)?;
@@ -495,7 +474,6 @@ pub fn add_heir(args: AddUserArgs) -> Result<User, SmartVaultErr> {
 }
 
 #[ic_cdk_macros::query]
-#[candid_method(query)]
 pub fn get_heir_list() -> Result<Vec<User>, SmartVaultErr> {
     let principal = get_caller();
     let user_vault_id: UUID = get_vault_id_for(principal)?;
@@ -516,7 +494,6 @@ pub fn get_heir_list() -> Result<Vec<User>, SmartVaultErr> {
 }
 
 #[ic_cdk_macros::update]
-#[candid_method(update)]
 pub fn update_heir(u: User) -> Result<User, SmartVaultErr> {
     let principal = get_caller();
     let user_vault_id: UUID = get_vault_id_for(principal)?;
@@ -530,7 +507,6 @@ pub fn update_heir(u: User) -> Result<User, SmartVaultErr> {
 }
 
 #[ic_cdk_macros::update]
-#[candid_method(update)]
 pub fn remove_heir(user_id: Principal) -> Result<(), SmartVaultErr> {
     let principal = get_caller();
     let user_vault_id: UUID = get_vault_id_for(principal)?;
@@ -542,7 +518,6 @@ pub fn remove_heir(user_id: Principal) -> Result<(), SmartVaultErr> {
 }
 
 #[ic_cdk_macros::query]
-#[candid_method(query)]
 pub fn is_user_vault_existing() -> bool {
     let principal = get_caller();
     if get_vault_id_for(principal).is_ok() {

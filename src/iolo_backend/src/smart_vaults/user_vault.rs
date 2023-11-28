@@ -2,7 +2,7 @@ use candid::{CandidType, Deserialize, Principal};
 use serde::Serialize;
 
 use std::collections::BTreeMap;
-use crate::common::user::{User};
+use crate::common::user::User;
 
 use super::secret::{Secret, SecretID, SecretSymmetricCryptoMaterial};
 use super::testament::{Testament, TestamentID};

@@ -1,5 +1,5 @@
-import type {Principal} from '@dfinity/principal';
-import type {ActorMethod} from '@dfinity/agent';
+import type { Principal } from '@dfinity/principal';
+import type { ActorMethod } from '@dfinity/agent';
 
 export interface AddSecretArgs {
   'id' : string,
@@ -171,6 +171,7 @@ export interface _SERVICE {
   'remove_heir' : ActorMethod<[Principal], Result_3>,
   'remove_secret' : ActorMethod<[string], Result_3>,
   'remove_testament' : ActorMethod<[string], Result_3>,
+  'start_with_interval_secs' : ActorMethod<[bigint], undefined>,
   'symmetric_key_verification_key' : ActorMethod<[], string>,
   'update_heir' : ActorMethod<[User], Result>,
   'update_secret' : ActorMethod<[Secret], Result_1>,
