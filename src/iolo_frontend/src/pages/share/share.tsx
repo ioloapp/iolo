@@ -37,7 +37,7 @@ export function ShareId() {
                     </Typography>
                 </div>
                 <div>
-                    <QRCodeSVG value={url} width={300} height={300}/>
+                    <QRCodeSVG value={url} width={150} height={150}/>
                 </div>
             </Box>
         </PageLayout>
