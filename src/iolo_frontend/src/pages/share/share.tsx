@@ -7,8 +7,15 @@ import {QRCodeSVG} from "qrcode.react";
 import {StyledAppBar, UserProfile} from "../../components/layout/search-bar";
 
 export function ShareId() {
-
     const currentUser = useSelector(selectCurrentUser);
+    const hostname = process.env.NODE_ENV === 'production' ? 'https://' + process.env.IOLO_FRONTEND_CANISTER_ID + 'icp0.io' : 'http://localhost:8080';
+    let url = hostname + '/heirs?action=addHeirWithDeepLink&principalType=' + currentUser.type + '&principalId=' + currentUser.id;
+    if (currentUser.name) {
+        url += '&name=' + currentUser.name;
+    }
+    if (currentUser.email) {
+        url += '&email=' + currentUser.email;
+    }
 
     return (
         <PageLayout title="Settings">
@@ -30,7 +37,7 @@ export function ShareId() {
                     </Typography>
                 </div>
                 <div>
-                    <QRCodeSVG value={currentUser.id} width={300} height={300}/>
+                    <QRCodeSVG value={url} width={300} height={300}/>
                 </div>
             </Box>
         </PageLayout>

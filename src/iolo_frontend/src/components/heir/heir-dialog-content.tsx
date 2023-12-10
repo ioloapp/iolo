@@ -21,7 +21,7 @@ export default function HeirDialogContent() {
                 <Typography variant="body2">Category</Typography>
                 <Select
                     labelId="category-select-label"
-                    id="category-select"
+                    id="type"
                     value={dialogItem.type}
                     label="Category"
                     onChange={e => updateHeirToAdd({
