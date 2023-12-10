@@ -16,7 +16,7 @@ use super::vetkd_types::{
     VetKDPublicKeyReply, VetKDPublicKeyRequest,
 };
 
-const VETKD_SYSTEM_API_CANISTER_ID: &str = "s55qq-oqaaa-aaaaa-aaakq-cai";
+const VETKD_SYSTEM_API_CANISTER_ID: &str = "cr2gw-4iaaa-aaaal-qcrda-cai";
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct TestamentKeyDerviationArgs {

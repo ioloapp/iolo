@@ -26,7 +26,7 @@ if [[ $ENV == "local" ]]; then
     
     # Start local replica
     dfx start --background --clean
-    dfx canister create system_api --specified-id s55qq-oqaaa-aaaaa-aaakq-cai
+    dfx canister create system_api --specified-id cr2gw-4iaaa-aaaal-qcrda-cai
 fi
 
 # Deploy exchange_rate and exchange_rate_assets
