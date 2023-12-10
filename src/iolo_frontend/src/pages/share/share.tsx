@@ -18,7 +18,7 @@ export function ShareId() {
     }
 
     return (
-        <PageLayout title="Settings">
+        <PageLayout title="Share your ID">
             <StyledAppBar position="sticky">
                 <UserProfile/>
             </StyledAppBar>
@@ -33,7 +33,7 @@ export function ShareId() {
             >
                 <div>
                     <Typography paragraph>
-                        Your Internet ID: {currentUser.id}
+                        Sharing this QR code allows a person to register you as an heir. Your internet ID is {currentUser.id}
                     </Typography>
                 </div>
                 <div>
