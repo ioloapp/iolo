@@ -8,7 +8,7 @@ import {StyledAppBar, UserProfile} from "../../components/layout/search-bar";
 
 export function ShareId() {
     const currentUser = useSelector(selectCurrentUser);
-    const hostname = process.env.NODE_ENV === 'production' ? 'https://' + process.env.IOLO_FRONTEND_CANISTER_ID + 'icp0.io' : 'http://localhost:8080';
+    const hostname = process.env.NODE_ENV === 'production' ? 'https://' + process.env.IOLO_FRONTEND_CANISTER_ID + '.icp0.io' : 'http://localhost:8080';
     let url = hostname + '/heirs?action=addHeirWithDeepLink&principalType=' + currentUser.type + '&principalId=' + currentUser.id;
     if (currentUser.name) {
         url += '&name=' + currentUser.name;
