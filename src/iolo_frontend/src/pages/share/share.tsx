@@ -33,11 +33,16 @@ export function ShareId() {
             >
                 <div>
                     <Typography paragraph>
-                        Sharing this QR code allows a person to register you as an heir. Your internet ID is {currentUser.id}
+                        Sharing this QR code allows a person to register you as an heir.
                     </Typography>
                 </div>
                 <div>
                     <QRCodeSVG value={url} width={150} height={150}/>
+                </div>
+                <div>
+                    <Typography paragraph>
+                        Your internet ID is: {currentUser.id}
+                    </Typography>
                 </div>
             </Box>
         </PageLayout>
