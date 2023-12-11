@@ -8,6 +8,7 @@ use crate::common::user::{AddUserArgs, User};
 use crate::common::uuid::UUID;
 use crate::smart_vaults::testament::TestamentResponse;
 use crate::smart_vaults::user_registry::UserRegistry;
+use crate::smart_vaults::user_registry_storable::UserRegistryStorable;
 use crate::smart_vaults::user_vault::UserVaultID;
 use crate::utils::caller::get_caller;
 
@@ -24,6 +25,9 @@ thread_local! {
 
     // User Registsry
     pub static USER_REGISTRY: RefCell<UserRegistry> = RefCell::new(UserRegistry::new());
+
+	// User Registsry Storable
+	pub static USER_REGISTRY_STORABLE: RefCell<UserRegistryStorable> = RefCell::new(UserRegistryStorable::default());
 
     // Testament Registsry
     pub static TESTAMENT_REGISTRY: RefCell<TestamentRegistry> = RefCell::new(TestamentRegistry::new());
