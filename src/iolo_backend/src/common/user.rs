@@ -1,5 +1,8 @@
-use candid::{CandidType, Deserialize, Principal};
-use serde::Serialize;
+use std::borrow::Cow;
+
+use candid::{CandidType, Principal, Encode, Decode};
+use ic_stable_structures::{Storable, storable::Bound};
+use serde::{Serialize, Deserialize};
 
 use crate::{smart_vaults::user_vault::UserVaultID, utils::time};
 
@@ -13,6 +16,18 @@ pub struct User {
     pub date_modified: u64,
     pub date_last_login: Option<u64>,
     pub user_vault_id: Option<UserVaultID>
+}
+
+impl Storable for User {
+    fn to_bytes(&self) -> std::borrow::Cow<[u8]> {
+        Cow::Owned(Encode!(self).unwrap())
+    }
+
+    fn from_bytes(bytes: std::borrow::Cow<[u8]>) -> Self {
+        Decode!(bytes.as_ref(), Self).unwrap()
+    }
+
+    const BOUND: Bound = Bound::Unbounded;
 }
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
