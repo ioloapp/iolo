@@ -1,7 +1,7 @@
 use ic_stable_structures::StableBTreeMap;
 use serde::{Serialize, Deserialize};
 
-use crate::common::{memory::{Memory, get_stable_btree_memory}, principal_id::PrincipalId, user::User};
+use crate::common::{memory::{Memory, get_stable_btree_memory}, principal_id::PrincipalId, user::User, error::SmartVaultErr};
 
 #[derive(Serialize, Deserialize)]
 pub struct UserRegistryStorable {
@@ -22,5 +22,23 @@ impl Default for UserRegistryStorable {
         Self {
             users: init_stable_data()
         }
+    }
+}
+
+impl UserRegistryStorable {
+
+    pub fn add_user(&mut self, user: User) -> Result<User, SmartVaultErr> {
+		let principal_id = PrincipalId::from(*user.id());
+        if self.users.insert(principal_id, user.clone()).is_some() {
+            Err(SmartVaultErr::UserAlreadyExists(user.id().to_string()))
+        } else {
+            self.get_user(&principal_id)
+        }
+    }
+
+    pub fn get_user(&self, user_id: &PrincipalId) -> Result<User, SmartVaultErr> {
+        self.users
+            .get(user_id)
+            .ok_or_else(|| SmartVaultErr::UserDoesNotExist(user_id.to_string()))
     }
 }

@@ -1,6 +1,6 @@
 use std::cell::RefCell;
 
-use candid::{Principal};
+use candid::Principal;
 use ic_cdk::{post_upgrade, pre_upgrade, storage};
 
 use crate::common::error::SmartVaultErr;
@@ -38,6 +38,36 @@ thread_local! {
 
 #[ic_cdk_macros::update]
 pub fn create_user(args: AddUserArgs) -> Result<User, SmartVaultErr> {
+	// try the storable user registry
+	create_user_storable(args.clone())?;
+
+    let mut new_user = User::new(&get_caller(), args);
+
+    // Let's create the user vault
+    let new_user_vault_id: UUID =
+        MASTERVAULT.with(|ms: &RefCell<MasterVault>| -> Result<UUID, SmartVaultErr> {
+            let mut master_vault = ms.borrow_mut();
+            Ok(master_vault.create_user_vault())
+        })?;
+
+    // Add the new user vault to the new user
+    new_user.set_user_vault(new_user_vault_id);
+
+
+    // Store the new user
+    USER_REGISTRY.with(
+        |ur: &RefCell<UserRegistry>| -> Result<User, SmartVaultErr> {
+            let mut user_registry = ur.borrow_mut();
+            match user_registry.add_user(new_user) {
+                Ok(u) => Ok(u.clone()),
+                Err(e) => Err(e),
+            }
+        },
+    )
+}
+
+#[ic_cdk_macros::update]
+pub fn create_user_storable(args: AddUserArgs) -> Result<User, SmartVaultErr> {
     let mut new_user = User::new(&get_caller(), args);
 
     // Let's create the user vault
@@ -51,10 +81,10 @@ pub fn create_user(args: AddUserArgs) -> Result<User, SmartVaultErr> {
     new_user.set_user_vault(new_user_vault_id);
 
     // Store the new user
-    USER_REGISTRY.with(
-        |ur: &RefCell<UserRegistry>| -> Result<User, SmartVaultErr> {
-            let mut user_registry = ur.borrow_mut();
-            match user_registry.add_user(new_user) {
+    USER_REGISTRY_STORABLE.with(
+        |ur: &RefCell<UserRegistryStorable>| -> Result<User, SmartVaultErr> {
+            let mut user_registry_storable = ur.borrow_mut();
+            match user_registry_storable.add_user(new_user) {
                 Ok(u) => Ok(u.clone()),
                 Err(e) => Err(e),
             }
