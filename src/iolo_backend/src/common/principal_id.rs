@@ -1,6 +1,6 @@
 use candid::types::principal::{Principal, PrincipalError};
 
-use ic_stable_structures::{Storable, storable::Bound};
+use ic_stable_structures::{storable::Bound, Storable};
 use serde::{Deserialize, Serialize};
 use std::{
     borrow::Cow,
@@ -83,7 +83,7 @@ impl From<PrincipalId> for Principal {
 
 impl PrincipalId {
     pub const MAX_LENGTH_IN_BYTES: usize = 29;
-    const HASH_LEN_IN_BYTES: usize = 28;
+    // const HASH_LEN_IN_BYTES: usize = 28;
 
     pub fn as_slice(&self) -> &[u8] {
         self.0.as_slice()
@@ -175,13 +175,10 @@ impl Storable for PrincipalId {
     }
 
     const BOUND: Bound = Bound::Bounded {
-        max_size: PrincipalId::HASH_LEN_IN_BYTES as u32,
+        max_size: PrincipalId::MAX_LENGTH_IN_BYTES as u32,
         is_fixed_size: false,
     };
-
-    
 }
-
 
 // /// Impl of the BoundedStorable trait on PrincipalId for use in StableStructures
 // impl BoundedStorable for PrincipalId {

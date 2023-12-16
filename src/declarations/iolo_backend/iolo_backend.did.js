@@ -138,6 +138,7 @@ export const idlFactory = ({ IDL }) => {
     'add_secret' : IDL.Func([AddSecretArgs], [Result_1], []),
     'add_testament' : IDL.Func([AddTestamentArgs], [Result_2], []),
     'create_user' : IDL.Func([AddUserArgs], [Result], []),
+    'create_user_storable' : IDL.Func([AddUserArgs], [Result], []),
     'delete_user' : IDL.Func([], [Result_3], []),
     'encrypted_ibe_decryption_key_for_caller' : IDL.Func(
         [IDL.Vec(IDL.Nat8)],
