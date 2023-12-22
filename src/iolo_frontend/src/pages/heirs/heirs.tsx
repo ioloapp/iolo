@@ -17,6 +17,7 @@ import {SearchField, StyledAppBar, UserProfile} from "../../components/layout/se
 import SearchIcon from "@mui/icons-material/Search";
 import EditHeirDialog from "../../components/heir/edit-heir-dialog";
 import {Error} from "../../components/error/error";
+import {useLocation} from "react-router-dom";
 
 export function Heirs() {
 
@@ -24,6 +25,17 @@ export function Heirs() {
     const heirs = useSelector(selectHeirs);
     const heirListState = useSelector(selectHeirListState);
     const heirListError = useSelector(selectHeirError);
+    const queryParams = new URLSearchParams(useLocation().search);
+
+    if (queryParams.get('action') === 'addHeirWithDeepLink' && queryParams.get('principalId') && queryParams.get('principalType')) {
+        dispatch(heirsActions.updateHeirToAdd({
+            type: queryParams.get('principalType'),
+            email: queryParams.get('email') ? queryParams.get('email') : '',
+            name: queryParams.get('name') ? queryParams.get('name') : '',
+            id: queryParams.get('principalId')
+        }));
+        dispatch(heirsActions.openAddDialog());
+    }
 
     useEffect(() => {
         dispatch(loadHeirsThunk())
@@ -32,6 +44,7 @@ export function Heirs() {
     useEffect(() => {
         setFilteredHeirs(heirs)
     }, [heirs])
+
 
     const [filteredHeirs, setFilteredHeirs] = useState(heirs)
     const deleteHeir = (heir: UiUser) => {
