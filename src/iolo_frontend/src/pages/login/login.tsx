@@ -6,6 +6,7 @@ import {loginUserThunk} from "../../redux/user/userSlice";
 import {PageLayout} from "../../components/layout/page-layout";
 import {useSelector} from "react-redux";
 import {selectLoginStatus} from "../../redux/user/userSelectors";
+import {IoloLogo} from "../../resources/logo";
 
 
 export function Login() {
@@ -20,7 +21,8 @@ export function Login() {
     }
 
     return (
-        <PageLayout title="IOLO">
+        <PageLayout title="">
+            <IoloLogo />
             {loadingState === 'pending' &&
                 <Box
                     sx={{
