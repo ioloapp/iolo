@@ -83,11 +83,19 @@ export const StyledAppBar = styled(AppBar)(() => ({
     justifyContent: 'space-between'
 }));
 
-export const SearchField = styled(TextField)(() => ({
-    width: '100%',
-    boxShadow: 'none',
-    marginLeft: '20px'
-}));
+export const SearchField = styled(TextField)`
+  width: 100%;
+  box-shadow: none;
+  margin-left: 20px;
+  
+  .MuiOutlinedInput-notchedOutline {
+    border-color: #FFFFFF !important;
+  }
+  .MuiInputBase-input{
+    color: #FFFFFF !important;
+  }
+`;
+
 
 export const LogoIcon = () => (
     <div><img src={logoIcon} width={50} height={50} /></div>
