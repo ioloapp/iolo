@@ -7,3 +7,5 @@ export const selectUserAccountExistingForCurrentUser = (state: RootState) => sta
 export const selectCurrentUser = (state: RootState) => state.user.user;
 
 export const selectLoginStatus = (state: RootState) => state.user.loginStatus
+
+export const selectMode = (state: RootState) => state.user.mode;

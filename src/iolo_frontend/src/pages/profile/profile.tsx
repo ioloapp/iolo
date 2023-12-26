@@ -1,19 +1,20 @@
-import {Box, Button, MenuItem, Select, Typography} from "@mui/material";
+import {Box, Button, FormControlLabel, FormGroup, MenuItem, Select, Switch, Typography} from "@mui/material";
 import * as React from "react";
 import {useEffect} from "react";
 import {getCurrentUserThunk, updateUserThunk, userActions} from "../../redux/user/userSlice";
 import {useAppDispatch} from "../../redux/hooks";
 import {PageLayout} from "../../components/layout/page-layout";
 import {useSelector} from "react-redux";
-import {selectCurrentUser} from "../../redux/user/userSelectors";
+import {selectCurrentUser, selectMode} from "../../redux/user/userSelectors";
 import {UiUser, UiUserType} from "../../services/IoloTypesForUi";
 import TextField from "@mui/material/TextField";
-import {StyledAppBar, UserProfile} from "../../components/layout/search-bar";
+import {LogoIcon, StyledAppBar, UserProfile} from "../../components/layout/search-bar";
 
 export function Profile() {
 
     const dispatch = useAppDispatch();
     const currentUser = useSelector(selectCurrentUser);
+    const darkMode = useSelector(selectMode);
 
     useEffect(() => {
         if (!currentUser?.name) {
@@ -29,9 +30,18 @@ export function Profile() {
         dispatch(updateUserThunk(currentUser));
     }
 
+    const updateMode = () => {
+        if(darkMode === 'dark'){
+            dispatch(userActions.changeMode('light'));
+        }else {
+            dispatch(userActions.changeMode('dark'));
+        }
+    }
+
     return (
         <PageLayout title="Profile">
             <StyledAppBar position="sticky">
+                <LogoIcon />
                 <UserProfile/>
             </StyledAppBar>
             <Box
@@ -43,6 +53,9 @@ export function Profile() {
                     flexDirection: 'column'
                 }}
             >
+                <FormGroup>
+                    <FormControlLabel control={<Switch value={darkMode === 'dark'} onChange={() => updateMode()} />} label="UI Dark Mode" />
+                </FormGroup>
                 <Typography variant="body2">Type of user</Typography>
                 <Select
                     id="usertype-select"

@@ -39,7 +39,7 @@ const canisterEnvVariables = initCanisterEnv();
 
 const isDevelopment = process.env.NODE_ENV !== "production";
 
-// Add Internet Identity URL 
+// Add Internet Identity URL
 const internetIdentityUrl = network === "local" ? `http://127.0.0.1:4943/?canisterId=${canisterEnvVariables["INTERNET_IDENTITY_CANISTER_ID"]}` : `https://identity.ic0.app`
 
 const frontendDirectory = "iolo_frontend";
@@ -83,7 +83,19 @@ module.exports = {
     module: {
         rules: [
             { test: /\.(ts|tsx|jsx)$/, loader: "ts-loader" },
-            { test: /\.css$/, use: ['style-loader', 'css-loader'] }
+            { test: /\.css$/, use: ['style-loader', 'css-loader'] },
+            {
+                test: /\.(png|jpg|jpeg|gif)$/i,
+                use: [
+                    {
+                        loader: 'url-loader',
+                        options: {
+                            limit: 8192, // Convert images smaller than 8kb to base64 strings
+                            name: 'images/[name].[ext]', // Output file name and path
+                        },
+                    },
+                ],
+            },
         ]
     },
     plugins: [

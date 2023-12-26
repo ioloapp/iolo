@@ -8,6 +8,7 @@ import Menu from '@mui/material/Menu';
 import {useNavigate} from "react-router-dom";
 import {userActions} from "../../redux/user/userSlice";
 import {useAppDispatch} from "../../redux/hooks";
+import {logoIcon} from "../../resources/images";
 
 export const UserProfile = () => {
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -78,11 +79,16 @@ export const StyledAppBar = styled(AppBar)(() => ({
     top: 0,
     display: 'flex',
     flexDirection: 'row',
-    justifyContent: 'flex-end',
-    padding: '5px 10px 5px 10px'
+    padding: '5px 10px 5px 10px',
+    justifyContent: 'space-between'
 }));
 
 export const SearchField = styled(TextField)(() => ({
     width: '100%',
-    boxShadow: 'none'
+    boxShadow: 'none',
+    marginLeft: '20px'
 }));
+
+export const LogoIcon = () => (
+    <div><img src={logoIcon} width={50} height={50} /></div>
+)

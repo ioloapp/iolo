@@ -21,7 +21,7 @@ import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteIcon from "@mui/icons-material/Delete";
 import {UiTestament, UiTestamentListEntryRole} from "../../services/IoloTypesForUi";
 import DeleteTestamentDialog from "../../components/testament/delete-testament-dialog";
-import {SearchField, StyledAppBar, UserProfile} from "../../components/layout/search-bar";
+import {LogoIcon, SearchField, StyledAppBar, UserProfile} from "../../components/layout/search-bar";
 import SearchIcon from "@mui/icons-material/Search";
 import EditTestamentDialog from "../../components/testament/edit-testament-dialog";
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
@@ -88,6 +88,7 @@ export function Testaments() {
     return (
         <PageLayout title="Testaments">
             <StyledAppBar position="sticky">
+                <LogoIcon />
                 <SearchField id="outlined-basic" sx={{boxShadow: 'none'}}
                              onChange={(e) => filterTestamentList(e.target.value)}/>
                 <IconButton size="large" aria-label="search" color="inherit" sx={{marginRight: '20px'}}>

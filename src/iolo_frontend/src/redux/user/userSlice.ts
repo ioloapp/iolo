@@ -68,6 +68,9 @@ export const userSlice = createSlice({
         },
         updateUser: (state, action: PayloadAction<UiUser>) => {
             state.user = action.payload
+        },
+        changeMode: (state, action: PayloadAction<'dark' | 'light'>) => {
+            state.mode = action.payload
         }
     },
     extraReducers: (builder) => {

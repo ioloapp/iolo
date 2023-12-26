@@ -6,6 +6,7 @@ export interface UserState {
     user?: UiUser;
     loginStatus: string,
     error?: string;
+    mode: 'dark' | 'light';
 }
 
 // Define the initial state using that type
@@ -15,5 +16,6 @@ export const initialState: UserState = {
     loginStatus: 'init',
     user: {
         type: UiUserType.Person
-    }
+    },
+    mode: 'dark'
 }

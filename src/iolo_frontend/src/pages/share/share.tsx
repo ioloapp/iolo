@@ -4,7 +4,7 @@ import {PageLayout} from "../../components/layout/page-layout";
 import {useSelector} from "react-redux";
 import {selectCurrentUser} from "../../redux/user/userSelectors";
 import {QRCodeSVG} from "qrcode.react";
-import {StyledAppBar, UserProfile} from "../../components/layout/search-bar";
+import {LogoIcon, StyledAppBar, UserProfile} from "../../components/layout/search-bar";
 
 export function ShareId() {
     const currentUser = useSelector(selectCurrentUser);
@@ -20,6 +20,7 @@ export function ShareId() {
     return (
         <PageLayout title="Share your ID">
             <StyledAppBar position="sticky">
+                <LogoIcon />
                 <UserProfile/>
             </StyledAppBar>
             <Box

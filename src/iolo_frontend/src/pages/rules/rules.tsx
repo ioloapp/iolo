@@ -1,13 +1,14 @@
 import {Box, FormControlLabel, FormGroup, Switch} from "@mui/material";
 import * as React from "react";
 import {PageLayout} from "../../components/layout/page-layout";
-import {StyledAppBar, UserProfile} from "../../components/layout/search-bar";
+import {LogoIcon, StyledAppBar, UserProfile} from "../../components/layout/search-bar";
 
 export function Rules() {
 
     return (
         <PageLayout title="Rules">
             <StyledAppBar position="sticky">
+                <LogoIcon />
                 <UserProfile/>
             </StyledAppBar>
             <Box
