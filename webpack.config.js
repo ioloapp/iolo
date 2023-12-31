@@ -39,8 +39,11 @@ const canisterEnvVariables = initCanisterEnv();
 
 const isDevelopment = process.env.NODE_ENV !== "production";
 
-// Add Internet Identity URL
-const internetIdentityUrl = network === "local" ? `http://127.0.0.1:4943/?canisterId=${canisterEnvVariables["INTERNET_IDENTITY_CANISTER_ID"]}` : `https://identity.ic0.app`
+// Add Internet Identity URL for Safari
+//const internetIdentityUrl = network === "local" ? `http://127.0.0.1:4943/?canisterId=${canisterEnvVariables["INTERNET_IDENTITY_CANISTER_ID"]}` : `https://identity.ic0.app`
+
+// Add Internet Identity URL for Chrome/Firefox
+const internetIdentityUrl = network === "local" ? `http://${canisterEnvVariables["INTERNET_IDENTITY_CANISTER_ID"]}.localhost:4943` : `https://identity.ic0.app`
 
 const frontendDirectory = "iolo_frontend";
 
