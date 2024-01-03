@@ -1,3 +1,5 @@
+import {Condition} from "../../../declarations/iolo_backend/iolo_backend.did";
+
 export enum UiSecretCategory {
     Password = "Password",
     Note = "Note",
@@ -30,7 +32,7 @@ export interface UiTestamentListEntry {
 export interface UiTestament extends UiTestamentListEntry {
     secrets?: string[],
     heirs?: Array<UiUser>,
-    conditionArg?: number,
+    conditions?: Array<Condition>,
     dateCreated?: string,
     dateModified?: string,
 }
@@ -43,7 +45,7 @@ export interface UiTestamentResponse {
     conditionStatus?: boolean,
     secrets?: UiSecretListEntry[],
     heirs?: Array<UiUser>,
-    conditionArg?: number,
+    conditions?: Array<Condition>,
     dateCreated?: string,
     dateModified?: string,
 }

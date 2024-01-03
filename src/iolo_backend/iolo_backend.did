@@ -13,14 +13,18 @@ type AddTestamentArgs = record {
   heirs : vec principal;
   name : opt text;
   secrets : vec text;
-  condition_arg : nat64;
   key_box : vec record { text; SecretSymmetricCryptoMaterial };
+  conditions : vec Condition;
 };
 type AddUserArgs = record {
   id : principal;
   user_type : opt UserType;
   name : opt text;
   email : opt text;
+};
+type Condition = variant {
+  TimeBasedCondition : TimeBasedCondition;
+  XOutOfYCondition : XOutOfYCondition;
 };
 type Result = variant { Ok : User; Err : SmartVaultErr };
 type Result_1 = variant { Ok : Secret; Err : SmartVaultErr };
@@ -82,8 +86,8 @@ type Testament = record {
   name : opt text;
   testator : principal;
   secrets : vec text;
-  condition_arg : nat64;
   key_box : vec record { text; SecretSymmetricCryptoMaterial };
+  conditions : vec Condition;
   date_modified : nat64;
 };
 type TestamentKeyDerviationArgs = record {
@@ -104,9 +108,13 @@ type TestamentResponse = record {
   name : opt text;
   testator : principal;
   secrets : vec SecretListEntry;
-  condition_arg : nat64;
   key_box : vec record { text; SecretSymmetricCryptoMaterial };
+  conditions : vec Condition;
   date_modified : nat64;
+};
+type TimeBasedCondition = record {
+  condition_status : bool;
+  number_of_days_since_last_login : nat64;
 };
 type User = record {
   id : principal;
@@ -119,6 +127,11 @@ type User = record {
   date_modified : nat64;
 };
 type UserType = variant { Company; Person };
+type XOutOfYCondition = record {
+  condition_status : bool;
+  quorum : nat64;
+  number_of_members_total : nat64;
+};
 service : () -> {
   add_heir : (AddUserArgs) -> (Result);
   add_secret : (AddSecretArgs) -> (Result_1);

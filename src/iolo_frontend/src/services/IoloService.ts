@@ -257,7 +257,7 @@ class IoloService {
             key_box: testament.key_box,
             name: testament.name,
             secrets: testament.secrets,
-            condition_arg: testament.condition_arg
+            conditions: testament.conditions,
         }
 
         // Add testament
@@ -630,7 +630,7 @@ class IoloService {
             testator: Principal.fromText(uiTestament.testator.id),
             secrets: uiTestament.secrets,
             key_box: keyBox,
-            condition_arg: BigInt(uiTestament.conditionArg),
+            conditions: uiTestament.conditions,
             condition_status: uiTestament.conditionStatus,
             date_created: uiTestament.dateCreated ? this.dateToNanosecondsInBigint(uiTestament.dateCreated) : 0n,
             date_modified: uiTestament.dateModified ? this.dateToNanosecondsInBigint(uiTestament.dateModified) : 0n,
@@ -644,7 +644,7 @@ class IoloService {
             testator: { id: testament.testator.toString() },
             secrets: testament.secrets,
             heirs: testament.heirs.map((item) => {return {id: item.toString()}}),
-            conditionArg: Number(testament.condition_arg),
+            conditions: testament.conditions,
             conditionStatus: testament.condition_status,
             dateCreated: this.nanosecondsInBigintToIsoString(testament.date_created),
             dateModified: this.nanosecondsInBigintToIsoString(testament.date_modified),
@@ -676,7 +676,7 @@ class IoloService {
             testator: { id: testament.testator.toString() },
             secrets: secrets,
             heirs: testament.heirs.map((item) => {return {id: item.toString()}}),
-            conditionArg: Number(testament.condition_arg),
+            conditions: testament.conditions,
             conditionStatus: testament.condition_status,
             dateCreated: this.nanosecondsInBigintToIsoString(testament.date_created),
             dateModified: this.nanosecondsInBigintToIsoString(testament.date_modified),

@@ -16,8 +16,8 @@ export interface AddTestamentArgs {
   'heirs' : Array<Principal>,
   'name' : [] | [string],
   'secrets' : Array<string>,
-  'condition_arg' : bigint,
   'key_box' : Array<[string, SecretSymmetricCryptoMaterial]>,
+  'conditions' : Array<Condition>,
 }
 export interface AddUserArgs {
   'id' : Principal,
@@ -25,6 +25,8 @@ export interface AddUserArgs {
   'name' : [] | [string],
   'email' : [] | [string],
 }
+export type Condition = { 'TimeBasedCondition' : TimeBasedCondition } |
+  { 'XOutOfYCondition' : XOutOfYCondition };
 export type Result = { 'Ok' : User } |
   { 'Err' : SmartVaultErr };
 export type Result_1 = { 'Ok' : Secret } |
@@ -92,8 +94,8 @@ export interface Testament {
   'name' : [] | [string],
   'testator' : Principal,
   'secrets' : Array<string>,
-  'condition_arg' : bigint,
   'key_box' : Array<[string, SecretSymmetricCryptoMaterial]>,
+  'conditions' : Array<Condition>,
   'date_modified' : bigint,
 }
 export interface TestamentKeyDerviationArgs {
@@ -114,9 +116,13 @@ export interface TestamentResponse {
   'name' : [] | [string],
   'testator' : Principal,
   'secrets' : Array<SecretListEntry>,
-  'condition_arg' : bigint,
   'key_box' : Array<[string, SecretSymmetricCryptoMaterial]>,
+  'conditions' : Array<Condition>,
   'date_modified' : bigint,
+}
+export interface TimeBasedCondition {
+  'condition_status' : boolean,
+  'number_of_days_since_last_login' : bigint,
 }
 export interface User {
   'id' : Principal,
@@ -130,6 +136,11 @@ export interface User {
 }
 export type UserType = { 'Company' : null } |
   { 'Person' : null };
+export interface XOutOfYCondition {
+  'condition_status' : boolean,
+  'quorum' : bigint,
+  'number_of_members_total' : bigint,
+}
 export interface _SERVICE {
   'add_heir' : ActorMethod<[AddUserArgs], Result>,
   'add_secret' : ActorMethod<[AddSecretArgs], Result_1>,

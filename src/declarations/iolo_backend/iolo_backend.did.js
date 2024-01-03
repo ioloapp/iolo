@@ -66,13 +66,26 @@ export const idlFactory = ({ IDL }) => {
     'date_modified' : IDL.Nat64,
   });
   const Result_1 = IDL.Variant({ 'Ok' : Secret, 'Err' : SmartVaultErr });
+  const TimeBasedCondition = IDL.Record({
+    'condition_status' : IDL.Bool,
+    'number_of_days_since_last_login' : IDL.Nat64,
+  });
+  const XOutOfYCondition = IDL.Record({
+    'condition_status' : IDL.Bool,
+    'quorum' : IDL.Nat64,
+    'number_of_members_total' : IDL.Nat64,
+  });
+  const Condition = IDL.Variant({
+    'TimeBasedCondition' : TimeBasedCondition,
+    'XOutOfYCondition' : XOutOfYCondition,
+  });
   const AddTestamentArgs = IDL.Record({
     'id' : IDL.Text,
     'heirs' : IDL.Vec(IDL.Principal),
     'name' : IDL.Opt(IDL.Text),
     'secrets' : IDL.Vec(IDL.Text),
-    'condition_arg' : IDL.Nat64,
     'key_box' : IDL.Vec(IDL.Tuple(IDL.Text, SecretSymmetricCryptoMaterial)),
+    'conditions' : IDL.Vec(Condition),
   });
   const Testament = IDL.Record({
     'id' : IDL.Text,
@@ -82,8 +95,8 @@ export const idlFactory = ({ IDL }) => {
     'name' : IDL.Opt(IDL.Text),
     'testator' : IDL.Principal,
     'secrets' : IDL.Vec(IDL.Text),
-    'condition_arg' : IDL.Nat64,
     'key_box' : IDL.Vec(IDL.Tuple(IDL.Text, SecretSymmetricCryptoMaterial)),
+    'conditions' : IDL.Vec(Condition),
     'date_modified' : IDL.Nat64,
   });
   const Result_2 = IDL.Variant({ 'Ok' : Testament, 'Err' : SmartVaultErr });
@@ -115,8 +128,8 @@ export const idlFactory = ({ IDL }) => {
     'name' : IDL.Opt(IDL.Text),
     'testator' : IDL.Principal,
     'secrets' : IDL.Vec(SecretListEntry),
-    'condition_arg' : IDL.Nat64,
     'key_box' : IDL.Vec(IDL.Tuple(IDL.Text, SecretSymmetricCryptoMaterial)),
+    'conditions' : IDL.Vec(Condition),
     'date_modified' : IDL.Nat64,
   });
   const Result_8 = IDL.Variant({

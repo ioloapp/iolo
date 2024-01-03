@@ -2,6 +2,7 @@ use std::collections::{BTreeMap, HashSet};
 
 use candid::{CandidType, Principal};
 use serde::{Deserialize, Serialize};
+use crate::smart_vaults::conditions::{Condition};
 use crate::smart_vaults::secret::SecretListEntry;
 
 use crate::utils::{caller::get_caller, time};
@@ -27,7 +28,7 @@ pub struct Testament {
     /// which itself is derived by vetkd.
     key_box: KeyBox,
     condition_status: bool,
-    condition_arg: u64 // currently only for max difference to last_login_date, in seconds
+    conditions: Vec<Condition>,
 }
 
 /// The struct provided by the backend when calling "create_secret". It contains:
@@ -38,7 +39,7 @@ pub struct AddTestamentArgs {
     heirs: HashSet<Principal>,
     secrets: HashSet<SecretID>,
     key_box: KeyBox,
-    condition_arg: u64
+    conditions: Vec<Condition>,
 }
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone, PartialEq)]
@@ -73,8 +74,8 @@ impl Testament {
             heirs: HashSet::new(),
             secrets: HashSet::new(),
             key_box: BTreeMap::new(),
-            condition_arg: 0,
-            condition_status: false
+            condition_status: false,
+            conditions: Vec::new(),
         }
     }
 
@@ -106,8 +107,8 @@ impl Testament {
         &self.secrets
     }
 
-    pub fn condition_arg(&self) -> &u64{
-        &self.condition_arg
+    pub fn conditions(&self) -> &Vec<Condition> {
+        &self.conditions
     }
 
     pub fn condition_status(&self) -> &bool{
@@ -155,7 +156,7 @@ impl From<AddTestamentArgs> for Testament {
         new_testament.heirs = ata.heirs;
         new_testament.secrets = ata.secrets;
         new_testament.key_box = ata.key_box;
-        new_testament.condition_arg = ata.condition_arg;
+        new_testament.conditions = ata.conditions;
         new_testament
     }
 }
@@ -171,7 +172,7 @@ pub struct TestamentResponse {
     secrets: HashSet<SecretListEntry>,
     key_box: KeyBox,
     condition_status: bool,
-    condition_arg: u64 // currently only for max difference to last_login_date, in seconds
+    conditions: Vec<Condition>,
 }
 
 impl TestamentResponse {
@@ -186,8 +187,8 @@ impl TestamentResponse {
             heirs: HashSet::new(),
             secrets: HashSet::new(),
             key_box: BTreeMap::new(),
-            condition_arg: 0,
-            condition_status: false
+            condition_status: false,
+            conditions: Vec::new(),
         }
     }
 
@@ -203,7 +204,7 @@ impl From<Testament> for TestamentResponse {
         new_testament.testator = t.testator;
         new_testament.heirs = t.heirs;
         new_testament.key_box = t.key_box;
-        new_testament.condition_arg = t.condition_arg;
+        new_testament.conditions = t.conditions;
         new_testament.condition_status = t.condition_status;
         new_testament
     }

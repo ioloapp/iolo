@@ -19,7 +19,7 @@ export const initialState: TestamentsState = {
         name: '',
         secrets: [],
         heirs: [],
-        conditionArg: 0,
+        conditions: [],
     },
     dialogItemState: 'init',
     loadingState: 'init',

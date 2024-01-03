@@ -32,10 +32,10 @@ export const TestamentDialogContent: FC<TestamentDialogContentProps> = ({readonl
     const [selectedHeirs, setSelectedHeirs] = React.useState<SelectedHeir[]>([]);
 
     useEffect(() => {
-        if(readonly){
+        if (readonly){
             setSelectedSecrets(dialogItem.secrets);
             setSelectedHeirs(dialogItem.heirs);
-        }else {
+        } else {
             const selectedHeirs = heirsList.map(h => {
                 const heir = dialogItem.heirs.find(dh => dh.id === h.id);
                 return heir ? {...h, selected: true} : {...h, selected: false};
@@ -132,8 +132,8 @@ export const TestamentDialogContent: FC<TestamentDialogContentProps> = ({readonl
             <FormControl fullWidth>
                 <TextField
                     margin="dense"
-                    id="conditionArg"
-                    label="Max. logout time in seconds"
+                    id="timeBasedConditionMaxLogoutTimeInDays"
+                    label="Max. logout time in days"
                     InputLabelProps={{shrink: true}}
                     fullWidth
                     variant="standard"
