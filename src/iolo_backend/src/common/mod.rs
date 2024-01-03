@@ -1,6 +1,6 @@
 pub mod error;
+pub mod memory;
 pub mod messages;
+pub mod principal_storable;
 pub mod user;
 pub mod uuid;
-pub mod memory;
-pub mod principal_id;

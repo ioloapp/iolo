@@ -1,15 +1,16 @@
-use std::{str::FromStr, vec};
 use std::cell::RefCell;
+use std::{str::FromStr, vec};
 
-use candid::{CandidType, Principal};
-use serde::{Deserialize, Serialize};
 use crate::common::error::SmartVaultErr;
+use crate::common::principal_storable::PrincipalStorable;
 use crate::common::uuid::UUID;
 use crate::smart_vaults::master_vault::MasterVault;
 use crate::smart_vaults::smart_vault::{MASTERVAULT, TESTAMENT_REGISTRY, USER_REGISTRY};
 use crate::smart_vaults::testament::{Testament, TestamentID};
 use crate::smart_vaults::testament_registry::TestamentRegistry;
 use crate::smart_vaults::user_registry::UserRegistry;
+use candid::{CandidType, Principal};
+use serde::{Deserialize, Serialize};
 
 use super::vetkd_types::{
     CanisterId, VetKDCurve, VetKDEncryptedKeyReply, VetKDEncryptedKeyRequest, VetKDKeyId,
@@ -55,19 +56,20 @@ async fn encrypted_symmetric_key_for_uservault(encryption_public_key: Vec<u8>) -
 ///
 /// The key is encrypted using the provided encryption_public_key.
 #[ic_cdk_macros::update]
-async fn encrypted_symmetric_key_for_testament(args: TestamentKeyDerviationArgs) -> Result<String, SmartVaultErr> {
+async fn encrypted_symmetric_key_for_testament(
+    args: TestamentKeyDerviationArgs,
+) -> Result<String, SmartVaultErr> {
     let caller = ic_cdk::caller(); //.as_slice().to_vec();
 
     // check if caller has the right to derive this key
     let mut key_can_be_generated = false;
 
     // Let's see if the testament is existing
-    let result_1 = TESTAMENT_REGISTRY.with(
-        |tr: &RefCell<TestamentRegistry>| -> Option<Principal> {
+    let result_1 =
+        TESTAMENT_REGISTRY.with(|tr: &RefCell<TestamentRegistry>| -> Option<Principal> {
             let testament_registry = tr.borrow();
             testament_registry.get_testator_of_testament(args.testament_id.clone())
-        },
-    );
+        });
 
     if result_1.is_none() {
         // No testament with this id is existing, we can easily create a vetkey
@@ -91,7 +93,8 @@ async fn encrypted_symmetric_key_for_testament(args: TestamentKeyDerviationArgs)
                 |ur: &RefCell<UserRegistry>| -> Result<UUID, SmartVaultErr> {
                     let user_registry = ur.borrow();
                     let user = user_registry.get_user(&result_2.1)?;
-                    user.user_vault_id.ok_or_else(|| SmartVaultErr::UserVaultDoesNotExist("".to_string()))
+                    user.user_vault_id
+                        .ok_or_else(|| SmartVaultErr::UserVaultDoesNotExist("".to_string()))
                 },
             )?;
             let result_4 = MASTERVAULT.with(
@@ -107,7 +110,6 @@ async fn encrypted_symmetric_key_for_testament(args: TestamentKeyDerviationArgs)
             }
         }
     }
-
 
     if !(key_can_be_generated) {
         return Err(SmartVaultErr::KeyGenerationNotAllowed);

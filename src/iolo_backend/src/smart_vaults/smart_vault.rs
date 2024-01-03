@@ -4,6 +4,7 @@ use candid::Principal;
 use ic_cdk::{post_upgrade, pre_upgrade, storage};
 
 use crate::common::error::SmartVaultErr;
+use crate::common::principal_storable::PrincipalStorable;
 use crate::common::user::{AddUserArgs, User};
 use crate::common::uuid::UUID;
 use crate::smart_vaults::testament::TestamentResponse;
@@ -38,35 +39,6 @@ thread_local! {
 
 #[ic_cdk_macros::update]
 pub fn create_user(args: AddUserArgs) -> Result<User, SmartVaultErr> {
-    // try the storable user registry
-    create_user_storable(args.clone())?;
-
-    let mut new_user = User::new(&get_caller(), args);
-
-    // Let's create the user vault
-    let new_user_vault_id: UUID =
-        MASTERVAULT.with(|ms: &RefCell<MasterVault>| -> Result<UUID, SmartVaultErr> {
-            let mut master_vault = ms.borrow_mut();
-            Ok(master_vault.create_user_vault())
-        })?;
-
-    // Add the new user vault to the new user
-    new_user.set_user_vault(new_user_vault_id);
-
-    // Store the new user
-    USER_REGISTRY.with(
-        |ur: &RefCell<UserRegistry>| -> Result<User, SmartVaultErr> {
-            let mut user_registry = ur.borrow_mut();
-            match user_registry.add_user(new_user) {
-                Ok(u) => Ok(u.clone()),
-                Err(e) => Err(e),
-            }
-        },
-    )
-}
-
-#[ic_cdk_macros::update]
-pub fn create_user_storable(args: AddUserArgs) -> Result<User, SmartVaultErr> {
     let mut new_user = User::new(&get_caller(), args);
 
     // Let's create the user vault
@@ -114,12 +86,8 @@ pub fn update_user(user: User) -> Result<User, SmartVaultErr> {
     USER_REGISTRY.with(
         |ur: &RefCell<UserRegistry>| -> Result<User, SmartVaultErr> {
             let mut user_registry = ur.borrow_mut();
-            match user_registry.get_user_mut(&get_caller()) {
-                Ok(u) => {
-                    u.name = user.name;
-                    u.email = user.email;
-                    Ok(u.clone())
-                }
+            match user_registry.update_user(user) {
+                Ok(u) => Ok(u.clone()),
                 Err(e) => Err(e),
             }
         },
@@ -129,14 +97,26 @@ pub fn update_user(user: User) -> Result<User, SmartVaultErr> {
 #[ic_cdk_macros::update]
 pub fn update_user_login_date() -> Result<User, SmartVaultErr> {
     // Update the login date
+    let ps = PrincipalStorable::from(get_caller().clone());
+
+    // get current user
+    let mut current_user = USER_REGISTRY.with(
+        |ur: &RefCell<UserRegistry>| -> Result<User, SmartVaultErr> {
+            let user_registry = ur.borrow();
+            match user_registry.get_user(&get_caller()) {
+                Ok(u) => Ok(u.clone()),
+                Err(e) => Err(e),
+            }
+        },
+    )?;
+
+    current_user.update_login_date();
+
     USER_REGISTRY.with(
         |ur: &RefCell<UserRegistry>| -> Result<User, SmartVaultErr> {
             let mut user_registry = ur.borrow_mut();
-            match user_registry.get_user_mut(&get_caller()) {
-                Ok(u) => {
-                    u.update_login_date();
-                    Ok(u.clone())
-                }
+            match user_registry.update_user(current_user) {
+                Ok(u) => Ok(u.clone()),
                 Err(e) => Err(e),
             }
         },
@@ -575,7 +555,7 @@ fn get_vault_id_for(principal: Principal) -> Result<UserVaultID, SmartVaultErr> 
 #[pre_upgrade]
 fn pre_upgrade() {
     MASTERVAULT.with(|ms| storage::stable_save((ms,)).unwrap());
-    USER_REGISTRY.with(|ur| storage::stable_save((ur,)).unwrap());
+    // USER_REGISTRY.with(|ur| storage::stable_save((ur,)).unwrap());
     TESTAMENT_REGISTRY.with(|tr| storage::stable_save((tr,)).unwrap());
     UUID_COUNTER.with(|c| storage::stable_save((c,)).unwrap());
 }
@@ -585,8 +565,8 @@ fn post_upgrade() {
     let (old_ms,): (MasterVault,) = storage::stable_restore().unwrap();
     MASTERVAULT.with(|ms| *ms.borrow_mut() = old_ms);
 
-    let (old_ur,): (UserRegistry,) = storage::stable_restore().unwrap();
-    USER_REGISTRY.with(|ur| *ur.borrow_mut() = old_ur);
+    // let (old_ur,): (UserRegistry,) = storage::stable_restore().unwrap();
+    // USER_REGISTRY.with(|ur| *ur.borrow_mut() = old_ur);
 
     let (old_tr,): (TestamentRegistry,) = storage::stable_restore().unwrap();
     TESTAMENT_REGISTRY.with(|tr| *tr.borrow_mut() = old_tr);

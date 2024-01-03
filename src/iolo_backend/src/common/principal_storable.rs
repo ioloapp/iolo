@@ -17,20 +17,20 @@ use std::{
 /// (see <https://sdk.dfinity.org/docs/interface-spec/index.html#textual-ids>)
 ///
 /// Principals have variable length, bounded by 29 bytes. Since we
-/// want [`PrincipalId`] to implement the Copy trait, we encode them as
+/// want [`PrincipalStorable`] to implement the Copy trait, we encode them as
 /// a fixed-size array and a length.
 #[derive(Clone, Copy, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 #[repr(transparent)]
 #[serde(transparent)]
-pub struct PrincipalId(Principal);
+pub struct PrincipalStorable(Principal);
 
-impl PartialEq for PrincipalId {
-    fn eq(&self, other: &PrincipalId) -> bool {
+impl PartialEq for PrincipalStorable {
+    fn eq(&self, other: &PrincipalStorable) -> bool {
         self.0 == other.0
     }
 }
 
-impl Hash for PrincipalId {
+impl Hash for PrincipalStorable {
     fn hash<H: Hasher>(&self, state: &mut H) {
         let slice = self.0.as_slice();
         slice.len().hash(state);
@@ -43,45 +43,45 @@ impl Hash for PrincipalId {
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[repr(transparent)]
 #[serde(transparent)]
-pub struct PrincipalIdError(pub PrincipalError);
+pub struct PrincipalStorableError(pub PrincipalError);
 
-impl PrincipalIdError {
+impl PrincipalStorableError {
     #[allow(non_snake_case)]
     pub fn TooLong(_: usize) -> Self {
-        PrincipalIdError(PrincipalError::BytesTooLong())
+        PrincipalStorableError(PrincipalError::BytesTooLong())
     }
 }
 
-impl Error for PrincipalIdError {
+impl Error for PrincipalStorableError {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         self.0.source()
     }
 }
 
-impl fmt::Display for PrincipalIdError {
+impl fmt::Display for PrincipalStorableError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.0)
     }
 }
 
-impl Default for PrincipalId {
+impl Default for PrincipalStorable {
     fn default() -> Self {
-        PrincipalId(Principal::management_canister())
+        PrincipalStorable(Principal::management_canister())
     }
 }
 
-impl From<Principal> for PrincipalId {
-    fn from(p: Principal) -> PrincipalId {
-        PrincipalId(p)
+impl From<Principal> for PrincipalStorable {
+    fn from(p: Principal) -> PrincipalStorable {
+        PrincipalStorable(p)
     }
 }
-impl From<PrincipalId> for Principal {
-    fn from(p: PrincipalId) -> Principal {
+impl From<PrincipalStorable> for Principal {
+    fn from(p: PrincipalStorable) -> Principal {
         p.0
     }
 }
 
-impl PrincipalId {
+impl PrincipalStorable {
     pub const MAX_LENGTH_IN_BYTES: usize = 29;
     // const HASH_LEN_IN_BYTES: usize = 28;
 
@@ -98,84 +98,84 @@ impl PrincipalId {
     }
 }
 
-impl fmt::Display for PrincipalId {
+impl fmt::Display for PrincipalStorable {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.0)
     }
 }
 
-impl fmt::Debug for PrincipalId {
+impl fmt::Debug for PrincipalStorable {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.0)
     }
 }
 
-impl From<PrincipalId> for Vec<u8> {
-    fn from(val: PrincipalId) -> Self {
+impl From<PrincipalStorable> for Vec<u8> {
+    fn from(val: PrincipalStorable) -> Self {
         val.to_vec()
     }
 }
 
 /// The [`TryFrom`] trait should only be used when parsing data; fresh ids
 /// should always be created with the functions below (PrincipalId::new_*)
-impl TryFrom<&[u8]> for PrincipalId {
-    type Error = PrincipalIdError;
+impl TryFrom<&[u8]> for PrincipalStorable {
+    type Error = PrincipalStorableError;
 
     fn try_from(blob: &[u8]) -> Result<Self, Self::Error> {
         Principal::try_from(blob)
             .map(Self)
-            .map_err(PrincipalIdError)
+            .map_err(PrincipalStorableError)
     }
 }
 
-impl TryFrom<Vec<u8>> for PrincipalId {
-    type Error = PrincipalIdError;
+impl TryFrom<Vec<u8>> for PrincipalStorable {
+    type Error = PrincipalStorableError;
 
     fn try_from(blob: Vec<u8>) -> Result<Self, Self::Error> {
         Principal::try_from(blob)
             .map(Self)
-            .map_err(PrincipalIdError)
+            .map_err(PrincipalStorableError)
     }
 }
-impl TryFrom<&Vec<u8>> for PrincipalId {
-    type Error = PrincipalIdError;
+impl TryFrom<&Vec<u8>> for PrincipalStorable {
+    type Error = PrincipalStorableError;
 
     fn try_from(blob: &Vec<u8>) -> Result<Self, Self::Error> {
         Principal::try_from(blob)
             .map(Self)
-            .map_err(PrincipalIdError)
+            .map_err(PrincipalStorableError)
     }
 }
 
-impl AsRef<[u8]> for PrincipalId {
+impl AsRef<[u8]> for PrincipalStorable {
     fn as_ref(&self) -> &[u8] {
         self.as_slice()
     }
 }
 
-impl std::str::FromStr for PrincipalId {
-    type Err = PrincipalIdError;
+impl std::str::FromStr for PrincipalStorable {
+    type Err = PrincipalStorableError;
 
     fn from_str(input: &str) -> Result<Self, Self::Err> {
         Principal::from_str(input)
             .map(Self)
-            .map_err(PrincipalIdError)
+            .map_err(PrincipalStorableError)
     }
 }
 
 /// Super trait implementation for the BoundedStorable trait on PrincipalId for use
 /// in StableStructures
-impl Storable for PrincipalId {
+impl Storable for PrincipalStorable {
     fn to_bytes(&self) -> Cow<[u8]> {
         self.to_vec().into()
     }
 
     fn from_bytes(bytes: Cow<[u8]>) -> Self {
-        PrincipalId::try_from(&bytes[..]).expect("Cannot decode PrincipalId")
+        PrincipalStorable::try_from(&bytes[..]).expect("Cannot decode PrincipalId")
     }
 
     const BOUND: Bound = Bound::Bounded {
-        max_size: PrincipalId::MAX_LENGTH_IN_BYTES as u32,
+        max_size: PrincipalStorable::MAX_LENGTH_IN_BYTES as u32,
         is_fixed_size: false,
     };
 }
