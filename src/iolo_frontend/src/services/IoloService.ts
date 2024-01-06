@@ -337,6 +337,14 @@ class IoloService {
         throw mapError(result['Err']);
     }
 
+    public async confirmXOutOfYCondition (testator: Principal, testamentId: string, status: boolean): Promise<void> {
+        const result: Result_3 = await (await this.getActor()).confirm_x_out_of_y_condition(testator, testamentId, status);
+        if (result['Ok'] === null) {
+            return;
+        }
+        throw mapError(result['Err']);
+    }
+
     public async addHeir(heir: UiUser): Promise<UiUser> {
         console.debug('start adding heir: ', heir);
 

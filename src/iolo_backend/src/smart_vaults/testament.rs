@@ -2,7 +2,7 @@ use std::collections::{BTreeMap, HashSet};
 
 use candid::{CandidType, Principal};
 use serde::{Deserialize, Serialize};
-use crate::smart_vaults::conditions::{Condition};
+use crate::smart_vaults::conditions::{Condition, Confirmer};
 use crate::smart_vaults::secret::SecretListEntry;
 
 use crate::utils::{caller::get_caller, time};
@@ -146,6 +146,22 @@ impl Testament {
 
     pub fn key_box(&self) -> &KeyBox {
         &self.key_box
+    }
+
+    // Function to find a mutable reference to a confirmer if the given principal is one of them
+    pub fn find_confirmer_mut(&mut self, principal: &Principal) -> Option<&mut Confirmer> {
+        for condition in &mut self.conditions {
+            if let Condition::XOutOfYCondition(x_out_of_y) = condition {
+                for confirmer in &mut x_out_of_y.confirmers {
+                    if &confirmer.id == principal {
+                        // Return a mutable reference to the confirmer
+                        return Some(confirmer);
+                    }
+                }
+            }
+        }
+        // If no matching confirmer is found, return None
+        None
     }
 }
 

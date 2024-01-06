@@ -22,10 +22,10 @@ thread_local! {
     // Master_vault holding all the user vaults
     pub static MASTERVAULT: RefCell<MasterVault> = RefCell::new(MasterVault::new());
 
-    // User Registsry
+    // User Registry
     pub static USER_REGISTRY: RefCell<UserRegistry> = RefCell::new(UserRegistry::new());
 
-    // Testament Registsry
+    // Testament Registsty
     pub static TESTAMENT_REGISTRY: RefCell<TestamentRegistry> = RefCell::new(TestamentRegistry::new());
 
     // counter for the UUIDs
@@ -449,6 +449,37 @@ pub fn get_testament_list_as_testator() -> Result<Vec<TestamentListEntry>, Smart
             .map(TestamentListEntry::from)
             .collect())
     })
+}
+
+#[ic_cdk_macros::update]
+pub fn confirm_x_out_of_y_condition(testator: Principal, testament_id: TestamentID, status: bool) -> Result<(), SmartVaultErr> {
+
+    // Get user vault of testator
+    let user_vault_id: UUID = get_vault_id_for(testator)?;
+
+    // Read testament
+    let mut result_mv = MASTERVAULT.with(
+        |mv: &RefCell<MasterVault>| -> Result<Testament, SmartVaultErr> {
+            mv.borrow()
+                .get_user_vault(&user_vault_id)?
+                .get_testament(&testament_id)
+                .cloned()
+        },
+    )?;
+
+    // Check that there is a XOutOfYCondition in the testament and that the caller is one of the confirmers
+    match result_mv.find_confirmer_mut(&get_caller()) {
+        Some(confirmer) => {
+            // Modify the confirmer as needed
+            confirmer.status = status;
+            Ok(())
+        },
+        None => {
+            Err(SmartVaultErr::Unauthorized)
+        },
+    }
+
+
 }
 
 #[ic_cdk_macros::update]

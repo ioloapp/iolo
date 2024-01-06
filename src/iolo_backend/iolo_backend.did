@@ -26,6 +26,7 @@ type Condition = variant {
   TimeBasedCondition : TimeBasedCondition;
   XOutOfYCondition : XOutOfYCondition;
 };
+type Confirmer = record { id : principal; status : bool };
 type Result = variant { Ok : User; Err : SmartVaultErr };
 type Result_1 = variant { Ok : Secret; Err : SmartVaultErr };
 type Result_2 = variant { Ok : Testament; Err : SmartVaultErr };
@@ -69,6 +70,7 @@ type SmartVaultErr = variant {
   UserDeletionFailed : text;
   SecretDoesNotExist : text;
   TestamentAlreadyExists : text;
+  Unauthorized;
   TestamentDoesNotExist : text;
   InvalidTestamentCondition;
   UserVaultCreationFailed : text;
@@ -130,12 +132,13 @@ type UserType = variant { Company; Person };
 type XOutOfYCondition = record {
   condition_status : bool;
   quorum : nat64;
-  number_of_members_total : nat64;
+  confirmers : vec Confirmer;
 };
 service : () -> {
   add_heir : (AddUserArgs) -> (Result);
   add_secret : (AddSecretArgs) -> (Result_1);
   add_testament : (AddTestamentArgs) -> (Result_2);
+  confirm_x_out_of_y_condition : (principal, text, bool) -> (Result_3);
   create_user : (AddUserArgs) -> (Result);
   delete_user : () -> (Result_3);
   encrypted_ibe_decryption_key_for_caller : (vec nat8) -> (text);

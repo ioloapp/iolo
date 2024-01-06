@@ -22,6 +22,7 @@ export const idlFactory = ({ IDL }) => {
     'UserDeletionFailed' : IDL.Text,
     'SecretDoesNotExist' : IDL.Text,
     'TestamentAlreadyExists' : IDL.Text,
+    'Unauthorized' : IDL.Null,
     'TestamentDoesNotExist' : IDL.Text,
     'InvalidTestamentCondition' : IDL.Null,
     'UserVaultCreationFailed' : IDL.Text,
@@ -70,10 +71,11 @@ export const idlFactory = ({ IDL }) => {
     'condition_status' : IDL.Bool,
     'number_of_days_since_last_login' : IDL.Nat64,
   });
+  const Confirmer = IDL.Record({ 'id' : IDL.Principal, 'status' : IDL.Bool });
   const XOutOfYCondition = IDL.Record({
     'condition_status' : IDL.Bool,
     'quorum' : IDL.Nat64,
-    'number_of_members_total' : IDL.Nat64,
+    'confirmers' : IDL.Vec(Confirmer),
   });
   const Condition = IDL.Variant({
     'TimeBasedCondition' : TimeBasedCondition,
@@ -150,6 +152,11 @@ export const idlFactory = ({ IDL }) => {
     'add_heir' : IDL.Func([AddUserArgs], [Result], []),
     'add_secret' : IDL.Func([AddSecretArgs], [Result_1], []),
     'add_testament' : IDL.Func([AddTestamentArgs], [Result_2], []),
+    'confirm_x_out_of_y_condition' : IDL.Func(
+        [IDL.Principal, IDL.Text, IDL.Bool],
+        [Result_3],
+        [],
+      ),
     'create_user' : IDL.Func([AddUserArgs], [Result], []),
     'delete_user' : IDL.Func([], [Result_3], []),
     'encrypted_ibe_decryption_key_for_caller' : IDL.Func(

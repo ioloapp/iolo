@@ -27,6 +27,7 @@ export interface AddUserArgs {
 }
 export type Condition = { 'TimeBasedCondition' : TimeBasedCondition } |
   { 'XOutOfYCondition' : XOutOfYCondition };
+export interface Confirmer { 'id' : Principal, 'status' : boolean }
 export type Result = { 'Ok' : User } |
   { 'Err' : SmartVaultErr };
 export type Result_1 = { 'Ok' : Secret } |
@@ -78,6 +79,7 @@ export type SmartVaultErr = { 'UserAlreadyExists' : string } |
   { 'UserDeletionFailed' : string } |
   { 'SecretDoesNotExist' : string } |
   { 'TestamentAlreadyExists' : string } |
+  { 'Unauthorized' : null } |
   { 'TestamentDoesNotExist' : string } |
   { 'InvalidTestamentCondition' : null } |
   { 'UserVaultCreationFailed' : string } |
@@ -139,12 +141,16 @@ export type UserType = { 'Company' : null } |
 export interface XOutOfYCondition {
   'condition_status' : boolean,
   'quorum' : bigint,
-  'number_of_members_total' : bigint,
+  'confirmers' : Array<Confirmer>,
 }
 export interface _SERVICE {
   'add_heir' : ActorMethod<[AddUserArgs], Result>,
   'add_secret' : ActorMethod<[AddSecretArgs], Result_1>,
   'add_testament' : ActorMethod<[AddTestamentArgs], Result_2>,
+  'confirm_x_out_of_y_condition' : ActorMethod<
+    [Principal, string, boolean],
+    Result_3
+  >,
   'create_user' : ActorMethod<[AddUserArgs], Result>,
   'delete_user' : ActorMethod<[], Result_3>,
   'encrypted_ibe_decryption_key_for_caller' : ActorMethod<
