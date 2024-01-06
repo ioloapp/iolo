@@ -50,6 +50,7 @@ export function encryptWithAes256Gcm(plaintext: string, key: Buffer, iv: Buffer)
     encrypted += cipher.final('hex');
     return new TextEncoder().encode(encrypted);
 }
+
 export enum SecretType {
     Password,
     Note,

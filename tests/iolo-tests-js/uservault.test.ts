@@ -1,13 +1,16 @@
 import {createIdentity, createNewActor, createSecret, determineBackendCanisterId, SecretType} from "./utils";
 import {Secp256k1KeyIdentity} from "@dfinity/identity-secp256k1";
-import {AddSecretArgs, Result, Result_5, SmartVaultErr} from "../../src/declarations/iolo_backend/iolo_backend.did";
+import {AddSecretArgs, Result, Result_5} from "../../src/declarations/iolo_backend/iolo_backend.did";
 import {Result_2, Result_3} from "../../.dfx/local/canisters/iolo_backend/service.did";
-//import * as fs from "fs";
-//import * as ic_vetkd_utils from './wasm/ic_vetkd_utils_bg';
+import * as crypto from "crypto";
+import * as fs from "fs";
+import * as ic_vetkd_utils from './wasm/ic_vetkd_utils_bg';
+import {Actor} from "@dfinity/agent";
 
-//const importObject = {
-//    './ic_vetkd_utils_bg.js': ic_vetkd_utils
-//};
+
+/*const importObject = {
+    './ic_vetkd_utils_bg.js': ic_vetkd_utils
+};*/
 
 const canisterId: string = determineBackendCanisterId();
 
@@ -18,16 +21,22 @@ const actorOne = createNewActor(identityOne, canisterId);
 
 //let vetkd;
 
-//beforeAll(async () => {
-//    const vetkd_wasm = fs.readFileSync('./tests/iolo-tests-js/wasm/ic_vetkd_utils_bg.wasm');
-//    vetkd = await globalThis.WebAssembly.instantiate(new Uint8Array(vetkd_wasm), importObject)
-//        .then(result => result.instance.exports);
-//})
+/*beforeAll(async () => {
+    const vetkd_wasm = fs.readFileSync('./tests/iolo-tests-js/wasm/ic_vetkd_utils_bg.wasm');
+    vetkd = await globalThis.WebAssembly.instantiate(new Uint8Array(vetkd_wasm), importObject)
+        .then(result => result.instance.exports);
+})*/
 
 describe("Uservault Tests", () => {
     test("it should create a uservault", async () => {
         const resultDeleteUserOne: Result_3 = await actorOne.delete_user(); // Just in case the user is already existing on the replica
-        const resultCreateUserOne: Result_2 = await actorOne.create_user();
+        const addUserArgs = {
+            id: createIdentity().getPrincipal(),
+            name: ['Alice'],
+            email: ['alice@ioloapp.io'],
+            user_type: [{ 'Person' : null }],
+        };
+        const resultCreateUserOne: Result_2 = await actorOne.create_user(addUserArgs);
         expect(resultCreateUserOne).toHaveProperty('Ok');
 
         // Create a uservault
@@ -79,9 +88,9 @@ describe("Uservault Tests", () => {
         expect(resultSecretList['Ok'][1].category).toStrictEqual(addSecretArgsTwo.category);
 
         // Delete secrets again for following tests
-        const resultRemoveSecretOne: Result_3 = await actorOne.remove_user_secret(addSecretArgsOne.id);
+        const resultRemoveSecretOne: Result_3 = await actorOne.remove_secret(addSecretArgsOne.id);
         expect(resultRemoveSecretOne).toHaveProperty('Ok');
-        const resultRemoveSecretTwo: Result_3 = await actorOne.remove_user_secret(addSecretArgsTwo.id);
+        const resultRemoveSecretTwo: Result_3 = await actorOne.remove_secret(addSecretArgsTwo.id);
         expect(resultRemoveSecretTwo).toHaveProperty('Ok');
 
     }, 15000); // Set timeout to 15s
@@ -132,9 +141,9 @@ describe("Uservault Tests", () => {
         32,
         new TextEncoder().encode("aes-256-gcm")
     );
-}*/
+}
 
 const hex_decode = (hexString) =>
     Uint8Array.from(hexString.match(/.{1,2}/g).map((byte) => parseInt(byte, 16)));
 const hex_encode = (bytes) =>
-    bytes.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '');
+    bytes.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '');*/

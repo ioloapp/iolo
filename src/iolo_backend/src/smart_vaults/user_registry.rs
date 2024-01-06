@@ -59,6 +59,10 @@ impl UserRegistry {
             })
             .collect()
     }
+
+    pub fn users(&self) -> &BTreeMap<Principal, User> {
+        &self.users
+    }
 }
 
 #[cfg(test)]
