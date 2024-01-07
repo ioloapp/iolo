@@ -35,89 +35,91 @@ export const Onboarding = () => {
 
     return (
         <PageLayout title="Onboarding">
-            <Container maxWidth="sm">
-                <Typography paragraph>
-                    It seems you have not yet created your iolo account. You wanna go for one?
-                </Typography>
-                <Box
-                    sx={{
-                        flexGrow: 1,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexDirection: 'column'
-                    }}
-                >
-                    <Typography variant="body2">Type of user</Typography>
-                    <Select
-                        id="usertype-select"
-                        value={currentUser?.type}
-                        label="Type of user"
-                        onChange={e => updateCurrentUser({
-                            ...currentUser,
-                            type: UiUserType[e.target.value as keyof typeof UiUserType]
-                        })}
-                        sx={{width: '100%'}}
+            <>
+                <Container maxWidth="sm">
+                    <Typography paragraph>
+                        It seems you have not yet created your iolo account. You wanna go for one?
+                    </Typography>
+                    <Box
+                        sx={{
+                            flexGrow: 1,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flexDirection: 'column'
+                        }}
                     >
-                        {Object.keys(UiUserType)
-                            .map(key => {
-                                return <MenuItem key={key} value={key}>{key}</MenuItem>
-                            })
+                        <Typography variant="body2">Type of user</Typography>
+                        <Select
+                            id="usertype-select"
+                            value={currentUser?.type}
+                            label="Type of user"
+                            onChange={e => updateCurrentUser({
+                                ...currentUser,
+                                type: UiUserType[e.target.value as keyof typeof UiUserType]
+                            })}
+                            sx={{width: '100%'}}
+                        >
+                            {Object.keys(UiUserType)
+                                .map(key => {
+                                    return <MenuItem key={key} value={key}>{key}</MenuItem>
+                                })
 
-                        }
-                    </Select>
-                    <TextField
-                        autoFocus
-                        margin="dense"
-                        id="name"
-                        label="Name"
-                        InputLabelProps={{shrink: true}}
-                        fullWidth
-                        variant="standard"
-                        value={currentUser.name}
-                        onChange={e => updateCurrentUser({
-                            ...currentUser,
-                            name: e.target.value
-                        })}
-                    />
-                    <TextField
-                        autoFocus
-                        margin="dense"
-                        id="email"
-                        label="Email"
-                        InputLabelProps={{shrink: true}}
-                        fullWidth
-                        variant="standard"
-                        value={currentUser.email}
-                        onChange={e => updateCurrentUser({
-                            ...currentUser,
-                            email: e.target.value
-                        })}
-                    />
-                    <Button variant="contained" sx={{m: '0px auto 0px auto'}} onClick={createUser}>
-                        Create Account
-                    </Button>
-                </Box>
-                <Box
-                    sx={{
-                        flexGrow: 1,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        marginTop: '3rem'
-                    }}
+                            }
+                        </Select>
+                        <TextField
+                            autoFocus
+                            margin="dense"
+                            id="name"
+                            label="Name"
+                            InputLabelProps={{shrink: true}}
+                            fullWidth
+                            variant="standard"
+                            value={currentUser.name}
+                            onChange={e => updateCurrentUser({
+                                ...currentUser,
+                                name: e.target.value
+                            })}
+                        />
+                        <TextField
+                            autoFocus
+                            margin="dense"
+                            id="email"
+                            label="Email"
+                            InputLabelProps={{shrink: true}}
+                            fullWidth
+                            variant="standard"
+                            value={currentUser.email}
+                            onChange={e => updateCurrentUser({
+                                ...currentUser,
+                                email: e.target.value
+                            })}
+                        />
+                        <Button variant="contained" sx={{m: '0px auto 0px auto'}} onClick={createUser}>
+                            Create Account
+                        </Button>
+                    </Box>
+                    <Box
+                        sx={{
+                            flexGrow: 1,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            marginTop: '3rem'
+                        }}
+                    >
+                        <Button variant="contained" sx={{m: '0px auto 0px auto'}} onClick={logoutUser}>
+                            Logout
+                        </Button>
+                    </Box>
+                </Container>
+                <Backdrop
+                    sx={{color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1}}
+                    open={loadingIconIsOpen}
                 >
-                    <Button variant="contained" sx={{m: '0px auto 0px auto'}} onClick={logoutUser}>
-                        Logout
-                    </Button>
-                </Box>
-            </Container>
-            <Backdrop
-                sx={{color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1}}
-                open={loadingIconIsOpen}
-            >
-                <CircularProgress color="inherit"/>
-            </Backdrop>
+                    <CircularProgress color="inherit"/>
+                </Backdrop>
+            </>
         </PageLayout>
     );
 }

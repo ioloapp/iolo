@@ -58,6 +58,14 @@ export const getBaseTheme = (mode: PaletteMode) => ({
                 }
             },
         },
+        MuiDrawer: {
+            styleOverrides: {
+                root: {
+                    background: '#1C5264',
+                    color: '#FFFFFF'
+                }
+            },
+        },
         MuiBottomNavigationAction: {
             styleOverrides: {
                 root: {

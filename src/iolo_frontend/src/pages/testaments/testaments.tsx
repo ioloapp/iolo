@@ -21,8 +21,6 @@ import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteIcon from "@mui/icons-material/Delete";
 import {UiTestament, UiTestamentListEntryRole} from "../../services/IoloTypesForUi";
 import DeleteTestamentDialog from "../../components/testament/delete-testament-dialog";
-import {LogoIcon, SearchField, StyledAppBar, UserProfile} from "../../components/layout/search-bar";
-import SearchIcon from "@mui/icons-material/Search";
 import EditTestamentDialog from "../../components/testament/edit-testament-dialog";
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
@@ -44,10 +42,10 @@ export function Testaments() {
     const heirsListState = useSelector(selectHeirListState);
 
     useEffect(() => {
-        if(secretsListState === 'init'){
+        if (secretsListState === 'init') {
             dispatch(loadSecretsThunk())
         }
-        if(heirsListState === 'init'){
+        if (heirsListState === 'init') {
             dispatch(loadHeirsThunk())
         }
         dispatch(loadTestamentsThunk())
@@ -86,76 +84,69 @@ export function Testaments() {
     }
 
     return (
-        <PageLayout title="Testaments">
-            <StyledAppBar position="sticky">
-                <LogoIcon />
-                <SearchField id="outlined-basic" sx={{boxShadow: 'none'}}
-                             onChange={(e) => filterTestamentList(e.target.value)}/>
-                <IconButton size="large" aria-label="search" color="inherit" sx={{marginRight: '20px'}}>
-                    <SearchIcon/>
-                </IconButton>
-                <UserProfile />
-            </StyledAppBar>
-            <Box>
-                {hasError() &&
-                    <Error error={testamentsListError}/>
-                }
-                {!hasError() && filteredTestaments &&
-                    <Box>
-                        <List dense={false}>
-                            {filteredTestaments.flatMap(f => f ? [f] : []).map((testament: UiTestament) =>
-                                <ListItem key={testament.id} secondaryAction={
-                                    <>
-                                        {
-                                            testament.role === UiTestamentListEntryRole.Testator &&
-                                            <>
+        <PageLayout title="Testaments" filterList={filterTestamentList}>
+            <>
+                <Box>
+                    {hasError() &&
+                        <Error error={testamentsListError}/>
+                    }
+                    {!hasError() && filteredTestaments &&
+                        <Box>
+                            <List dense={false}>
+                                {filteredTestaments.flatMap(f => f ? [f] : []).map((testament: UiTestament) =>
+                                    <ListItem key={testament.id} secondaryAction={
+                                        <>
+                                            {
+                                                testament.role === UiTestamentListEntryRole.Testator &&
+                                                <>
+                                                    <IconButton edge="end" aria-label="view"
+                                                                onClick={() => viewTestament(testament)}>
+                                                        <VisibilityOutlinedIcon/>
+                                                    </IconButton>
+                                                    <IconButton edge="end" aria-label="edit"
+                                                                onClick={() => editTestament(testament)}>
+                                                        <EditOutlinedIcon/>
+                                                    </IconButton>
+                                                    <IconButton edge="end" aria-label="delete"
+                                                                onClick={() => deleteTestament(testament)}>
+                                                        <DeleteIcon/>
+                                                    </IconButton>
+                                                </>
+                                            }
+                                            {
+                                                testament.role === UiTestamentListEntryRole.Heir && !testament.conditionStatus &&
+                                                <LockOutlinedIcon/>
+                                            }
+                                            {
+                                                testament.role === UiTestamentListEntryRole.Heir && testament.conditionStatus &&
                                                 <IconButton edge="end" aria-label="view"
                                                             onClick={() => viewTestament(testament)}>
                                                     <VisibilityOutlinedIcon/>
                                                 </IconButton>
-                                                <IconButton edge="end" aria-label="edit"
-                                                            onClick={() => editTestament(testament)}>
-                                                    <EditOutlinedIcon/>
-                                                </IconButton>
-                                                <IconButton edge="end" aria-label="delete"
-                                                            onClick={() => deleteTestament(testament)}>
-                                                    <DeleteIcon/>
-                                                </IconButton>
-                                            </>
-                                        }
-                                        {
-                                            testament.role === UiTestamentListEntryRole.Heir && !testament.conditionStatus &&
-                                            <LockOutlinedIcon />
-                                        }
-                                        {
-                                            testament.role === UiTestamentListEntryRole.Heir && testament.conditionStatus &&
-                                            <IconButton edge="end" aria-label="view"
-                                                        onClick={() => viewTestament(testament)}>
-                                                <VisibilityOutlinedIcon/>
-                                            </IconButton>
-                                        }
-                                    </>
-                                }>
-                                    <ListItemAvatar>
-                                        <Avatar>
-                                            <HistoryEduOutlinedIcon/>
-                                        </Avatar>
-                                    </ListItemAvatar>
-                                    <ListItemText
-                                        primary={testament.name}
-                                        secondary={testament.role === UiTestamentListEntryRole.Heir ? `Testator: ${testament.testator.id}` : ''}
-                                    />
-                                </ListItem>,
-                            )}
-                        </List>
-                    </Box>
-                }
-            </Box>
-            <ViewSecretDialog />
-            <AddTestamentDialog/>
-            <ViewTestamentDialog/>
-            <EditTestamentDialog/>
-            <DeleteTestamentDialog/>
+                                            }
+                                        </>
+                                    }>
+                                        <ListItemAvatar>
+                                            <Avatar>
+                                                <HistoryEduOutlinedIcon/>
+                                            </Avatar>
+                                        </ListItemAvatar>
+                                        <ListItemText
+                                            primary={testament.name}
+                                            secondary={testament.role === UiTestamentListEntryRole.Heir ? `Testator: ${testament.testator.id}` : ''}
+                                        />
+                                    </ListItem>,
+                                )}
+                            </List>
+                        </Box>
+                    }
+                </Box>
+                <ViewSecretDialog/>
+                <AddTestamentDialog/>
+                <ViewTestamentDialog/>
+                <EditTestamentDialog/>
+                <DeleteTestamentDialog/>
+            </>
         </PageLayout>
     );
 }

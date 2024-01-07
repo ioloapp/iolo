@@ -21,10 +21,22 @@ export function Login() {
     }
 
     return (
-        <PageLayout title="">
-            <IoloLogo />
-            {loadingState === 'pending' &&
-                <Box
+        <PageLayout title="" showAppBar={false}>
+            <>
+                <IoloLogo/>
+                {loadingState === 'pending' &&
+                    <Box
+                        sx={{
+                            flexGrow: 1,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                        }}
+                    >
+                        <CircularProgress/>
+                    </Box>
+                }
+                {loadingState !== 'pending' && <Box
                     sx={{
                         flexGrow: 1,
                         display: 'flex',
@@ -32,19 +44,9 @@ export function Login() {
                         justifyContent: 'center',
                     }}
                 >
-                    <CircularProgress/>
-                </Box>
-            }
-            {loadingState !== 'pending' &&<Box
-                sx={{
-                    flexGrow: 1,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                }}
-            >
-                <Button variant="contained" onClick={handleLogin}>Log in</Button>
-            </Box>}
+                    <Button variant="contained" onClick={handleLogin}>Log in</Button>
+                </Box>}
+            </>
         </PageLayout>
     );
 }

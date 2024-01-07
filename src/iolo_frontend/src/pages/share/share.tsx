@@ -4,7 +4,6 @@ import {PageLayout} from "../../components/layout/page-layout";
 import {useSelector} from "react-redux";
 import {selectCurrentUser} from "../../redux/user/userSelectors";
 import {QRCodeSVG} from "qrcode.react";
-import {LogoIcon, StyledAppBar, UserProfile} from "../../components/layout/search-bar";
 
 export function ShareId() {
     const currentUser = useSelector(selectCurrentUser);
@@ -19,33 +18,31 @@ export function ShareId() {
 
     return (
         <PageLayout title="Share your ID">
-            <StyledAppBar position="sticky">
-                <LogoIcon />
-                <UserProfile/>
-            </StyledAppBar>
-            <Box
-                sx={{
-                    flexGrow: 1,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexDirection: 'column'
-                }}
-            >
-                <div>
-                    <Typography paragraph>
-                        Sharing this QR code allows a person to register you as an heir.
-                    </Typography>
-                </div>
-                <div>
-                    <QRCodeSVG value={url} width={150} height={150}/>
-                </div>
-                <div>
-                    <Typography paragraph>
-                        Your internet ID is: {currentUser.id}
-                    </Typography>
-                </div>
-            </Box>
+            <>
+                <Box
+                    sx={{
+                        flexGrow: 1,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexDirection: 'column'
+                    }}
+                >
+                    <div>
+                        <Typography paragraph>
+                            Sharing this QR code allows a person to register you as an heir.
+                        </Typography>
+                    </div>
+                    <div>
+                        <QRCodeSVG value={url} width={150} height={150}/>
+                    </div>
+                    <div>
+                        <Typography paragraph>
+                            Your internet ID is: {currentUser.id}
+                        </Typography>
+                    </div>
+                </Box>
+            </>
         </PageLayout>
     );
 }
