@@ -19,53 +19,49 @@ export const getBaseTheme = (mode: PaletteMode) => ({
                 }
             }
             : {
-            primary: {
-                main: '#FFFFFF',
-            },
-            secondary: {
-                main: '#F5E538',
-            },
-            error: {
-                main: '#F5B542',
-            },
-            background: {
-                default: '#1C5264',
-            },
-        })
+                primary: {
+                    main: '#FFFFFF',
+                },
+                secondary: {
+                    main: '#F5E538',
+                },
+                error: {
+                    main: '#F5B542',
+                },
+                background: {
+                    default: '#3b3b3b',
+                },
+            })
     },
     components: {
         MuiAppBar: {
             styleOverrides: {
                 root: {
-                    ...(mode === 'light' ? {
-                        background: '#1C5264',
-                        color: '#FFFFFF'
-                    } : {
-                        background: '#3b3b3b',
-                    }),
+                    background: '#1C5264',
+                    color: '#FFFFFF'
+                }
+            },
+        },
+        MuiFab: {
+            styleOverrides: {
+                root: {
+                    background: '#F5B542',
+                    color: '#3b3b3b'
                 }
             },
         },
         MuiBottomNavigation: {
             styleOverrides: {
                 root: {
-                    ...(mode === 'light' ? {
-                        background: '#1C5264',
-                        color: '#FFFFFF'
-                    } : {
-                        background: '#3b3b3b',
-                    }),
+                    background: '#1C5264',
+                    color: '#FFFFFF'
                 }
             },
         },
         MuiBottomNavigationAction: {
             styleOverrides: {
                 root: {
-                    ...(mode === 'light' ? {
-                        color: '#FFFFFF'
-                    } : {
-                        background: '#3b3b3b',
-                    }),
+                    color: '#FFFFFF'
                 }
             },
         }
