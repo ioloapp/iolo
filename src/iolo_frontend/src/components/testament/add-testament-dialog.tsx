@@ -14,9 +14,11 @@ import {selectCurrentUser} from "../../redux/user/userSelectors";
 import {BasicDialog} from "../dialog/basic-dialog";
 import {TestamentDialogContent} from './testament-dialog-content';
 import {UiTestament, UiTestamentResponse} from "../../services/IoloTypesForUi";
+import {useTranslation} from "react-i18next";
 
 export default function AddTestamentDialog() {
     const dispatch = useAppDispatch();
+    const { t } = useTranslation();
     const showAddTestamentDialog = useSelector(selectShowAddTestamentDialog);
     const dialogItem: UiTestamentResponse = useSelector(selectTestamentDialogItem);
     const testamentError = useSelector(selectTestamentError);
@@ -45,20 +47,20 @@ export default function AddTestamentDialog() {
 
     return (
         <div>
-            <Fab color="primary" aria-label="add" onClick={handleClickOpen} sx={{
+            <Fab color="primary" aria-label={t('testaments.dialog.add.button')} onClick={handleClickOpen} sx={{
                 position: "fixed",
                 bottom: (theme) => theme.spacing(10),
                 right: (theme) => theme.spacing(2)
             }}>
                 <AddIcon/>
             </Fab>
-            <BasicDialog title="Add testament"
-                         leadText="To add a testament choose the secrets, heirs and fill in the necessary information."
+            <BasicDialog title={t('testaments.dialog.add.title')}
+                         leadText={t('testaments.dialog.add.text')}
                          isOpen={showAddTestamentDialog}
                          handleClose={handleClose}
                          cancelAction={cancelAddTestament}
                          okAction={createTestament}
-                         okButtonText="Add testament"
+                         okButtonText={t('testaments.dialog.add.button')}
                          error={testamentError}
                          dialogItemState={dialogItemState}>
                 <TestamentDialogContent/>

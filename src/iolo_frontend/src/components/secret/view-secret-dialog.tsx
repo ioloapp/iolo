@@ -9,9 +9,11 @@ import {useAppDispatch} from "../../redux/hooks";
 import {secretsActions} from "../../redux/secrets/secretsSlice";
 import {BasicDialog} from "../dialog/basic-dialog";
 import {SecretDialogContent} from './secret-dialog-content';
+import {useTranslation} from "react-i18next";
 
 export default function ViewSecretDialog() {
     const dispatch = useAppDispatch();
+    const { t } = useTranslation();
     const showViewSecretDialog: boolean = useSelector(selectShowViewSecretDialog);
     const dialogItemState = useSelector(selectDialogItemState);
     const secretError = useSelector(selectSecretsError);
@@ -21,8 +23,8 @@ export default function ViewSecretDialog() {
     };
 
     return (
-        <BasicDialog title="Edit secret"
-                     leadText="Edit your secret"
+        <BasicDialog title={t('secrets.dialog.view.title')}
+                     leadText={t('secrets.dialog.view.text')}
                      isOpen={showViewSecretDialog}
                      handleClose={handleClose}
                      error={secretError}

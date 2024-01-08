@@ -1,0 +1,135 @@
+{
+  "testaments": {
+    "title": "Testamente",
+    "testator": "Testator",
+    "dialog": {
+      "add": {
+        "title": "Testament hinzufügen",
+        "text": "Um ein Testament hinzuzufügen, wählen Sie die Geheimnisse, Erben und füllen Sie die erforderlichen Informationen aus.",
+        "button": "Testament hinzufügen"
+      },
+      "delete": {
+        "title": "Testament löschen",
+        "text": "Sind Sie sicher, dass Sie das Testament {{testament}} löschen möchten?",
+        "button": "Testament löschen"
+      },
+      "edit": {
+        "title": "Testament bearbeiten",
+        "text": "Bearbeiten Sie den Namen, die Geheimnisse und die Erben Ihres Testaments.",
+        "button": "Testament aktualisieren"
+      },
+      "view": {
+        "title": "Testament anzeigen",
+        "text": "Dies ist Ihr Testament."
+      },
+      "content": {
+        "name": "Name",
+        "max-logout-time": "Max. Abmeldezeit in Sekunden"
+      }
+    }
+  },
+  "heirs": {
+    "title": "Erben",
+    "dialog": {
+      "add": {
+        "title": "Erben hinzufügen",
+        "text": "Um einen neuen Erben hinzuzufügen, geben Sie die ID ein und ergänzen Sie sie um einen bekannten Namen.",
+        "button": "Erben hinzufügen"
+      },
+      "delete": {
+        "title": "Erben löschen",
+        "text": "Sind Sie sicher, dass Sie den Erben {{heir}} löschen möchten?",
+        "button": "Erben löschen"
+      },
+      "edit": {
+        "title": "Erben bearbeiten",
+        "text": "Aktualisieren Sie die Informationen zu Ihrem Erben.",
+        "button": "Erben aktualisieren"
+      }
+    }
+  },
+  "login": {
+    "button": "Anmelden"
+  },
+  "logout": {
+    "button": "Abmelden"
+  },
+  "onboarding": {
+    "title": "Einführung",
+    "text":"Es scheint, dass Sie Ihr IOLO-Konto noch nicht erstellt haben. Möchten Sie eins erstellen?"
+  },
+  "user": {
+    "type": "Benutzertyp",
+    "name": "Name",
+    "email": "E-Mail",
+    "language": "Sprache",
+    "button": {
+      "create": "Konto erstellen",
+      "update": "Benutzer aktualisieren"
+    },
+    "icon": {
+      "label": "Konto des aktuellen Benutzers"
+    }
+  },
+  "profile": {
+    "title": "Profil",
+    "mode": "UI-Dunkelmodus"
+  },
+  "rules": {
+    "title": "Regeln",
+    "dead-man-switch": {
+      "button": "Totmannschalter"
+    }
+  },
+  "secrets": {
+    "title": "Brieftasche",
+    "passwords": "Passwörter",
+    "notes": "Notizen",
+    "documents": "Dokumente",
+    "no-category": "Keine Kategorie",
+    "dialog": {
+      "add": {
+        "title": "Geheimnis hinzufügen",
+        "text": "Um ein neues Geheimnis hinzuzufügen, wählen Sie die Kategorie aus und füllen Sie die erforderlichen Informationen aus.",
+        "button": "Geheimnis hinzufügen"
+      },
+      "delete": {
+        "title": "Geheimnis löschen",
+        "text": "Sind Sie sicher, dass Sie das Geheimnis {{secret}} löschen möchten?",
+        "button": "Geheimnis löschen"
+      },
+      "edit": {
+        "title": "Geheimnis bearbeiten",
+        "text": "Bearbeiten Sie Ihr Geheimnis",
+        "button": "Geheimnis aktualisieren"
+      },
+      "content": {
+        "category": "Kategorie",
+        "name": "Name",
+        "username": "Benutzername",
+        "password": "Passwort",
+        "url": "URL",
+        "notes": "Notizen"
+      },
+      "view": {
+        "title": "Geheimnis bearbeiten",
+        "text": "Bearbeiten Sie Ihr Geheimnis"
+      }
+    }
+  },
+  "share": {
+    "title-short": "Teilen",
+    "title": "Ihre ID teilen",
+    "info": "Durch das Teilen dieses QR-Codes kann eine Person Sie als Erben registrieren.",
+    "own-id": "Ihre Internet-ID lautet: "
+  },
+  "dialog": {
+    "button": {
+      "cancel": "Abbrechen",
+      "close": "Schließen"
+    }
+  },
+  "error": {
+    "title": "Fehler"
+  }
+}

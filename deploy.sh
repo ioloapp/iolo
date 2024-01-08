@@ -23,7 +23,7 @@ if [[ $ENV == "local" ]]; then
         echo "dfx 0.12.0 or above required. Please run dfx upgrade"
         exit 1
     fi
-    
+
     # Start local replica
     dfx start --background --clean
     dfx canister create system_api --specified-id cr2gw-4iaaa-aaaal-qcrda-cai
@@ -31,3 +31,6 @@ fi
 
 # Deploy exchange_rate and exchange_rate_assets
 dfx deploy --network "$ENV"
+if [[ $ENV == "local" ]]; then
+  echo "local internet_identity: http://<canister-id>.localhost:4943"
+fi

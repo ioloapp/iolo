@@ -1,0 +1,135 @@
+{
+  "testaments": {
+    "title": "Testamenti",
+    "testator": "Testatore",
+    "dialog": {
+      "add": {
+        "title": "Aggiungi testamento",
+        "text": "Per aggiungere un testamento, scegli i segreti, gli eredi e compila le informazioni necessarie.",
+        "button": "Aggiungi testamento"
+      },
+      "delete": {
+        "title": "Elimina testamento",
+        "text": "Sei sicuro di voler eliminare il testamento {{testament}}?",
+        "button": "Elimina testamento"
+      },
+      "edit": {
+        "title": "Modifica testamento",
+        "text": "Modifica il nome, i segreti e gli eredi del tuo testamento.",
+        "button": "Aggiorna testamento"
+      },
+      "view": {
+        "title": "Visualizza testamento",
+        "text": "Questo è il tuo testamento."
+      },
+      "content": {
+        "name": "Nome",
+        "max-logout-time": "Tempo massimo di disconnessione in secondi"
+      }
+    }
+  },
+  "heirs": {
+    "title": "Eredi",
+    "dialog": {
+      "add": {
+        "title": "Aggiungi erede",
+        "text": "Per aggiungere un nuovo erede, inserisci la sua identificazione e aggiungi un nome conosciuto.",
+        "button": "Aggiungi erede"
+      },
+      "delete": {
+        "title": "Elimina erede",
+        "text": "Sei sicuro di voler eliminare l'erede {{heir}}?",
+        "button": "Elimina erede"
+      },
+      "edit": {
+        "title": "Modifica erede",
+        "text": "Aggiorna le informazioni del tuo erede.",
+        "button": "Aggiorna erede"
+      }
+    }
+  },
+  "login": {
+    "button": "Accedi"
+  },
+  "logout": {
+    "button": "Esci"
+  },
+  "onboarding": {
+    "title": "Onboarding",
+    "text":"Sembra che tu non abbia ancora creato il tuo account IOLO. Ne vuoi uno?"
+  },
+  "user": {
+    "type": "Tipo di utente",
+    "name": "Nome",
+    "email": "Email",
+    "language": "Lingua",
+    "button": {
+      "create": "Crea account",
+      "update": "Aggiorna utente"
+    },
+    "icon": {
+      "label": "Account dell'utente corrente"
+    }
+  },
+  "profile": {
+    "title": "Profilo",
+    "mode": "Modalità scura UI"
+  },
+  "rules": {
+    "title": "Regole",
+    "dead-man-switch": {
+      "button": "Interruttore del morto"
+    }
+  },
+  "secrets": {
+    "title": "Portafoglio",
+    "passwords": "Password",
+    "notes": "Note",
+    "documents": "Documenti",
+    "no-category": "Nessuna categoria",
+    "dialog": {
+      "add": {
+        "title": "Aggiungi segreto",
+        "text": "Per aggiungere un nuovo segreto, scegli la categoria e compila le informazioni necessarie.",
+        "button": "Aggiungi segreto"
+      },
+      "delete": {
+        "title": "Elimina segreto",
+        "text": "Sei sicuro di voler eliminare il segreto {{secret}}?",
+        "button": "Elimina segreto"
+      },
+      "edit": {
+        "title": "Modifica segreto",
+        "text": "Modifica il tuo segreto",
+        "button": "Aggiorna segreto"
+      },
+      "content": {
+        "category": "Categoria",
+        "name": "Nome",
+        "username": "Nome utente",
+        "password": "Password",
+        "url": "URL",
+        "notes": "Note"
+      },
+      "view": {
+        "title": "Modifica segreto",
+        "text": "Modifica il tuo segreto"
+      }
+    }
+  },
+  "share": {
+    "title-short": "Condividi",
+    "title": "Condividi il tuo ID",
+    "info": "Condividendo questo codice QR, una persona può registrarti come erede.",
+    "own-id": "Il tuo ID Internet è: "
+  },
+  "dialog": {
+    "button": {
+      "cancel": "Annulla",
+      "close": "Chiudi"
+    }
+  },
+  "error": {
+    "title": "Errore"
+  }
+}

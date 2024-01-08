@@ -10,6 +10,7 @@ import {testamentsActions} from "../../redux/testaments/testamentsSlice";
 import {selectTestamentDialogItem} from "../../redux/testaments/testamentsSelectors";
 import {selectHeirs} from "../../redux/heirs/heirsSelectors";
 import {SelectList, SelectListItem} from "../selectlist/select-list";
+import {useTranslation} from "react-i18next";
 
 
 export interface TestamentDialogContentProps {
@@ -25,6 +26,7 @@ interface SelectedSecret extends SelectListItem, UiSecretListEntry {
 
 export const TestamentDialogContent: FC<TestamentDialogContentProps> = ({readonly, viewSecret}) => {
     const dispatch = useAppDispatch();
+    const { t } = useTranslation();
     const dialogItem: UiTestamentResponse = useSelector(selectTestamentDialogItem);
     const groupedSecretList = useSelector(selectGroupedSecrets);
     const heirsList = useSelector(selectHeirs);
@@ -109,7 +111,7 @@ export const TestamentDialogContent: FC<TestamentDialogContentProps> = ({readonl
                     autoFocus
                     margin="dense"
                     id="name"
-                    label="Name"
+                    label={t('testaments.dialog.content.name')}
                     InputLabelProps={{shrink: true}}
                     fullWidth
                     variant="standard"
@@ -133,7 +135,7 @@ export const TestamentDialogContent: FC<TestamentDialogContentProps> = ({readonl
                 <TextField
                     margin="dense"
                     id="timeBasedConditionMaxLogoutTimeInDays"
-                    label="Max. logout time in days"
+                    label={t('testaments.dialog.content.max-logout-time')}
                     InputLabelProps={{shrink: true}}
                     fullWidth
                     variant="standard"

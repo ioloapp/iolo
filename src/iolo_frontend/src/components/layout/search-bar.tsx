@@ -9,11 +9,14 @@ import {useNavigate} from "react-router-dom";
 import {userActions} from "../../redux/user/userSlice";
 import {useAppDispatch} from "../../redux/hooks";
 import {logoIcon} from "../../resources/images";
+import {useTranslation} from "react-i18next";
+import {ROUTE_PROFILE, ROUTE_SHARE} from "./routes";
 
 export const UserProfile = () => {
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 
     const navigate = useNavigate();
+    const { t } = useTranslation();
     const dispatch = useAppDispatch();
     const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorEl(event.currentTarget);
@@ -26,12 +29,12 @@ export const UserProfile = () => {
 
     const handleProfile = () => {
         setAnchorEl(null);
-        navigate("/profile")
+        navigate(ROUTE_PROFILE)
     };
 
     const handleShare = () => {
         setAnchorEl(null);
-        navigate("/share")
+        navigate(ROUTE_SHARE)
     };
 
     const handleClose = () => {
@@ -43,7 +46,7 @@ export const UserProfile = () => {
         <div>
             <IconButton
                 size="large"
-                aria-label="account of current user"
+                aria-label={t('user.icon.label')}
                 aria-controls="menu-appbar"
                 aria-haspopup="true"
                 onClick={handleMenu}
