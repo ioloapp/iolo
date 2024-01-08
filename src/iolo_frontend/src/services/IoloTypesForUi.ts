@@ -63,6 +63,7 @@ export interface UiUser {
     type?: UiUserType,
     name?: string,
     email?: string,
+    language?: string,
     userVaultId?: bigint,
     dateCreated?: string,
     dateModified?: string,

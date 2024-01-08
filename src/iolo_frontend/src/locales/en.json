@@ -55,12 +55,14 @@
     "button": "Logout"
   },
   "onboarding": {
-    "title": "Onboarding"
+    "title": "Onboarding",
+    "text":"It seems you have not yet created your IOLO account. You wanna go for one?"
   },
   "user": {
     "type": "Type of user",
     "name": "Name",
     "email": "Email",
+    "language": "Language",
     "button": {
       "create": "Create Account",
       "update": "Update User"

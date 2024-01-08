@@ -9,11 +9,13 @@ import {selectCurrentUser, selectMode} from "../../redux/user/userSelectors";
 import {UiUser, UiUserType} from "../../services/IoloTypesForUi";
 import TextField from "@mui/material/TextField";
 import {useTranslation} from "react-i18next";
+import i18n from "i18next";
+import {supportedLanguage} from "../../locales/i18n";
 
 export function Profile() {
 
     const dispatch = useAppDispatch();
-    const { t } = useTranslation();
+    const {t} = useTranslation();
     const currentUser = useSelector(selectCurrentUser);
     const darkMode = useSelector(selectMode);
 
@@ -29,6 +31,14 @@ export function Profile() {
 
     const updateUser = () => {
         dispatch(updateUserThunk(currentUser));
+    }
+
+    const changeUserLanguage = (language: string) => {
+        void i18n.changeLanguage(language);
+        dispatch(updateUserThunk({
+            ...currentUser,
+            language
+        }));
     }
 
     const updateMode = () => {
@@ -55,55 +65,72 @@ export function Profile() {
                         <FormControlLabel control={<Switch value={darkMode === 'dark'} onChange={() => updateMode()}/>}
                                           label={t('profile.mode')}/>
                     </FormGroup>
-                    <Typography variant="body2">Type of user</Typography>
-                    <Select
-                        id="usertype-select"
-                        value={currentUser?.type}
-                        label={t('user.type')}
-                        onChange={e => updateCurrentUser({
-                            ...currentUser,
-                            type: UiUserType[e.target.value as keyof typeof UiUserType]
-                        })}
-                        sx={{width: '100%'}}
-                    >
-                        {Object.keys(UiUserType)
-                            .map(key => {
-                                return <MenuItem key={key} value={key}>{key}</MenuItem>
-                            })
+                        <Typography variant="body2">{t('user.type')}</Typography>
+                        <Select
+                            id="usertype-select"
+                            value={currentUser?.type}
+                            label={t('user.type')}
+                            onChange={e => updateCurrentUser({
+                                ...currentUser,
+                                type: UiUserType[e.target.value as keyof typeof UiUserType]
+                            })}
+                            sx={{width: '100%'}}
+                        >
+                            {Object.keys(UiUserType)
+                                .map(key => {
+                                    return <MenuItem key={key} value={key}>{key}</MenuItem>
+                                })
 
-                        }
-                    </Select>
-                    <TextField
-                        autoFocus
-                        margin="dense"
-                        id="name"
-                        label={t('user.name')}
-                        InputLabelProps={{shrink: true}}
-                        fullWidth
-                        variant="standard"
-                        value={currentUser.name}
-                        onChange={e => updateCurrentUser({
-                            ...currentUser,
-                            name: e.target.value
-                        })}
-                    />
-                    <TextField
-                        autoFocus
-                        margin="dense"
-                        id="email"
-                        label={t('user.email')}
-                        InputLabelProps={{shrink: true}}
-                        fullWidth
-                        variant="standard"
-                        value={currentUser.email}
-                        onChange={e => updateCurrentUser({
-                            ...currentUser,
-                            email: e.target.value
-                        })}
-                    />
-                    <Button variant="contained" sx={{m: '20px auto 0px auto'}} onClick={updateUser}>
-                        {t('user.button.update')}
-                    </Button>
+                            }
+                        </Select>
+                        <TextField
+                            autoFocus
+                            margin="dense"
+                            id="name"
+                            label={t('user.name')}
+                            InputLabelProps={{shrink: true}}
+                            fullWidth
+                            variant="standard"
+                            value={currentUser.name}
+                            onChange={e => updateCurrentUser({
+                                ...currentUser,
+                                name: e.target.value
+                            })}
+                        />
+                        <TextField
+                            autoFocus
+                            margin="dense"
+                            id="email"
+                            label={t('user.email')}
+                            InputLabelProps={{shrink: true}}
+                            fullWidth
+                            variant="standard"
+                            value={currentUser.email}
+                            onChange={e => updateCurrentUser({
+                                ...currentUser,
+                                email: e.target.value
+                            })}
+                        />
+                        <Typography variant="body2">{t('user.language')}</Typography>
+                        <Select
+                            id="language-select"
+                            value={currentUser?.language}
+                            label={t('user.language')}
+                            onChange={e => changeUserLanguage(
+                                e.target.value
+                            )}
+                            sx={{width: '100%'}}
+                        >
+                            {supportedLanguage
+                                .map(language => {
+                                    return <MenuItem key={language} value={language}>{language}</MenuItem>
+                                })
+
+                            }
+                        </Select>
+                        <Button variant="contained" sx={{m: '20px auto 0px auto'}} onClick={updateUser}>
+                            {t('user.button.update')}
+                        </Button>
                 </Box>
             </>
         </PageLayout>

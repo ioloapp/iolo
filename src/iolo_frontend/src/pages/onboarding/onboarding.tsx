@@ -9,6 +9,8 @@ import TextField from "@mui/material/TextField";
 import {useSelector} from "react-redux";
 import {selectCurrentUser} from "../../redux/user/userSelectors";
 import {useTranslation} from "react-i18next";
+import {supportedLanguage} from "../../locales/i18n";
+import i18n from "i18next";
 
 
 export const Onboarding = () => {
@@ -35,12 +37,20 @@ export const Onboarding = () => {
         dispatch(userActions.updateUser(user))
     }
 
+    const changeUserLanguage = (language: string) => {
+        void i18n.changeLanguage(language);
+        dispatch(userActions.updateUser({
+            ...currentUser,
+            language
+        }));
+    }
+
     return (
         <PageLayout title={t('onboarding.title')}>
             <>
                 <Container maxWidth="sm">
                     <Typography paragraph>
-                        It seems you have not yet created your iolo account. You wanna go for one?
+                        {t('onboarding.text')}
                     </Typography>
                     <Box
                         sx={{
@@ -51,7 +61,7 @@ export const Onboarding = () => {
                             flexDirection: 'column'
                         }}
                     >
-                        <Typography variant="body2">Type of user</Typography>
+                        <Typography variant="body2">{t('user.type')}</Typography>
                         <Select
                             id="usertype-select"
                             value={currentUser?.type}
@@ -97,7 +107,35 @@ export const Onboarding = () => {
                                 email: e.target.value
                             })}
                         />
-                        <Button variant="contained" sx={{m: '0px auto 0px auto'}} onClick={createUser}>
+                        <Box
+                            sx={{
+                                flexGrow: 1,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                flexDirection: 'column',
+                                width: '100%'
+                            }}
+                        >
+                            <Typography variant="body2">{t('user.language')}</Typography>
+                            <Select
+                                id="language-select"
+                                value={currentUser?.language}
+                                label={t('user.language')}
+                                onChange={e => changeUserLanguage(
+                                    e.target.value
+                                )}
+                                sx={{width: '100%'}}
+                            >
+                                {supportedLanguage
+                                    .map(language => {
+                                        return <MenuItem key={language} value={language}>{language}</MenuItem>
+                                    })
+
+                                }
+                            </Select>
+                        </Box>
+                        <Button variant="contained" sx={{m: '20px auto 0px auto'}} onClick={createUser}>
                             {t('user.button.create')}
                         </Button>
                     </Box>
