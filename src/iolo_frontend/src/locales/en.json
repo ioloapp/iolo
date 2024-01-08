@@ -24,7 +24,7 @@
       },
       "content": {
         "name": "Name",
-        "max-logout-time": "Max. logout time in seconds"
+        "max-logout-time": "Max. logout time in days"
       }
     }
   },

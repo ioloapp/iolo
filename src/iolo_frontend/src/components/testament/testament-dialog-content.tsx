@@ -4,7 +4,7 @@ import TextField from '@mui/material/TextField';
 import {useSelector} from "react-redux";
 import {selectGroupedSecrets} from "../../redux/secrets/secretsSelectors";
 import {useAppDispatch} from "../../redux/hooks";
-import {FormControl, List, ListItem, ListItemText, Typography} from "@mui/material";
+import {FormControl, ListItem, ListItemText, Typography} from "@mui/material";
 import {
     UiSecretListEntry,
     UiTestamentResponse,
@@ -17,6 +17,7 @@ import {selectTestamentDialogItem} from "../../redux/testaments/testamentsSelect
 import {selectHeirs} from "../../redux/heirs/heirsSelectors";
 import {SelectList, SelectListItem} from "../selectlist/select-list";
 import {useTranslation} from "react-i18next";
+import {Conditions} from "../conditions/conditions";
 
 
 export interface TestamentDialogContentProps {
@@ -59,16 +60,6 @@ export const TestamentDialogContent: FC<TestamentDialogContentProps> = ({readonl
 
     const updateTestamentToAdd = (testament: UiTestamentResponse) => {
         dispatch(testamentsActions.updateDialogItem(testament))
-    }
-
-    const updateCondition = (condition: UiTimeBasedCondition | UiXOutOfYCondition) => {
-        let conditions = dialogItem.conditions.filter(c => c.id !== condition.id);
-        conditions.push(condition);
-        conditions.sort((a, b) => a.order - b.order)
-        dispatch(testamentsActions.updateDialogItem({
-            ...dialogItem,
-            conditions
-        }))
     }
 
     const handleSecretChange = (secret: SelectedSecret) => {
@@ -171,12 +162,7 @@ export const TestamentDialogContent: FC<TestamentDialogContentProps> = ({readonl
                 <SelectList handleToggle={handleHeirChange} listItem={selectedHeirs} readonly={readonly}/>
             </FormControl>
             <FormControl fullWidth>
-                <List>
-                        {
-                            dialogItem.conditions.map(condition => getCondition(condition))
-                        }
-                </List>
-
+                <Conditions conditions={dialogItem.conditions} />
             </FormControl>
         </>
     );

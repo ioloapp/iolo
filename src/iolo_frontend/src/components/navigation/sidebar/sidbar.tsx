@@ -4,20 +4,15 @@ import LockOpenOutlinedIcon from "@mui/icons-material/LockOpenOutlined";
 import {Link} from "react-router-dom";
 import HistoryEduOutlinedIcon from "@mui/icons-material/HistoryEduOutlined";
 import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
-import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
+import SendIcon from '@mui/icons-material/Send';
+import LogoutIcon from '@mui/icons-material/Logout';
+import PeopleOutlineIcon from '@mui/icons-material/PeopleOutline';
 import './sidbar.css';
 import {userActions} from "../../../redux/user/userSlice";
 import {useAppDispatch} from "../../../redux/hooks";
 import {sidebarWith} from "../../../App";
 import {useTranslation} from "react-i18next";
-import {
-    ROUTE_HEIRS,
-    ROUTE_PROFILE,
-    ROUTE_RULES,
-    ROUTE_SECRETS,
-    ROUTE_SHARE,
-    ROUTE_TESTAMENTS
-} from "../../layout/routes";
+import {ROUTE_HEIRS, ROUTE_PROFILE, ROUTE_SECRETS, ROUTE_SHARE, ROUTE_TESTAMENTS} from "../../layout/routes";
 import {IoloLogo} from "../../../resources/logo";
 
 export const SideBar = () => {
@@ -60,28 +55,22 @@ export const SideBar = () => {
                 </ListItem>
                 <ListItem component={Link} to={ROUTE_HEIRS}>
                     <ListItemIcon>
-                        <PersonOutlinedIcon/>
+                        <PeopleOutlineIcon/>
                     </ListItemIcon>
                     <ListItemText primary={t('heirs.title')} className="sidebar-link"/>
-                </ListItem>
-                <ListItem component={Link} to={ROUTE_RULES}>
-                    <ListItemIcon>
-                        <SettingsOutlinedIcon/>
-                    </ListItemIcon>
-                    <ListItemText primary={t('rules.title')} className="sidebar-link"/>
                 </ListItem>
             </List>
             <Divider/>
             <List>
                 <ListItem component={Link} to={ROUTE_PROFILE}>
                     <ListItemIcon>
-                        <LockOpenOutlinedIcon/>
+                        <PersonOutlinedIcon/>
                     </ListItemIcon>
                     <ListItemText primary={t('profile.title')} className="sidebar-link"/>
                 </ListItem>
                 <ListItem component={Link} to={ROUTE_SHARE}>
                     <ListItemIcon>
-                        <HistoryEduOutlinedIcon/>
+                        <SendIcon/>
                     </ListItemIcon>
                     <ListItemText primary={t('share.title-short')} className="sidebar-link"/>
                 </ListItem>
@@ -90,7 +79,7 @@ export const SideBar = () => {
             <List>
                 <ListItem component={Link} to={ROUTE_SECRETS} onClick={handleLogout}>
                     <ListItemIcon>
-                        <PersonOutlinedIcon/>
+                        <LogoutIcon/>
                     </ListItemIcon>
                     <ListItemText primary={t('logout.button')} className="sidebar-link"/>
                 </ListItem>
