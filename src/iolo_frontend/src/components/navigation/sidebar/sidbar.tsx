@@ -5,7 +5,6 @@ import {Link} from "react-router-dom";
 import HistoryEduOutlinedIcon from "@mui/icons-material/HistoryEduOutlined";
 import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
-import {LogoIcon} from "../../layout/search-bar";
 import './sidbar.css';
 import {userActions} from "../../../redux/user/userSlice";
 import {useAppDispatch} from "../../../redux/hooks";
@@ -19,11 +18,12 @@ import {
     ROUTE_SHARE,
     ROUTE_TESTAMENTS
 } from "../../layout/routes";
+import {IoloLogo} from "../../../resources/logo";
 
 export const SideBar = () => {
 
     const dispatch = useAppDispatch();
-    const { t } = useTranslation();
+    const {t} = useTranslation();
 
     const handleLogout = () => {
         dispatch(userActions.logOut());
@@ -44,7 +44,7 @@ export const SideBar = () => {
             variant="permanent"
             anchor="left"
         >
-            <LogoIcon/>
+            <IoloLogo/>
             <List>
                 <ListItem component={Link} to={ROUTE_SECRETS}>
                     <ListItemIcon>
