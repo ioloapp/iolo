@@ -16,6 +16,7 @@ import {SideBar} from "../navigation/sidebar/sidbar";
 import {Box} from "@mui/material";
 import {mobileWidth} from "../../App";
 import useWindowResize from "../../utils/useWindowResize";
+import {ROUTE_HEIRS, ROUTE_PROFILE, ROUTE_RULES, ROUTE_SECRETS, ROUTE_SHARE, ROUTE_TESTAMENTS} from "./routes";
 
 export const Layout: FC = () => {
     const isLoggedIn = useSelector(selectPrincipal);
@@ -42,12 +43,12 @@ export const Layout: FC = () => {
                     sx={{flexGrow: 1, bgcolor: 'background.default', p: 3}}
                 >
                     <Routes>
-                        <Route path="/" Component={Secrets}/>
-                        <Route path="/testaments" Component={Testaments}/>
-                        <Route path="/heirs" Component={Heirs}/>
-                        <Route path="/rules" Component={Rules}/>
-                        <Route path="/profile" Component={Profile}/>
-                        <Route path="/share" Component={ShareId}/>
+                        <Route path={ROUTE_SECRETS} Component={Secrets}/>
+                        <Route path={ROUTE_TESTAMENTS} Component={Testaments}/>
+                        <Route path={ROUTE_HEIRS} Component={Heirs}/>
+                        <Route path={ROUTE_RULES} Component={Rules}/>
+                        <Route path={ROUTE_PROFILE} Component={Profile}/>
+                        <Route path={ROUTE_SHARE} Component={ShareId}/>
                     </Routes>
                 </Box>
                 {width < mobileWidth &&

@@ -10,6 +10,7 @@ import {userActions} from "../../redux/user/userSlice";
 import {useAppDispatch} from "../../redux/hooks";
 import {logoIcon} from "../../resources/images";
 import {useTranslation} from "react-i18next";
+import {ROUTE_PROFILE, ROUTE_SHARE} from "./routes";
 
 export const UserProfile = () => {
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -28,12 +29,12 @@ export const UserProfile = () => {
 
     const handleProfile = () => {
         setAnchorEl(null);
-        navigate("/profile")
+        navigate(ROUTE_PROFILE)
     };
 
     const handleShare = () => {
         setAnchorEl(null);
-        navigate("/share")
+        navigate(ROUTE_SHARE)
     };
 
     const handleClose = () => {
