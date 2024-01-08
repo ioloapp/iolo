@@ -16,6 +16,7 @@ import DeleteHeirDialog from "../../components/heir/delete-heir-dialog";
 import EditHeirDialog from "../../components/heir/edit-heir-dialog";
 import {Error} from "../../components/error/error";
 import {useLocation} from "react-router-dom";
+import {useTranslation} from "react-i18next";
 
 export function Heirs() {
 
@@ -24,6 +25,7 @@ export function Heirs() {
     const heirListState = useSelector(selectHeirListState);
     const heirListError = useSelector(selectHeirError);
     const queryParams = new URLSearchParams(useLocation().search);
+    const { t } = useTranslation();
 
     if (queryParams.get('action') === 'addHeirWithDeepLink' && queryParams.get('principalId') && queryParams.get('principalType')) {
         dispatch(heirsActions.updateHeirToAdd({
@@ -69,7 +71,7 @@ export function Heirs() {
     }
 
     return (
-        <PageLayout title="Heirs" filterList={filterHeirsList}>
+        <PageLayout title={t('heirs.title')} filterList={filterHeirsList}>
             <>
                 <Box>
                     {hasError() &&

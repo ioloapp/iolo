@@ -12,9 +12,11 @@ import {selectCurrentUser} from "../../redux/user/userSelectors";
 import {BasicDialog} from "../dialog/basic-dialog";
 import {TestamentDialogContent} from './testament-dialog-content';
 import {UiTestamentResponse} from "../../services/IoloTypesForUi";
+import {useTranslation} from "react-i18next";
 
 export default function EditTestamentDialog() {
     const dispatch = useAppDispatch();
+    const { t } = useTranslation();
     const showEditTestamentDialog = useSelector(selectShowEditTestamentDialog);
     const dialogItem: UiTestamentResponse = useSelector(selectTestamentDialogItem);
     const testamentError = useSelector(selectTestamentError);
@@ -37,13 +39,13 @@ export default function EditTestamentDialog() {
     }
 
     return (
-        <BasicDialog title="Edit testament"
-                     leadText="Edit your testaments name, secrets and heirs."
+        <BasicDialog title={t('testaments.dialog.edit.title')}
+                     leadText={t('testaments.dialog.edit.text')}
                      isOpen={showEditTestamentDialog}
                      handleClose={handleClose}
                      cancelAction={cancelEditTestament}
                      okAction={updateTestament}
-                     okButtonText="Update testament"
+                     okButtonText={t('testaments.dialog.edit.button')}
                      error={testamentError}
                      dialogItemState={dialogItemState}>
             <TestamentDialogContent/>

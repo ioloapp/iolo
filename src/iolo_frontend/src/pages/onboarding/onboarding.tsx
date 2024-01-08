@@ -8,11 +8,13 @@ import {UiUser, UiUserType} from "../../services/IoloTypesForUi";
 import TextField from "@mui/material/TextField";
 import {useSelector} from "react-redux";
 import {selectCurrentUser} from "../../redux/user/userSelectors";
+import {useTranslation} from "react-i18next";
 
 
 export const Onboarding = () => {
 
     const dispatch = useAppDispatch();
+    const { t } = useTranslation();
     const currentUser = useSelector(selectCurrentUser);
     const [loadingIconIsOpen, setLoadingIcon] = React.useState(false);
 
@@ -34,7 +36,7 @@ export const Onboarding = () => {
     }
 
     return (
-        <PageLayout title="Onboarding">
+        <PageLayout title={t('onboarding.title')}>
             <>
                 <Container maxWidth="sm">
                     <Typography paragraph>
@@ -53,7 +55,7 @@ export const Onboarding = () => {
                         <Select
                             id="usertype-select"
                             value={currentUser?.type}
-                            label="Type of user"
+                            label={t('user.type')}
                             onChange={e => updateCurrentUser({
                                 ...currentUser,
                                 type: UiUserType[e.target.value as keyof typeof UiUserType]
@@ -71,7 +73,7 @@ export const Onboarding = () => {
                             autoFocus
                             margin="dense"
                             id="name"
-                            label="Name"
+                            label={t('user.name')}
                             InputLabelProps={{shrink: true}}
                             fullWidth
                             variant="standard"
@@ -85,7 +87,7 @@ export const Onboarding = () => {
                             autoFocus
                             margin="dense"
                             id="email"
-                            label="Email"
+                            label={t('user.email')}
                             InputLabelProps={{shrink: true}}
                             fullWidth
                             variant="standard"
@@ -96,7 +98,7 @@ export const Onboarding = () => {
                             })}
                         />
                         <Button variant="contained" sx={{m: '0px auto 0px auto'}} onClick={createUser}>
-                            Create Account
+                            {t('user.button.create')}
                         </Button>
                     </Box>
                     <Box

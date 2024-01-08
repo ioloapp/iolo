@@ -12,9 +12,11 @@ import AddIcon from "@mui/icons-material/Add";
 import {Fab} from "@mui/material";
 import {BasicDialog} from "../dialog/basic-dialog";
 import {SecretDialogContent} from './secret-dialog-content';
+import {useTranslation} from "react-i18next";
 
 export default function AddSecretDialog() {
     const dispatch = useAppDispatch();
+    const { t } = useTranslation();
     const showAddSecretDialog: boolean = useSelector(selectShowAddSecretDialog);
     const secretToAdd = useSelector(selectDialogItem);
     const secretError = useSelector(selectSecretsError);
@@ -38,20 +40,20 @@ export default function AddSecretDialog() {
 
     return (
         <div>
-            <Fab color="primary" aria-label="add" onClick={handleClickOpen} sx={{
+            <Fab color="primary" aria-label={t('secrets.dialog.add.button')} onClick={handleClickOpen} sx={{
                 position: "fixed",
                 bottom: (theme) => theme.spacing(10),
                 right: (theme) => theme.spacing(2)
             }}>
                 <AddIcon/>
             </Fab>
-            <BasicDialog title="Add secret"
-                         leadText="To add a new secret choose the category of it and fill in the necessary information."
+            <BasicDialog title={t('secrets.dialog.add.title')}
+                         leadText={t('secrets.dialog.add.text')}
                          isOpen={showAddSecretDialog}
                          handleClose={handleClose}
                          cancelAction={cancelAddSecret}
                          okAction={createSecret}
-                         okButtonText="Add secret"
+                         okButtonText={t('secrets.dialog.add.button')}
                          error={secretError}
                          dialogItemState={secretToAddState}>
                 <SecretDialogContent/>

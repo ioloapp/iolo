@@ -8,10 +8,12 @@ import {useSelector} from "react-redux";
 import {selectCurrentUser, selectMode} from "../../redux/user/userSelectors";
 import {UiUser, UiUserType} from "../../services/IoloTypesForUi";
 import TextField from "@mui/material/TextField";
+import {useTranslation} from "react-i18next";
 
 export function Profile() {
 
     const dispatch = useAppDispatch();
+    const { t } = useTranslation();
     const currentUser = useSelector(selectCurrentUser);
     const darkMode = useSelector(selectMode);
 
@@ -38,7 +40,7 @@ export function Profile() {
     }
 
     return (
-        <PageLayout title="Profile">
+        <PageLayout title={t('profile.title')}>
             <>
                 <Box
                     sx={{
@@ -51,13 +53,13 @@ export function Profile() {
                 >
                     <FormGroup>
                         <FormControlLabel control={<Switch value={darkMode === 'dark'} onChange={() => updateMode()}/>}
-                                          label="UI Dark Mode"/>
+                                          label={t('profile.mode')}/>
                     </FormGroup>
                     <Typography variant="body2">Type of user</Typography>
                     <Select
                         id="usertype-select"
                         value={currentUser?.type}
-                        label="Type of user"
+                        label={t('user.type')}
                         onChange={e => updateCurrentUser({
                             ...currentUser,
                             type: UiUserType[e.target.value as keyof typeof UiUserType]
@@ -75,7 +77,7 @@ export function Profile() {
                         autoFocus
                         margin="dense"
                         id="name"
-                        label="Name"
+                        label={t('user.name')}
                         InputLabelProps={{shrink: true}}
                         fullWidth
                         variant="standard"
@@ -89,7 +91,7 @@ export function Profile() {
                         autoFocus
                         margin="dense"
                         id="email"
-                        label="Email"
+                        label={t('user.email')}
                         InputLabelProps={{shrink: true}}
                         fullWidth
                         variant="standard"
@@ -100,7 +102,7 @@ export function Profile() {
                         })}
                     />
                     <Button variant="contained" sx={{m: '20px auto 0px auto'}} onClick={updateUser}>
-                        Update User
+                        {t('user.button.update')}
                     </Button>
                 </Box>
             </>

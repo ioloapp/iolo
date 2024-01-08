@@ -10,10 +10,12 @@ import './sidbar.css';
 import {userActions} from "../../../redux/user/userSlice";
 import {useAppDispatch} from "../../../redux/hooks";
 import {sidebarWith} from "../../../App";
+import {useTranslation} from "react-i18next";
 
 export const SideBar = () => {
 
     const dispatch = useAppDispatch();
+    const { t } = useTranslation();
 
     const handleLogout = () => {
         dispatch(userActions.logOut());
@@ -40,25 +42,25 @@ export const SideBar = () => {
                     <ListItemIcon>
                         <LockOpenOutlinedIcon/>
                     </ListItemIcon>
-                    <ListItemText primary="Wallet" className="sidebar-link"/>
+                    <ListItemText primary={t('secrets.title')} className="sidebar-link"/>
                 </ListItem>
                 <ListItem component={Link} to="/testaments">
                     <ListItemIcon>
                         <HistoryEduOutlinedIcon/>
                     </ListItemIcon>
-                    <ListItemText primary="Testaments" className="sidebar-link"/>
+                    <ListItemText primary={t('testaments.title')} className="sidebar-link"/>
                 </ListItem>
                 <ListItem component={Link} to="/heirs">
                     <ListItemIcon>
                         <PersonOutlinedIcon/>
                     </ListItemIcon>
-                    <ListItemText primary="Heirs" className="sidebar-link"/>
+                    <ListItemText primary={t('heirs.title')} className="sidebar-link"/>
                 </ListItem>
                 <ListItem component={Link} to="/rules">
                     <ListItemIcon>
                         <SettingsOutlinedIcon/>
                     </ListItemIcon>
-                    <ListItemText primary="Rules" className="sidebar-link"/>
+                    <ListItemText primary={t('rules.title')} className="sidebar-link"/>
                 </ListItem>
             </List>
             <Divider/>
@@ -67,13 +69,13 @@ export const SideBar = () => {
                     <ListItemIcon>
                         <LockOpenOutlinedIcon/>
                     </ListItemIcon>
-                    <ListItemText primary="Profile" className="sidebar-link"/>
+                    <ListItemText primary={t('profile.title')} className="sidebar-link"/>
                 </ListItem>
                 <ListItem component={Link} to="/share">
                     <ListItemIcon>
                         <HistoryEduOutlinedIcon/>
                     </ListItemIcon>
-                    <ListItemText primary="Share" className="sidebar-link"/>
+                    <ListItemText primary={t('share.title-short')} className="sidebar-link"/>
                 </ListItem>
             </List>
             <Divider/>
@@ -82,7 +84,7 @@ export const SideBar = () => {
                     <ListItemIcon>
                         <PersonOutlinedIcon/>
                     </ListItemIcon>
-                    <ListItemText primary="Logout" className="sidebar-link"/>
+                    <ListItemText primary={t('logout.button')} className="sidebar-link"/>
                 </ListItem>
             </List>
         </Drawer>

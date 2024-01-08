@@ -4,9 +4,11 @@ import {PageLayout} from "../../components/layout/page-layout";
 import {useSelector} from "react-redux";
 import {selectCurrentUser} from "../../redux/user/userSelectors";
 import {QRCodeSVG} from "qrcode.react";
+import {useTranslation} from "react-i18next";
 
 export function ShareId() {
     const currentUser = useSelector(selectCurrentUser);
+    const { t } = useTranslation();
     const hostname = process.env.NODE_ENV === 'production' ? 'https://' + process.env.IOLO_FRONTEND_CANISTER_ID + '.icp0.io' : 'http://localhost:8080';
     let url = hostname + '/heirs?action=addHeirWithDeepLink&principalType=' + currentUser.type + '&principalId=' + currentUser.id;
     if (currentUser.name) {
@@ -17,7 +19,7 @@ export function ShareId() {
     }
 
     return (
-        <PageLayout title="Share your ID">
+        <PageLayout title={t('share.title')}>
             <>
                 <Box
                     sx={{
@@ -30,7 +32,7 @@ export function ShareId() {
                 >
                     <div>
                         <Typography paragraph>
-                            Sharing this QR code allows a person to register you as an heir.
+                            {t('share.info')}Sharing this QR code allows a person to register you as an heir.
                         </Typography>
                     </div>
                     <div>
@@ -38,7 +40,7 @@ export function ShareId() {
                     </div>
                     <div>
                         <Typography paragraph>
-                            Your internet ID is: {currentUser.id}
+                            {t('share.own-id')}{currentUser.id}
                         </Typography>
                     </div>
                 </Box>

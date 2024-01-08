@@ -99,6 +99,11 @@ module.exports = {
                     },
                 ],
             },
+            {
+                test: /\.json$/,
+                loader: 'json-loader',
+                type: 'javascript/auto', // This is required for webpack 4 and later
+            },
         ]
     },
     plugins: [

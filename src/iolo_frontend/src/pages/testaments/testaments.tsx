@@ -31,6 +31,7 @@ import {loadSecretsThunk} from "../../redux/secrets/secretsSlice";
 import {loadHeirsThunk} from "../../redux/heirs/heirsSlice";
 import {selectHeirListState} from "../../redux/heirs/heirsSelectors";
 import ViewSecretDialog from "../../components/secret/view-secret-dialog";
+import {useTranslation} from "react-i18next";
 
 export function Testaments() {
 
@@ -40,6 +41,7 @@ export function Testaments() {
     const testamentsListError = useSelector(selectTestamentError);
     const secretsListState = useSelector(selectSecretsListState);
     const heirsListState = useSelector(selectHeirListState);
+    const { t } = useTranslation();
 
     useEffect(() => {
         if (secretsListState === 'init') {
@@ -84,7 +86,7 @@ export function Testaments() {
     }
 
     return (
-        <PageLayout title="Testaments" filterList={filterTestamentList}>
+        <PageLayout title={t('testaments.title')} filterList={filterTestamentList}>
             <>
                 <Box>
                     {hasError() &&
@@ -133,7 +135,7 @@ export function Testaments() {
                                         </ListItemAvatar>
                                         <ListItemText
                                             primary={testament.name}
-                                            secondary={testament.role === UiTestamentListEntryRole.Heir ? `Testator: ${testament.testator.id}` : ''}
+                                            secondary={testament.role === UiTestamentListEntryRole.Heir ? `${t('testaments.testator')}: ${testament.testator.id}` : ''}
                                         />
                                     </ListItem>,
                                 )}
