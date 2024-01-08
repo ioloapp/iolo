@@ -1,16 +1,21 @@
 use candid::{CandidType, Deserialize, Principal};
 use serde::Serialize;
+
 use crate::common::user::User;
 use crate::utils::time;
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct TimeBasedCondition {
+    pub id: ConditionID,
+    pub order: u8,
     pub number_of_days_since_last_login: u64,
     pub condition_status: bool,
 }
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct XOutOfYCondition {
+    pub id: ConditionID,
+    pub order: u8,
     pub confirmers: Vec<Confirmer>,
     pub quorum: u64, // in absolute numbers
     pub condition_status: bool,
@@ -21,6 +26,8 @@ pub struct Confirmer {
     pub id: Principal,
     pub status: bool,
 }
+
+pub type ConditionID = String;
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub enum Condition {

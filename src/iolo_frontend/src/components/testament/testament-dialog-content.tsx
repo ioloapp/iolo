@@ -4,8 +4,14 @@ import TextField from '@mui/material/TextField';
 import {useSelector} from "react-redux";
 import {selectGroupedSecrets} from "../../redux/secrets/secretsSelectors";
 import {useAppDispatch} from "../../redux/hooks";
-import {FormControl, Typography} from "@mui/material";
-import {UiSecretListEntry, UiTestamentResponse, UiUser} from "../../services/IoloTypesForUi";
+import {FormControl, List, ListItem, ListItemText, Typography} from "@mui/material";
+import {
+    UiSecretListEntry,
+    UiTestamentResponse,
+    UiTimeBasedCondition,
+    UiUser,
+    UiXOutOfYCondition
+} from "../../services/IoloTypesForUi";
 import {testamentsActions} from "../../redux/testaments/testamentsSlice";
 import {selectTestamentDialogItem} from "../../redux/testaments/testamentsSelectors";
 import {selectHeirs} from "../../redux/heirs/heirsSelectors";
@@ -53,6 +59,16 @@ export const TestamentDialogContent: FC<TestamentDialogContentProps> = ({readonl
 
     const updateTestamentToAdd = (testament: UiTestamentResponse) => {
         dispatch(testamentsActions.updateDialogItem(testament))
+    }
+
+    const updateCondition = (condition: UiTimeBasedCondition | UiXOutOfYCondition) => {
+        let conditions = dialogItem.conditions.filter(c => c.id !== condition.id);
+        conditions.push(condition);
+        conditions.sort((a, b) => a.order - b.order)
+        dispatch(testamentsActions.updateDialogItem({
+            ...dialogItem,
+            conditions
+        }))
     }
 
     const handleSecretChange = (secret: SelectedSecret) => {
@@ -104,6 +120,29 @@ export const TestamentDialogContent: FC<TestamentDialogContentProps> = ({readonl
         },
     };
 
+    const getCondition = (condition: UiTimeBasedCondition | UiXOutOfYCondition) => {
+        if(condition.type === 'TimeBasedCondition') {
+            const timeBasedCondition: UiTimeBasedCondition = condition;
+            return (
+                <ListItem>
+                    <ListItemText>TimeBasedCondition</ListItemText>
+                    <ListItemText>{timeBasedCondition.conditionStatus}</ListItemText>
+                    <ListItemText>{timeBasedCondition.numberOfDaysSinceLastLogin}</ListItemText>
+                </ListItem>
+            )
+        }
+        if(condition.type === 'XOutOfYCondition') {
+            const xOutOfYCondition: UiXOutOfYCondition = condition;
+            return (
+                <ListItem>
+                    <ListItemText>XOutOfYCondition</ListItemText>
+                    <ListItemText>{xOutOfYCondition.conditionStatus}</ListItemText>
+                    <ListItemText>{xOutOfYCondition.confirmers.map(c => c.user.id).join(', ')}</ListItemText>
+                </ListItem>
+            )
+        }
+    }
+
     return (
         <>
             <FormControl fullWidth>
@@ -132,20 +171,12 @@ export const TestamentDialogContent: FC<TestamentDialogContentProps> = ({readonl
                 <SelectList handleToggle={handleHeirChange} listItem={selectedHeirs} readonly={readonly}/>
             </FormControl>
             <FormControl fullWidth>
-                <TextField
-                    margin="dense"
-                    id="timeBasedConditionMaxLogoutTimeInDays"
-                    label={t('testaments.dialog.content.max-logout-time')}
-                    InputLabelProps={{shrink: true}}
-                    fullWidth
-                    variant="standard"
-                    value={dialogItem.conditionArg}
-                    disabled={readonly}
-                    onChange={e => updateTestamentToAdd({
-                        ...dialogItem,
-                        conditionArg: e.target.value ? Number(e.target.value): undefined
-                    })}
-                />
+                <List>
+                        {
+                            dialogItem.conditions.map(condition => getCondition(condition))
+                        }
+                </List>
+
             </FormControl>
         </>
     );

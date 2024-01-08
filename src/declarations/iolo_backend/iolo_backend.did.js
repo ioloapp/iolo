@@ -68,11 +68,15 @@ export const idlFactory = ({ IDL }) => {
   });
   const Result_1 = IDL.Variant({ 'Ok' : Secret, 'Err' : SmartVaultErr });
   const TimeBasedCondition = IDL.Record({
+    'id' : IDL.Text,
+    'order' : IDL.Nat8,
     'condition_status' : IDL.Bool,
     'number_of_days_since_last_login' : IDL.Nat64,
   });
   const Confirmer = IDL.Record({ 'id' : IDL.Principal, 'status' : IDL.Bool });
   const XOutOfYCondition = IDL.Record({
+    'id' : IDL.Text,
+    'order' : IDL.Nat8,
     'condition_status' : IDL.Bool,
     'quorum' : IDL.Nat64,
     'confirmers' : IDL.Vec(Confirmer),

@@ -1,5 +1,5 @@
-import type { Principal } from '@dfinity/principal';
-import type { ActorMethod } from '@dfinity/agent';
+import type {Principal} from '@dfinity/principal';
+import type {ActorMethod} from '@dfinity/agent';
 
 export interface AddSecretArgs {
   'id' : string,
@@ -123,6 +123,8 @@ export interface TestamentResponse {
   'date_modified' : bigint,
 }
 export interface TimeBasedCondition {
+  'id' : string,
+  'order' : number,
   'condition_status' : boolean,
   'number_of_days_since_last_login' : bigint,
 }
@@ -139,6 +141,8 @@ export interface User {
 export type UserType = { 'Company' : null } |
   { 'Person' : null };
 export interface XOutOfYCondition {
+  'id' : string,
+  'order' : number,
   'condition_status' : boolean,
   'quorum' : bigint,
   'confirmers' : Array<Confirmer>,

@@ -4,6 +4,7 @@ import {
     AddSecretArgs,
     AddTestamentArgs,
     AddUserArgs,
+    Condition,
     Result,
     Result_1,
     Result_3,
@@ -19,8 +20,10 @@ import {
     Testament,
     TestamentListEntry,
     TestamentResponse,
+    TimeBasedCondition,
     User,
-    UserType
+    UserType,
+    XOutOfYCondition
 } from "../../../declarations/iolo_backend/iolo_backend.did";
 import {AuthClient} from "@dfinity/auth-client";
 import {createActor} from "../../../declarations/iolo_backend";
@@ -42,8 +45,10 @@ import {
     UiTestamentListEntry,
     UiTestamentListEntryRole,
     UiTestamentResponse,
+    UiTimeBasedCondition,
     UiUser,
-    UiUserType
+    UiUserType,
+    UiXOutOfYCondition
 } from "./IoloTypesForUi";
 import {v4 as uuidv4} from 'uuid';
 
@@ -638,10 +643,41 @@ class IoloService {
             testator: Principal.fromText(uiTestament.testator.id),
             secrets: uiTestament.secrets,
             key_box: keyBox,
-            conditions: uiTestament.conditions,
+            conditions: uiTestament.conditions.map(condition => this.mapUiConditionToCondition(condition)),
             condition_status: uiTestament.conditionStatus,
             date_created: uiTestament.dateCreated ? this.dateToNanosecondsInBigint(uiTestament.dateCreated) : 0n,
             date_modified: uiTestament.dateModified ? this.dateToNanosecondsInBigint(uiTestament.dateModified) : 0n,
+        }
+    }
+
+    private mapUiConditionToCondition(condition: UiTimeBasedCondition | UiXOutOfYCondition): Condition{
+        if(condition.type === 'TimeBasedCondition'){
+            const timeBasedCondition = {
+                id: condition.id,
+                order: condition.order,
+                condition_status: condition.conditionStatus,
+                number_of_days_since_last_login: BigInt(condition.numberOfDaysSinceLastLogin)
+            } as TimeBasedCondition
+            return {
+                TimeBasedCondition: timeBasedCondition
+            }
+        }
+        if(condition.type === 'XOutOfYCondition'){
+            const xOutOfYCondition = {
+                id: condition.id,
+                order: condition.order,
+                condition_status: condition.conditionStatus,
+                quorum: BigInt(condition.quorum),
+                confirmers: condition.confirmers.map(c => {
+                    return {
+                        id: Principal.fromText(c.user.id),
+                        status: c.status
+                    }
+                })
+            } as XOutOfYCondition
+            return {
+                XOutOfYCondition: xOutOfYCondition
+            }
         }
     }
 
@@ -652,12 +688,43 @@ class IoloService {
             testator: { id: testament.testator.toString() },
             secrets: testament.secrets,
             heirs: testament.heirs.map((item) => {return {id: item.toString()}}),
-            conditions: testament.conditions,
+            conditions: testament.conditions.map(condition => this.mapConditionToUiCondition(condition)),
             conditionStatus: testament.condition_status,
             dateCreated: this.nanosecondsInBigintToIsoString(testament.date_created),
             dateModified: this.nanosecondsInBigintToIsoString(testament.date_modified),
             role
         };
+    }
+
+    private mapConditionToUiCondition(condition: Condition): UiTimeBasedCondition | UiXOutOfYCondition{
+        if(condition.hasOwnProperty('TimeBasedCondition')){
+            const timeBasedCondition: TimeBasedCondition = condition['TimeBasedCondition'];
+            return  {
+                id: timeBasedCondition.id,
+                type: 'TimeBasedCondition',
+                order: timeBasedCondition.order,
+                conditionStatus: timeBasedCondition.condition_status,
+                numberOfDaysSinceLastLogin: Number(timeBasedCondition.number_of_days_since_last_login)
+            } as UiTimeBasedCondition
+        }
+        if(condition.hasOwnProperty('XOutOfYCondition')){
+            const xOutOfYCondition: XOutOfYCondition = condition['XOutOfYCondition'];
+            return  {
+                id: xOutOfYCondition.id,
+                type: 'XOutOfYCondition',
+                order: xOutOfYCondition.order,
+                conditionStatus: xOutOfYCondition.condition_status,
+                quorum: Number(xOutOfYCondition.quorum),
+                confirmers: xOutOfYCondition.confirmers.map(c => {
+                    return {
+                        status: c.status,
+                        user: {
+                            id: c.id.toString()
+                        }
+                    }
+                })
+            } as UiXOutOfYCondition
+        }
     }
 
     private mapTestamentResponseToUiTestamentResponse(testament: TestamentResponse, role: UiTestamentListEntryRole): UiTestamentResponse {
@@ -684,7 +751,7 @@ class IoloService {
             testator: { id: testament.testator.toString() },
             secrets: secrets,
             heirs: testament.heirs.map((item) => {return {id: item.toString()}}),
-            conditions: testament.conditions,
+            conditions: testament.conditions.map(condition => this.mapConditionToUiCondition(condition)),
             conditionStatus: testament.condition_status,
             dateCreated: this.nanosecondsInBigintToIsoString(testament.date_created),
             dateModified: this.nanosecondsInBigintToIsoString(testament.date_modified),
