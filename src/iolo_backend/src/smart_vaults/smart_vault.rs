@@ -77,7 +77,7 @@ pub fn get_current_user() -> Result<User, SmartVaultErr> {
 #[ic_cdk_macros::update]
 pub fn update_user(user: User) -> Result<User, SmartVaultErr> {
 
-    // Update the login date
+    // Update the user
     USER_REGISTRY.with(
         |ur: &RefCell<UserRegistry>| -> Result<User, SmartVaultErr> {
             let mut user_registry = ur.borrow_mut();
