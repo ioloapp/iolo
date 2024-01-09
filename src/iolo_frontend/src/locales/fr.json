@@ -1,0 +1,135 @@
+{
+  "testaments": {
+    "title": "Testaments",
+    "testator": "Testateur",
+    "dialog": {
+      "add": {
+        "title": "Ajouter un testament",
+        "text": "Pour ajouter un testament, choisissez les secrets, les héritiers et remplissez les informations nécessaires.",
+        "button": "Ajouter un testament"
+      },
+      "delete": {
+        "title": "Supprimer le testament",
+        "text": "Êtes-vous sûr de vouloir supprimer le testament {{testament}} ?",
+        "button": "Supprimer le testament"
+      },
+      "edit": {
+        "title": "Modifier le testament",
+        "text": "Modifiez le nom de votre testament, les secrets et les héritiers.",
+        "button": "Mettre à jour le testament"
+      },
+      "view": {
+        "title": "Voir le testament",
+        "text": "Ceci est votre testament."
+      },
+      "content": {
+        "name": "Nom",
+        "max-logout-time": "Temps de déconnexion maximum en secondes"
+      }
+    }
+  },
+  "heirs": {
+    "title": "Héritiers",
+    "dialog": {
+      "add": {
+        "title": "Ajouter un héritier",
+        "text": "Pour ajouter un nouvel héritier, saisissez son identifiant et ajoutez un nom connu.",
+        "button": "Ajouter un héritier"
+      },
+      "delete": {
+        "title": "Supprimer l'héritier",
+        "text": "Êtes-vous sûr de vouloir supprimer l'héritier {{heir}} ?",
+        "button": "Supprimer l'héritier"
+      },
+      "edit": {
+        "title": "Modifier l'héritier",
+        "text": "Mettez à jour les informations de votre héritier.",
+        "button": "Mettre à jour l'héritier"
+      }
+    }
+  },
+  "login": {
+    "button": "Se connecter"
+  },
+  "logout": {
+    "button": "Se déconnecter"
+  },
+  "onboarding": {
+    "title": "Accueil",
+    "text":"Il semble que vous n'ayez pas encore créé votre compte IOLO. Vous en voulez un ?"
+  },
+  "user": {
+    "type": "Type d'utilisateur",
+    "name": "Nom",
+    "email": "E-mail",
+    "language": "Langue",
+    "button": {
+      "create": "Créer un compte",
+      "update": "Mettre à jour l'utilisateur"
+    },
+    "icon": {
+      "label": "Compte de l'utilisateur actuel"
+    }
+  },
+  "profile": {
+    "title": "Profil",
+    "mode": "Mode sombre de l'interface utilisateur"
+  },
+  "rules": {
+    "title": "Règles",
+    "dead-man-switch": {
+      "button": "Interrupteur de mort"
+    }
+  },
+  "secrets": {
+    "title": "Portefeuille",
+    "passwords": "Mots de passe",
+    "notes": "Notes",
+    "documents": "Documents",
+    "no-category": "Pas de catégorie",
+    "dialog": {
+      "add": {
+        "title": "Ajouter un secret",
+        "text": "Pour ajouter un nouveau secret, choisissez la catégorie et remplissez les informations nécessaires.",
+        "button": "Ajouter un secret"
+      },
+      "delete": {
+        "title": "Supprimer le secret",
+        "text": "Êtes-vous sûr de vouloir supprimer le secret {{secret}} ?",
+        "button": "Supprimer le secret"
+      },
+      "edit": {
+        "title": "Modifier le secret",
+        "text": "Modifiez votre secret",
+        "button": "Mettre à jour le secret"
+      },
+      "content": {
+        "category": "Catégorie",
+        "name": "Nom",
+        "username": "Nom d'utilisateur",
+        "password": "Mot de passe",
+        "url": "URL",
+        "notes": "Notes"
+      },
+      "view": {
+        "title": "Modifier le secret",
+        "text": "Modifiez votre secret"
+      }
+    }
+  },
+  "share": {
+    "title-short": "Partager",
+    "title": "Partagez votre ID",
+    "info": "Le partage de ce code QR permet à une personne de vous enregistrer comme héritier.",
+    "own-id": "Votre ID Internet est : "
+  },
+  "dialog": {
+    "button": {
+      "cancel": "Annuler",
+      "close": "Fermer"
+    }
+  },
+  "error": {
+    "title": "Erreur"
+  }
+}

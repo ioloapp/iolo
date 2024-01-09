@@ -12,10 +12,16 @@ import {selectPrincipal, selectUserAccountExistingForCurrentUser,} from "../../r
 import {useSelector} from "react-redux";
 import {Profile} from "../../pages/profile/profile";
 import {ShareId} from "../../pages/share/share";
+import {SideBar} from "../navigation/sidebar/sidbar";
+import {Box} from "@mui/material";
+import {mobileWidth} from "../../App";
+import useWindowResize from "../../utils/useWindowResize";
+import {ROUTE_HEIRS, ROUTE_PROFILE, ROUTE_RULES, ROUTE_SECRETS, ROUTE_SHARE, ROUTE_TESTAMENTS} from "./routes";
 
 export const Layout: FC = () => {
     const isLoggedIn = useSelector(selectPrincipal);
     const isAccountExisting = useSelector(selectUserAccountExistingForCurrentUser);
+    const {width} = useWindowResize();
 
     if (!isLoggedIn) {
         return <Login/>
@@ -24,18 +30,31 @@ export const Layout: FC = () => {
     if (!isAccountExisting) {
         return <Onboarding/>
     }
+    console.log(width)
 
     return (
         <Router>
-            <Routes>
-                <Route path="/" Component={Secrets}/>
-                <Route path="/testaments" Component={Testaments}/>
-                <Route path="/heirs" Component={Heirs}/>
-                <Route path="/rules" Component={Rules}/>
-                <Route path="/profile" Component={Profile}/>
-                <Route path="/share" Component={ShareId}/>
-            </Routes>
-            <AppBottomNavigation/>
+            <Box sx={{display: 'flex'}}>
+                {width >= mobileWidth &&
+                    <SideBar/>
+                }
+                <Box
+                    component="main"
+                    sx={{flexGrow: 1, bgcolor: 'background.default', p: 3}}
+                >
+                    <Routes>
+                        <Route path={ROUTE_SECRETS} Component={Secrets}/>
+                        <Route path={ROUTE_TESTAMENTS} Component={Testaments}/>
+                        <Route path={ROUTE_HEIRS} Component={Heirs}/>
+                        <Route path={ROUTE_RULES} Component={Rules}/>
+                        <Route path={ROUTE_PROFILE} Component={Profile}/>
+                        <Route path={ROUTE_SHARE} Component={ShareId}/>
+                    </Routes>
+                </Box>
+                {width < mobileWidth &&
+                    <AppBottomNavigation/>
+                }
+            </Box>
         </Router>
     );
 }

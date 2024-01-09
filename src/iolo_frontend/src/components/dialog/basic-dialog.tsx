@@ -9,10 +9,11 @@ import DialogTitle from '@mui/material/DialogTitle';
 import {CircularProgress} from "@mui/material";
 import {Error} from "../error/error";
 import './basic-dialog.css';
+import {useTranslation} from "react-i18next";
 
 export interface BasicDialogProps {
     title: string;
-    leadText: string;
+    leadText: string | ReactElement;
     isOpen: boolean;
     handleClose: () => void;
     cancelAction?: () => void;
@@ -25,6 +26,7 @@ export interface BasicDialogProps {
 
 export const BasicDialog = ({title, leadText, isOpen, handleClose, cancelAction, okAction, okButtonText, children, error, dialogItemState}: BasicDialogProps) => {
 
+    const { t } = useTranslation();
     const loading = dialogItemState === 'pending';
 
     return (
@@ -41,8 +43,8 @@ export const BasicDialog = ({title, leadText, isOpen, handleClose, cancelAction,
                 }
             </DialogContent>
             <DialogActions>
-                {cancelAction && <Button onClick={cancelAction}>Cancel</Button>}
-                {!cancelAction && <Button onClick={handleClose}>Close</Button>}
+                {cancelAction && <Button onClick={cancelAction}>{t('dialog.button.cancel')}</Button>}
+                {!cancelAction && <Button onClick={handleClose}>{t('dialog.button.close')}</Button>}
                 {!error && okAction && <Button onClick={okAction}>{okButtonText}</Button>}
             </DialogActions>
         </Dialog>

@@ -1,0 +1,135 @@
+{
+  "testaments": {
+    "title": "Testaments",
+    "testator": "Testator",
+    "dialog": {
+      "add": {
+        "title": "Add testament",
+        "text": "To add a testament choose the secrets, heirs and fill in the necessary information.",
+        "button": "Add testament"
+      },
+      "delete": {
+        "title": "Delete testament",
+        "text": "Are you sure you want to delete the testament {{testament}}?",
+        "button": "Delete testament"
+      },
+      "edit": {
+        "title": "Edit testament",
+        "text": "Edit your testaments name, secrets and heirs.",
+        "button": "Update testament"
+      },
+      "view": {
+        "title": "View testament",
+        "text": "This is your testament."
+      },
+      "content": {
+        "name": "Name",
+        "max-logout-time": "Max. logout time in seconds"
+      }
+    }
+  },
+  "heirs": {
+    "title": "Heirs",
+    "dialog": {
+      "add": {
+        "title": "Add heir",
+        "text": "To add a new heir enter the id of it and extend it with a known name.",
+        "button": "Add heir"
+      },
+      "delete": {
+        "title": "Delete heir",
+        "text": "Are you sure you want to delete the heir {{heir}}?",
+        "button": "Delete heir"
+      },
+      "edit": {
+        "title": "Edit heir",
+        "text": "Update the information of your heir.",
+        "button": "Update heir"
+      }
+    }
+  },
+  "login": {
+    "button": "Log in"
+  },
+  "logout": {
+    "button": "Logout"
+  },
+  "onboarding": {
+    "title": "Onboarding",
+    "text":"It seems you have not yet created your IOLO account. You wanna go for one?"
+  },
+  "user": {
+    "type": "Type of user",
+    "name": "Name",
+    "email": "Email",
+    "language": "Language",
+    "button": {
+      "create": "Create Account",
+      "update": "Update User"
+    },
+    "icon": {
+      "label": "account of current user"
+    }
+  },
+  "profile": {
+    "title": "Profile",
+    "mode": "UI Dark Mode"
+  },
+  "rules": {
+    "title": "Rules",
+    "dead-man-switch": {
+      "button": "Dead man switch"
+    }
+  },
+  "secrets": {
+    "title": "Wallet",
+    "passwords": "Passwords",
+    "notes": "Notes",
+    "documents": "Documents",
+    "no-category": "No Category",
+    "dialog": {
+      "add": {
+        "title": "Add secret",
+        "text": "To add a new secret choose the category of it and fill in the necessary information.",
+        "button": "Add secret"
+      },
+      "delete": {
+        "title": "Delete secret",
+        "text": "Are you sure you want to delete the secret {{secret}}?",
+        "button": "Delete secret"
+      },
+      "edit": {
+        "title": "Edit secret",
+        "text": "Edit your secret",
+        "button": "Update secret"
+      },
+      "content": {
+        "category": "Category",
+        "name": "Name",
+        "username": "Username",
+        "password": "Password",
+        "url": "URL",
+        "notes": "Notes"
+      },
+      "view": {
+        "title": "Edit secret",
+        "text": "Edit your secret"
+      }
+    }
+  },
+  "share": {
+    "title-short": "Share",
+    "title": "Share your ID",
+    "info": "Sharing this QR code allows a person to register you as an heir.",
+    "own-id": "Your internet ID is: "
+  },
+  "dialog": {
+    "button": {
+      "cancel": "Cancel",
+      "close": "Close"
+    }
+  },
+  "error": {
+    "title": "Error"
+  }
+}

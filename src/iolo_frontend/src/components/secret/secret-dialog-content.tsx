@@ -7,6 +7,7 @@ import {useAppDispatch} from "../../redux/hooks";
 import {secretsActions} from "../../redux/secrets/secretsSlice";
 import {FormControl, MenuItem, Select, Typography} from "@mui/material";
 import {UiSecret, UiSecretCategory} from "../../services/IoloTypesForUi";
+import {useTranslation} from "react-i18next";
 
 export interface SecretDialogContentProps {
     readonly? : boolean;
@@ -14,6 +15,7 @@ export interface SecretDialogContentProps {
 
 export const SecretDialogContent : FC<SecretDialogContentProps> = ({readonly}) => {
     const dispatch = useAppDispatch();
+    const { t } = useTranslation();
     const dialogItem = useSelector(selectDialogItem);
 
     const updateSecretToAdd = (secret: UiSecret) => {
@@ -27,7 +29,7 @@ export const SecretDialogContent : FC<SecretDialogContentProps> = ({readonly}) =
                 <Select
                     id="category-select"
                     value={dialogItem.category}
-                    label="Category"
+                    label={t('secrets.dialog.content.category')}
                     disabled={readonly}
                     onChange={e => updateSecretToAdd({
                         ...dialogItem,
@@ -45,7 +47,7 @@ export const SecretDialogContent : FC<SecretDialogContentProps> = ({readonly}) =
                     autoFocus
                     margin="dense"
                     id="name"
-                    label="Name"
+                    label={t('secrets.dialog.content.name')}
                     InputLabelProps={{shrink: true}}
                     fullWidth
                     variant="standard"
@@ -62,7 +64,7 @@ export const SecretDialogContent : FC<SecretDialogContentProps> = ({readonly}) =
                             autoFocus
                             margin="dense"
                             id="username"
-                            label="Username"
+                            label={t('secrets.dialog.content.username')}
                             InputLabelProps={{shrink: true}}
                             fullWidth
                             variant="standard"
@@ -77,7 +79,7 @@ export const SecretDialogContent : FC<SecretDialogContentProps> = ({readonly}) =
                             autoFocus
                             margin="dense"
                             id="password"
-                            label="Password"
+                            label={t('secrets.dialog.content.password')}
                             InputLabelProps={{shrink: true}}
                             fullWidth
                             type={readonly ? "text" : "password"}
@@ -93,7 +95,7 @@ export const SecretDialogContent : FC<SecretDialogContentProps> = ({readonly}) =
                             autoFocus
                             margin="dense"
                             id="url"
-                            label="URL"
+                            label={t('secrets.dialog.content.url')}
                             InputLabelProps={{shrink: true}}
                             fullWidth
                             variant="standard"
@@ -110,7 +112,7 @@ export const SecretDialogContent : FC<SecretDialogContentProps> = ({readonly}) =
                     autoFocus
                     margin="dense"
                     id="notes"
-                    label="Notes"
+                    label={t('secrets.dialog.content.notes')}
                     InputLabelProps={{shrink: true}}
                     fullWidth
                     variant="standard"

@@ -1,0 +1,135 @@
+{
+  "testaments": {
+    "title": "Testamentos",
+    "testator": "Testador",
+    "dialog": {
+      "add": {
+        "title": "Agregar testamento",
+        "text": "Para agregar un testamento, elija los secretos, herederos y complete la información necesaria.",
+        "button": "Agregar testamento"
+      },
+      "delete": {
+        "title": "Eliminar testamento",
+        "text": "¿Está seguro de que desea eliminar el testamento {{testament}}?",
+        "button": "Eliminar testamento"
+      },
+      "edit": {
+        "title": "Editar testamento",
+        "text": "Edite el nombre, los secretos y los herederos de su testamento.",
+        "button": "Actualizar testamento"
+      },
+      "view": {
+        "title": "Ver testamento",
+        "text": "Este es su testamento."
+      },
+      "content": {
+        "name": "Nombre",
+        "max-logout-time": "Tiempo máximo de cierre de sesión en segundos"
+      }
+    }
+  },
+  "heirs": {
+    "title": "Herederos",
+    "dialog": {
+      "add": {
+        "title": "Agregar heredero",
+        "text": "Para agregar un nuevo heredero, ingrese su identificación y agregue un nombre conocido.",
+        "button": "Agregar heredero"
+      },
+      "delete": {
+        "title": "Eliminar heredero",
+        "text": "¿Está seguro de que desea eliminar al heredero {{heir}}?",
+        "button": "Eliminar heredero"
+      },
+      "edit": {
+        "title": "Editar heredero",
+        "text": "Actualice la información de su heredero.",
+        "button": "Actualizar heredero"
+      }
+    }
+  },
+  "login": {
+    "button": "Iniciar sesión"
+  },
+  "logout": {
+    "button": "Cerrar sesión"
+  },
+  "onboarding": {
+    "title": "Introducción",
+    "text":"Parece que aún no has creado tu cuenta de IOLO. ¿Quieres crear una?"
+  },
+  "user": {
+    "type": "Tipo de usuario",
+    "name": "Nombre",
+    "email": "Correo electrónico",
+    "language": "Idioma",
+    "button": {
+      "create": "Crear cuenta",
+      "update": "Actualizar usuario"
+    },
+    "icon": {
+      "label": "Cuenta del usuario actual"
+    }
+  },
+  "profile": {
+    "title": "Perfil",
+    "mode": "Modo Oscuro de la Interfaz de Usuario"
+  },
+  "rules": {
+    "title": "Reglas",
+    "dead-man-switch": {
+      "button": "Interruptor de hombre muerto"
+    }
+  },
+  "secrets": {
+    "title": "Billetera",
+    "passwords": "Contraseñas",
+    "notes": "Notas",
+    "documents": "Documentos",
+    "no-category": "Sin categoría",
+    "dialog": {
+      "add": {
+        "title": "Agregar secreto",
+        "text": "Para agregar un nuevo secreto, elija la categoría y complete la información necesaria.",
+        "button": "Agregar secreto"
+      },
+      "delete": {
+        "title": "Eliminar secreto",
+        "text": "¿Está seguro de que desea eliminar el secreto {{secret}}?",
+        "button": "Eliminar secreto"
+      },
+      "edit": {
+        "title": "Editar secreto",
+        "text": "Edite su secreto",
+        "button": "Actualizar secreto"
+      },
+      "content": {
+        "category": "Categoría",
+        "name": "Nombre",
+        "username": "Nombre de usuario",
+        "password": "Contraseña",
+        "url": "URL",
+        "notes": "Notas"
+      },
+      "view": {
+        "title": "Editar secreto",
+        "text": "Edite su secreto"
+      }
+    }
+  },
+  "share": {
+    "title-short": "Compartir",
+    "title": "Comparta su ID",
+    "info": "Compartir este código QR permite que una persona lo registre como heredero.",
+    "own-id": "Su ID de Internet es: "
+  },
+  "dialog": {
+    "button": {
+      "cancel": "Cancelar",
+      "close": "Cerrar"
+    }
+  },
+  "error": {
+    "title": "Error"
+  }
+}

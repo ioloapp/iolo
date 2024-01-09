@@ -4,10 +4,11 @@ import {PageLayout} from "../../components/layout/page-layout";
 import {useSelector} from "react-redux";
 import {selectCurrentUser} from "../../redux/user/userSelectors";
 import {QRCodeSVG} from "qrcode.react";
-import {LogoIcon, StyledAppBar, UserProfile} from "../../components/layout/search-bar";
+import {useTranslation} from "react-i18next";
 
 export function ShareId() {
     const currentUser = useSelector(selectCurrentUser);
+    const { t } = useTranslation();
     const hostname = process.env.NODE_ENV === 'production' ? 'https://' + process.env.IOLO_FRONTEND_CANISTER_ID + '.icp0.io' : 'http://localhost:8080';
     let url = hostname + '/heirs?action=addHeirWithDeepLink&principalType=' + currentUser.type + '&principalId=' + currentUser.id;
     if (currentUser.name) {
@@ -18,34 +19,32 @@ export function ShareId() {
     }
 
     return (
-        <PageLayout title="Share your ID">
-            <StyledAppBar position="sticky">
-                <LogoIcon />
-                <UserProfile/>
-            </StyledAppBar>
-            <Box
-                sx={{
-                    flexGrow: 1,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexDirection: 'column'
-                }}
-            >
-                <div>
-                    <Typography paragraph>
-                        Sharing this QR code allows a person to register you as an heir.
-                    </Typography>
-                </div>
-                <div>
-                    <QRCodeSVG value={url} width={150} height={150}/>
-                </div>
-                <div>
-                    <Typography paragraph>
-                        Your internet ID is: {currentUser.id}
-                    </Typography>
-                </div>
-            </Box>
+        <PageLayout title={t('share.title')}>
+            <>
+                <Box
+                    sx={{
+                        flexGrow: 1,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexDirection: 'column'
+                    }}
+                >
+                    <div>
+                        <Typography paragraph>
+                            {t('share.info')}Sharing this QR code allows a person to register you as an heir.
+                        </Typography>
+                    </div>
+                    <div>
+                        <QRCodeSVG value={url} width={150} height={150}/>
+                    </div>
+                    <div>
+                        <Typography paragraph>
+                            {t('share.own-id')}{currentUser.id}
+                        </Typography>
+                    </div>
+                </Box>
+            </>
         </PageLayout>
     );
 }

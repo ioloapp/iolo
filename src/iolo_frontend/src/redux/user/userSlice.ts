@@ -3,6 +3,7 @@ import {initialState} from "./userState";
 import IoloService from "../../services/IoloService";
 import {RootState} from "../store";
 import {UiUser} from "../../services/IoloTypesForUi";
+import {REHYDRATE} from "redux-persist/es/constants";
 
 const ioloService = new IoloService();
 
@@ -75,6 +76,11 @@ export const userSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
+            .addCase(REHYDRATE, (state) => {
+                if (state.loginStatus !== 'succeeded') {
+                    state.loginStatus = 'init';
+                }
+            })
             .addCase(loginUserThunk.pending, (state) => {
                 state.loginStatus = 'pending';
             })

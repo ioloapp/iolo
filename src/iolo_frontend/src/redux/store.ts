@@ -7,7 +7,7 @@ import {testamentsReducer} from "./testaments/testamentsSlice";
 import {heirsReducer} from "./heirs/heirsSlice";
 
 const persistConfig = {
-    key: 'root',
+    key: 'iolo',
     storage,
 };
 
@@ -15,7 +15,7 @@ const appReducer = combineReducers({
     user: userReducer,
     secrets: secretsReducer,
     testaments: testamentsReducer,
-    heirs: heirsReducer
+    heirs: heirsReducer,
 });
 
 const rootReducer = (state, action) => {

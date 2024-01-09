@@ -12,9 +12,11 @@ import {
 import {addHeirThunk, heirsActions, updateHeirThunk} from "../../redux/heirs/heirsSlice";
 import {BasicDialog} from "../dialog/basic-dialog";
 import HeirDialogContent from "./heir-dialog-content";
+import {useTranslation} from "react-i18next";
 
 export default function AddHeirDialog() {
     const dispatch = useAppDispatch();
+    const { t } = useTranslation();
     const showAddHeirDialog = useSelector(selectShowAddHeirDialog);
     const dialogItem = useSelector(selectHeirDialogItem);
     const dialogItemState = useSelector(selectHeirDialogItemState);
@@ -42,20 +44,20 @@ export default function AddHeirDialog() {
 
     return (
         <div>
-            <Fab color="primary" aria-label="add" onClick={handleClickOpen} sx={{
+            <Fab color="primary" aria-label={t('heirs.dialog.add.button')} onClick={handleClickOpen} sx={{
                 position: "fixed",
                 bottom: (theme) => theme.spacing(10),
                 right: (theme) => theme.spacing(2)
             }}>
                 <AddIcon/>
             </Fab>
-            <BasicDialog  title="Add heir"
-            leadText="To add a new heir enter the id of it and extend it with a known name."
+            <BasicDialog  title={t('heirs.dialog.add.title')}
+            leadText={t('heirs.dialog.add.text')}
             isOpen={showAddHeirDialog}
             handleClose={handleClose}
             cancelAction={cancelAddHeir}
             okAction={createHeir}
-            okButtonText="Add heir"
+            okButtonText={t('heirs.dialog.add.button')}
             error={heirError}
             dialogItemState={dialogItemState}>
                 <HeirDialogContent />

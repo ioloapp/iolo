@@ -1,4 +1,4 @@
-import {Box, IconButton, List, Typography} from "@mui/material";
+import {Box, List, Typography} from "@mui/material";
 import * as React from "react";
 import {useEffect, useState} from "react";
 import {useAppDispatch} from "../../redux/hooks";
@@ -19,16 +19,16 @@ import AddSecretDialog from "../../components/secret/add-secret-dialog";
 import {UiSecretListEntry} from "../../services/IoloTypesForUi";
 import {SecretItem} from "./secret-item";
 import DeleteSecretDialog from "../../components/secret/delete-secret-dialog";
-import SearchIcon from "@mui/icons-material/Search";
-import {LogoIcon, SearchField, StyledAppBar, UserProfile} from "../../components/layout/search-bar";
 import EditSecretDialog from "../../components/secret/edit-secret-dialog";
 import {Error} from "../../components/error/error";
 import {SelectListItem} from "../../components/selectlist/select-list";
 import ViewSecretDialog from "../../components/secret/view-secret-dialog";
+import {useTranslation} from "react-i18next";
 
 export function Secrets() {
 
     const dispatch = useAppDispatch();
+    const { t } = useTranslation();
     const groupedSecretList = useSelector(selectGroupedSecrets);
     const secretsListState = useSelector(selectSecretsListState);
     const secretsListError = useSelector(selectSecretsError);
@@ -75,72 +75,69 @@ export function Secrets() {
     }
 
     return (
-        <PageLayout title="Wallet">
-            <StyledAppBar position="sticky">
-                <LogoIcon />
-                <SearchField id="outlined-basic" sx={{boxShadow: 'none'}}
-                             onChange={(e) => filterSecretList(e.target.value)}/>
-                <IconButton size="large" aria-label="search" color="inherit" sx={{marginRight: '20px'}}>
-                    <SearchIcon/>
-                </IconButton>
-                <UserProfile />
-            </StyledAppBar>
-            <Box sx={{width: '100%'}}>
-                {hasError() &&
-                    <Error error={secretsListError} />
-                }
-                {!hasError() && filteredSecretList &&
-                    <>
-                        {filteredSecretList.passwordList?.length > 0 &&
-                            <Box>
-                                <Typography variant="h5">Passwords</Typography>
-                                <List dense={false}>
-                                    {filteredSecretList.passwordList.map((secret: UiSecretListEntry) =>
-                                        <SecretItem key={secret.id} secret={secret} editAction={editItem} viewAction={viewItem}
-                                                    deleteAction={deleteItem}><PasswordIcon/></SecretItem>
-                                    )}
-                                </List>
-                            </Box>
-                        }
-                        {filteredSecretList.notesList?.length > 0 &&
-                            <Box>
-                                <Typography variant="h5">Notes</Typography>
-                                <List dense={false}>
-                                    {filteredSecretList.notesList.map((secret: UiSecretListEntry) =>
-                                        <SecretItem key={secret.id} secret={secret} editAction={editItem} viewAction={viewItem}
-                                                    deleteAction={deleteItem}><NotesIcon/></SecretItem>
-                                    )}
-                                </List>
-                            </Box>
-                        }
-                        {filteredSecretList.documentsList?.length > 0 &&
-                            <Box>
-                                <Typography variant="h5">Documents</Typography>
-                                <List dense={false}>
-                                    {filteredSecretList.documentsList.map((secret: UiSecretListEntry) =>
-                                        <SecretItem key={secret.id} secret={secret} editAction={editItem} viewAction={viewItem}
-                                                    deleteAction={deleteItem}><DescriptionIcon/></SecretItem>
-                                    )}
-                                </List>
-                            </Box>
-                        }
-                        {filteredSecretList.othersList?.length > 0 &&
-                            <Box>
-                                <Typography variant="h5">No Category</Typography>
-                                <List dense={false}>
-                                    {filteredSecretList.othersList.map((secret: UiSecretListEntry) =>
-                                        <SecretItem key={secret.id} secret={secret} editAction={editItem} viewAction={viewItem}
-                                                    deleteAction={deleteItem}><QuestionMarkIcon/></SecretItem>
-                                    )}
-                                </List>
-                            </Box>
-                        }
-                    </>
-                }
-            </Box>
-            <ViewSecretDialog />
-            <AddSecretDialog/>
-            <EditSecretDialog/>
-            <DeleteSecretDialog/>
+        <PageLayout title={t('secrets.title')} filterList={filterSecretList}>
+            <>
+                <Box sx={{width: '100%'}}>
+                    {hasError() &&
+                        <Error error={secretsListError}/>
+                    }
+                    {!hasError() && filteredSecretList &&
+                        <>
+                            {filteredSecretList.passwordList?.length > 0 &&
+                                <Box>
+                                    <Typography variant="h5">{t('secrets.passwords')}</Typography>
+                                    <List dense={false}>
+                                        {filteredSecretList.passwordList.map((secret: UiSecretListEntry) =>
+                                            <SecretItem key={secret.id} secret={secret} editAction={editItem}
+                                                        viewAction={viewItem}
+                                                        deleteAction={deleteItem}><PasswordIcon/></SecretItem>
+                                        )}
+                                    </List>
+                                </Box>
+                            }
+                            {filteredSecretList.notesList?.length > 0 &&
+                                <Box>
+                                    <Typography variant="h5">{t('secrets.notes')}</Typography>
+                                    <List dense={false}>
+                                        {filteredSecretList.notesList.map((secret: UiSecretListEntry) =>
+                                            <SecretItem key={secret.id} secret={secret} editAction={editItem}
+                                                        viewAction={viewItem}
+                                                        deleteAction={deleteItem}><NotesIcon/></SecretItem>
+                                        )}
+                                    </List>
+                                </Box>
+                            }
+                            {filteredSecretList.documentsList?.length > 0 &&
+                                <Box>
+                                    <Typography variant="h5">{t('secrets.documents')}</Typography>
+                                    <List dense={false}>
+                                        {filteredSecretList.documentsList.map((secret: UiSecretListEntry) =>
+                                            <SecretItem key={secret.id} secret={secret} editAction={editItem}
+                                                        viewAction={viewItem}
+                                                        deleteAction={deleteItem}><DescriptionIcon/></SecretItem>
+                                        )}
+                                    </List>
+                                </Box>
+                            }
+                            {filteredSecretList.othersList?.length > 0 &&
+                                <Box>
+                                    <Typography variant="h5">{t('secrets.no-category')}</Typography>
+                                    <List dense={false}>
+                                        {filteredSecretList.othersList.map((secret: UiSecretListEntry) =>
+                                            <SecretItem key={secret.id} secret={secret} editAction={editItem}
+                                                        viewAction={viewItem}
+                                                        deleteAction={deleteItem}><QuestionMarkIcon/></SecretItem>
+                                        )}
+                                    </List>
+                                </Box>
+                            }
+                        </>
+                    }
+                </Box>
+                <ViewSecretDialog/>
+                <AddSecretDialog/>
+                <EditSecretDialog/>
+                <DeleteSecretDialog/>
+            </>
         </PageLayout>);
 }

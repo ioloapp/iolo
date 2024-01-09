@@ -13,12 +13,10 @@ import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined';
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteIcon from "@mui/icons-material/Delete";
 import DeleteHeirDialog from "../../components/heir/delete-heir-dialog";
-import {LogoIcon, SearchField, StyledAppBar, UserProfile} from "../../components/layout/search-bar";
-import SearchIcon from "@mui/icons-material/Search";
 import EditHeirDialog from "../../components/heir/edit-heir-dialog";
 import {Error} from "../../components/error/error";
 import {useLocation} from "react-router-dom";
-import {logoIcon} from "../../resources/images";
+import {useTranslation} from "react-i18next";
 
 export function Heirs() {
 
@@ -27,6 +25,7 @@ export function Heirs() {
     const heirListState = useSelector(selectHeirListState);
     const heirListError = useSelector(selectHeirError);
     const queryParams = new URLSearchParams(useLocation().search);
+    const { t } = useTranslation();
 
     if (queryParams.get('action') === 'addHeirWithDeepLink' && queryParams.get('principalId') && queryParams.get('principalType')) {
         dispatch(heirsActions.updateHeirToAdd({
@@ -60,9 +59,9 @@ export function Heirs() {
 
     const filterHeirsList = (search: string) => {
         const searchString = search.toLowerCase();
-        if(searchString.length === 0){
+        if (searchString.length === 0) {
             setFilteredHeirs(heirs);
-        }else {
+        } else {
             setFilteredHeirs(heirs.filter(s => s.name.toLowerCase().indexOf(searchString) >= 0 || s.email.toLowerCase().indexOf(searchString) >= 0))
         }
     }
@@ -72,70 +71,64 @@ export function Heirs() {
     }
 
     return (
-        <PageLayout title="Heirs">
-            <StyledAppBar position="sticky">
-                <LogoIcon />
-                <SearchField id="outlined-basic" sx={{boxShadow: 'none'}} onChange={(e) => filterHeirsList(e.target.value)}/>
-                <IconButton size="large" aria-label="search" color="inherit" sx={{marginRight: '20px'}}>
-                    <SearchIcon/>
-                </IconButton>
-                <UserProfile />
-            </StyledAppBar>
-            <Box>
-                {hasError() &&
-                    <Error error={heirListError} />
-                }
-                {!hasError() && filteredHeirs &&
-                    <Box>
-                        <List dense={false}>
-                            {filteredHeirs.map((heir: UiUser) =>
-                                <ListItem key={heir.id} secondaryAction={
-                                    <>
-                                        <IconButton edge="end" aria-label="delete" onClick={() => editHeir(heir)}>
-                                            <EditOutlinedIcon/>
-                                        </IconButton>
-                                        <IconButton edge="end" aria-label="delete" onClick={() => deleteHeir(heir)}>
-                                            <DeleteIcon/>
-                                        </IconButton>
-                                    </>
-                                }>
-                                    {heir.type === UiUserType.Person &&
+        <PageLayout title={t('heirs.title')} filterList={filterHeirsList}>
+            <>
+                <Box>
+                    {hasError() &&
+                        <Error error={heirListError}/>
+                    }
+                    {!hasError() && filteredHeirs &&
+                        <Box>
+                            <List dense={false}>
+                                {filteredHeirs.map((heir: UiUser) =>
+                                    <ListItem key={heir.id} secondaryAction={
+                                        <>
+                                            <IconButton edge="end" aria-label="delete" onClick={() => editHeir(heir)}>
+                                                <EditOutlinedIcon/>
+                                            </IconButton>
+                                            <IconButton edge="end" aria-label="delete" onClick={() => deleteHeir(heir)}>
+                                                <DeleteIcon/>
+                                            </IconButton>
+                                        </>
+                                    }>
+                                        {heir.type === UiUserType.Person &&
                                             <>
                                                 <ListItemAvatar>
-                                                <Avatar>
-                                                    <PersonOutlinedIcon/>
-                                                </Avatar>
-                                            </ListItemAvatar>
+                                                    <Avatar>
+                                                        <PersonOutlinedIcon/>
+                                                    </Avatar>
+                                                </ListItemAvatar>
 
-                                            <ListItemText
-                                                primary={`${heir.name}`}
-                                                secondary={heir.email}
-                                            />
-                                        </>
-                                    }
-                                    {heir.type === UiUserType.Company &&
-                                        <>
-                                            <ListItemAvatar>
-                                                <Avatar>
-                                                    <ApartmentOutlinedIcon/>
-                                                </Avatar>
-                                            </ListItemAvatar>
+                                                <ListItemText
+                                                    primary={`${heir.name}`}
+                                                    secondary={heir.email}
+                                                />
+                                            </>
+                                        }
+                                        {heir.type === UiUserType.Company &&
+                                            <>
+                                                <ListItemAvatar>
+                                                    <Avatar>
+                                                        <ApartmentOutlinedIcon/>
+                                                    </Avatar>
+                                                </ListItemAvatar>
 
-                                            <ListItemText
-                                                primary={heir.name}
-                                                secondary={heir.email}
-                                            />
-                                        </>
-                                    }
-                                </ListItem>,
-                            )}
-                        </List>
-                    </Box>
-                }
-            </Box>
-            <AddHeirDialog />
-            <EditHeirDialog />
-            <DeleteHeirDialog />
+                                                <ListItemText
+                                                    primary={heir.name}
+                                                    secondary={heir.email}
+                                                />
+                                            </>
+                                        }
+                                    </ListItem>,
+                                )}
+                            </List>
+                        </Box>
+                    }
+                </Box>
+                <AddHeirDialog/>
+                <EditHeirDialog/>
+                <DeleteHeirDialog/>
+            </>
         </PageLayout>
     )
 }
