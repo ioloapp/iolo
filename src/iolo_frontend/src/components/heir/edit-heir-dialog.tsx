@@ -33,13 +33,13 @@ export default function EditHeirDialog() {
     }
 
     return (
-            <BasicDialog  title={t('heirs.dialog.edit.title')}
-            leadText={t('heirs.dialog.edit.text')}
+            <BasicDialog  title={t('contacts.dialog.edit.title')}
+            leadText={t('contacts.dialog.edit.text')}
             isOpen={showEditHeirDialog}
             handleClose={handleClose}
             cancelAction={cancelEditHeir}
             okAction={updateHeir}
-            okButtonText={t('heirs.dialog.edit.button')}
+            okButtonText={t('contacts.dialog.edit.button')}
             error={heirError}
             dialogItemState={heirToAddState}>
                 <HeirDialogContent />

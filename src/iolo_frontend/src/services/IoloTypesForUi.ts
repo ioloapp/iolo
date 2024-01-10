@@ -1,5 +1,3 @@
-import {XOutOfYCondition} from "../../../declarations/iolo_backend/iolo_backend.did";
-
 export enum UiSecretCategory {
     Password = "Password",
     Note = "Note",
@@ -32,7 +30,7 @@ export interface UiTestamentListEntry {
 export interface UiTestament extends UiTestamentListEntry {
     secrets?: string[],
     heirs?: Array<UiUser>,
-    conditions?: Array<UiTimeBasedCondition | UiXOutOfYCondition>,
+    conditions?: Array<UiCondition>,
     dateCreated?: string,
     dateModified?: string,
 }
@@ -45,7 +43,7 @@ export interface UiTestamentResponse {
     conditionStatus?: boolean,
     secrets?: UiSecretListEntry[],
     heirs?: Array<UiUser>,
-    conditions?: Array<UiTimeBasedCondition | UiXOutOfYCondition>,
+    conditions?: Array<UiCondition>,
     dateCreated?: string,
     dateModified?: string,
 }
@@ -53,17 +51,23 @@ export interface UiTestamentResponse {
 export interface UiCondition {
     id: string;
     order: number
-    type: string;
+    type: ConditionType;
     conditionStatus: boolean,
 }
 
+export enum ConditionType{
+    Undefined = "Undefined",
+    TimeBasedCondition= "TimeBasedCondition",
+    XOutOfYCondition = "XOutOfYCondition"
+}
+
 export interface UiTimeBasedCondition extends UiCondition{
-    type: 'TimeBasedCondition'
+    type: ConditionType.TimeBasedCondition
     numberOfDaysSinceLastLogin: number,
 }
 
 export interface UiXOutOfYCondition extends UiCondition {
-    type: 'XOutOfYCondition'
+    type: ConditionType.XOutOfYCondition
     quorum: number,
     confirmers: Array<UiConfirmer>,
 }

@@ -3,6 +3,7 @@ import {initialState} from "./testamentsState";
 import IoloService from "../../services/IoloService";
 import {RootState} from "../store";
 import {
+    UiCondition,
     UiTestament,
     UiTestamentListEntry,
     UiTestamentListEntryRole,
@@ -12,7 +13,7 @@ import {mapError} from "../../utils/errorMapper";
 
 const ioloService = new IoloService();
 
-export const addTestamentThunk = createAsyncThunk<UiTestament, UiTestament, { state: RootState }>('testaments/add',
+export const addTestamentThunk = createAsyncThunk<UiTestament, UiTestament, { state: RootState }>('policies/add',
     async (uiTestament, {rejectWithValue}) => {
         try {
             return await ioloService.addTestament(uiTestament);
@@ -22,7 +23,7 @@ export const addTestamentThunk = createAsyncThunk<UiTestament, UiTestament, { st
     }
 );
 
-export const viewTestamentThunk = createAsyncThunk<UiTestamentResponse, UiTestament, { state: RootState }>('testaments/view',
+export const viewTestamentThunk = createAsyncThunk<UiTestamentResponse, UiTestament, { state: RootState }>('policies/view',
     (uiTestament, {rejectWithValue, getState}) => {
         try {
             if (uiTestament.role === UiTestamentListEntryRole.Testator) {
@@ -37,7 +38,7 @@ export const viewTestamentThunk = createAsyncThunk<UiTestamentResponse, UiTestam
     }
 );
 
-export const editTestamentThunk = createAsyncThunk<UiTestamentResponse, UiTestament, { state: RootState }>('testaments/edit',
+export const editTestamentThunk = createAsyncThunk<UiTestamentResponse, UiTestament, { state: RootState }>('policies/edit',
      (uiTestament, {rejectWithValue, getState}) => {
         try {
             if (uiTestament.role === UiTestamentListEntryRole.Testator) {
@@ -54,7 +55,7 @@ export const editTestamentThunk = createAsyncThunk<UiTestamentResponse, UiTestam
 
 export const updateTestamentThunk = createAsyncThunk<UiTestament, UiTestament, {
     state: RootState }
->('testaments/update',
+>('policies/update',
     async (uiTestament, {rejectWithValue}) => {
         try {
             return await ioloService.updateTestament(uiTestament);
@@ -67,7 +68,7 @@ export const updateTestamentThunk = createAsyncThunk<UiTestament, UiTestament, {
 
 export const deleteTestamentThunk = createAsyncThunk<string, string, {
     state: RootState
-}>('testaments/delete',
+}>('policies/delete',
     async (testamentId, {rejectWithValue}) => {
         try {
             await ioloService.deleteTestament(testamentId);
@@ -80,7 +81,7 @@ export const deleteTestamentThunk = createAsyncThunk<string, string, {
 
 export const loadTestamentsThunk = createAsyncThunk<UiTestamentListEntry[], void, {
     state: RootState
-}>('testaments/load',
+}>('policies/load',
     async (_, {rejectWithValue}) => {
         try {
             return await ioloService.getTestamentList();
@@ -92,7 +93,7 @@ export const loadTestamentsThunk = createAsyncThunk<UiTestamentListEntry[], void
 
 // Define a type for the slice state
 export const testamentsSlice = createSlice({
-    name: 'testaments',
+    name: 'policies',
     initialState,
     reducers: {
         closeAddDialog: state => {
@@ -134,6 +135,21 @@ export const testamentsSlice = createSlice({
         },
         updateDialogItem: (state, action: PayloadAction<UiTestamentResponse>) => {
             state.dialogItem = action.payload;
+        },
+        addConditionToDialogItem: (state, action: PayloadAction<UiCondition>) => {
+            state.dialogItem = {
+                ...state.dialogItem,
+                conditions: [
+                    ...state.dialogItem.conditions,
+                    action.payload
+                ]
+            }
+        },
+        deleteConditionOfDialogItem: (state, action: PayloadAction<UiCondition>) => {
+            state.dialogItem = {
+                ...state.dialogItem,
+                conditions: state.dialogItem.conditions.filter(c => c.id != action.payload.id)
+            }
         },
     },
     extraReducers: (builder) => {

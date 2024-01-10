@@ -29,7 +29,6 @@ export const Layout: FC = () => {
     if (!isAccountExisting) {
         return <Onboarding/>
     }
-    console.log(width)
 
     return (
         <Router>

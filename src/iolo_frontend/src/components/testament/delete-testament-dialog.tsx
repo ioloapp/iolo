@@ -33,13 +33,13 @@ export default function DeleteTestamentDialog() {
     }
 
     return (
-        <BasicDialog  title={t('testaments.dialog.delete.title')}
-                      leadText={<Trans i18nKey="testaments.dialog.delete.text" values={{testament: dialogItem.name}} />}
+        <BasicDialog  title={t('policies.dialog.delete.title')}
+                      leadText={<Trans i18nKey="policies.dialog.delete.text" values={{policy: dialogItem.name}} />}
                       isOpen={showDeleteTestamentDialog}
                       handleClose={handleClose}
                       cancelAction={cancelDeleteTestament}
                       okAction={deleteTestament}
-                      okButtonText={t('testaments.dialog.delete.button')}
+                      okButtonText={t('policies.dialog.delete.button')}
                       error={testamentError}
                       dialogItemState={dialogItemState}>
         </BasicDialog>

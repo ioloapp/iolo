@@ -51,13 +51,13 @@ export const SideBar = () => {
                     <ListItemIcon>
                         <HistoryEduOutlinedIcon/>
                     </ListItemIcon>
-                    <ListItemText primary={t('testaments.title')} className="sidebar-link"/>
+                    <ListItemText primary={t('policies.title')} className="sidebar-link"/>
                 </ListItem>
                 <ListItem component={Link} to={ROUTE_HEIRS}>
                     <ListItemIcon>
                         <PeopleOutlineIcon/>
                     </ListItemIcon>
-                    <ListItemText primary={t('heirs.title')} className="sidebar-link"/>
+                    <ListItemText primary={t('contacts.title')} className="sidebar-link"/>
                 </ListItem>
             </List>
             <Divider/>

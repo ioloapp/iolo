@@ -38,6 +38,8 @@ import {
     get_local_random_aes_256_gcm_key
 } from "../utils/crypto";
 import {
+    ConditionType,
+    UiCondition,
     UiSecret,
     UiSecretCategory,
     UiSecretListEntry,
@@ -650,25 +652,27 @@ class IoloService {
         }
     }
 
-    private mapUiConditionToCondition(condition: UiTimeBasedCondition | UiXOutOfYCondition): Condition{
-        if(condition.type === 'TimeBasedCondition'){
+    private mapUiConditionToCondition(condition: UiCondition): Condition{
+        if(condition.type === ConditionType.TimeBasedCondition){
+            const tCondition = condition as UiTimeBasedCondition;
             const timeBasedCondition = {
-                id: condition.id,
-                order: condition.order,
-                condition_status: condition.conditionStatus,
-                number_of_days_since_last_login: BigInt(condition.numberOfDaysSinceLastLogin)
+                id: tCondition.id,
+                order: tCondition.order,
+                condition_status: tCondition.conditionStatus,
+                number_of_days_since_last_login: BigInt(tCondition.numberOfDaysSinceLastLogin)
             } as TimeBasedCondition
             return {
                 TimeBasedCondition: timeBasedCondition
             }
         }
-        if(condition.type === 'XOutOfYCondition'){
+        if(condition.type === ConditionType.XOutOfYCondition){
+            const xCondition = condition as UiXOutOfYCondition;
             const xOutOfYCondition = {
-                id: condition.id,
-                order: condition.order,
-                condition_status: condition.conditionStatus,
-                quorum: BigInt(condition.quorum),
-                confirmers: condition.confirmers.map(c => {
+                id: xCondition.id,
+                order: xCondition.order,
+                condition_status: xCondition.conditionStatus,
+                quorum: BigInt(xCondition.quorum),
+                confirmers: xCondition.confirmers.map(c => {
                     return {
                         id: Principal.fromText(c.user.id),
                         status: c.status
@@ -697,21 +701,21 @@ class IoloService {
     }
 
     private mapConditionToUiCondition(condition: Condition): UiTimeBasedCondition | UiXOutOfYCondition{
-        if(condition.hasOwnProperty('TimeBasedCondition')){
-            const timeBasedCondition: TimeBasedCondition = condition['TimeBasedCondition'];
+        if(condition.hasOwnProperty(ConditionType.TimeBasedCondition)){
+            const timeBasedCondition: TimeBasedCondition = condition[ConditionType.TimeBasedCondition];
             return  {
                 id: timeBasedCondition.id,
-                type: 'TimeBasedCondition',
+                type: ConditionType.TimeBasedCondition,
                 order: timeBasedCondition.order,
                 conditionStatus: timeBasedCondition.condition_status,
                 numberOfDaysSinceLastLogin: Number(timeBasedCondition.number_of_days_since_last_login)
             } as UiTimeBasedCondition
         }
-        if(condition.hasOwnProperty('XOutOfYCondition')){
-            const xOutOfYCondition: XOutOfYCondition = condition['XOutOfYCondition'];
+        if(condition.hasOwnProperty(ConditionType.XOutOfYCondition)){
+            const xOutOfYCondition: XOutOfYCondition = condition[ConditionType.XOutOfYCondition];
             return  {
                 id: xOutOfYCondition.id,
-                type: 'XOutOfYCondition',
+                type: ConditionType.XOutOfYCondition,
                 order: xOutOfYCondition.order,
                 conditionStatus: xOutOfYCondition.condition_status,
                 quorum: Number(xOutOfYCondition.quorum),

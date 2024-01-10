@@ -71,7 +71,7 @@ export function Heirs() {
     }
 
     return (
-        <PageLayout title={t('heirs.title')} filterList={filterHeirsList}>
+        <PageLayout title={t('contacts.title')} filterList={filterHeirsList}>
             <>
                 <Box>
                     {hasError() &&

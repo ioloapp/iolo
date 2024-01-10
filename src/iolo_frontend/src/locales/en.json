@@ -1,26 +1,26 @@
 {
-  "testaments": {
-    "title": "Testaments",
-    "testator": "Testator",
+  "policies": {
+    "title": "Policies",
+    "beneficiary": "Beneficiary",
     "dialog": {
       "add": {
-        "title": "Add testament",
-        "text": "To add a testament choose the secrets, heirs and fill in the necessary information.",
-        "button": "Add testament"
+        "title": "Add policy",
+        "text": "To add a policy choose the secrets, contacts and fill in the necessary information.",
+        "button": "Add policy"
       },
       "delete": {
-        "title": "Delete testament",
-        "text": "Are you sure you want to delete the testament {{testament}}?",
-        "button": "Delete testament"
+        "title": "Delete policy",
+        "text": "Are you sure you want to delete the policy '{{policy}}'?",
+        "button": "Delete policy"
       },
       "edit": {
-        "title": "Edit testament",
-        "text": "Edit your testaments name, secrets and heirs.",
-        "button": "Update testament"
+        "title": "Edit policy",
+        "text": "Edit your policies name, secrets and contacts.",
+        "button": "Update policy"
       },
       "view": {
-        "title": "View testament",
-        "text": "This is your testament."
+        "title": "View policy",
+        "text": "This is your policy."
       },
       "content": {
         "name": "Name",
@@ -28,23 +28,23 @@
       }
     }
   },
-  "heirs": {
-    "title": "Heirs",
+  "contacts": {
+    "title": "Contacts",
     "dialog": {
       "add": {
-        "title": "Add heir",
-        "text": "To add a new heir enter the id of it and extend it with a known name.",
-        "button": "Add heir"
+        "title": "Add contact",
+        "text": "To add a new contact enter the id of it and extend it with a known name.",
+        "button": "Add contact"
       },
       "delete": {
-        "title": "Delete heir",
-        "text": "Are you sure you want to delete the heir {{heir}}?",
-        "button": "Delete heir"
+        "title": "Delete contact",
+        "text": "Are you sure you want to delete the contact {{contact}}?",
+        "button": "Delete contact"
       },
       "edit": {
-        "title": "Edit heir",
-        "text": "Update the information of your heir.",
-        "button": "Update heir"
+        "title": "Edit contact",
+        "text": "Update the information of your contact.",
+        "button": "Update contact"
       }
     }
   },
@@ -82,7 +82,7 @@
     }
   },
   "secrets": {
-    "title": "Wallet",
+    "title": "Vault",
     "passwords": "Passwords",
     "notes": "Notes",
     "documents": "Documents",
@@ -120,7 +120,7 @@
   "share": {
     "title-short": "Share",
     "title": "Share your ID",
-    "info": "Sharing this QR code allows a person to register you as an heir.",
+    "info": "Sharing this QR code allows a person to register you as a contact.",
     "own-id": "Your internet ID is: "
   },
   "dialog": {

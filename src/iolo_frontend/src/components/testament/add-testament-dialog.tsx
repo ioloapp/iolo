@@ -47,20 +47,20 @@ export default function AddTestamentDialog() {
 
     return (
         <div>
-            <Fab color="primary" aria-label={t('testaments.dialog.add.button')} onClick={handleClickOpen} sx={{
+            <Fab color="primary" aria-label={t('policies.dialog.add.button')} onClick={handleClickOpen} sx={{
                 position: "fixed",
                 bottom: (theme) => theme.spacing(10),
                 right: (theme) => theme.spacing(2)
             }}>
                 <AddIcon/>
             </Fab>
-            <BasicDialog title={t('testaments.dialog.add.title')}
-                         leadText={t('testaments.dialog.add.text')}
+            <BasicDialog title={t('policies.dialog.add.title')}
+                         leadText={t('policies.dialog.add.text')}
                          isOpen={showAddTestamentDialog}
                          handleClose={handleClose}
                          cancelAction={cancelAddTestament}
                          okAction={createTestament}
-                         okButtonText={t('testaments.dialog.add.button')}
+                         okButtonText={t('policies.dialog.add.button')}
                          error={testamentError}
                          dialogItemState={dialogItemState}>
                 <TestamentDialogContent/>

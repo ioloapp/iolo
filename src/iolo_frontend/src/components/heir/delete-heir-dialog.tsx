@@ -32,13 +32,13 @@ export default function DeleteHeirDialog() {
     }
 
     return (
-        <BasicDialog  title={t('heirs.dialog.delete.title')}
-                      leadText={<Trans i18nKey='heirs.dialog.delete.text' values={{heir: heirToAdd.name}} />}
+        <BasicDialog  title={t('contacts.dialog.delete.title')}
+                      leadText={<Trans i18nKey='contacts.dialog.delete.text' values={{contact: heirToAdd.name}} />}
                       isOpen={showDeleteHeirDialog}
                       handleClose={handleClose}
                       cancelAction={cancelDeleteHeir}
                       okAction={deleteHeir}
-                      okButtonText={t('heirs.dialog.delete.button')}
+                      okButtonText={t('contacts.dialog.delete.button')}
                       error={heirError}
                       dialogItemState={heirToAddState}>
         </BasicDialog>

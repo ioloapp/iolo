@@ -16,9 +16,9 @@ function AppBottomNavigation() {
         <BottomNavigation showLabels value={location.pathname} sx={{position: 'fixed', bottom: 0, width: 1.0}}>
             <BottomNavigationAction label={t('secrets.title')} icon={<LockOpenOutlinedIcon/>} component={Link}
                                     to={ROUTE_SECRETS} value={ROUTE_SECRETS}/>
-            <BottomNavigationAction label={t('testaments.title')} icon={<HistoryEduOutlinedIcon/>} component={Link}
+            <BottomNavigationAction label={t('policies.title')} icon={<HistoryEduOutlinedIcon/>} component={Link}
                                     to={ROUTE_TESTAMENTS} value={ROUTE_TESTAMENTS}/>
-            <BottomNavigationAction label={t('heirs.title')} icon={<PeopleOutlineIcon/>} component={Link}
+            <BottomNavigationAction label={t('contacts.title')} icon={<PeopleOutlineIcon/>} component={Link}
                                     to={ROUTE_HEIRS} value={ROUTE_HEIRS}/>
         </BottomNavigation>
     );

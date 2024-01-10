@@ -44,20 +44,20 @@ export default function AddHeirDialog() {
 
     return (
         <div>
-            <Fab color="primary" aria-label={t('heirs.dialog.add.button')} onClick={handleClickOpen} sx={{
+            <Fab color="primary" aria-label={t('contacts.dialog.add.button')} onClick={handleClickOpen} sx={{
                 position: "fixed",
                 bottom: (theme) => theme.spacing(10),
                 right: (theme) => theme.spacing(2)
             }}>
                 <AddIcon/>
             </Fab>
-            <BasicDialog  title={t('heirs.dialog.add.title')}
-            leadText={t('heirs.dialog.add.text')}
+            <BasicDialog  title={t('contacts.dialog.add.title')}
+            leadText={t('contacts.dialog.add.text')}
             isOpen={showAddHeirDialog}
             handleClose={handleClose}
             cancelAction={cancelAddHeir}
             okAction={createHeir}
-            okButtonText={t('heirs.dialog.add.button')}
+            okButtonText={t('contacts.dialog.add.button')}
             error={heirError}
             dialogItemState={dialogItemState}>
                 <HeirDialogContent />

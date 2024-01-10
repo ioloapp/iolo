@@ -6,6 +6,7 @@ import {selectGroupedSecrets} from "../../redux/secrets/secretsSelectors";
 import {useAppDispatch} from "../../redux/hooks";
 import {FormControl, ListItem, ListItemText, Typography} from "@mui/material";
 import {
+    ConditionType,
     UiSecretListEntry,
     UiTestamentResponse,
     UiTimeBasedCondition,
@@ -112,7 +113,7 @@ export const TestamentDialogContent: FC<TestamentDialogContentProps> = ({readonl
     };
 
     const getCondition = (condition: UiTimeBasedCondition | UiXOutOfYCondition) => {
-        if(condition.type === 'TimeBasedCondition') {
+        if(condition.type === ConditionType.TimeBasedCondition) {
             const timeBasedCondition: UiTimeBasedCondition = condition;
             return (
                 <ListItem>
@@ -122,7 +123,7 @@ export const TestamentDialogContent: FC<TestamentDialogContentProps> = ({readonl
                 </ListItem>
             )
         }
-        if(condition.type === 'XOutOfYCondition') {
+        if(condition.type === ConditionType.XOutOfYCondition) {
             const xOutOfYCondition: UiXOutOfYCondition = condition;
             return (
                 <ListItem>
@@ -141,7 +142,7 @@ export const TestamentDialogContent: FC<TestamentDialogContentProps> = ({readonl
                     autoFocus
                     margin="dense"
                     id="name"
-                    label={t('testaments.dialog.content.name')}
+                    label={t('policies.dialog.content.name')}
                     InputLabelProps={{shrink: true}}
                     fullWidth
                     variant="standard"

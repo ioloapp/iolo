@@ -33,8 +33,8 @@ export default function ViewTestamentDialog() {
 
 
     return (
-        <BasicDialog title={t('testaments.dialog.view.title')}
-                     leadText={t('testaments.dialog.view.text')}
+        <BasicDialog title={t('policies.dialog.view.title')}
+                     leadText={t('policies.dialog.view.text')}
                      isOpen={showViewTestamentDialog}
                      handleClose={handleClose}
                      error={testamentError}
