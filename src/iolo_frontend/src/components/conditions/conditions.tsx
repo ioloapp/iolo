@@ -41,7 +41,6 @@ export const Conditions: FC<ConditionsProps> = ({conditions, readonly}) => {
                     <TableHead>
                         <TableRow>
                             <TableCell/>
-                            <TableCell>{t('conditions.order')}</TableCell>
                             <TableCell>{t('conditions.status')}</TableCell>
                             <TableCell>{t('conditions.type')}</TableCell>
                             <TableCell>{t('conditions.delete')}</TableCell>

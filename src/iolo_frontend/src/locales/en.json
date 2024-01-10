@@ -58,6 +58,16 @@
     "title": "Onboarding",
     "text":"It seems you have not yet created your IOLO account. You wanna go for one?"
   },
+  "conditions": {
+    "status": "Status",
+    "type": "Type",
+    "delete": "Delete",
+    "button": {
+      "add": "Add condition"
+    },
+    "max-logout-time": "Max. time in days where you haven't been logged in to IOLO",
+    "x-out-of-y": "Confirmers of your condition"
+  },
   "user": {
     "type": "Type of user",
     "name": "Name",
