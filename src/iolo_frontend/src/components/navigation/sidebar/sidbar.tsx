@@ -43,19 +43,19 @@ export const SideBar = () => {
             <List>
                 <ListItem component={Link} to={ROUTE_SECRETS}>
                     <ListItemIcon>
-                        <LockOpenOutlinedIcon/>
+                        <LockOpenOutlinedIcon className="navigation-icon"/>
                     </ListItemIcon>
                     <ListItemText primary={t('secrets.title')} className="sidebar-link"/>
                 </ListItem>
                 <ListItem component={Link} to={ROUTE_TESTAMENTS}>
                     <ListItemIcon>
-                        <HistoryEduOutlinedIcon/>
+                        <HistoryEduOutlinedIcon className="navigation-icon"/>
                     </ListItemIcon>
                     <ListItemText primary={t('policies.title')} className="sidebar-link"/>
                 </ListItem>
                 <ListItem component={Link} to={ROUTE_HEIRS}>
                     <ListItemIcon>
-                        <PeopleOutlineIcon/>
+                        <PeopleOutlineIcon className="navigation-icon"/>
                     </ListItemIcon>
                     <ListItemText primary={t('contacts.title')} className="sidebar-link"/>
                 </ListItem>
@@ -64,13 +64,13 @@ export const SideBar = () => {
             <List>
                 <ListItem component={Link} to={ROUTE_PROFILE}>
                     <ListItemIcon>
-                        <PersonOutlinedIcon/>
+                        <PersonOutlinedIcon className="navigation-icon"/>
                     </ListItemIcon>
                     <ListItemText primary={t('profile.title')} className="sidebar-link"/>
                 </ListItem>
                 <ListItem component={Link} to={ROUTE_SHARE}>
                     <ListItemIcon>
-                        <SendIcon/>
+                        <SendIcon className="navigation-icon"/>
                     </ListItemIcon>
                     <ListItemText primary={t('share.title-short')} className="sidebar-link"/>
                 </ListItem>
@@ -79,7 +79,7 @@ export const SideBar = () => {
             <List>
                 <ListItem component={Link} to={ROUTE_SECRETS} onClick={handleLogout}>
                     <ListItemIcon>
-                        <LogoutIcon/>
+                        <LogoutIcon className="navigation-icon"/>
                     </ListItemIcon>
                     <ListItemText primary={t('logout.button')} className="sidebar-link"/>
                 </ListItem>
