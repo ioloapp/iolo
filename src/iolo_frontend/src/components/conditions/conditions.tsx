@@ -54,6 +54,7 @@ export const Conditions: FC<ConditionsProps> = ({conditions, readonly}) => {
                     </TableBody>
                 </Table>
             </TableContainer>
+            {!readonly &&
             <div>
                 <IconButton
                     aria-label="expand row"
@@ -63,6 +64,7 @@ export const Conditions: FC<ConditionsProps> = ({conditions, readonly}) => {
                     <AddIcon/><Trans i18nKey="conditions.button.add"/>
                 </IconButton>
             </div>
+            }
         </>
     );
 }

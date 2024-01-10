@@ -38,7 +38,7 @@
       },
       "delete": {
         "title": "Delete contact",
-        "text": "Are you sure you want to delete the contact {{contact}}?",
+        "text": "Are you sure you want to delete the contact '{{contact}}'?",
         "button": "Delete contact"
       },
       "edit": {
