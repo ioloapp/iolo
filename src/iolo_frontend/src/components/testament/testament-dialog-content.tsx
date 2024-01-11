@@ -129,7 +129,7 @@ export const TestamentDialogContent: FC<TestamentDialogContentProps> = ({readonl
                 <ListItem>
                     <ListItemText>XOutOfYCondition</ListItemText>
                     <ListItemText>{xOutOfYCondition.conditionStatus}</ListItemText>
-                    <ListItemText>{xOutOfYCondition.confirmers.map(c => c.user.id).join(', ')}</ListItemText>
+                    <ListItemText>{xOutOfYCondition.validators.map(v => v.user.id).join(', ')}</ListItemText>
                 </ListItem>
             )
         }
@@ -163,7 +163,7 @@ export const TestamentDialogContent: FC<TestamentDialogContentProps> = ({readonl
                 <SelectList handleToggle={handleHeirChange} listItem={selectedHeirs} readonly={readonly}/>
             </FormControl>
             <FormControl fullWidth>
-                <Conditions conditions={dialogItem.conditions} readonly={readonly} />
+                <Conditions conditions={dialogItem.conditions.conditions} readonly={readonly} />
             </FormControl>
         </>
     );

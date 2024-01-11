@@ -44,12 +44,12 @@ export const ConditionXOutOfY: FC<ConditionXOutOfYProps> = ({condition, readonly
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
-                                    {(condition as UiXOutOfYCondition).confirmers.map((confirmer) => (
-                                        <TableRow key={confirmer.user.id}>
+                                    {(condition as UiXOutOfYCondition).validators.map((validator) => (
+                                        <TableRow key={validator.user.id}>
                                             <TableCell component="th" scope="row">
-                                                {confirmer.user.name ? confirmer.user.name : confirmer.user.id}
+                                                {validator.user.name ? validator.user.name : validator.user.id}
                                             </TableCell>
-                                            <TableCell>{confirmer.status}</TableCell>
+                                            <TableCell>{validator.status}</TableCell>
                                         </TableRow>
                                     ))}
                                 </TableBody>
@@ -77,12 +77,12 @@ export const ConditionXOutOfY: FC<ConditionXOutOfYProps> = ({condition, readonly
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {(condition as UiXOutOfYCondition).confirmers.map((confirmer) => (
-                                    <TableRow key={confirmer.user.id}>
+                                {(condition as UiXOutOfYCondition).validators.map((validator) => (
+                                    <TableRow key={validator.user.id}>
                                         <TableCell component="th" scope="row">
-                                            {confirmer.user.name ? confirmer.user.name : confirmer.user.id}
+                                            {validator.user.name ? validator.user.name : validator.user.id}
                                         </TableCell>
-                                        <TableCell>{confirmer.status}</TableCell>
+                                        <TableCell>{validator.status}</TableCell>
                                     </TableRow>
                                 ))}
                             </TableBody>

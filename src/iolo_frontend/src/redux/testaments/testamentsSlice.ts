@@ -139,16 +139,24 @@ export const testamentsSlice = createSlice({
         addConditionToDialogItem: (state, action: PayloadAction<UiCondition>) => {
             state.dialogItem = {
                 ...state.dialogItem,
-                conditions: [
+                conditions: {
                     ...state.dialogItem.conditions,
-                    action.payload
-                ]
+                    conditions: [
+                        ...state.dialogItem.conditions.conditions,
+                        action.payload
+                    ],
+                }
+
             }
         },
         deleteConditionOfDialogItem: (state, action: PayloadAction<UiCondition>) => {
             state.dialogItem = {
                 ...state.dialogItem,
-                conditions: state.dialogItem.conditions.filter(c => c.id != action.payload.id)
+                conditions: {
+                    ...state.dialogItem.conditions,
+                    conditions: state.dialogItem.conditions.conditions.filter(c => c.id != action.payload.id)
+                }
+
             }
         },
     },

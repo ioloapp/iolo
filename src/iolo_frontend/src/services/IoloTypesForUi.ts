@@ -27,10 +27,14 @@ export interface UiTestamentListEntry {
     conditionStatus?: boolean,
 }
 
-export interface UiTestament extends UiTestamentListEntry {
+export interface UiTestament {
+    id?: string,
+    name?: string,
+    testator?: UiUser,
+    role?: UiTestamentListEntryRole
     secrets?: string[],
     heirs?: Array<UiUser>,
-    conditions?: Array<UiCondition>,
+    conditions?: UiConditions,
     dateCreated?: string,
     dateModified?: string,
 }
@@ -40,17 +44,26 @@ export interface UiTestamentResponse {
     name?: string,
     testator?: UiUser,
     role?: UiTestamentListEntryRole
-    conditionStatus?: boolean,
     secrets?: UiSecretListEntry[],
     heirs?: Array<UiUser>,
-    conditions?: Array<UiCondition>,
+    conditions?: UiConditions,
     dateCreated?: string,
     dateModified?: string,
 }
 
+export interface UiConditions {
+    status: boolean,
+    logicalOperator: LogicalOperator,
+    conditions: Array<UiCondition>,
+}
+
+export enum LogicalOperator {
+    And = "And",
+    Or = "Or"
+}
+
 export interface UiCondition {
     id: string;
-    order: number
     type: ConditionType;
     conditionStatus: boolean,
 }
@@ -69,17 +82,18 @@ export interface UiTimeBasedCondition extends UiCondition{
 export interface UiXOutOfYCondition extends UiCondition {
     type: ConditionType.XOutOfYCondition
     quorum: number,
-    confirmers: Array<UiConfirmer>,
+    validators: Array<UiValidator>,
 }
 
-export interface UiConfirmer {
+export interface UiValidator {
     status: boolean,
     user: UiUser
 }
 
 export enum UiTestamentListEntryRole {
     Testator = "Testator",
-    Heir = "Heir"
+    Heir = "Heir",
+    Validator = "Validator",
 }
 
 export enum UiUserType {

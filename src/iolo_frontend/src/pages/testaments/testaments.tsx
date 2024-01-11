@@ -116,11 +116,11 @@ export function Testaments() {
                                                 </>
                                             }
                                             {
-                                                testament.role === UiTestamentListEntryRole.Heir && !testament.conditionStatus &&
+                                                testament.role === UiTestamentListEntryRole.Heir && !testament.conditions.status &&
                                                 <LockOutlinedIcon/>
                                             }
                                             {
-                                                testament.role === UiTestamentListEntryRole.Heir && testament.conditionStatus &&
+                                                testament.role === UiTestamentListEntryRole.Heir && testament.conditions.status &&
                                                 <IconButton edge="end" aria-label="view"
                                                             onClick={() => viewTestament(testament)}>
                                                     <VisibilityOutlinedIcon/>

@@ -6,9 +6,9 @@ use serde::{Deserialize, Serialize};
 use crate::common::error::SmartVaultErr;
 use crate::common::uuid::UUID;
 use crate::smart_vaults::master_vault::MasterVault;
-use crate::smart_vaults::smart_vault::{MASTERVAULT, TESTAMENT_REGISTRY, USER_REGISTRY};
+use crate::smart_vaults::smart_vault::{MASTERVAULT, TESTAMENT_REGISTRY_FOR_HEIRS, USER_REGISTRY};
 use crate::smart_vaults::testament::{Testament, TestamentID};
-use crate::smart_vaults::testament_registry::TestamentRegistry;
+use crate::smart_vaults::testament_registry::TestamentRegistryForHeirs;
 use crate::smart_vaults::user_registry::UserRegistry;
 
 use super::vetkd_types::{
@@ -62,8 +62,8 @@ async fn encrypted_symmetric_key_for_testament(args: TestamentKeyDerviationArgs)
     let mut key_can_be_generated = false;
 
     // Let's see if the testament is existing
-    let result_1 = TESTAMENT_REGISTRY.with(
-        |tr: &RefCell<TestamentRegistry>| -> Option<Principal> {
+    let result_1 = TESTAMENT_REGISTRY_FOR_HEIRS.with(
+        |tr: &RefCell<TestamentRegistryForHeirs>| -> Option<Principal> {
             let testament_registry = tr.borrow();
             testament_registry.get_testator_of_testament(args.testament_id.clone())
         },
@@ -79,8 +79,8 @@ async fn encrypted_symmetric_key_for_testament(args: TestamentKeyDerviationArgs)
             key_can_be_generated = true;
         } else {
             // Let's see if caller is heir
-            let result_2 = TESTAMENT_REGISTRY.with(
-                |tr: &RefCell<TestamentRegistry>| -> Result<(TestamentID, Principal), SmartVaultErr> {
+            let result_2 = TESTAMENT_REGISTRY_FOR_HEIRS.with(
+                |tr: &RefCell<TestamentRegistryForHeirs>| -> Result<(TestamentID, Principal), SmartVaultErr> {
                     let testament_registry = tr.borrow();
                     testament_registry.get_testament_id_as_heir(caller, args.testament_id.clone())
                 },
@@ -102,7 +102,7 @@ async fn encrypted_symmetric_key_for_testament(args: TestamentKeyDerviationArgs)
                         .cloned()
                 },
             )?;
-            if *result_4.condition_status() {
+            if result_4.conditions().status {
                 key_can_be_generated = true;
             }
         }

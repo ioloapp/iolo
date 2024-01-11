@@ -29,7 +29,6 @@ export const Conditions: FC<ConditionsProps> = ({conditions, readonly}) => {
         dispatch(testamentsActions.addConditionToDialogItem({
             id: uuidv4(),
             conditionStatus: false,
-            order: conditions.length,
             type: ConditionType.Undefined,
         }))
     }

@@ -38,8 +38,8 @@ import {
     get_local_random_aes_256_gcm_key
 } from "../utils/crypto";
 import {
-    ConditionType,
-    UiCondition,
+    ConditionType, LogicalOperator,
+    UiCondition, UiConditions,
     UiSecret,
     UiSecretCategory,
     UiSecretListEntry,
@@ -645,19 +645,21 @@ class IoloService {
             testator: Principal.fromText(uiTestament.testator.id),
             secrets: uiTestament.secrets,
             key_box: keyBox,
-            conditions: uiTestament.conditions.map(condition => this.mapUiConditionToCondition(condition)),
-            condition_status: uiTestament.conditionStatus,
+            conditions: {
+                status: uiTestament.conditions.status,
+                logical_operator: uiTestament.conditions.logicalOperator == LogicalOperator.And ? { 'And' : null } : { 'Or' : null },
+                conditions: uiTestament.conditions.conditions.map(uiCondition => this.mapUiConditionToCondition(uiCondition))
+            },
             date_created: uiTestament.dateCreated ? this.dateToNanosecondsInBigint(uiTestament.dateCreated) : 0n,
             date_modified: uiTestament.dateModified ? this.dateToNanosecondsInBigint(uiTestament.dateModified) : 0n,
         }
     }
 
-    private mapUiConditionToCondition(condition: UiCondition): Condition{
-        if(condition.type === ConditionType.TimeBasedCondition){
-            const tCondition = condition as UiTimeBasedCondition;
+    private mapUiConditionToCondition(uiCondition: UiCondition): Condition {
+        if(uiCondition.type === ConditionType.TimeBasedCondition){
+            const tCondition = uiCondition as UiTimeBasedCondition;
             const timeBasedCondition = {
                 id: tCondition.id,
-                order: tCondition.order,
                 condition_status: tCondition.conditionStatus,
                 number_of_days_since_last_login: BigInt(tCondition.numberOfDaysSinceLastLogin)
             } as TimeBasedCondition
@@ -665,17 +667,16 @@ class IoloService {
                 TimeBasedCondition: timeBasedCondition
             }
         }
-        if(condition.type === ConditionType.XOutOfYCondition){
-            const xCondition = condition as UiXOutOfYCondition;
+        if(uiCondition.type === ConditionType.XOutOfYCondition){
+            const xCondition = uiCondition as UiXOutOfYCondition;
             const xOutOfYCondition = {
                 id: xCondition.id,
-                order: xCondition.order,
                 condition_status: xCondition.conditionStatus,
                 quorum: BigInt(xCondition.quorum),
-                confirmers: xCondition.confirmers.map(c => {
+                validators: xCondition.validators.map(v => {
                     return {
-                        id: Principal.fromText(c.user.id),
-                        status: c.status
+                        id: Principal.fromText(v.user.id),
+                        status: v.status
                     }
                 })
             } as XOutOfYCondition
@@ -692,8 +693,11 @@ class IoloService {
             testator: { id: testament.testator.toString() },
             secrets: testament.secrets,
             heirs: testament.heirs.map((item) => {return {id: item.toString()}}),
-            conditions: testament.conditions.map(condition => this.mapConditionToUiCondition(condition)),
-            conditionStatus: testament.condition_status,
+            conditions: {
+                status: testament.conditions.status,
+                conditions: testament.conditions.conditions.map(condition => this.mapConditionToUiCondition(condition)),
+                logicalOperator: testament.conditions.logical_operator.hasOwnProperty('AND') ? LogicalOperator.And : LogicalOperator.Or
+            },
             dateCreated: this.nanosecondsInBigintToIsoString(testament.date_created),
             dateModified: this.nanosecondsInBigintToIsoString(testament.date_modified),
             role
@@ -706,7 +710,6 @@ class IoloService {
             return  {
                 id: timeBasedCondition.id,
                 type: ConditionType.TimeBasedCondition,
-                order: timeBasedCondition.order,
                 conditionStatus: timeBasedCondition.condition_status,
                 numberOfDaysSinceLastLogin: Number(timeBasedCondition.number_of_days_since_last_login)
             } as UiTimeBasedCondition
@@ -716,14 +719,13 @@ class IoloService {
             return  {
                 id: xOutOfYCondition.id,
                 type: ConditionType.XOutOfYCondition,
-                order: xOutOfYCondition.order,
                 conditionStatus: xOutOfYCondition.condition_status,
                 quorum: Number(xOutOfYCondition.quorum),
-                confirmers: xOutOfYCondition.confirmers.map(c => {
+                validators: xOutOfYCondition.validators.map(v => {
                     return {
-                        status: c.status,
+                        status: v.status,
                         user: {
-                            id: c.id.toString()
+                            id: v.id.toString()
                         }
                     }
                 })
@@ -755,8 +757,11 @@ class IoloService {
             testator: { id: testament.testator.toString() },
             secrets: secrets,
             heirs: testament.heirs.map((item) => {return {id: item.toString()}}),
-            conditions: testament.conditions.map(condition => this.mapConditionToUiCondition(condition)),
-            conditionStatus: testament.condition_status,
+            conditions: {
+                status: testament.conditions.status,
+                conditions: testament.conditions.conditions.map(condition => this.mapConditionToUiCondition(condition)),
+                logicalOperator: testament.conditions.logical_operator.hasOwnProperty('AND') ? LogicalOperator.And : LogicalOperator.Or
+            },
             dateCreated: this.nanosecondsInBigintToIsoString(testament.date_created),
             dateModified: this.nanosecondsInBigintToIsoString(testament.date_modified),
             role

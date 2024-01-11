@@ -7,7 +7,6 @@ use crate::utils::time;
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct TimeBasedCondition {
     pub id: ConditionID,
-    pub order: u8,
     pub number_of_days_since_last_login: u64,
     pub condition_status: bool,
 }
@@ -15,14 +14,13 @@ pub struct TimeBasedCondition {
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct XOutOfYCondition {
     pub id: ConditionID,
-    pub order: u8,
-    pub confirmers: Vec<Confirmer>,
+    pub validators: Vec<Validator>,
     pub quorum: u64, // in absolute numbers
     pub condition_status: bool,
 }
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
-pub struct Confirmer {
+pub struct Validator {
     pub id: Principal,
     pub status: bool,
 }
@@ -52,7 +50,7 @@ impl Condition {
             }
             Condition::XOutOfYCondition(condition) => {
                 let mut i = 0;
-                for confirmer in &condition.confirmers {
+                for confirmer in &condition.validators {
                     if confirmer.status == true {
                         i += 1;
                     }

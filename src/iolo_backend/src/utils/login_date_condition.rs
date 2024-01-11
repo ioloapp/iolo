@@ -59,8 +59,8 @@ fn periodic_task() {
             for testament in testaments.unwrap() {
 
                 // iterate over testament.conditions
-                for i in 0..testament.conditions().len() {
-                    let condition = &testament.conditions()[i]; // Immutable borrow here
+                for i in 0..testament.conditions().conditions.len() {
+                    let condition = &testament.conditions().conditions[i]; // Immutable borrow here
                     match condition {
                         Condition::TimeBasedCondition(tb) => {
                             if condition.evaluate(&user) {
@@ -77,5 +77,4 @@ fn periodic_task() {
             }
         });
     }
-
 }

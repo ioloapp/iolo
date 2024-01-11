@@ -4,13 +4,16 @@ use candid::{CandidType, Deserialize, Principal};
 
 use crate::common::{error::SmartVaultErr,uuid::UUID};
 use crate::common::user::{AddUserArgs, User};
+use crate::smart_vaults::conditions::Condition;
+use crate::smart_vaults::smart_vault::TESTAMENT_REGISTRY_FOR_VALIDATORS;
 use crate::smart_vaults::testament::TestamentID;
+use crate::smart_vaults::testament_registry::TestamentRegistryForValidators;
 
 use super::{
     secret::{AddSecretArgs, Secret},
-    smart_vault::TESTAMENT_REGISTRY,
+    smart_vault::TESTAMENT_REGISTRY_FOR_HEIRS,
     testament::{AddTestamentArgs, Testament},
-    testament_registry::TestamentRegistry,
+    testament_registry::TestamentRegistryForHeirs,
     user_vault::UserVault,
 };
 
@@ -95,14 +98,30 @@ impl MasterVault {
         let user_vault = self.user_vaults.get_mut(vault_id).unwrap();
         user_vault.add_testament(testament.clone())?;
 
-        // Add entry to testament registry (reverse index)
-        TESTAMENT_REGISTRY.with(
-            |tr: &RefCell<TestamentRegistry>| -> Result<(), SmartVaultErr> {
+        // Add entry to testament registry for heirs (reverse index)
+        TESTAMENT_REGISTRY_FOR_HEIRS.with(
+            |tr: &RefCell<TestamentRegistryForHeirs>| -> Result<(), SmartVaultErr> {
                 let mut testament_registry = tr.borrow_mut();
                 testament_registry.add_testament_to_registry(&testament);
                 Ok(())
             },
         )?;
+
+        // Add entry to testament registry for validators (reverse index) if there is a XOutOfYCondition
+        for condition in testament.conditions().conditions.iter() {
+            match condition {
+                Condition::XOutOfYCondition(xoutofy) => {
+                        TESTAMENT_REGISTRY_FOR_VALIDATORS.with(
+                            |tr: &RefCell<TestamentRegistryForValidators>| -> Result<(), SmartVaultErr> {
+                                let mut testament_registry = tr.borrow_mut();
+                                testament_registry.add_testament_to_registry(&xoutofy.validators, &testament.id(), &testament.testator());
+                                Ok(())
+                            },
+                        )?;
+                }
+                _ => {}
+            }
+        }
 
         Ok(user_vault.get_testament(testament.id()).unwrap().clone())
     }
@@ -117,10 +136,19 @@ impl MasterVault {
         }
         let user_vault = self.user_vaults.get_mut(vault_id).unwrap();
 
-        // Update testament registry
+        // Update testament registry for heirs
         let t_old = user_vault.get_testament(&t.id())?;
-        TESTAMENT_REGISTRY.with(
-            |tr: &RefCell<TestamentRegistry>| -> Result<(), SmartVaultErr> {
+        TESTAMENT_REGISTRY_FOR_HEIRS.with(
+            |tr: &RefCell<TestamentRegistryForHeirs>| -> Result<(), SmartVaultErr> {
+                let mut testament_registry = tr.borrow_mut();
+                testament_registry.update_testament_in_registry(&t, &t_old);
+                Ok(())
+            },
+        )?;
+
+        // Update testament registry for heirs
+        TESTAMENT_REGISTRY_FOR_VALIDATORS.with(
+            |tr: &RefCell<TestamentRegistryForValidators>| -> Result<(), SmartVaultErr> {
                 let mut testament_registry = tr.borrow_mut();
                 testament_registry.update_testament_in_registry(&t, &t_old);
                 Ok(())
@@ -182,8 +210,8 @@ impl MasterVault {
 
         let user_vault = self.user_vaults.get_mut(vault_id).unwrap();
         let testament = user_vault.get_testament(testament_id)?;
-        TESTAMENT_REGISTRY.with(
-            |tr: &RefCell<TestamentRegistry>| -> Result<(), SmartVaultErr> {
+        TESTAMENT_REGISTRY_FOR_HEIRS.with(
+            |tr: &RefCell<TestamentRegistryForHeirs>| -> Result<(), SmartVaultErr> {
                 let mut testament_registry = tr.borrow_mut();
                 testament_registry.remove_testament_from_registry(testament);
                 Ok(())

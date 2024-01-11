@@ -14,7 +14,7 @@ type AddTestamentArgs = record {
   name : opt text;
   secrets : vec text;
   key_box : vec record { text; SecretSymmetricCryptoMaterial };
-  conditions : vec Condition;
+  conditions : Conditions;
 };
 type AddUserArgs = record {
   id : principal;
@@ -26,7 +26,12 @@ type Condition = variant {
   TimeBasedCondition : TimeBasedCondition;
   XOutOfYCondition : XOutOfYCondition;
 };
-type Confirmer = record { id : principal; status : bool };
+type Conditions = record {
+  status : bool;
+  logical_operator : LogicalOperator;
+  conditions : vec Condition;
+};
+type LogicalOperator = variant { Or; And };
 type Result = variant { Ok : User; Err : SmartVaultErr };
 type Result_1 = variant { Ok : Secret; Err : SmartVaultErr };
 type Result_2 = variant { Ok : Testament; Err : SmartVaultErr };
@@ -84,12 +89,11 @@ type Testament = record {
   id : text;
   heirs : vec principal;
   date_created : nat64;
-  condition_status : bool;
   name : opt text;
   testator : principal;
   secrets : vec text;
   key_box : vec record { text; SecretSymmetricCryptoMaterial };
-  conditions : vec Condition;
+  conditions : Conditions;
   date_modified : nat64;
 };
 type TestamentKeyDerviationArgs = record {
@@ -106,17 +110,15 @@ type TestamentResponse = record {
   id : text;
   heirs : vec principal;
   date_created : nat64;
-  condition_status : bool;
   name : opt text;
   testator : principal;
   secrets : vec SecretListEntry;
   key_box : vec record { text; SecretSymmetricCryptoMaterial };
-  conditions : vec Condition;
+  conditions : Conditions;
   date_modified : nat64;
 };
 type TimeBasedCondition = record {
   id : text;
-  order: nat8;
   condition_status : bool;
   number_of_days_since_last_login : nat64;
 };
@@ -131,12 +133,12 @@ type User = record {
   date_modified : nat64;
 };
 type UserType = variant { Company; Person };
+type Validator = record { id : principal; status : bool };
 type XOutOfYCondition = record {
   id : text;
-  order: nat8;
   condition_status : bool;
   quorum : nat64;
-  confirmers : vec Confirmer;
+  validators : vec Validator;
 };
 service : () -> {
   add_heir : (AddUserArgs) -> (Result);
@@ -164,6 +166,7 @@ service : () -> {
   get_testament_as_testator : (text) -> (Result_8) query;
   get_testament_list_as_heir : () -> (Result_9) query;
   get_testament_list_as_testator : () -> (Result_9) query;
+  get_testament_list_as_validator : () -> (Result_9) query;
   ibe_encryption_key : () -> (text);
   is_user_vault_existing : () -> (bool) query;
   remove_heir : (principal) -> (Result_3);

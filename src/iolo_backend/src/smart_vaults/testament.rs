@@ -2,7 +2,7 @@ use std::collections::{BTreeMap, HashSet};
 
 use candid::{CandidType, Principal};
 use serde::{Deserialize, Serialize};
-use crate::smart_vaults::conditions::{Condition, Confirmer};
+use crate::smart_vaults::conditions::{Condition, Validator};
 use crate::smart_vaults::secret::SecretListEntry;
 
 use crate::utils::{caller::get_caller, time};
@@ -27,8 +27,20 @@ pub struct Testament {
     /// This key is itself encrypted using the Testament decryption key,
     /// which itself is derived by vetkd.
     key_box: KeyBox,
-    condition_status: bool,
-    conditions: Vec<Condition>,
+    conditions: Conditions,
+}
+
+#[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
+pub enum LogicalOperator {
+    And,
+    Or,
+}
+
+#[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
+pub struct Conditions {
+    pub status: bool,
+    pub logical_operator: LogicalOperator,
+    pub conditions: Vec<Condition>,
 }
 
 /// The struct provided by the backend when calling "create_secret". It contains:
@@ -39,7 +51,7 @@ pub struct AddTestamentArgs {
     heirs: HashSet<Principal>,
     secrets: HashSet<SecretID>,
     key_box: KeyBox,
-    conditions: Vec<Condition>,
+    conditions: Conditions,
 }
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone, PartialEq)]
@@ -56,7 +68,7 @@ impl From<Testament> for TestamentListEntry {
             id: t.id().into(),
             name: t.name,
             testator: t.testator.clone(),
-            condition_status: t.condition_status,
+            condition_status: t.conditions.status,
         }
     }
 }
@@ -74,8 +86,11 @@ impl Testament {
             heirs: HashSet::new(),
             secrets: HashSet::new(),
             key_box: BTreeMap::new(),
-            condition_status: false,
-            conditions: Vec::new(),
+            conditions: Conditions {
+                status: false,
+                logical_operator: LogicalOperator::And,
+                conditions: Vec::new(),
+            },
         }
     }
 
@@ -107,18 +122,10 @@ impl Testament {
         &self.secrets
     }
 
-    pub fn conditions(&self) -> &Vec<Condition> {
+    pub fn conditions(&self) -> &Conditions {
         &self.conditions
     }
 
-    pub fn condition_status(&self) -> &bool{
-        &self.condition_status
-    }
-
-    pub fn set_condition_status(&mut self, status: bool) {
-        self.condition_status = status;
-        self.date_modified = time::get_current_time();
-    }
     /// Returns whether the value was newly inserted. That is:
     /// - If heirs did not previously contain this heir, true is returned.
     /// - If heirs already contained this heir, false is returned, and the set is not modified.
@@ -139,6 +146,10 @@ impl Testament {
         self.secrets.remove(secret)
     }
 
+    pub fn set_condition_status(&mut self, status: bool) {
+        self.conditions.status = status;
+    }
+
     // TODO: make proper CRUD functions
     pub fn key_box_mut(&mut self) -> &mut KeyBox {
         &mut self.key_box
@@ -148,14 +159,14 @@ impl Testament {
         &self.key_box
     }
 
-    // Function to find a mutable reference to a confirmer if the given principal is one of them
-    pub fn find_confirmer_mut(&mut self, principal: &Principal) -> Option<&mut Confirmer> {
-        for condition in &mut self.conditions {
+    // Function to find a mutable reference to a validator if the given principal is one of them
+    pub fn find_validator_mut(&mut self, principal: &Principal) -> Option<&mut Validator> {
+        for condition in &mut self.conditions.conditions {
             if let Condition::XOutOfYCondition(x_out_of_y) = condition {
-                for confirmer in &mut x_out_of_y.confirmers {
-                    if &confirmer.id == principal {
+                for validator in &mut x_out_of_y.validators {
+                    if &validator.id == principal {
                         // Return a mutable reference to the confirmer
-                        return Some(confirmer);
+                        return Some(validator);
                     }
                 }
             }
@@ -187,8 +198,7 @@ pub struct TestamentResponse {
     heirs: HashSet<Principal>,
     secrets: HashSet<SecretListEntry>,
     key_box: KeyBox,
-    condition_status: bool,
-    conditions: Vec<Condition>,
+    conditions: Conditions,
 }
 
 impl TestamentResponse {
@@ -203,8 +213,11 @@ impl TestamentResponse {
             heirs: HashSet::new(),
             secrets: HashSet::new(),
             key_box: BTreeMap::new(),
-            condition_status: false,
-            conditions: Vec::new(),
+            conditions: Conditions {
+                status: false,
+                logical_operator: LogicalOperator::And,
+                conditions: Vec::new(),
+            },
         }
     }
 
@@ -221,7 +234,6 @@ impl From<Testament> for TestamentResponse {
         new_testament.heirs = t.heirs;
         new_testament.key_box = t.key_box;
         new_testament.conditions = t.conditions;
-        new_testament.condition_status = t.condition_status;
         new_testament
     }
 }

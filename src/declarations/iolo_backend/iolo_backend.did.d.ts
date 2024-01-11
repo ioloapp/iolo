@@ -1,5 +1,5 @@
-import type {Principal} from '@dfinity/principal';
-import type {ActorMethod} from '@dfinity/agent';
+import type { Principal } from '@dfinity/principal';
+import type { ActorMethod } from '@dfinity/agent';
 
 export interface AddSecretArgs {
   'id' : string,
@@ -17,7 +17,7 @@ export interface AddTestamentArgs {
   'name' : [] | [string],
   'secrets' : Array<string>,
   'key_box' : Array<[string, SecretSymmetricCryptoMaterial]>,
-  'conditions' : Array<Condition>,
+  'conditions' : Conditions,
 }
 export interface AddUserArgs {
   'id' : Principal,
@@ -27,7 +27,13 @@ export interface AddUserArgs {
 }
 export type Condition = { 'TimeBasedCondition' : TimeBasedCondition } |
   { 'XOutOfYCondition' : XOutOfYCondition };
-export interface Confirmer { 'id' : Principal, 'status' : boolean }
+export interface Conditions {
+  'status' : boolean,
+  'logical_operator' : LogicalOperator,
+  'conditions' : Array<Condition>,
+}
+export type LogicalOperator = { 'Or' : null } |
+  { 'And' : null };
 export type Result = { 'Ok' : User } |
   { 'Err' : SmartVaultErr };
 export type Result_1 = { 'Ok' : Secret } |
@@ -92,12 +98,11 @@ export interface Testament {
   'id' : string,
   'heirs' : Array<Principal>,
   'date_created' : bigint,
-  'condition_status' : boolean,
   'name' : [] | [string],
   'testator' : Principal,
   'secrets' : Array<string>,
   'key_box' : Array<[string, SecretSymmetricCryptoMaterial]>,
-  'conditions' : Array<Condition>,
+  'conditions' : Conditions,
   'date_modified' : bigint,
 }
 export interface TestamentKeyDerviationArgs {
@@ -114,17 +119,15 @@ export interface TestamentResponse {
   'id' : string,
   'heirs' : Array<Principal>,
   'date_created' : bigint,
-  'condition_status' : boolean,
   'name' : [] | [string],
   'testator' : Principal,
   'secrets' : Array<SecretListEntry>,
   'key_box' : Array<[string, SecretSymmetricCryptoMaterial]>,
-  'conditions' : Array<Condition>,
+  'conditions' : Conditions,
   'date_modified' : bigint,
 }
 export interface TimeBasedCondition {
   'id' : string,
-  'order' : number,
   'condition_status' : boolean,
   'number_of_days_since_last_login' : bigint,
 }
@@ -140,12 +143,12 @@ export interface User {
 }
 export type UserType = { 'Company' : null } |
   { 'Person' : null };
+export interface Validator { 'id' : Principal, 'status' : boolean }
 export interface XOutOfYCondition {
   'id' : string,
-  'order' : number,
   'condition_status' : boolean,
   'quorum' : bigint,
-  'confirmers' : Array<Confirmer>,
+  'validators' : Array<Validator>,
 }
 export interface _SERVICE {
   'add_heir' : ActorMethod<[AddUserArgs], Result>,
@@ -187,6 +190,7 @@ export interface _SERVICE {
   'get_testament_as_testator' : ActorMethod<[string], Result_8>,
   'get_testament_list_as_heir' : ActorMethod<[], Result_9>,
   'get_testament_list_as_testator' : ActorMethod<[], Result_9>,
+  'get_testament_list_as_validator' : ActorMethod<[], Result_9>,
   'ibe_encryption_key' : ActorMethod<[], string>,
   'is_user_vault_existing' : ActorMethod<[], boolean>,
   'remove_heir' : ActorMethod<[Principal], Result_3>,
