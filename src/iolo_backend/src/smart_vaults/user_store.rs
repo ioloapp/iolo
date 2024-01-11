@@ -1,5 +1,5 @@
 use candid::Principal;
-use ic_stable_structures::{StableBTreeMap, BTreeMap};
+use ic_stable_structures::StableBTreeMap;
 use serde::{Deserialize, Serialize};
 
 use crate::common::{
@@ -10,7 +10,7 @@ use crate::common::{
 };
 
 #[derive(Serialize, Deserialize)]
-pub struct UserRegistry {
+pub struct UserStore {
     // An example `StableBTreeMap`. Data stored in `StableBTreeMap` doesn't need to
     // be serialized/deserialized in upgrades, so we tell serde to skip it.
     #[serde(skip, default = "init_stable_data")]
@@ -22,7 +22,7 @@ fn init_stable_data() -> StableBTreeMap<PrincipalStorable, User, Memory> {
     StableBTreeMap::init(get_stable_btree_memory())
 }
 
-impl Default for UserRegistry {
+impl Default for UserStore {
     fn default() -> Self {
         Self {
             users: init_stable_data(),
@@ -30,7 +30,7 @@ impl Default for UserRegistry {
     }
 }
 
-impl UserRegistry {
+impl UserStore {
     pub fn new() -> Self {
         Self {
             users: init_stable_data(),
@@ -93,10 +93,6 @@ impl UserRegistry {
             })
             .collect()
     }
-
-    /*pub fn users(&self) -> &BTreeMap<Principal, User> {
-        &self.users
-    }*/
 }
 
 #[cfg(test)]
@@ -106,11 +102,11 @@ mod tests {
     use crate::common::user::AddUserArgs;
     use crate::{
         common::{error::SmartVaultErr, user::User},
-        smart_vaults::user_registry::UserRegistry,
+        smart_vaults::user_store::UserStore,
     };
 
     #[tokio::test]
-    async fn utest_user_registry() {
+    async fn utest_user_store() {
         // Create empty user_vault
         let principal: Principal = Principal::from_slice(&[
             1, 2, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -128,18 +124,18 @@ mod tests {
         };
         let new_user = User::new(&principal, args);
 
-        let mut user_registry: UserRegistry = UserRegistry::new();
+        let mut user_store: UserStore = UserStore::new();
 
-        assert!(user_registry.add_user(new_user.clone()).is_ok());
+        assert!(user_store.add_user(new_user.clone()).is_ok());
         // no duplicates
         assert_eq!(
-            user_registry.add_user(new_user.clone()).unwrap_err(),
+            user_store.add_user(new_user.clone()).unwrap_err(),
             SmartVaultErr::UserAlreadyExists(principal.to_string())
         );
 
-        assert!(user_registry.get_user(&principal).is_ok());
+        assert!(user_store.get_user(&principal).is_ok());
         assert_eq!(
-            user_registry.get_user(&principal_2).unwrap_err(),
+            user_store.get_user(&principal_2).unwrap_err(),
             SmartVaultErr::UserDoesNotExist(principal_2.to_string())
         );
     }

@@ -1,10 +1,10 @@
+pub mod conditions;
 pub mod key_manager;
 pub mod master_vault;
 pub mod secret;
 pub mod smart_vault;
 pub mod testament;
 pub mod testament_registry;
-pub mod user_registry;
+pub mod user_store;
 pub mod user_vault;
 pub mod vetkd_types;
-pub mod conditions;

@@ -1,15 +1,12 @@
-use ic_cdk_timers::TimerId;
-use std::{
-    cell::RefCell,
-    time::Duration,
-};
-use std::collections::BTreeMap;
-use candid::Principal;
 use crate::common::user::User;
 use crate::smart_vaults::conditions::Condition;
 use crate::smart_vaults::master_vault::MasterVault;
-use crate::smart_vaults::smart_vault::{MASTERVAULT, USER_REGISTRY};
-use crate::smart_vaults::user_registry::UserRegistry;
+use crate::smart_vaults::smart_vault::{MASTERVAULT, USER_STORE};
+use crate::smart_vaults::user_store::UserStore;
+use candid::Principal;
+use ic_cdk_timers::TimerId;
+use std::collections::BTreeMap;
+use std::{cell::RefCell, time::Duration};
 
 thread_local! {
     // The global vector to keep multiple timer IDs.
@@ -37,7 +34,7 @@ pub fn init_condition() {
 fn periodic_task() {
     // read all users
     let users = USER_REGISTRY.with(
-        |ur: &RefCell<UserRegistry>| -> BTreeMap<Principal, User> {
+        |ur: &RefCell<UserStore>| -> BTreeMap<Principal, User> {
             let user_registry = ur.borrow();
             user_registry.users().clone()
         },

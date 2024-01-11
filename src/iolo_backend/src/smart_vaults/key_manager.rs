@@ -1,15 +1,15 @@
-use std::{str::FromStr, vec};
 use std::cell::RefCell;
+use std::{str::FromStr, vec};
 
-use candid::{CandidType, Principal};
-use serde::{Deserialize, Serialize};
 use crate::common::error::SmartVaultErr;
 use crate::common::uuid::UUID;
 use crate::smart_vaults::master_vault::MasterVault;
-use crate::smart_vaults::smart_vault::{MASTERVAULT, TESTAMENT_REGISTRY_FOR_HEIRS, USER_REGISTRY};
+use crate::smart_vaults::smart_vault::{MASTERVAULT, TESTAMENT_REGISTRY_FOR_HEIRS, USER_STORE};
 use crate::smart_vaults::testament::{Testament, TestamentID};
 use crate::smart_vaults::testament_registry::TestamentRegistryForHeirs;
-use crate::smart_vaults::user_registry::UserRegistry;
+use crate::smart_vaults::user_store::UserStore;
+use candid::{CandidType, Principal};
+use serde::{Deserialize, Serialize};
 
 use super::vetkd_types::{
     CanisterId, VetKDCurve, VetKDEncryptedKeyReply, VetKDEncryptedKeyRequest, VetKDKeyId,
@@ -55,7 +55,9 @@ async fn encrypted_symmetric_key_for_uservault(encryption_public_key: Vec<u8>) -
 ///
 /// The key is encrypted using the provided encryption_public_key.
 #[ic_cdk_macros::update]
-async fn encrypted_symmetric_key_for_testament(args: TestamentKeyDerviationArgs) -> Result<String, SmartVaultErr> {
+async fn encrypted_symmetric_key_for_testament(
+    args: TestamentKeyDerviationArgs,
+) -> Result<String, SmartVaultErr> {
     let caller = ic_cdk::caller(); //.as_slice().to_vec();
 
     // check if caller has the right to derive this key
@@ -87,13 +89,13 @@ async fn encrypted_symmetric_key_for_testament(args: TestamentKeyDerviationArgs)
             )?;
 
             // Caller is heir, let's see if the associated testament is in correct condition status.
-            let result_3 = USER_REGISTRY.with(
-                |ur: &RefCell<UserRegistry>| -> Result<UUID, SmartVaultErr> {
+            let result_3 =
+                USER_STORE.with(|ur: &RefCell<UserStore>| -> Result<UUID, SmartVaultErr> {
                     let user_registry = ur.borrow();
                     let user = user_registry.get_user(&result_2.1)?;
-                    user.user_vault_id.ok_or_else(|| SmartVaultErr::UserVaultDoesNotExist("".to_string()))
-                },
-            )?;
+                    user.user_vault_id
+                        .ok_or_else(|| SmartVaultErr::UserVaultDoesNotExist("".to_string()))
+                })?;
             let result_4 = MASTERVAULT.with(
                 |mv: &RefCell<MasterVault>| -> Result<Testament, SmartVaultErr> {
                     mv.borrow()
