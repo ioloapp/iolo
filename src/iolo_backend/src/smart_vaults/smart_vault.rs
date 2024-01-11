@@ -65,9 +65,7 @@ pub fn get_current_user() -> Result<User, SmartVaultErr> {
         |ur: &RefCell<UserRegistry>| -> Result<User, SmartVaultErr> {
             let user_registry = ur.borrow();
             match user_registry.get_user(&get_caller()) {
-                Ok(u) => {
-                    Ok(u.clone())
-                },
+                Ok(u) => Ok(u.clone()),
                 Err(e) => Err(e),
             }
         },
@@ -81,12 +79,8 @@ pub fn update_user(user: User) -> Result<User, SmartVaultErr> {
     USER_REGISTRY.with(
         |ur: &RefCell<UserRegistry>| -> Result<User, SmartVaultErr> {
             let mut user_registry = ur.borrow_mut();
-            match user_registry.get_user_mut(&get_caller()) {
-                Ok(u) => {
-                    u.name = user.name;
-                    u.email = user.email;
-                    Ok(u.clone())
-                },
+            match user_registry.update_user(user) {
+                Ok(u) => Ok(u.clone()),
                 Err(e) => Err(e),
             }
         },
@@ -95,16 +89,27 @@ pub fn update_user(user: User) -> Result<User, SmartVaultErr> {
 
 #[ic_cdk_macros::update]
 pub fn update_user_login_date() -> Result<User, SmartVaultErr> {
-
     // Update the login date
+    // let ps = PrincipalStorable::from(get_caller().clone());
+
+    // get current user
+    let mut current_user = USER_REGISTRY.with(
+        |ur: &RefCell<UserRegistry>| -> Result<User, SmartVaultErr> {
+            let user_registry = ur.borrow();
+            match user_registry.get_user(&get_caller()) {
+                Ok(u) => Ok(u.clone()),
+                Err(e) => Err(e),
+            }
+        },
+    )?;
+
+    current_user.update_login_date();
+
     USER_REGISTRY.with(
         |ur: &RefCell<UserRegistry>| -> Result<User, SmartVaultErr> {
             let mut user_registry = ur.borrow_mut();
-            match user_registry.get_user_mut(&get_caller()) {
-                Ok(u) => {
-                    u.update_login_date();
-                    Ok(u.clone())
-                },
+            match user_registry.update_user(current_user) {
+                Ok(u) => Ok(u.clone()),
                 Err(e) => Err(e),
             }
         },
@@ -172,7 +177,10 @@ pub fn get_secret(sid: SecretID) -> Result<Secret, SmartVaultErr> {
 }
 
 #[ic_cdk_macros::query]
-pub fn get_secret_as_heir(sid: SecretID, testament_id: TestamentID) -> Result<Secret, SmartVaultErr> {
+pub fn get_secret_as_heir(
+    sid: SecretID,
+    testament_id: TestamentID,
+) -> Result<Secret, SmartVaultErr> {
     let principal = get_caller();
 
     // Verify that heir belongs to testament
@@ -323,7 +331,9 @@ pub fn update_testament(t: Testament) -> Result<Testament, SmartVaultErr> {
 }
 
 #[ic_cdk_macros::query]
-pub fn get_testament_as_testator(testament_id: TestamentID) -> Result<TestamentResponse, SmartVaultErr> {
+pub fn get_testament_as_testator(
+    testament_id: TestamentID,
+) -> Result<TestamentResponse, SmartVaultErr> {
     let principal = get_caller();
     let user_vault_id: UUID = get_vault_id_for(principal)?;
 
@@ -356,7 +366,9 @@ pub fn get_testament_as_testator(testament_id: TestamentID) -> Result<TestamentR
 }
 
 #[ic_cdk_macros::query]
-pub fn get_testament_as_heir(testament_id: TestamentID) -> Result<TestamentResponse, SmartVaultErr> {
+pub fn get_testament_as_heir(
+    testament_id: TestamentID,
+) -> Result<TestamentResponse, SmartVaultErr> {
     // Verify that heir belongs to testament
     let result_tr = TESTAMENT_REGISTRY.with(
         |tr: &RefCell<TestamentRegistry>| -> Result<(TestamentID, Principal), SmartVaultErr> {
@@ -486,10 +498,7 @@ pub fn get_heir_list() -> Result<Vec<User>, SmartVaultErr> {
             .clone()
             .into_values()
             .collect();
-        Ok(heirs
-            .into_iter()
-            .map(User::from)
-            .collect())
+        Ok(heirs.into_iter().map(User::from).collect())
     })
 }
 
@@ -498,12 +507,10 @@ pub fn update_heir(u: User) -> Result<User, SmartVaultErr> {
     let principal = get_caller();
     let user_vault_id: UUID = get_vault_id_for(principal)?;
 
-    MASTERVAULT.with(
-        |ms: &RefCell<MasterVault>| -> Result<User, SmartVaultErr> {
-            let mut master_vault = ms.borrow_mut();
-            master_vault.update_user_heir(&user_vault_id, u)
-        },
-    )
+    MASTERVAULT.with(|ms: &RefCell<MasterVault>| -> Result<User, SmartVaultErr> {
+        let mut master_vault = ms.borrow_mut();
+        master_vault.update_user_heir(&user_vault_id, u)
+    })
 }
 
 #[ic_cdk_macros::update]
@@ -532,8 +539,8 @@ fn get_vault_id_for(principal: Principal) -> Result<UserVaultID, SmartVaultErr> 
             let user_registry = ur.borrow();
             let user = user_registry.get_user(&principal)?;
 
-            user.user_vault_id.ok_or_else(|| SmartVaultErr::UserVaultDoesNotExist("".to_string()))
-
+            user.user_vault_id
+                .ok_or_else(|| SmartVaultErr::UserVaultDoesNotExist("".to_string()))
         },
     )
 }
@@ -541,7 +548,7 @@ fn get_vault_id_for(principal: Principal) -> Result<UserVaultID, SmartVaultErr> 
 #[pre_upgrade]
 fn pre_upgrade() {
     MASTERVAULT.with(|ms| storage::stable_save((ms,)).unwrap());
-    USER_REGISTRY.with(|ur| storage::stable_save((ur,)).unwrap());
+    // USER_REGISTRY.with(|ur| storage::stable_save((ur,)).unwrap());
     TESTAMENT_REGISTRY.with(|tr| storage::stable_save((tr,)).unwrap());
     UUID_COUNTER.with(|c| storage::stable_save((c,)).unwrap());
 }
@@ -551,8 +558,8 @@ fn post_upgrade() {
     let (old_ms,): (MasterVault,) = storage::stable_restore().unwrap();
     MASTERVAULT.with(|ms| *ms.borrow_mut() = old_ms);
 
-    let (old_ur,): (UserRegistry,) = storage::stable_restore().unwrap();
-    USER_REGISTRY.with(|ur| *ur.borrow_mut() = old_ur);
+    // let (old_ur,): (UserRegistry,) = storage::stable_restore().unwrap();
+    // USER_REGISTRY.with(|ur| *ur.borrow_mut() = old_ur);
 
     let (old_tr,): (TestamentRegistry,) = storage::stable_restore().unwrap();
     TESTAMENT_REGISTRY.with(|tr| *tr.borrow_mut() = old_tr);

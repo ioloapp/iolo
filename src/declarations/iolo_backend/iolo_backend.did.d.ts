@@ -135,6 +135,7 @@ export interface _SERVICE {
   'add_secret' : ActorMethod<[AddSecretArgs], Result_1>,
   'add_testament' : ActorMethod<[AddTestamentArgs], Result_2>,
   'create_user' : ActorMethod<[AddUserArgs], Result>,
+  'create_user_storable' : ActorMethod<[AddUserArgs], Result>,
   'delete_user' : ActorMethod<[], Result_3>,
   'encrypted_ibe_decryption_key_for_caller' : ActorMethod<
     [Uint8Array | number[]],

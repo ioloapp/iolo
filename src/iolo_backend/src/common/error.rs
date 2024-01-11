@@ -7,6 +7,7 @@ pub enum SmartVaultErr {
     UserAlreadyExists(String),
     UserDoesNotExist(String),
     UserDeletionFailed(String),
+    UserUpdateFailed(String),
     UserVaultCreationFailed(String),
     UserVaultDoesNotExist(String),
     SecretDoesNotExist(String),
@@ -32,6 +33,13 @@ impl Display for SmartVaultErr {
                 write!(
                     f,
                     "Failed to delete the user with the following principal: {}",
+                    user
+                )
+            }
+            SmartVaultErr::UserUpdateFailed(user) => {
+                write!(
+                    f,
+                    "Failed to update the user with the following principal: {}",
                     user
                 )
             }
@@ -66,10 +74,16 @@ impl Display for SmartVaultErr {
                 write!(f, "Failed to read testament for heir: {}", id)
             }
             SmartVaultErr::InvalidTestamentCondition => {
-                write!(f, "Testament cannot be read by heir because of wrong condition state")
+                write!(
+                    f,
+                    "Testament cannot be read by heir because of wrong condition state"
+                )
             }
             SmartVaultErr::KeyGenerationNotAllowed => {
-                write!(f, "Key cannot be generated because some conditions are not met")
+                write!(
+                    f,
+                    "Key cannot be generated because some conditions are not met"
+                )
             }
         }
     }
