@@ -601,7 +601,8 @@ fn get_vault_id_for(principal: Principal) -> Result<UserVaultID, SmartVaultErr> 
 fn pre_upgrade() {
     MASTERVAULT.with(|ms| storage::stable_save((ms,)).unwrap());
     // USER_REGISTRY.with(|ur| storage::stable_save((ur,)).unwrap());
-    TESTAMENT_REGISTRY.with(|tr| storage::stable_save((tr,)).unwrap());
+    TESTAMENT_REGISTRY_FOR_HEIRS.with(|tr| storage::stable_save((tr,)).unwrap());
+    TESTAMENT_REGISTRY_FOR_VALIDATORS.with(|tr| storage::stable_save((tr,)).unwrap());
     UUID_COUNTER.with(|c| storage::stable_save((c,)).unwrap());
 }
 

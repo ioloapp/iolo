@@ -2,7 +2,6 @@ use candid::{CandidType, Deserialize, Principal};
 use serde::Serialize;
 
 use std::collections::BTreeMap;
-use ic_stable_structures::Vec;
 use crate::common::user::User;
 
 use super::secret::{Secret, SecretID, SecretSymmetricCryptoMaterial};

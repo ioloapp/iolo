@@ -1,5 +1,5 @@
 use candid::Principal;
-use ic_stable_structures::StableBTreeMap;
+use ic_stable_structures::{StableBTreeMap, BTreeMap};
 use serde::{Deserialize, Serialize};
 
 use crate::common::{
