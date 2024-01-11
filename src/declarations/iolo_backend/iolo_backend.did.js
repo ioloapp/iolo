@@ -24,6 +24,7 @@ export const idlFactory = ({ IDL }) => {
     'TestamentAlreadyExists' : IDL.Text,
     'Unauthorized' : IDL.Null,
     'TestamentDoesNotExist' : IDL.Text,
+    'UserUpdateFailed' : IDL.Text,
     'InvalidTestamentCondition' : IDL.Null,
     'UserVaultCreationFailed' : IDL.Text,
     'UserDoesNotExist' : IDL.Text,
@@ -164,7 +165,6 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'create_user' : IDL.Func([AddUserArgs], [Result], []),
-    'create_user_storable' : IDL.Func([AddUserArgs], [Result], []),
     'delete_user' : IDL.Func([], [Result_3], []),
     'encrypted_ibe_decryption_key_for_caller' : IDL.Func(
         [IDL.Vec(IDL.Nat8)],
@@ -215,7 +215,6 @@ export const idlFactory = ({ IDL }) => {
     'remove_heir' : IDL.Func([IDL.Principal], [Result_3], []),
     'remove_secret' : IDL.Func([IDL.Text], [Result_3], []),
     'remove_testament' : IDL.Func([IDL.Text], [Result_3], []),
-    'start_with_interval_secs' : IDL.Func([IDL.Nat64], [], []),
     'symmetric_key_verification_key' : IDL.Func([], [IDL.Text], []),
     'update_heir' : IDL.Func([User], [Result], []),
     'update_secret' : IDL.Func([Secret], [Result_1], []),
