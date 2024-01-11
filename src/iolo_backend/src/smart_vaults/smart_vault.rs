@@ -9,7 +9,6 @@ use crate::common::user::{AddUserArgs, User};
 use crate::common::uuid::UUID;
 use crate::smart_vaults::testament::TestamentResponse;
 use crate::smart_vaults::user_registry::UserRegistry;
-use crate::smart_vaults::user_registry_storable::UserRegistryStorable;
 use crate::smart_vaults::user_vault::UserVaultID;
 use crate::utils::caller::get_caller;
 
@@ -26,9 +25,6 @@ thread_local! {
 
     // User Registsry
     pub static USER_REGISTRY: RefCell<UserRegistry> = RefCell::new(UserRegistry::new());
-
-    // User Registsry Storable
-    pub static USER_REGISTRY_STORABLE: RefCell<UserRegistryStorable> = RefCell::new(UserRegistryStorable::default());
 
     // Testament Registsry
     pub static TESTAMENT_REGISTRY: RefCell<TestamentRegistry> = RefCell::new(TestamentRegistry::new());
@@ -52,10 +48,10 @@ pub fn create_user(args: AddUserArgs) -> Result<User, SmartVaultErr> {
     new_user.set_user_vault(new_user_vault_id);
 
     // Store the new user
-    USER_REGISTRY_STORABLE.with(
-        |ur: &RefCell<UserRegistryStorable>| -> Result<User, SmartVaultErr> {
-            let mut user_registry_storable = ur.borrow_mut();
-            match user_registry_storable.add_user(new_user) {
+    USER_REGISTRY.with(
+        |ur: &RefCell<UserRegistry>| -> Result<User, SmartVaultErr> {
+            let mut user_registry = ur.borrow_mut();
+            match user_registry.add_user(new_user) {
                 Ok(u) => {
                     ic_cdk::println!("Successfully created user: {}", u.id().to_string());
                     Ok(u)
@@ -97,7 +93,7 @@ pub fn update_user(user: User) -> Result<User, SmartVaultErr> {
 #[ic_cdk_macros::update]
 pub fn update_user_login_date() -> Result<User, SmartVaultErr> {
     // Update the login date
-    let ps = PrincipalStorable::from(get_caller().clone());
+    // let ps = PrincipalStorable::from(get_caller().clone());
 
     // get current user
     let mut current_user = USER_REGISTRY.with(

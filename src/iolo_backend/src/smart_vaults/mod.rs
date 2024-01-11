@@ -7,4 +7,3 @@ pub mod testament_registry;
 pub mod user_registry;
 pub mod user_vault;
 pub mod vetkd_types;
-pub mod user_registry_storable;
