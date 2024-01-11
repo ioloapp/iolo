@@ -25,7 +25,9 @@ export function mapError(input: Error): IoloError{
             throw new IoloError(input['TestamentDoesNotExist'])
         }  else if (input.hasOwnProperty('InvalidTestamentCondition')) {
             throw new IoloError(input.message)
-        }  else if (input.hasOwnProperty('NoTestamentsForHeir')) {
+        }  else if (input.hasOwnProperty('Unauthorized')) {
+            throw new IoloError(input['Unauthorized'])
+        } else if (input.hasOwnProperty('NoTestamentsForHeir')) {
             throw new IoloError(input['NoTestamentsForHeir'])
         }  else if (input.name ===  'KeyGenerationNotAllowed') {
             throw new IoloError(input.message);

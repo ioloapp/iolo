@@ -18,6 +18,7 @@ pub enum SmartVaultErr {
     InvalidTestamentCondition,
     NoTestamentsForHeir(String),
     KeyGenerationNotAllowed,
+    Unauthorized,
 }
 
 impl Display for SmartVaultErr {
@@ -84,6 +85,9 @@ impl Display for SmartVaultErr {
                     f,
                     "Key cannot be generated because some conditions are not met"
                 )
+            }
+            SmartVaultErr::Unauthorized => {
+                write!(f, "Unauthorized")
             }
         }
     }

@@ -3,15 +3,16 @@ use std::collections::{BTreeMap, HashSet};
 use candid::{CandidType, Principal};
 use serde::Deserialize;
 use crate::common::error::SmartVaultErr;
+use crate::smart_vaults::conditions::{Condition, Validator};
 use crate::smart_vaults::testament::{Testament, TestamentID};
 
 #[derive(Debug, CandidType, Deserialize)]
-pub struct TestamentRegistry {
+pub struct TestamentRegistryForHeirs {
     heir_to_testaments: BTreeMap<Principal, HashSet<TestamentID>>,
     testament_to_testator: BTreeMap<TestamentID, Principal>,
 }
 
-impl TestamentRegistry {
+impl TestamentRegistryForHeirs {
     pub fn new() -> Self {
         Self {
             heir_to_testaments: BTreeMap::new(),
@@ -104,3 +105,77 @@ impl TestamentRegistry {
         self.testament_to_testator.get(&testament_id).copied()
     }
  }
+
+#[derive(Debug, CandidType, Deserialize)]
+pub struct TestamentRegistryForValidators {
+    validator_to_testaments: BTreeMap<Principal, HashSet<TestamentID>>,
+    testament_to_testator: BTreeMap<TestamentID, Principal>,
+}
+
+impl TestamentRegistryForValidators {
+    pub fn new() -> Self {
+        Self {
+            validator_to_testaments: BTreeMap::new(),
+            testament_to_testator: BTreeMap::new(),
+        }
+    }
+
+    pub fn get_testament_ids_as_validator (
+        &self,
+        validator: Principal,
+    ) -> Vec<(TestamentID, Principal)> {
+        let mut result = Vec::new();
+
+        // Check if the validator exists
+        if let Some(testament_ids) = self.validator_to_testaments.get(&validator) {
+            // For each testament_id, get the corresponding testator
+            for testament_id in testament_ids {
+                if let Some(testator) = self.testament_to_testator.get(testament_id) {
+                    result.push((testament_id.clone(), testator.clone()));
+                }
+            }
+        }
+        result
+    }
+
+    pub fn add_testament_to_registry(&mut self, validators: &Vec<Validator>, testament_id: &TestamentID, testator: &Principal) {
+        for validator in validators {
+            self.validator_to_testaments
+                .entry(validator.id.clone())
+                .or_insert_with(HashSet::new)
+                .insert(testament_id.clone());
+        }
+        self.testament_to_testator
+            .insert(testament_id.clone(), testator.clone());
+    }
+
+    pub fn update_testament_in_registry(&mut self, testament_new: &Testament, testament_old: &Testament) {
+        // Delete all existing entries for old testament
+        for condition in testament_old.conditions().conditions.iter() {
+            match condition {
+                Condition::XOutOfYCondition(xoutofy) => {
+                    for validator in xoutofy.validators.iter() {
+                        if let Some(testaments) = self.validator_to_testaments.get_mut(&validator.id) {
+                            testaments.remove(testament_old.id());
+                            if testaments.is_empty() {
+                                self.validator_to_testaments.remove(&validator.id);
+                            }
+                        }
+                    }
+                    self.testament_to_testator.remove(testament_old.id());
+                }
+                _ => {}
+            }
+        }
+
+        // Add new testament
+        for condition in testament_new.conditions().conditions.iter() {
+            match condition {
+                Condition::XOutOfYCondition(xoutofy) => {
+                    self.add_testament_to_registry(&xoutofy.validators, testament_new.id(), testament_new.testator());
+                }
+                _ => {}
+            }
+        }
+    }
+}

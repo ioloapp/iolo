@@ -39,13 +39,13 @@ export default function EditTestamentDialog() {
     }
 
     return (
-        <BasicDialog title={t('testaments.dialog.edit.title')}
-                     leadText={t('testaments.dialog.edit.text')}
+        <BasicDialog title={t('policies.dialog.edit.title')}
+                     leadText={t('policies.dialog.edit.text')}
                      isOpen={showEditTestamentDialog}
                      handleClose={handleClose}
                      cancelAction={cancelEditTestament}
                      okAction={updateTestament}
-                     okButtonText={t('testaments.dialog.edit.button')}
+                     okButtonText={t('policies.dialog.edit.button')}
                      error={testamentError}
                      dialogItemState={dialogItemState}>
             <TestamentDialogContent/>

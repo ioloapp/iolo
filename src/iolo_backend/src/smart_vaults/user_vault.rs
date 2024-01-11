@@ -2,6 +2,7 @@ use candid::{CandidType, Deserialize, Principal};
 use serde::Serialize;
 
 use std::collections::BTreeMap;
+use ic_stable_structures::Vec;
 use crate::common::user::User;
 
 use super::secret::{Secret, SecretID, SecretSymmetricCryptoMaterial};
@@ -125,7 +126,7 @@ impl UserVault {
         let tid = t.id().clone();
 
         // condition_status cannot be updated
-        t.set_condition_status(self.testaments.get(t.id()).unwrap().condition_status().clone());
+        t.set_condition_status(self.testaments.get(t.id()).unwrap().conditions().status);
 
         self.testaments.insert(t.id().clone(), t);
         self.date_modified = time::get_current_time();

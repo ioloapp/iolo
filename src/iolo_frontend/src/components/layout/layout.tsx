@@ -3,7 +3,6 @@ import AppBottomNavigation from '../navigation/bottom/bottom-navigation';
 import {Secrets} from '../../pages/secrets/secrets';
 import {Testaments} from '../../pages/testaments/testaments';
 import {Heirs} from '../../pages/heirs/heirs';
-import {Rules} from '../../pages/rules/rules';
 import {Login} from '../../pages/login/login';
 import * as React from 'react';
 import {FC} from 'react';
@@ -16,7 +15,7 @@ import {SideBar} from "../navigation/sidebar/sidbar";
 import {Box} from "@mui/material";
 import {mobileWidth} from "../../App";
 import useWindowResize from "../../utils/useWindowResize";
-import {ROUTE_HEIRS, ROUTE_PROFILE, ROUTE_RULES, ROUTE_SECRETS, ROUTE_SHARE, ROUTE_TESTAMENTS} from "./routes";
+import {ROUTE_HEIRS, ROUTE_PROFILE, ROUTE_SECRETS, ROUTE_SHARE, ROUTE_TESTAMENTS} from "./routes";
 
 export const Layout: FC = () => {
     const isLoggedIn = useSelector(selectPrincipal);
@@ -30,7 +29,6 @@ export const Layout: FC = () => {
     if (!isAccountExisting) {
         return <Onboarding/>
     }
-    console.log(width)
 
     return (
         <Router>
@@ -46,7 +44,6 @@ export const Layout: FC = () => {
                         <Route path={ROUTE_SECRETS} Component={Secrets}/>
                         <Route path={ROUTE_TESTAMENTS} Component={Testaments}/>
                         <Route path={ROUTE_HEIRS} Component={Heirs}/>
-                        <Route path={ROUTE_RULES} Component={Rules}/>
                         <Route path={ROUTE_PROFILE} Component={Profile}/>
                         <Route path={ROUTE_SHARE} Component={ShareId}/>
                     </Routes>

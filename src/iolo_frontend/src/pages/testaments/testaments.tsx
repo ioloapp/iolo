@@ -86,7 +86,7 @@ export function Testaments() {
     }
 
     return (
-        <PageLayout title={t('testaments.title')} filterList={filterTestamentList}>
+        <PageLayout title={t('policies.title')} filterList={filterTestamentList}>
             <>
                 <Box>
                     {hasError() &&
@@ -116,11 +116,11 @@ export function Testaments() {
                                                 </>
                                             }
                                             {
-                                                testament.role === UiTestamentListEntryRole.Heir && !testament.conditionStatus &&
+                                                testament.role === UiTestamentListEntryRole.Heir && !testament.conditions.status &&
                                                 <LockOutlinedIcon/>
                                             }
                                             {
-                                                testament.role === UiTestamentListEntryRole.Heir && testament.conditionStatus &&
+                                                testament.role === UiTestamentListEntryRole.Heir && testament.conditions.status &&
                                                 <IconButton edge="end" aria-label="view"
                                                             onClick={() => viewTestament(testament)}>
                                                     <VisibilityOutlinedIcon/>
@@ -135,7 +135,7 @@ export function Testaments() {
                                         </ListItemAvatar>
                                         <ListItemText
                                             primary={testament.name}
-                                            secondary={testament.role === UiTestamentListEntryRole.Heir ? `${t('testaments.testator')}: ${testament.testator.id}` : ''}
+                                            secondary={testament.role === UiTestamentListEntryRole.Heir ? `${t('policies.beneficiary')}: ${testament.testator.id}` : ''}
                                         />
                                     </ListItem>,
                                 )}

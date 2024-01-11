@@ -17,5 +17,5 @@ export const initialState: UserState = {
     user: {
         type: UiUserType.Person
     },
-    mode: 'dark'
+    mode: 'light'
 }
