@@ -13,16 +13,20 @@ use crate::utils::caller::get_caller;
 use super::secret::{
     AddSecretArgs, Secret, SecretID, SecretListEntry, SecretSymmetricCryptoMaterial,
 };
+use super::secret_store::SecretStore;
 use super::testament::{AddTestamentArgs, Testament, TestamentID, TestamentListEntry};
 use super::testament_registry::{TestamentRegistryForHeirs, TestamentRegistryForValidators};
 use super::user_vault_store::UserVaultStore;
 
 thread_local! {
-    // Master_vault holding all the user vaults
+    // User vault store holding all the user vaults
     pub static USER_VAULT_STORE: RefCell<UserVaultStore> = RefCell::new(UserVaultStore::new());
 
-    // User Registry
+    // User Store
     pub static USER_STORE: RefCell<UserStore> = RefCell::new(UserStore::new());
+
+    // Secret Store
+    pub static SECRET_STORE: RefCell<SecretStore> = RefCell::new(SecretStore::new());
 
     // Testament Registry for heirs
     pub static TESTAMENT_REGISTRY_FOR_HEIRS: RefCell<TestamentRegistryForHeirs> = RefCell::new(TestamentRegistryForHeirs::new());

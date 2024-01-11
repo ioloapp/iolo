@@ -1,6 +1,7 @@
-use std::{cell::RefCell, fmt};
+use std::{borrow::Cow, cell::RefCell, fmt};
 
-use candid::{CandidType, Deserialize};
+use candid::{CandidType, Decode, Deserialize, Encode};
+use ic_stable_structures::{storable::Bound, Storable};
 use serde::Serialize;
 
 use crate::smart_vaults::smart_vault::UUID_COUNTER;
@@ -45,4 +46,16 @@ impl Default for UUID {
     fn default() -> Self {
         Self::new()
     }
+}
+
+impl Storable for UUID {
+    fn to_bytes(&self) -> std::borrow::Cow<[u8]> {
+        Cow::Owned(Encode!(self).unwrap())
+    }
+
+    fn from_bytes(bytes: std::borrow::Cow<[u8]>) -> Self {
+        Decode!(bytes.as_ref(), Self).unwrap()
+    }
+
+    const BOUND: Bound = Bound::Unbounded;
 }
