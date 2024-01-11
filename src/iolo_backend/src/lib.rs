@@ -27,7 +27,7 @@ use crate::smart_vaults::secret::{AddSecretArgs, Secret};
 fn init() {
 
     // initialize the timers for triggering the login date condition
-    login_date_condition::init_condition();
+    //login_date_condition::init_condition();
 }
 
 #[ic_cdk_macros::query]

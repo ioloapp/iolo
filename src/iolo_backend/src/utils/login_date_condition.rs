@@ -16,7 +16,7 @@ thread_local! {
     static TIMER_IDS: RefCell<Vec<TimerId>> = RefCell::new(Vec::new());
 }
 
-#[ic_cdk_macros::update]
+/*#[ic_cdk_macros::update]
 fn start_with_interval_secs(secs: u64) {
     let secs = Duration::from_secs(secs);
 
@@ -77,4 +77,4 @@ fn periodic_task() {
             }
         });
     }
-}
+}*/
