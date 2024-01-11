@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::common::{
     error::SmartVaultErr,
-    memory::{get_stable_btree_memory, Memory},
+    memory::{get_stable_btree_memory_for_users, Memory},
     principal_storable::PrincipalStorable,
     user::User,
 };
@@ -19,7 +19,7 @@ pub struct UserStore {
 }
 
 fn init_stable_data() -> StableBTreeMap<PrincipalStorable, User, Memory> {
-    StableBTreeMap::init(get_stable_btree_memory())
+    StableBTreeMap::init(get_stable_btree_memory_for_users())
 }
 
 impl Default for UserStore {
