@@ -101,7 +101,7 @@ mod tests {
 
     use crate::common::user::AddUserArgs;
     use crate::{
-        common::{error::SmartVaultErr, principal_storable::PrincipalStorable, user::User},
+        common::{error::SmartVaultErr, user::User},
         smart_vaults::user_registry::UserRegistry,
     };
 

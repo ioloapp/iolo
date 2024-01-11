@@ -2,7 +2,6 @@ use std::cell::RefCell;
 use std::{str::FromStr, vec};
 
 use crate::common::error::SmartVaultErr;
-use crate::common::principal_storable::PrincipalStorable;
 use crate::common::uuid::UUID;
 use crate::smart_vaults::master_vault::MasterVault;
 use crate::smart_vaults::smart_vault::{MASTERVAULT, TESTAMENT_REGISTRY, USER_REGISTRY};

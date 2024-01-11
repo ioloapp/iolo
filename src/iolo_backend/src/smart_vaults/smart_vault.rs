@@ -4,7 +4,6 @@ use candid::Principal;
 use ic_cdk::{post_upgrade, pre_upgrade, storage};
 
 use crate::common::error::SmartVaultErr;
-use crate::common::principal_storable::PrincipalStorable;
 use crate::common::user::{AddUserArgs, User};
 use crate::common::uuid::UUID;
 use crate::smart_vaults::testament::TestamentResponse;
