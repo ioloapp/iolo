@@ -3,11 +3,13 @@ use std::{str::FromStr, vec};
 
 use crate::common::error::SmartVaultErr;
 use crate::common::uuid::UUID;
-use crate::smart_vaults::master_vault::MasterVault;
-use crate::smart_vaults::smart_vault::{MASTERVAULT, TESTAMENT_REGISTRY_FOR_HEIRS, USER_STORE};
+use crate::smart_vaults::smart_vault::{
+    TESTAMENT_REGISTRY_FOR_HEIRS, USER_STORE, USER_VAULT_STORE,
+};
 use crate::smart_vaults::testament::{Testament, TestamentID};
 use crate::smart_vaults::testament_registry::TestamentRegistryForHeirs;
 use crate::smart_vaults::user_store::UserStore;
+use crate::smart_vaults::user_vault_store::UserVaultStore;
 use candid::{CandidType, Principal};
 use serde::{Deserialize, Serialize};
 
@@ -91,13 +93,13 @@ async fn encrypted_symmetric_key_for_testament(
             // Caller is heir, let's see if the associated testament is in correct condition status.
             let result_3 =
                 USER_STORE.with(|ur: &RefCell<UserStore>| -> Result<UUID, SmartVaultErr> {
-                    let user_registry = ur.borrow();
-                    let user = user_registry.get_user(&result_2.1)?;
+                    let user_store = ur.borrow();
+                    let user = user_store.get_user(&result_2.1)?;
                     user.user_vault_id
                         .ok_or_else(|| SmartVaultErr::UserVaultDoesNotExist("".to_string()))
                 })?;
-            let result_4 = MASTERVAULT.with(
-                |mv: &RefCell<MasterVault>| -> Result<Testament, SmartVaultErr> {
+            let result_4 = USER_VAULT_STORE.with(
+                |mv: &RefCell<UserVaultStore>| -> Result<Testament, SmartVaultErr> {
                     mv.borrow()
                         .get_user_vault(&result_3)?
                         .get_testament(&args.testament_id)

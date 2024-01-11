@@ -1,8 +1,8 @@
 use crate::common::user::User;
 use crate::smart_vaults::conditions::Condition;
-use crate::smart_vaults::master_vault::MasterVault;
-use crate::smart_vaults::smart_vault::{MASTERVAULT, USER_STORE};
+use crate::smart_vaults::smart_vault::{USER_STORE, USER_VAULT_STORE};
 use crate::smart_vaults::user_store::UserStore;
+use crate::smart_vaults::user_vault_store::UserVaultStore;
 use candid::Principal;
 use ic_cdk_timers::TimerId;
 use std::collections::BTreeMap;
@@ -33,21 +33,21 @@ pub fn init_condition() {
 
 fn periodic_task() {
     // read all users
-    let users = USER_REGISTRY.with(
+    let users = USER_STORE.with(
         |ur: &RefCell<UserStore>| -> BTreeMap<Principal, User> {
-            let user_registry = ur.borrow();
-            user_registry.users().clone()
+            let user_store = ur.borrow();
+            user_store.users().clone()
         },
     );
 
     // iterate over all existing users
     for user in users.values() {
         // read all testaments of a user
-        MASTERVAULT.with(|ms: &RefCell<MasterVault>| -> () {
-            let mut master_vault = ms.borrow_mut();
+        USER_VAULT_STORE.with(|ms: &RefCell<UserVaultStore>| -> () {
+            let mut user_vault_store = ms.borrow_mut();
 
             // Get all testaments for principal
-            let testaments = master_vault.get_user_testament_list_mut(&user.user_vault_id.unwrap());
+            let testaments = user_vault_store.get_user_testament_list_mut(&user.user_vault_id.unwrap());
             if let Err(e) = &testaments {
                 ic_cdk::println!("ERROR: {:?}", e);
             }

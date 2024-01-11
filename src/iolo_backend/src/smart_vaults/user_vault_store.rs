@@ -2,8 +2,8 @@ use std::{cell::RefCell, collections::BTreeMap};
 
 use candid::{CandidType, Deserialize, Principal};
 
-use crate::common::{error::SmartVaultErr,uuid::UUID};
 use crate::common::user::{AddUserArgs, User};
+use crate::common::{error::SmartVaultErr, uuid::UUID};
 use crate::smart_vaults::conditions::Condition;
 use crate::smart_vaults::smart_vault::TESTAMENT_REGISTRY_FOR_VALIDATORS;
 use crate::smart_vaults::testament::TestamentID;
@@ -18,17 +18,17 @@ use super::{
 };
 
 #[derive(CandidType, Deserialize, Clone, Debug)]
-pub struct MasterVault {
+pub struct UserVaultStore {
     user_vaults: BTreeMap<UUID, UserVault>,
 }
 
-impl Default for MasterVault {
+impl Default for UserVaultStore {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl MasterVault {
+impl UserVaultStore {
     pub fn new() -> Self {
         Self {
             user_vaults: BTreeMap::new(),
@@ -58,7 +58,7 @@ impl MasterVault {
         Ok(self.user_vaults.get(vault_id).unwrap())
     }
 
-    // Delete a user_vault from the master_vault
+    // Delete a user_vault from the user vault store
     pub fn remove_user_vault(&mut self, id: &UUID) {
         self.user_vaults.remove(id);
     }
@@ -111,7 +111,7 @@ impl MasterVault {
         for condition in testament.conditions().conditions.iter() {
             match condition {
                 Condition::XOutOfYCondition(xoutofy) => {
-                        TESTAMENT_REGISTRY_FOR_VALIDATORS.with(
+                    TESTAMENT_REGISTRY_FOR_VALIDATORS.with(
                             |tr: &RefCell<TestamentRegistryForValidators>| -> Result<(), SmartVaultErr> {
                                 let mut testament_registry = tr.borrow_mut();
                                 testament_registry.add_testament_to_registry(&xoutofy.validators, &testament.id(), &testament.testator());
@@ -221,11 +221,7 @@ impl MasterVault {
     }
 
     // Add a user to the address_book
-    pub fn add_heir(
-        &mut self,
-        vault_id: &UUID,
-        aua: AddUserArgs,
-    ) -> Result<User, SmartVaultErr> {
+    pub fn add_heir(&mut self, vault_id: &UUID, aua: AddUserArgs) -> Result<User, SmartVaultErr> {
         if !self.user_vaults.contains_key(vault_id) {
             return Err(SmartVaultErr::UserVaultDoesNotExist(vault_id.to_string()));
         }
@@ -237,11 +233,7 @@ impl MasterVault {
         Ok(added_user.clone())
     }
 
-    pub fn update_user_heir (
-        &mut self,
-        vault_id: &UUID,
-        u: User,
-    ) -> Result<User, SmartVaultErr> {
+    pub fn update_user_heir(&mut self, vault_id: &UUID, u: User) -> Result<User, SmartVaultErr> {
         if !self.user_vaults.contains_key(vault_id) {
             return Err(SmartVaultErr::UserVaultDoesNotExist(vault_id.to_string()));
         }
@@ -253,7 +245,7 @@ impl MasterVault {
     pub fn remove_user_heir(
         &mut self,
         vault_id: &UUID,
-        user_id: &Principal
+        user_id: &Principal,
     ) -> Result<(), SmartVaultErr> {
         if !self.user_vaults.contains_key(vault_id) {
             return Err(SmartVaultErr::UserVaultDoesNotExist(vault_id.to_string()));
@@ -270,36 +262,36 @@ mod tests {
     use super::*;
 
     #[test]
-    fn utest_new_master_vault() {
-        let master_vault = MasterVault::new();
+    fn utest_new_user_vault_store() {
+        let user_vault_store = UserVaultStore::new();
 
         assert_eq!(
-            master_vault.user_vaults.len(),
+            user_vault_store.user_vaults.len(),
             0,
-            "master_vault should have 0 user_vaults but has {}",
-            master_vault.user_vaults.len()
+            "user vault store should have 0 user_vaults but has {}",
+            user_vault_store.user_vaults.len()
         );
     }
 
     #[test]
     fn utest_create_user_vault() {
-        let mut master_vault = MasterVault::new();
+        let mut user_vault_store = UserVaultStore::new();
 
         // no user vault yet
-        assert_eq!(master_vault.user_vaults().len(), 0);
+        assert_eq!(user_vault_store.user_vaults().len(), 0);
 
         // Create a new empty user_vault
-        let new_uv_id = master_vault.create_user_vault();
+        let new_uv_id = user_vault_store.create_user_vault();
 
         // new user vault exists
-        assert!(master_vault.get_user_vault(&new_uv_id).is_ok());
+        assert!(user_vault_store.get_user_vault(&new_uv_id).is_ok());
 
-        // there is a user vault in the master vault
-        assert_eq!(master_vault.user_vaults().len(), 1);
+        // there is a user vault in the user vault store
+        assert_eq!(user_vault_store.user_vaults().len(), 1);
 
         // user vault must be empty
         assert_eq!(
-            master_vault
+            user_vault_store
                 .get_user_vault(&new_uv_id)
                 .unwrap()
                 .secrets()
@@ -310,51 +302,51 @@ mod tests {
 
     #[test]
     fn utest_get_user_vault() {
-        let mut master_vault = MasterVault::new();
+        let mut user_vault_store = UserVaultStore::new();
 
         // Create a new empty user_vault
-        let new_uv_id = master_vault.create_user_vault();
+        let new_uv_id = user_vault_store.create_user_vault();
 
         // new user vault exists
-        assert!(master_vault.get_user_vault(&new_uv_id).is_ok());
+        assert!(user_vault_store.get_user_vault(&new_uv_id).is_ok());
 
         // following user vault should not exist
-        assert!(master_vault.get_user_vault(&UUID::new()).is_err());
+        assert!(user_vault_store.get_user_vault(&UUID::new()).is_err());
     }
 
     #[test]
     fn utest_remove_user_vault() {
-        let mut master_vault = MasterVault::new();
+        let mut user_vault_store = UserVaultStore::new();
 
         // no user vault yet
-        assert_eq!(master_vault.user_vaults().len(), 0);
+        assert_eq!(user_vault_store.user_vaults().len(), 0);
 
         // Create a new empty user_vault
-        let new_uv_id = master_vault.create_user_vault();
+        let new_uv_id = user_vault_store.create_user_vault();
 
         // new user vault exists
-        assert!(master_vault.get_user_vault(&new_uv_id).is_ok());
+        assert!(user_vault_store.get_user_vault(&new_uv_id).is_ok());
 
-        // there is a user vault in the master vault
-        assert_eq!(master_vault.user_vaults().len(), 1);
+        // there is a user vault in the user vault store
+        assert_eq!(user_vault_store.user_vaults().len(), 1);
 
-        master_vault.remove_user_vault(&new_uv_id);
+        user_vault_store.remove_user_vault(&new_uv_id);
 
         // new user vault does not exist anymore
-        assert!(master_vault.get_user_vault(&new_uv_id).is_err());
+        assert!(user_vault_store.get_user_vault(&new_uv_id).is_err());
 
-        // there is no user vault in the master vault anymore
-        assert_eq!(master_vault.user_vaults().len(), 0);
+        // there is no user vault in the user vault store anymore
+        assert_eq!(user_vault_store.user_vaults().len(), 0);
     }
 
     #[test]
     fn utest_secrets() {
-        let mut master_vault = MasterVault::new();
-        let new_uv_id = master_vault.create_user_vault();
+        let mut user_vault_store = UserVaultStore::new();
+        let new_uv_id = user_vault_store.create_user_vault();
 
         // user vault must be empty
         assert_eq!(
-            master_vault
+            user_vault_store
                 .get_user_vault(&new_uv_id)
                 .unwrap()
                 .secrets()
@@ -366,18 +358,18 @@ mod tests {
         //     decryption_material: SecretDecryptionMaterial::default(),
         // };
 
-        // let secret = master_vault
+        // let secret = user_vault_store
         //     .add_user_secret(&new_uv_id, secret_for_creation)
         //     .unwrap();
         // assert_eq!(
-        //     master_vault
+        //     user_vault_store
         //         .get_user_vault(&new_uv_id)
         //         .unwrap()
         //         .secrets()
         //         .len(),
         //     1
         // );
-        // let secret_name = master_vault
+        // let secret_name = user_vault_store
         //     .get_user_vault(&new_uv_id)
         //     .unwrap()
         //     .secrets()
@@ -400,8 +392,8 @@ mod tests {
         //     None,
         //     None,
         // );
-        // master_vault.update_secret(&new_uv_id, &secret_to_update);
-        // let secret_name = master_vault
+        // user_vault_store.update_secret(&new_uv_id, &secret_to_update);
+        // let secret_name = user_vault_store
         //     .get_user_vault(&new_uv_id)
         //     .unwrap()
         //     .secrets()
@@ -415,9 +407,9 @@ mod tests {
         //     secret_name
         // );
 
-        // master_vault.remove_secret(&new_uv_id, &secret.id());
+        // user_vault_store.remove_secret(&new_uv_id, &secret.id());
         // assert_eq!(
-        //     master_vault
+        //     user_vault_store
         //         .get_user_vault(&new_uv_id)
         //         .unwrap()
         //         .secrets()

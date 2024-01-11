@@ -10,16 +10,16 @@ use crate::smart_vaults::user_store::UserStore;
 use crate::smart_vaults::user_vault::UserVaultID;
 use crate::utils::caller::get_caller;
 
-use super::master_vault::MasterVault;
 use super::secret::{
     AddSecretArgs, Secret, SecretID, SecretListEntry, SecretSymmetricCryptoMaterial,
 };
 use super::testament::{AddTestamentArgs, Testament, TestamentID, TestamentListEntry};
 use super::testament_registry::{TestamentRegistryForHeirs, TestamentRegistryForValidators};
+use super::user_vault_store::UserVaultStore;
 
 thread_local! {
     // Master_vault holding all the user vaults
-    pub static MASTERVAULT: RefCell<MasterVault> = RefCell::new(MasterVault::new());
+    pub static USER_VAULT_STORE: RefCell<UserVaultStore> = RefCell::new(UserVaultStore::new());
 
     // User Registry
     pub static USER_STORE: RefCell<UserStore> = RefCell::new(UserStore::new());
@@ -39,11 +39,12 @@ pub fn create_user(args: AddUserArgs) -> Result<User, SmartVaultErr> {
     let mut new_user = User::new(&get_caller(), args);
 
     // Let's create the user vault
-    let new_user_vault_id: UUID =
-        MASTERVAULT.with(|ms: &RefCell<MasterVault>| -> Result<UUID, SmartVaultErr> {
+    let new_user_vault_id: UUID = USER_VAULT_STORE.with(
+        |ms: &RefCell<UserVaultStore>| -> Result<UUID, SmartVaultErr> {
             let mut master_vault = ms.borrow_mut();
             Ok(master_vault.create_user_vault())
-        })?;
+        },
+    )?;
 
     // Add the new user vault to the new user
     new_user.set_user_vault(new_user_vault_id);
@@ -113,7 +114,7 @@ pub fn delete_user() -> Result<(), SmartVaultErr> {
     let principal = get_caller();
     let user_vault_id: UUID = get_vault_id_for(principal)?;
 
-    MASTERVAULT.with(|ms: &RefCell<MasterVault>| {
+    USER_VAULT_STORE.with(|ms: &RefCell<UserVaultStore>| {
         let mut master_vault = ms.borrow_mut();
         master_vault.remove_user_vault(&user_vault_id);
     });
@@ -130,8 +131,8 @@ pub fn delete_user() -> Result<(), SmartVaultErr> {
 pub fn add_secret(args: AddSecretArgs) -> Result<Secret, SmartVaultErr> {
     let user_vault_id: UUID = get_vault_id_for(get_caller())?;
 
-    MASTERVAULT.with(
-        |ms: &RefCell<MasterVault>| -> Result<Secret, SmartVaultErr> {
+    USER_VAULT_STORE.with(
+        |ms: &RefCell<UserVaultStore>| -> Result<Secret, SmartVaultErr> {
             let mut master_vault = ms.borrow_mut();
             master_vault.add_user_secret(&user_vault_id, args)
         },
@@ -143,8 +144,8 @@ pub fn update_secret(s: Secret) -> Result<Secret, SmartVaultErr> {
     let principal = get_caller();
     let user_vault_id: UUID = get_vault_id_for(principal)?;
 
-    MASTERVAULT.with(
-        |ms: &RefCell<MasterVault>| -> Result<Secret, SmartVaultErr> {
+    USER_VAULT_STORE.with(
+        |ms: &RefCell<UserVaultStore>| -> Result<Secret, SmartVaultErr> {
             let mut master_vault = ms.borrow_mut();
             master_vault.update_user_secret(&user_vault_id, s)
         },
@@ -156,8 +157,8 @@ pub fn get_secret(sid: SecretID) -> Result<Secret, SmartVaultErr> {
     let principal = get_caller();
     let user_vault_id: UUID = get_vault_id_for(principal)?;
 
-    MASTERVAULT.with(
-        |mv: &RefCell<MasterVault>| -> Result<Secret, SmartVaultErr> {
+    USER_VAULT_STORE.with(
+        |mv: &RefCell<UserVaultStore>| -> Result<Secret, SmartVaultErr> {
             mv.borrow()
                 .get_user_vault(&user_vault_id)?
                 .get_secret(&sid)
@@ -185,8 +186,8 @@ pub fn get_secret_as_heir(
     let user_vault_id: UUID = get_vault_id_for(result_tr.1)?;
 
     // Read testament
-    let result_mv = MASTERVAULT.with(
-        |mv: &RefCell<MasterVault>| -> Result<Testament, SmartVaultErr> {
+    let result_mv = USER_VAULT_STORE.with(
+        |mv: &RefCell<UserVaultStore>| -> Result<Testament, SmartVaultErr> {
             mv.borrow()
                 .get_user_vault(&user_vault_id)?
                 .get_testament(&testament_id)
@@ -197,8 +198,8 @@ pub fn get_secret_as_heir(
     // Check that heir is allowed to read testament
     if result_mv.conditions().status.clone() {
         // Read secret in testator user vault
-        MASTERVAULT.with(
-            |mv: &RefCell<MasterVault>| -> Result<Secret, SmartVaultErr> {
+        USER_VAULT_STORE.with(
+            |mv: &RefCell<UserVaultStore>| -> Result<Secret, SmartVaultErr> {
                 mv.borrow()
                     .get_user_vault(&user_vault_id)?
                     .get_secret(&sid)
@@ -215,10 +216,12 @@ pub fn remove_secret(secret_id: String) -> Result<(), SmartVaultErr> {
     let principal = get_caller();
     let user_vault_id: UUID = get_vault_id_for(principal)?;
 
-    MASTERVAULT.with(|ms: &RefCell<MasterVault>| -> Result<(), SmartVaultErr> {
-        let mut master_vault = ms.borrow_mut();
-        master_vault.remove_user_secret(&user_vault_id, &secret_id)
-    })
+    USER_VAULT_STORE.with(
+        |ms: &RefCell<UserVaultStore>| -> Result<(), SmartVaultErr> {
+            let mut master_vault = ms.borrow_mut();
+            master_vault.remove_user_secret(&user_vault_id, &secret_id)
+        },
+    )
 }
 
 #[ic_cdk_macros::query]
@@ -226,7 +229,7 @@ pub fn get_secret_list() -> Result<Vec<SecretListEntry>, SmartVaultErr> {
     let principal = get_caller();
     let user_vault_id: UUID = get_vault_id_for(principal)?;
 
-    MASTERVAULT.with(|mv: &RefCell<MasterVault>| {
+    USER_VAULT_STORE.with(|mv: &RefCell<UserVaultStore>| {
         let secrets_flat: Vec<Secret> = mv
             .borrow()
             .get_user_vault(&user_vault_id)?
@@ -248,8 +251,8 @@ pub fn get_secret_symmetric_crypto_material(
     let principal = get_caller();
     let user_vault_id: UUID = get_vault_id_for(principal)?;
 
-    MASTERVAULT.with(|mv: &RefCell<MasterVault>| {
-        let mv: &MasterVault = &mv.borrow();
+    USER_VAULT_STORE.with(|mv: &RefCell<UserVaultStore>| {
+        let mv: &UserVaultStore = &mv.borrow();
         let uv = mv.get_user_vault(&user_vault_id)?;
         let sdm: &SecretSymmetricCryptoMaterial = uv.key_box().get(&sid).unwrap();
         Ok(sdm.clone())
@@ -275,8 +278,8 @@ pub fn get_secret_symmetric_crypto_material_as_heir(
     let user_vault_id: UUID = get_vault_id_for(result_tr.1)?;
 
     // Read testament
-    let result_mv = MASTERVAULT.with(
-        |mv: &RefCell<MasterVault>| -> Result<Testament, SmartVaultErr> {
+    let result_mv = USER_VAULT_STORE.with(
+        |mv: &RefCell<UserVaultStore>| -> Result<Testament, SmartVaultErr> {
             mv.borrow()
                 .get_user_vault(&user_vault_id)?
                 .get_testament(&testament_id)
@@ -299,8 +302,8 @@ pub fn add_testament(args: AddTestamentArgs) -> Result<Testament, SmartVaultErr>
     let principal = get_caller();
     let user_vault_id: UUID = get_vault_id_for(principal)?;
 
-    MASTERVAULT.with(
-        |ms: &RefCell<MasterVault>| -> Result<Testament, SmartVaultErr> {
+    USER_VAULT_STORE.with(
+        |ms: &RefCell<UserVaultStore>| -> Result<Testament, SmartVaultErr> {
             let mut master_vault = ms.borrow_mut();
             master_vault.add_user_testament(&user_vault_id, args)
         },
@@ -312,8 +315,8 @@ pub fn update_testament(t: Testament) -> Result<Testament, SmartVaultErr> {
     let principal = get_caller();
     let user_vault_id: UUID = get_vault_id_for(principal)?;
 
-    MASTERVAULT.with(
-        |ms: &RefCell<MasterVault>| -> Result<Testament, SmartVaultErr> {
+    USER_VAULT_STORE.with(
+        |ms: &RefCell<UserVaultStore>| -> Result<Testament, SmartVaultErr> {
             let mut master_vault = ms.borrow_mut();
             master_vault.update_user_testament(&user_vault_id, t)
         },
@@ -327,8 +330,8 @@ pub fn get_testament_as_testator(
     let principal = get_caller();
     let user_vault_id: UUID = get_vault_id_for(principal)?;
 
-    let result = MASTERVAULT.with(
-        |mv: &RefCell<MasterVault>| -> Result<Testament, SmartVaultErr> {
+    let result = USER_VAULT_STORE.with(
+        |mv: &RefCell<UserVaultStore>| -> Result<Testament, SmartVaultErr> {
             mv.borrow()
                 .get_user_vault(&user_vault_id)?
                 .get_testament(&testament_id)
@@ -337,8 +340,8 @@ pub fn get_testament_as_testator(
     )?;
     let mut testament_for_testator = TestamentResponse::from(result.clone());
     for secret in result.secrets() {
-        let result_mv_2 = MASTERVAULT.with(
-            |mv: &RefCell<MasterVault>| -> Result<Secret, SmartVaultErr> {
+        let result_mv_2 = USER_VAULT_STORE.with(
+            |mv: &RefCell<UserVaultStore>| -> Result<Secret, SmartVaultErr> {
                 mv.borrow()
                     .get_user_vault(&user_vault_id)?
                     .get_secret(secret)
@@ -371,8 +374,8 @@ pub fn get_testament_as_heir(
     let user_vault_id: UUID = get_vault_id_for(result_tr.1)?;
 
     // Read testament
-    let result_mv = MASTERVAULT.with(
-        |mv: &RefCell<MasterVault>| -> Result<Testament, SmartVaultErr> {
+    let result_mv = USER_VAULT_STORE.with(
+        |mv: &RefCell<UserVaultStore>| -> Result<Testament, SmartVaultErr> {
             mv.borrow()
                 .get_user_vault(&user_vault_id)?
                 .get_testament(&testament_id)
@@ -386,8 +389,8 @@ pub fn get_testament_as_heir(
         let testator_vault_id = get_vault_id_for(*result_mv.testator())?;
         let mut testament_for_heir = TestamentResponse::from(result_mv.clone());
         for secret in result_mv.secrets() {
-            let result_mv_2 = MASTERVAULT.with(
-                |mv: &RefCell<MasterVault>| -> Result<Secret, SmartVaultErr> {
+            let result_mv_2 = USER_VAULT_STORE.with(
+                |mv: &RefCell<UserVaultStore>| -> Result<Secret, SmartVaultErr> {
                     mv.borrow()
                         .get_user_vault(&testator_vault_id)?
                         .get_secret(secret)
@@ -419,8 +422,8 @@ pub fn get_testament_list_as_heir() -> Result<Vec<TestamentListEntry>, SmartVaul
     let mut response = Vec::new();
     for item in result_tr {
         let user_vault_id: UUID = get_vault_id_for(item.1.clone())?;
-        let result_mv = MASTERVAULT.with(
-            |mv: &RefCell<MasterVault>| -> Result<Testament, SmartVaultErr> {
+        let result_mv = USER_VAULT_STORE.with(
+            |mv: &RefCell<UserVaultStore>| -> Result<Testament, SmartVaultErr> {
                 mv.borrow()
                     .get_user_vault(&user_vault_id)?
                     .get_testament(&item.0)
@@ -445,8 +448,8 @@ pub fn get_testament_list_as_validator() -> Result<Vec<TestamentListEntry>, Smar
     let mut response = Vec::new();
     for item in result_tr {
         let user_vault_id: UUID = get_vault_id_for(item.1.clone())?;
-        let result_mv = MASTERVAULT.with(
-            |mv: &RefCell<MasterVault>| -> Result<Testament, SmartVaultErr> {
+        let result_mv = USER_VAULT_STORE.with(
+            |mv: &RefCell<UserVaultStore>| -> Result<Testament, SmartVaultErr> {
                 mv.borrow()
                     .get_user_vault(&user_vault_id)?
                     .get_testament(&item.0)
@@ -464,7 +467,7 @@ pub fn get_testament_list_as_testator() -> Result<Vec<TestamentListEntry>, Smart
     let principal = get_caller();
     let user_vault_id: UUID = get_vault_id_for(principal)?;
 
-    MASTERVAULT.with(|mv: &RefCell<MasterVault>| {
+    USER_VAULT_STORE.with(|mv: &RefCell<UserVaultStore>| {
         let testaments: Vec<Testament> = mv
             .borrow()
             .get_user_vault(&user_vault_id)?
@@ -489,8 +492,8 @@ pub fn confirm_x_out_of_y_condition(
     let user_vault_id: UUID = get_vault_id_for(testator)?;
 
     // Read testament
-    let mut result_mv = MASTERVAULT.with(
-        |mv: &RefCell<MasterVault>| -> Result<Testament, SmartVaultErr> {
+    let mut result_mv = USER_VAULT_STORE.with(
+        |mv: &RefCell<UserVaultStore>| -> Result<Testament, SmartVaultErr> {
             mv.borrow()
                 .get_user_vault(&user_vault_id)?
                 .get_testament(&testament_id)
@@ -514,10 +517,12 @@ pub fn remove_testament(testament_id: String) -> Result<(), SmartVaultErr> {
     let principal = get_caller();
     let user_vault_id: UUID = get_vault_id_for(principal)?;
 
-    MASTERVAULT.with(|ms: &RefCell<MasterVault>| -> Result<(), SmartVaultErr> {
-        let mut master_vault = ms.borrow_mut();
-        master_vault.remove_user_testament(&user_vault_id, &testament_id)
-    })
+    USER_VAULT_STORE.with(
+        |ms: &RefCell<UserVaultStore>| -> Result<(), SmartVaultErr> {
+            let mut master_vault = ms.borrow_mut();
+            master_vault.remove_user_testament(&user_vault_id, &testament_id)
+        },
+    )
 }
 
 #[ic_cdk_macros::update]
@@ -525,10 +530,12 @@ pub fn add_heir(args: AddUserArgs) -> Result<User, SmartVaultErr> {
     let principal = get_caller();
     let user_vault_id: UUID = get_vault_id_for(principal)?;
 
-    MASTERVAULT.with(|ms: &RefCell<MasterVault>| -> Result<User, SmartVaultErr> {
-        let mut master_vault = ms.borrow_mut();
-        master_vault.add_heir(&user_vault_id, args)
-    })
+    USER_VAULT_STORE.with(
+        |ms: &RefCell<UserVaultStore>| -> Result<User, SmartVaultErr> {
+            let mut master_vault = ms.borrow_mut();
+            master_vault.add_heir(&user_vault_id, args)
+        },
+    )
 }
 
 #[ic_cdk_macros::query]
@@ -536,7 +543,7 @@ pub fn get_heir_list() -> Result<Vec<User>, SmartVaultErr> {
     let principal = get_caller();
     let user_vault_id: UUID = get_vault_id_for(principal)?;
 
-    MASTERVAULT.with(|mv: &RefCell<MasterVault>| {
+    USER_VAULT_STORE.with(|mv: &RefCell<UserVaultStore>| {
         let heirs: Vec<User> = mv
             .borrow()
             .get_user_vault(&user_vault_id)?
@@ -553,10 +560,12 @@ pub fn update_heir(u: User) -> Result<User, SmartVaultErr> {
     let principal = get_caller();
     let user_vault_id: UUID = get_vault_id_for(principal)?;
 
-    MASTERVAULT.with(|ms: &RefCell<MasterVault>| -> Result<User, SmartVaultErr> {
-        let mut master_vault = ms.borrow_mut();
-        master_vault.update_user_heir(&user_vault_id, u)
-    })
+    USER_VAULT_STORE.with(
+        |ms: &RefCell<UserVaultStore>| -> Result<User, SmartVaultErr> {
+            let mut master_vault = ms.borrow_mut();
+            master_vault.update_user_heir(&user_vault_id, u)
+        },
+    )
 }
 
 #[ic_cdk_macros::update]
@@ -564,10 +573,12 @@ pub fn remove_heir(user_id: Principal) -> Result<(), SmartVaultErr> {
     let principal = get_caller();
     let user_vault_id: UUID = get_vault_id_for(principal)?;
 
-    MASTERVAULT.with(|ms: &RefCell<MasterVault>| -> Result<(), SmartVaultErr> {
-        let mut master_vault = ms.borrow_mut();
-        master_vault.remove_user_heir(&user_vault_id, &user_id)
-    })
+    USER_VAULT_STORE.with(
+        |ms: &RefCell<UserVaultStore>| -> Result<(), SmartVaultErr> {
+            let mut master_vault = ms.borrow_mut();
+            master_vault.remove_user_heir(&user_vault_id, &user_id)
+        },
+    )
 }
 
 #[ic_cdk_macros::query]
@@ -591,7 +602,7 @@ fn get_vault_id_for(principal: Principal) -> Result<UserVaultID, SmartVaultErr> 
 
 #[pre_upgrade]
 fn pre_upgrade() {
-    MASTERVAULT.with(|ms| storage::stable_save((ms,)).unwrap());
+    USER_VAULT_STORE.with(|ms| storage::stable_save((ms,)).unwrap());
     // USER_STORE.with(|ur| storage::stable_save((ur,)).unwrap());
     TESTAMENT_REGISTRY_FOR_HEIRS.with(|tr| storage::stable_save((tr,)).unwrap());
     TESTAMENT_REGISTRY_FOR_VALIDATORS.with(|tr| storage::stable_save((tr,)).unwrap());
@@ -600,8 +611,8 @@ fn pre_upgrade() {
 
 #[post_upgrade]
 fn post_upgrade() {
-    let (old_ms,): (MasterVault,) = storage::stable_restore().unwrap();
-    MASTERVAULT.with(|ms| *ms.borrow_mut() = old_ms);
+    let (old_ms,): (UserVaultStore,) = storage::stable_restore().unwrap();
+    USER_VAULT_STORE.with(|ms| *ms.borrow_mut() = old_ms);
 
     // let (old_ur,): (UserStore,) = storage::stable_restore().unwrap();
     // USER_STORE.with(|ur| *ur.borrow_mut() = old_ur);
