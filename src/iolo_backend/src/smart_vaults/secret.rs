@@ -1,4 +1,7 @@
-use candid::{CandidType, Deserialize};
+use std::borrow::Cow;
+
+use candid::{CandidType, Decode, Deserialize, Encode};
+use ic_stable_structures::{storable::Bound, Storable};
 use serde::Serialize;
 
 use crate::utils::time;
@@ -168,6 +171,18 @@ impl Secret {
         self.notes = Some(notes);
         self.date_modified = time::get_current_time();
     }
+}
+
+impl Storable for Secret {
+    fn to_bytes(&self) -> std::borrow::Cow<[u8]> {
+        Cow::Owned(Encode!(self).unwrap())
+    }
+
+    fn from_bytes(bytes: std::borrow::Cow<[u8]>) -> Self {
+        Decode!(bytes.as_ref(), Self).unwrap()
+    }
+
+    const BOUND: Bound = Bound::Unbounded;
 }
 
 #[cfg(test)]
