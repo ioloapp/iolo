@@ -87,7 +87,7 @@ export const Onboarding = () => {
                             InputLabelProps={{shrink: true}}
                             fullWidth
                             variant="standard"
-                            value={currentUser.name}
+                            value={currentUser?.name}
                             onChange={e => updateCurrentUser({
                                 ...currentUser,
                                 name: e.target.value
@@ -101,7 +101,7 @@ export const Onboarding = () => {
                             InputLabelProps={{shrink: true}}
                             fullWidth
                             variant="standard"
-                            value={currentUser.email}
+                            value={currentUser?.email}
                             onChange={e => updateCurrentUser({
                                 ...currentUser,
                                 email: e.target.value

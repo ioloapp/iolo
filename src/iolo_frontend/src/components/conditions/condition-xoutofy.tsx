@@ -16,11 +16,11 @@ import {testamentsActions} from "../../redux/testaments/testamentsSlice";
 export interface ConditionXOutOfYProps {
     condition: UiXOutOfYCondition
     readonly?: boolean
+    open: boolean
 }
 
-export const ConditionXOutOfY: FC<ConditionXOutOfYProps> = ({condition, readonly}) => {
+export const ConditionXOutOfY: FC<ConditionXOutOfYProps> = ({condition, readonly, open}) => {
     const {t} = useTranslation();
-    const [open, setOpen] = React.useState(false);
     const dispatch = useAppDispatch();
 
     const deleteCondition = (condition: UiCondition) => {
@@ -33,7 +33,7 @@ export const ConditionXOutOfY: FC<ConditionXOutOfYProps> = ({condition, readonly
                 <TableCell style={{paddingBottom: 0, paddingTop: 0}} colSpan={6}>
                     <Collapse in={open} timeout="auto" unmountOnExit>
                         <Box sx={{margin: 1}}>
-                            <Typography variant="h6" gutterBottom component="div">
+                            <Typography variant="body2">
                                 {t('conditions.x-out-of-y')}
                             </Typography>
                             <Table size="small" aria-label="purchases">
@@ -66,7 +66,7 @@ export const ConditionXOutOfY: FC<ConditionXOutOfYProps> = ({condition, readonly
             <TableCell style={{paddingBottom: 0, paddingTop: 0}} colSpan={6}>
                 <Collapse in={open} timeout="auto" unmountOnExit>
                     <Box sx={{margin: 1}}>
-                        <Typography variant="h6" gutterBottom component="div">
+                        <Typography variant="body2">
                             {t('conditions.x-out-of-y')}
                         </Typography>
                         <Table size="small" aria-label="purchases">

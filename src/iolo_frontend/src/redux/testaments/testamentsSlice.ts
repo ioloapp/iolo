@@ -159,6 +159,15 @@ export const testamentsSlice = createSlice({
 
             }
         },
+        updateConditionOfDialogItem: (state, action: PayloadAction<UiCondition>) => {
+            state.dialogItem = {
+                ...state.dialogItem,
+                conditions: {
+                    ...state.dialogItem.conditions,
+                    conditions: replaceConditions(state.dialogItem.conditions.conditions, action.payload)
+                }
+            }
+        },
     },
     extraReducers: (builder) => {
         builder
@@ -245,6 +254,18 @@ export const testamentsSlice = createSlice({
             });
     },
 })
+
+export const replaceConditions = (conditions: UiCondition[], condition: UiCondition): UiCondition[] => {
+    const newConditions = [];
+    conditions.forEach(c => {
+        if(c.id === condition.id){
+            newConditions.push(condition);
+        } else {
+            newConditions.push(c);
+        }
+    })
+    return newConditions;
+}
 
 // Action creators are generated for each case reducer function
 export const testamentsActions = testamentsSlice.actions;

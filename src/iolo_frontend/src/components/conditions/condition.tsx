@@ -12,6 +12,7 @@ import {useAppDispatch} from "../../redux/hooks";
 import {testamentsActions} from "../../redux/testaments/testamentsSlice";
 import {ConditionTimebased} from "./condition-timebased";
 import {ConditionXOutOfY} from "./condition-xoutofy";
+import {FormControl, MenuItem, Select, Typography} from "@mui/material";
 
 export interface ConditionProps {
     condition: UiCondition
@@ -27,6 +28,10 @@ export const Condition: FC<ConditionProps> = ({condition, readonly}) => {
         dispatch(testamentsActions.deleteConditionOfDialogItem(condition))
     }
 
+    const updateCondition = (condition: UiCondition) => {
+        dispatch(testamentsActions.updateConditionOfDialogItem(condition))
+    }
+
     return (
         <>
             <TableRow sx={{'& > *': {borderBottom: 'unset'}}}>
@@ -40,7 +45,33 @@ export const Condition: FC<ConditionProps> = ({condition, readonly}) => {
                     </IconButton>
                 </TableCell>
                 <TableCell>{condition.conditionStatus}</TableCell>
-                <TableCell>{condition.type}</TableCell>
+                <TableCell>
+                    {readonly && condition.type !== ConditionType.Undefined &&
+                        <>{condition.type}</>
+                    }
+                    {!readonly &&
+                        <FormControl fullWidth>
+                            <Typography variant="body2">Category</Typography>
+                            <Select
+                                labelId="category-select-label"
+                                id="type"
+                                value={condition.type}
+                                label="Category"
+                                onChange={e => updateCondition({
+                                    ...condition,
+                                    type: ConditionType[e.target.value as keyof typeof ConditionType]
+                                })}
+                            >
+                                {Object.keys(ConditionType)
+                                    .map(key => {
+                                        return <MenuItem key={key} value={key}>{key}</MenuItem>
+                                    })
+
+                                }
+                            </Select>
+                        </FormControl>
+                    }
+                </TableCell>
                 <TableCell>
                     {!readonly &&
                         <IconButton
@@ -54,10 +85,10 @@ export const Condition: FC<ConditionProps> = ({condition, readonly}) => {
                 </TableCell>
             </TableRow>
             {condition.type === ConditionType.TimeBasedCondition &&
-                <ConditionTimebased condition={condition as UiTimeBasedCondition} readonly={readonly}/>
+                <ConditionTimebased condition={condition as UiTimeBasedCondition} readonly={readonly} open={open}/>
             }
             {condition.type === ConditionType.XOutOfYCondition &&
-                <ConditionXOutOfY condition={condition as UiXOutOfYCondition} readonly={readonly}/>
+                <ConditionXOutOfY condition={condition as UiXOutOfYCondition} readonly={readonly} open={open}/>
             }
 
         </>
