@@ -139,24 +139,22 @@ export const testamentsSlice = createSlice({
         addConditionToDialogItem: (state, action: PayloadAction<UiCondition>) => {
             state.dialogItem = {
                 ...state.dialogItem,
-                conditions: {
+                conditions: [
                     ...state.dialogItem.conditions,
-                    conditions: [
-                        ...state.dialogItem.conditions.conditions,
-                        action.payload
-                    ],
-                }
-
+                    action.payload
+                ],
             }
         },
         deleteConditionOfDialogItem: (state, action: PayloadAction<UiCondition>) => {
             state.dialogItem = {
                 ...state.dialogItem,
-                conditions: {
-                    ...state.dialogItem.conditions,
-                    conditions: state.dialogItem.conditions.conditions.filter(c => c.id != action.payload.id)
-                }
-
+                conditions: state.dialogItem.conditions.filter(c => c.id != action.payload.id)
+            }
+        },
+        updateConditionOfDialogItem: (state, action: PayloadAction<UiCondition>) => {
+            state.dialogItem = {
+                ...state.dialogItem,
+                conditions: replaceConditions(state.dialogItem.conditions, action.payload)
             }
         },
     },
@@ -245,6 +243,18 @@ export const testamentsSlice = createSlice({
             });
     },
 })
+
+export const replaceConditions = (conditions: UiCondition[], condition: UiCondition): UiCondition[] => {
+    const newConditions = [];
+    conditions.forEach(c => {
+        if(c.id === condition.id){
+            newConditions.push(condition);
+        } else {
+            newConditions.push(c);
+        }
+    })
+    return newConditions;
+}
 
 // Action creators are generated for each case reducer function
 export const testamentsActions = testamentsSlice.actions;

@@ -9,19 +9,20 @@ import Typography from "@mui/material/Typography";
 import {useTranslation} from "react-i18next";
 import {useAppDispatch} from "../../redux/hooks";
 import {testamentsActions} from "../../redux/testaments/testamentsSlice";
+import TextField from "@mui/material/TextField";
 
 export interface ConditionTimebasedProps {
     condition: UiTimeBasedCondition
-    readonly?: boolean
+    readonly?: boolean,
+    open: boolean
 }
 
-export const ConditionTimebased: FC<ConditionTimebasedProps> = ({condition, readonly}) => {
+export const ConditionTimebased: FC<ConditionTimebasedProps> = ({condition, readonly, open}) => {
     const {t} = useTranslation();
-    const [open, setOpen] = React.useState(false);
     const dispatch = useAppDispatch();
 
-    const deleteCondition = (condition: UiTimeBasedCondition) => {
-        dispatch(testamentsActions.deleteConditionOfDialogItem(condition))
+    const updateCondition = (condition: UiTimeBasedCondition) => {
+        dispatch(testamentsActions.updateConditionOfDialogItem(condition))
     }
 
     if (readonly) {
@@ -30,7 +31,7 @@ export const ConditionTimebased: FC<ConditionTimebasedProps> = ({condition, read
                 <TableCell style={{paddingBottom: 0, paddingTop: 0}} colSpan={6}>
                     <Collapse in={open} timeout="auto" unmountOnExit>
                         <Box sx={{margin: 1}}>
-                            <Typography variant="h6" gutterBottom component="div">
+                            <Typography variant="body2">
                                 {t('conditions.max-logout-time')}: {(condition as UiTimeBasedCondition).numberOfDaysSinceLastLogin}
                             </Typography>
                         </Box>
@@ -44,11 +45,20 @@ export const ConditionTimebased: FC<ConditionTimebasedProps> = ({condition, read
         <TableRow>
             <TableCell style={{paddingBottom: 0, paddingTop: 0}} colSpan={6}>
                 <Collapse in={open} timeout="auto" unmountOnExit>
-                    <Box sx={{margin: 1}}>
-                        <Typography variant="h6" gutterBottom component="div">
-                            {t('conditions.max-logout-time')}: {(condition as UiTimeBasedCondition).numberOfDaysSinceLastLogin}
-                        </Typography>
-                    </Box>
+                    <TextField
+                        autoFocus
+                        margin="dense"
+                        id="max-time"
+                        label={t('conditions.max-logout-time')}
+                        InputLabelProps={{shrink: true}}
+                        fullWidth
+                        variant="standard"
+                        value={condition.numberOfDaysSinceLastLogin}
+                        onChange={e => updateCondition({
+                            ...condition,
+                            numberOfDaysSinceLastLogin: Number(e.target.value)
+                        })}
+                    />
                 </Collapse>
             </TableCell>
         </TableRow>

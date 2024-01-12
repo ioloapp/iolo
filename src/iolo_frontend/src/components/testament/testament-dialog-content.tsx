@@ -163,7 +163,7 @@ export const TestamentDialogContent: FC<TestamentDialogContentProps> = ({readonl
                 <SelectList handleToggle={handleHeirChange} listItem={selectedHeirs} readonly={readonly}/>
             </FormControl>
             <FormControl fullWidth>
-                <Conditions conditions={dialogItem.conditions.conditions} readonly={readonly} />
+                <Conditions conditions={dialogItem.conditions} readonly={readonly} />
             </FormControl>
         </>
     );

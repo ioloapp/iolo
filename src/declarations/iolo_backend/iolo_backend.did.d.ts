@@ -14,10 +14,11 @@ export interface AddSecretArgs {
 export interface AddTestamentArgs {
   'id' : string,
   'heirs' : Array<Principal>,
+  'condition_logical_operator' : LogicalOperator,
   'name' : [] | [string],
   'secrets' : Array<string>,
   'key_box' : Array<[string, SecretSymmetricCryptoMaterial]>,
-  'conditions' : Conditions,
+  'conditions' : Array<Condition>,
 }
 export interface AddUserArgs {
   'id' : Principal,
@@ -27,11 +28,6 @@ export interface AddUserArgs {
 }
 export type Condition = { 'TimeBasedCondition' : TimeBasedCondition } |
   { 'XOutOfYCondition' : XOutOfYCondition };
-export interface Conditions {
-  'status' : boolean,
-  'logical_operator' : LogicalOperator,
-  'conditions' : Array<Condition>,
-}
 export type LogicalOperator = { 'Or' : null } |
   { 'And' : null };
 export type Result = { 'Ok' : User } |
@@ -100,10 +96,12 @@ export interface Testament {
   'heirs' : Array<Principal>,
   'date_created' : bigint,
   'name' : [] | [string],
+  'conditions_logical_operator' : LogicalOperator,
   'testator' : Principal,
   'secrets' : Array<string>,
+  'conditions_status' : boolean,
   'key_box' : Array<[string, SecretSymmetricCryptoMaterial]>,
-  'conditions' : Conditions,
+  'conditions' : Array<Condition>,
   'date_modified' : bigint,
 }
 export interface TestamentKeyDerviationArgs {
@@ -121,10 +119,12 @@ export interface TestamentResponse {
   'heirs' : Array<Principal>,
   'date_created' : bigint,
   'name' : [] | [string],
+  'conditions_logical_operator' : LogicalOperator,
   'testator' : Principal,
   'secrets' : Array<SecretListEntry>,
+  'conditions_status' : boolean,
   'key_box' : Array<[string, SecretSymmetricCryptoMaterial]>,
-  'conditions' : Conditions,
+  'conditions' : Array<Condition>,
   'date_modified' : bigint,
 }
 export interface TimeBasedCondition {

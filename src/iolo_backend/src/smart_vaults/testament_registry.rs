@@ -151,7 +151,7 @@ impl TestamentRegistryForValidators {
 
     pub fn update_testament_in_registry(&mut self, testament_new: &Testament, testament_old: &Testament) {
         // Delete all existing entries for old testament
-        for condition in testament_old.conditions().conditions.iter() {
+        for condition in testament_old.conditions().iter() {
             match condition {
                 Condition::XOutOfYCondition(xoutofy) => {
                     for validator in xoutofy.validators.iter() {
@@ -169,7 +169,7 @@ impl TestamentRegistryForValidators {
         }
 
         // Add new testament
-        for condition in testament_new.conditions().conditions.iter() {
+        for condition in testament_new.conditions().iter() {
             match condition {
                 Condition::XOutOfYCondition(xoutofy) => {
                     self.add_testament_to_registry(&xoutofy.validators, testament_new.id(), testament_new.testator());

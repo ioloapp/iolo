@@ -34,7 +34,9 @@ export interface UiTestament {
     role?: UiTestamentListEntryRole
     secrets?: string[],
     heirs?: Array<UiUser>,
-    conditions?: UiConditions,
+    conditions?: Array<UiCondition>,
+    conditionsStatus?: boolean,
+    conditionsLogicalOperator?: LogicalOperator,
     dateCreated?: string,
     dateModified?: string,
 }
@@ -46,15 +48,11 @@ export interface UiTestamentResponse {
     role?: UiTestamentListEntryRole
     secrets?: UiSecretListEntry[],
     heirs?: Array<UiUser>,
-    conditions?: UiConditions,
+    conditions?: Array<UiCondition>,
+    conditionsStatus?: boolean,
+    conditionsLogicalOperator?: LogicalOperator,
     dateCreated?: string,
     dateModified?: string,
-}
-
-export interface UiConditions {
-    status: boolean,
-    logicalOperator: LogicalOperator,
-    conditions: Array<UiCondition>,
 }
 
 export enum LogicalOperator {

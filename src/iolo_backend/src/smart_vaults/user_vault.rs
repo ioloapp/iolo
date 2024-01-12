@@ -130,7 +130,7 @@ impl UserVault {
         let tid = t.id().clone();
 
         // condition_status cannot be updated
-        t.set_condition_status(self.testaments.get(t.id()).unwrap().conditions().status);
+        t.set_condition_status(self.testaments.get(t.id()).unwrap().conditions_status().clone());
 
         self.testaments.insert(t.id().clone(), t);
         self.date_modified = time::get_current_time();

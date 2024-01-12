@@ -27,7 +27,9 @@ pub struct Testament {
     /// This key is itself encrypted using the Testament decryption key,
     /// which itself is derived by vetkd.
     key_box: KeyBox,
-    conditions: Conditions,
+    conditions_status: bool,
+    conditions_logical_operator: LogicalOperator,
+    conditions: Vec<Condition>,
 }
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
@@ -37,21 +39,14 @@ pub enum LogicalOperator {
 }
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
-pub struct Conditions {
-    pub status: bool,
-    pub logical_operator: LogicalOperator,
-    pub conditions: Vec<Condition>,
-}
-
-/// The struct provided by the backend when calling "create_secret". It contains:
-#[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct AddTestamentArgs {
     pub id: String,
     name: Option<String>,
     heirs: HashSet<Principal>,
     secrets: HashSet<SecretID>,
     key_box: KeyBox,
-    conditions: Conditions,
+    condition_logical_operator: LogicalOperator,
+    conditions: Vec<Condition>,
 }
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone, PartialEq)]
@@ -68,7 +63,7 @@ impl From<Testament> for TestamentListEntry {
             id: t.id().into(),
             name: t.name,
             testator: t.testator.clone(),
-            condition_status: t.conditions.status,
+            condition_status: t.conditions_status,
         }
     }
 }
@@ -86,11 +81,9 @@ impl Testament {
             heirs: HashSet::new(),
             secrets: HashSet::new(),
             key_box: BTreeMap::new(),
-            conditions: Conditions {
-                status: false,
-                logical_operator: LogicalOperator::And,
-                conditions: Vec::new(),
-            },
+            conditions_status: false,
+            conditions_logical_operator: LogicalOperator::And,
+            conditions: Vec::new(),
         }
     }
 
@@ -122,10 +115,21 @@ impl Testament {
         &self.secrets
     }
 
-    pub fn conditions(&self) -> &Conditions {
+    pub fn conditions(&self) -> &Vec<Condition> {
         &self.conditions
     }
 
+    pub fn conditions_status(&self) -> &bool {
+        &self.conditions_status
+    }
+
+    pub fn conditions_logical_operator(&self) -> &LogicalOperator {
+        &self.conditions_logical_operator
+    }
+
+    pub fn set_condition_status(&mut self, status: bool) {
+        self.conditions_status = status;
+    }
     /// Returns whether the value was newly inserted. That is:
     /// - If heirs did not previously contain this heir, true is returned.
     /// - If heirs already contained this heir, false is returned, and the set is not modified.
@@ -146,8 +150,8 @@ impl Testament {
         self.secrets.remove(secret)
     }
 
-    pub fn set_condition_status(&mut self, status: bool) {
-        self.conditions.status = status;
+    pub fn set_conditions_status(&mut self, status: bool) {
+        self.conditions_status = status;
     }
 
     // TODO: make proper CRUD functions
@@ -161,7 +165,7 @@ impl Testament {
 
     // Function to find a mutable reference to a validator if the given principal is one of them
     pub fn find_validator_mut(&mut self, principal: &Principal) -> Option<&mut Validator> {
-        for condition in &mut self.conditions.conditions {
+        for condition in &mut self.conditions {
             if let Condition::XOutOfYCondition(x_out_of_y) = condition {
                 for validator in &mut x_out_of_y.validators {
                     if &validator.id == principal {
@@ -184,6 +188,8 @@ impl From<AddTestamentArgs> for Testament {
         new_testament.secrets = ata.secrets;
         new_testament.key_box = ata.key_box;
         new_testament.conditions = ata.conditions;
+        new_testament.conditions_logical_operator = ata.condition_logical_operator;
+        new_testament.conditions_status = false;
         new_testament
     }
 }
@@ -198,7 +204,9 @@ pub struct TestamentResponse {
     heirs: HashSet<Principal>,
     secrets: HashSet<SecretListEntry>,
     key_box: KeyBox,
-    conditions: Conditions,
+    conditions_status: bool,
+    conditions_logical_operator: LogicalOperator,
+    conditions: Vec<Condition>,
 }
 
 impl TestamentResponse {
@@ -213,11 +221,9 @@ impl TestamentResponse {
             heirs: HashSet::new(),
             secrets: HashSet::new(),
             key_box: BTreeMap::new(),
-            conditions: Conditions {
-                status: false,
-                logical_operator: LogicalOperator::And,
-                conditions: Vec::new(),
-            },
+            conditions: Vec::new(),
+            conditions_status: false,
+            conditions_logical_operator: LogicalOperator::And,
         }
     }
 
@@ -234,6 +240,8 @@ impl From<Testament> for TestamentResponse {
         new_testament.heirs = t.heirs;
         new_testament.key_box = t.key_box;
         new_testament.conditions = t.conditions;
+        new_testament.conditions_logical_operator = t.conditions_logical_operator;
+        new_testament.conditions_status = t.conditions_status;
         new_testament
     }
 }
