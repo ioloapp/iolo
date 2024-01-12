@@ -340,7 +340,7 @@ mod tests {
     }
 
     #[test]
-    fn utest_secrets() {
+    fn utest_user_vault_store() {
         let mut user_vault_store = UserVaultStore::new();
         let new_uv_id = user_vault_store.create_user_vault();
 

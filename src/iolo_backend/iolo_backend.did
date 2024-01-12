@@ -77,6 +77,7 @@ type SmartVaultErr = variant {
   TestamentAlreadyExists : text;
   Unauthorized;
   TestamentDoesNotExist : text;
+  UserUpdateFailed : text;
   InvalidTestamentCondition;
   UserVaultCreationFailed : text;
   UserDoesNotExist : text;
@@ -146,7 +147,6 @@ service : () -> {
   add_testament : (AddTestamentArgs) -> (Result_2);
   confirm_x_out_of_y_condition : (principal, text, bool) -> (Result_3);
   create_user : (AddUserArgs) -> (Result);
-  create_user_storable : (AddUserArgs) -> (Result);
   delete_user : () -> (Result_3);
   encrypted_ibe_decryption_key_for_caller : (vec nat8) -> (text);
   encrypted_symmetric_key_for_caller : (vec nat8) -> (text);
@@ -173,7 +173,6 @@ service : () -> {
   remove_heir : (principal) -> (Result_3);
   remove_secret : (text) -> (Result_3);
   remove_testament : (text) -> (Result_3);
-  start_with_interval_secs : (nat64) -> ();
   symmetric_key_verification_key : () -> (text);
   update_heir : (User) -> (Result);
   update_secret : (Secret) -> (Result_1);

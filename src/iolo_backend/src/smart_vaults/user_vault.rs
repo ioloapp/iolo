@@ -1,8 +1,8 @@
 use candid::{CandidType, Deserialize, Principal};
 use serde::Serialize;
 
-use std::collections::BTreeMap;
 use crate::common::user::User;
+use std::collections::BTreeMap;
 
 use super::secret::{Secret, SecretID, SecretSymmetricCryptoMaterial};
 use super::testament::{Testament, TestamentID};
@@ -19,7 +19,11 @@ pub struct UserVault {
     date_created: u64,
     date_modified: u64,
     /// The secrets
-    secrets: BTreeMap<SecretID, Secret>,
+    secrets: BTreeMap<SecretID, Secret>, // TODO: remove this field
+
+    // New: Secrets are stored as UUIDs in the user vault.
+    pub secret_ids: Vec<UUID>,
+
     /// Contains all the keys required to decrypt the secrets:
     /// Every secret is encrypted by using dedicated key.
     /// This key is itself encrypted using the UserVault decryption key,
@@ -44,6 +48,7 @@ impl UserVault {
             date_created: now,
             date_modified: now,
             secrets: BTreeMap::new(),
+            secret_ids: Vec::new(),
             key_box: BTreeMap::new(),
             testaments: BTreeMap::new(),
             heirs: BTreeMap::new(),
@@ -207,7 +212,6 @@ impl UserVault {
         self.date_modified = time::get_current_time();
         Ok(())
     }
-
 }
 
 #[cfg(test)]

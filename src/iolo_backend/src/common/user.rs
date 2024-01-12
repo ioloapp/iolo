@@ -1,8 +1,8 @@
 use std::borrow::Cow;
 
-use candid::{CandidType, Principal, Encode, Decode};
-use ic_stable_structures::{Storable, storable::Bound};
-use serde::{Serialize, Deserialize};
+use candid::{CandidType, Decode, Encode, Principal};
+use ic_stable_structures::{storable::Bound, Storable};
+use serde::{Deserialize, Serialize};
 
 use crate::{smart_vaults::user_vault::UserVaultID, utils::time};
 
@@ -15,7 +15,7 @@ pub struct User {
     pub date_created: u64,
     pub date_modified: u64,
     pub date_last_login: Option<u64>,
-    pub user_vault_id: Option<UserVaultID>
+    pub user_vault_id: Option<UserVaultID>,
 }
 
 impl Storable for User {
@@ -49,7 +49,7 @@ impl From<AddUserArgs> for User {
             date_created: now,
             date_modified: now,
             date_last_login: None,
-            user_vault_id: None
+            user_vault_id: None,
         }
     }
 }
@@ -72,7 +72,7 @@ impl User {
             date_created: now,
             date_modified: now,
             date_last_login: Some(now),
-            user_vault_id: None
+            user_vault_id: None,
         }
     }
 
@@ -81,7 +81,7 @@ impl User {
     }
 
     pub fn user_vault_id(&self) -> &Option<UserVaultID> {
-       &self.user_vault_id
+        &self.user_vault_id
     }
 
     pub fn set_user_vault(&mut self, user_vault_id: UserVaultID) {

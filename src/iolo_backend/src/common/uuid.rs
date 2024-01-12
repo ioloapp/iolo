@@ -4,7 +4,7 @@ use candid::{CandidType, Decode, Deserialize, Encode};
 use ic_stable_structures::{storable::Bound, Storable};
 use serde::Serialize;
 
-use crate::smart_vaults::smart_vault::UUID_COUNTER;
+use crate::{smart_vaults::smart_vault::UUID_COUNTER, utils::random::get_new_random};
 
 #[derive(
     Debug, CandidType, Deserialize, Serialize, Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd,
@@ -27,8 +27,10 @@ impl UUID {
         UUID(current_counter)
     }
 
-    pub fn new_empty() -> Self {
-        UUID(0)
+    pub async fn new_random() -> Self {
+        let random_array = get_new_random().await;
+        let r = u128::from_le_bytes(random_array);
+        UUID(r)
     }
 
     pub fn as_bytes(&self) -> Vec<u8> {
@@ -45,6 +47,26 @@ impl fmt::Display for UUID {
 impl Default for UUID {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+impl From<String> for UUID {
+    fn from(value: String) -> Self {
+        let uuid = value.parse::<u128>().unwrap();
+        UUID(uuid)
+    }
+}
+
+impl From<&str> for UUID {
+    fn from(value: &str) -> Self {
+        let uuid = value.parse::<u128>().unwrap();
+        UUID(uuid)
+    }
+}
+
+impl Into<String> for UUID {
+    fn into(self) -> String {
+        self.0.to_string()
     }
 }
 

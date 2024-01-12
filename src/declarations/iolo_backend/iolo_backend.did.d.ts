@@ -87,6 +87,7 @@ export type SmartVaultErr = { 'UserAlreadyExists' : string } |
   { 'TestamentAlreadyExists' : string } |
   { 'Unauthorized' : null } |
   { 'TestamentDoesNotExist' : string } |
+  { 'UserUpdateFailed' : string } |
   { 'InvalidTestamentCondition' : null } |
   { 'UserVaultCreationFailed' : string } |
   { 'UserDoesNotExist' : string } |
@@ -159,7 +160,6 @@ export interface _SERVICE {
     Result_3
   >,
   'create_user' : ActorMethod<[AddUserArgs], Result>,
-  'create_user_storable' : ActorMethod<[AddUserArgs], Result>,
   'delete_user' : ActorMethod<[], Result_3>,
   'encrypted_ibe_decryption_key_for_caller' : ActorMethod<
     [Uint8Array | number[]],
@@ -197,7 +197,6 @@ export interface _SERVICE {
   'remove_heir' : ActorMethod<[Principal], Result_3>,
   'remove_secret' : ActorMethod<[string], Result_3>,
   'remove_testament' : ActorMethod<[string], Result_3>,
-  'start_with_interval_secs' : ActorMethod<[bigint], undefined>,
   'symmetric_key_verification_key' : ActorMethod<[], string>,
   'update_heir' : ActorMethod<[User], Result>,
   'update_secret' : ActorMethod<[Secret], Result_1>,

@@ -38,4 +38,36 @@ impl SecretStore {
             secrets: init_stable_data(),
         }
     }
+
+    pub fn get(&self, secret_id: &UUID) -> Result<Secret, SmartVaultErr> {
+        let s = self.secrets.get(secret_id);
+
+        match s {
+            Some(s) => {
+                return Ok(s.clone());
+            }
+            None => {
+                return Err(SmartVaultErr::SecretDoesNotExist(secret_id.to_string()));
+            }
+        }
+    }
+
+    pub fn add(&mut self, secret: Secret) -> Result<Secret, SmartVaultErr> {
+        // TODO: DO WE REALLY WANT TO INSERT IF THE SECRET ALREADY EXISTS?
+        let secret_id = secret.id.clone();
+        let s = self
+            .secrets
+            .insert(secret_id.clone().into(), secret.clone());
+        match s {
+            Some(_) => {
+                return Err(SmartVaultErr::SecretAlreadyExists(secret_id));
+            }
+            None => {
+                return Ok(secret);
+            }
+        }
+    }
 }
+
+#[cfg(test)]
+mod tests {}
