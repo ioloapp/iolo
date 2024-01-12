@@ -196,7 +196,7 @@ pub fn get_secret_as_heir(
     )?;
 
     // Check that heir is allowed to read testament
-    if result_mv.conditions().status.clone() {
+    if result_mv.conditions_status().clone() {
         // Read secret in testator user vault
         USER_VAULT_STORE.with(
             |mv: &RefCell<UserVaultStore>| -> Result<Secret, SmartVaultErr> {
@@ -288,7 +288,7 @@ pub fn get_secret_symmetric_crypto_material_as_heir(
     )?;
 
     // Check that heir is allowed to read testament
-    if result_mv.conditions().status.clone() {
+    if result_mv.conditions_status().clone() {
         // Read secret crypto material from testament
 
         Ok(result_mv.key_box().get(&secret_id).unwrap().clone())
@@ -384,7 +384,7 @@ pub fn get_testament_as_heir(
     )?;
 
     // Check that heir is allowed to read testament
-    if result_mv.conditions().status.clone() {
+    if result_mv.conditions_status().clone() {
         // Get more secret data for heirs...
         let testator_vault_id = get_vault_id_for(*result_mv.testator())?;
         let mut testament_for_heir = TestamentResponse::from(result_mv.clone());

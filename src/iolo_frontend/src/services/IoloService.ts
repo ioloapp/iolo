@@ -266,6 +266,7 @@ class IoloService {
             name: testament.name,
             secrets: testament.secrets,
             conditions: testament.conditions,
+            condition_logical_operator: testament.conditions_logical_operator,
         }
 
         // Add testament
@@ -646,11 +647,9 @@ class IoloService {
             testator: Principal.fromText(uiTestament.testator.id),
             secrets: uiTestament.secrets,
             key_box: keyBox,
-            conditions: {
-                status: uiTestament.conditions.status,
-                logical_operator: uiTestament.conditions.logicalOperator == LogicalOperator.And ? { 'And' : null } : { 'Or' : null },
-                conditions: uiTestament.conditions.conditions.map(uiCondition => this.mapUiConditionToCondition(uiCondition))
-            },
+            conditions_logical_operator: uiTestament.conditionsLogicalOperator == LogicalOperator.And ? { 'And' : null } : { 'Or' : null },
+            conditions_status: uiTestament.conditionsStatus,
+            conditions: uiTestament.conditions.map(uiCondition => this.mapUiConditionToCondition(uiCondition)),
             date_created: uiTestament.dateCreated ? this.dateToNanosecondsInBigint(uiTestament.dateCreated) : 0n,
             date_modified: uiTestament.dateModified ? this.dateToNanosecondsInBigint(uiTestament.dateModified) : 0n,
         }
@@ -694,11 +693,9 @@ class IoloService {
             testator: { id: testament.testator.toString() },
             secrets: testament.secrets,
             heirs: testament.heirs.map((item) => {return {id: item.toString()}}),
-            conditions: {
-                status: testament.conditions.status,
-                conditions: testament.conditions.conditions.map(condition => this.mapConditionToUiCondition(condition)),
-                logicalOperator: testament.conditions.logical_operator.hasOwnProperty('AND') ? LogicalOperator.And : LogicalOperator.Or
-            },
+            conditionsLogicalOperator: testament.conditions_logical_operator.hasOwnProperty('And') ? LogicalOperator.And : LogicalOperator.Or,
+            conditionsStatus: testament.conditions_status,
+            conditions: testament.conditions.map(condition => this.mapConditionToUiCondition(condition)),
             dateCreated: this.nanosecondsInBigintToIsoString(testament.date_created),
             dateModified: this.nanosecondsInBigintToIsoString(testament.date_modified),
             role
@@ -758,11 +755,9 @@ class IoloService {
             testator: { id: testament.testator.toString() },
             secrets: secrets,
             heirs: testament.heirs.map((item) => {return {id: item.toString()}}),
-            conditions: {
-                status: testament.conditions.status,
-                conditions: testament.conditions.conditions.map(condition => this.mapConditionToUiCondition(condition)),
-                logicalOperator: testament.conditions.logical_operator.hasOwnProperty('AND') ? LogicalOperator.And : LogicalOperator.Or
-            },
+            conditionsLogicalOperator: testament.conditions_logical_operator.hasOwnProperty('And') ? LogicalOperator.And : LogicalOperator.Or,
+            conditionsStatus: testament.conditions_status,
+            conditions: testament.conditions.map(condition => this.mapConditionToUiCondition(condition)),
             dateCreated: this.nanosecondsInBigintToIsoString(testament.date_created),
             dateModified: this.nanosecondsInBigintToIsoString(testament.date_modified),
             role

@@ -106,7 +106,7 @@ async fn encrypted_symmetric_key_for_testament(
                         .cloned()
                 },
             )?;
-            if result_4.conditions().status {
+            if *result_4.conditions_status() {
                 key_can_be_generated = true;
             }
         }

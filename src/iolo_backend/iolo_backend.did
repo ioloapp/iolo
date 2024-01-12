@@ -11,10 +11,11 @@ type AddSecretArgs = record {
 type AddTestamentArgs = record {
   id : text;
   heirs : vec principal;
+  condition_logical_operator : LogicalOperator;
   name : opt text;
   secrets : vec text;
   key_box : vec record { text; SecretSymmetricCryptoMaterial };
-  conditions : Conditions;
+  conditions : vec Condition;
 };
 type AddUserArgs = record {
   id : principal;
@@ -25,11 +26,6 @@ type AddUserArgs = record {
 type Condition = variant {
   TimeBasedCondition : TimeBasedCondition;
   XOutOfYCondition : XOutOfYCondition;
-};
-type Conditions = record {
-  status : bool;
-  logical_operator : LogicalOperator;
-  conditions : vec Condition;
 };
 type LogicalOperator = variant { Or; And };
 type Result = variant { Ok : User; Err : SmartVaultErr };
@@ -91,10 +87,12 @@ type Testament = record {
   heirs : vec principal;
   date_created : nat64;
   name : opt text;
+  conditions_logical_operator : LogicalOperator;
   testator : principal;
   secrets : vec text;
+  conditions_status : bool;
   key_box : vec record { text; SecretSymmetricCryptoMaterial };
-  conditions : Conditions;
+  conditions : vec Condition;
   date_modified : nat64;
 };
 type TestamentKeyDerviationArgs = record {
@@ -112,10 +110,12 @@ type TestamentResponse = record {
   heirs : vec principal;
   date_created : nat64;
   name : opt text;
+  conditions_logical_operator : LogicalOperator;
   testator : principal;
   secrets : vec SecretListEntry;
+  conditions_status : bool;
   key_box : vec record { text; SecretSymmetricCryptoMaterial };
-  conditions : Conditions;
+  conditions : vec Condition;
   date_modified : nat64;
 };
 type TimeBasedCondition = record {

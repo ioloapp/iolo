@@ -108,7 +108,7 @@ impl UserVaultStore {
         )?;
 
         // Add entry to testament registry for validators (reverse index) if there is a XOutOfYCondition
-        for condition in testament.conditions().conditions.iter() {
+        for condition in testament.conditions().iter() {
             match condition {
                 Condition::XOutOfYCondition(xoutofy) => {
                     TESTAMENT_REGISTRY_FOR_VALIDATORS.with(
