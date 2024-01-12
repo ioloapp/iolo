@@ -38,8 +38,9 @@ import {
     get_local_random_aes_256_gcm_key
 } from "../utils/crypto";
 import {
-    ConditionType, LogicalOperator,
-    UiCondition, UiConditions,
+    ConditionType,
+    LogicalOperator,
+    UiCondition,
     UiSecret,
     UiSecretCategory,
     UiSecretListEntry,
@@ -669,7 +670,7 @@ class IoloService {
         }
         if(uiCondition.type === ConditionType.XOutOfYCondition){
             const xCondition = uiCondition as UiXOutOfYCondition;
-            const xOutOfYCondition = {
+            const xOutOfYCondition: XOutOfYCondition = {
                 id: xCondition.id,
                 condition_status: xCondition.conditionStatus,
                 quorum: BigInt(xCondition.quorum),
@@ -679,7 +680,7 @@ class IoloService {
                         status: v.status
                     }
                 })
-            } as XOutOfYCondition
+            }
             return {
                 XOutOfYCondition: xOutOfYCondition
             }

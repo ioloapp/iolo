@@ -162,7 +162,10 @@ export const testamentsSlice = createSlice({
         updateConditionOfDialogItem: (state, action: PayloadAction<UiCondition>) => {
             state.dialogItem = {
                 ...state.dialogItem,
-                conditions: replaceConditions(state.dialogItem.conditions, action.payload)
+                conditions: {
+                    ...state.dialogItem.conditions,
+                    conditions: replaceConditions(state.dialogItem.conditions.conditions, action.payload)
+                }
             }
         },
     },
@@ -252,7 +255,7 @@ export const testamentsSlice = createSlice({
     },
 })
 
-export const replaceConditions = (conditions: UiCondition[], condition: UiCondition) => {
+export const replaceConditions = (conditions: UiCondition[], condition: UiCondition): UiCondition[] => {
     const newConditions = [];
     conditions.forEach(c => {
         if(c.id === condition.id){
