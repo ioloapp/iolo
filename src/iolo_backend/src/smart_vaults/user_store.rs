@@ -39,13 +39,11 @@ impl UserStore {
 
     pub fn add_user(&mut self, user: User) -> Result<User, SmartVaultErr> {
         let principal_storable = PrincipalStorable::from(*user.id());
-        if self
-            .users
-            .insert(principal_storable, user.clone())
-            .is_some()
-        {
+
+        if self.users.contains_key(&principal_storable) {
             Err(SmartVaultErr::UserAlreadyExists(user.id().to_string()))
         } else {
+            self.users.insert(principal_storable, user.clone());
             self.get_user(user.id())
         }
     }
