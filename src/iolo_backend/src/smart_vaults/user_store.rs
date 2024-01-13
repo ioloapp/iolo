@@ -50,11 +50,13 @@ impl UserStore {
 
     pub fn update_user(&mut self, user: User) -> Result<User, SmartVaultErr> {
         let principal_storable = PrincipalStorable::from(*user.id());
-        if self
-            .users
-            .insert(principal_storable, user.clone())
-            .is_some()
-        {
+
+        // Only name, email and user_type can be updated
+        if let Some(mut existing_user) = self.users.remove(&principal_storable) {
+            existing_user.name = user.name.clone();
+            existing_user.email = user.email.clone();
+            existing_user.user_type = user.user_type.clone();
+            self.users.insert(principal_storable, existing_user);
             self.get_user(user.id())
         } else {
             Err(SmartVaultErr::UserDoesNotExist(user.id().to_string()))
