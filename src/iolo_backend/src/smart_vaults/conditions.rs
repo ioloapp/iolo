@@ -1,7 +1,7 @@
 use candid::{CandidType, Deserialize, Principal};
 use serde::Serialize;
 
-use crate::common::user::User;
+use crate::users::user::User;
 use crate::utils::time;
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
@@ -41,12 +41,15 @@ impl Condition {
 
                 // Check last login date
                 //let max_last_login_time: u64 = tb.number_of_days_since_last_login * 86400 * 1000000000; // in nanoseconds
-                let max_last_login_time: u64 = condition.number_of_days_since_last_login * 1000000000; // in nanoseconds
-                return if &user.date_last_login.unwrap() < &current_time.saturating_sub(max_last_login_time) {
+                let max_last_login_time: u64 =
+                    condition.number_of_days_since_last_login * 1000000000; // in nanoseconds
+                return if &user.date_last_login.unwrap()
+                    < &current_time.saturating_sub(max_last_login_time)
+                {
                     true
                 } else {
                     false
-                }
+                };
             }
             Condition::XOutOfYCondition(condition) => {
                 let mut i = 0;
@@ -60,7 +63,7 @@ impl Condition {
                 } else {
                     false
                 }
-            },
+            }
         }
     }
 }

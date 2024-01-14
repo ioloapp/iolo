@@ -1,12 +1,12 @@
 use candid::{CandidType, Deserialize, Principal};
 use serde::Serialize;
 
-use crate::common::user::User;
 use std::collections::BTreeMap;
 
 use super::secret::{Secret, SecretID, SecretSymmetricCryptoMaterial};
 use super::testament::{Testament, TestamentID};
 use crate::common::uuid::UUID;
+use crate::users::user::User;
 use crate::utils::time;
 use crate::SmartVaultErr;
 
@@ -130,7 +130,13 @@ impl UserVault {
         let tid = t.id().clone();
 
         // condition_status cannot be updated
-        t.set_condition_status(self.testaments.get(t.id()).unwrap().conditions_status().clone());
+        t.set_condition_status(
+            self.testaments
+                .get(t.id())
+                .unwrap()
+                .conditions_status()
+                .clone(),
+        );
 
         self.testaments.insert(t.id().clone(), t);
         self.date_modified = time::get_current_time();
@@ -265,7 +271,7 @@ mod tests {
         let mut user_vault: UserVault = UserVault::new();
 
         // Create secret stuff...
-        let secret_name = String::from("my-first-secret");
+        let _secret_name = String::from("my-first-secret");
         let secret: Secret = Secret::new_test_instance();
         let modified_before_update = user_vault.date_modified;
         let created_before_update = user_vault.date_created;

@@ -2,12 +2,12 @@ use std::{cell::RefCell, collections::BTreeMap};
 
 use candid::{CandidType, Deserialize, Principal};
 
-use crate::common::user::{AddUserArgs, User};
 use crate::common::{error::SmartVaultErr, uuid::UUID};
 use crate::smart_vaults::conditions::Condition;
 use crate::smart_vaults::smart_vault::TESTAMENT_REGISTRY_FOR_VALIDATORS;
 use crate::smart_vaults::testament::TestamentID;
 use crate::smart_vaults::testament_registry::TestamentRegistryForValidators;
+use crate::users::user::{AddUserArgs, User};
 
 use super::{
     secret::{AddSecretArgs, Secret},

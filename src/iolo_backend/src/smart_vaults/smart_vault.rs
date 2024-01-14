@@ -3,11 +3,11 @@ use ic_cdk::{post_upgrade, pre_upgrade, storage};
 use std::cell::RefCell;
 
 use crate::common::error::SmartVaultErr;
-use crate::common::user::{AddUserArgs, User};
 use crate::common::uuid::UUID;
 use crate::smart_vaults::testament::TestamentResponse;
-use crate::smart_vaults::user_store::UserStore;
 use crate::smart_vaults::user_vault::UserVaultID;
+use crate::users::user::{AddUserArgs, User};
+use crate::users::user_store::UserStore;
 use crate::utils::caller::get_caller;
 
 use super::secret::{
@@ -666,16 +666,16 @@ mod tests {
     use candid::Principal;
 
     use crate::{
-        common::{user::AddUserArgs, uuid::UUID},
+        common::uuid::UUID,
         smart_vaults::{
             secret::{AddSecretArgs, SecretSymmetricCryptoMaterial},
             smart_vault::{
                 add_secret_impl, create_user_impl, get_user, SECRET_STORE, USER_STORE,
                 USER_VAULT_STORE,
             },
-            user_store::UserStore,
             user_vault_store::UserVaultStore,
         },
+        users::{user::AddUserArgs, user_store::UserStore},
     };
 
     #[tokio::test]
@@ -683,7 +683,7 @@ mod tests {
         // Create empty user_vault
         let principal = create_principal();
 
-        // Create User
+        // Create User and store it
         let aua: AddUserArgs = AddUserArgs {
             id: principal,
             name: Some("donald".to_string()),
@@ -698,13 +698,13 @@ mod tests {
         // Check if user vault exists
         let user_vault_id: UUID = USER_STORE.with(|ur: &RefCell<UserStore>| {
             let user_store = ur.borrow();
-            let user = user_store.get_user(&principal).unwrap();
-            user.user_vault_id.unwrap()
+            let user = user_store.get_user(&principal); //.unwrap();
+            assert!(user.is_ok());
+            user.unwrap().user_vault_id.unwrap()
         });
         USER_VAULT_STORE.with(|ms: &RefCell<UserVaultStore>| {
             let user_vault_store = ms.borrow();
             let uv = user_vault_store.get_user_vault(&user_vault_id);
-            // we want a result
             assert!(uv.is_ok());
             // user vault needs to be empty
             assert!(uv.unwrap().secret_ids.is_empty());

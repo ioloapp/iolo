@@ -2,11 +2,13 @@ use candid::Principal;
 use ic_stable_structures::StableBTreeMap;
 use serde::{Deserialize, Serialize};
 
-use crate::common::{
-    error::SmartVaultErr,
-    memory::{get_stable_btree_memory_for_users, Memory},
-    principal_storable::PrincipalStorable,
-    user::User,
+use crate::{
+    common::{
+        error::SmartVaultErr,
+        memory::{get_stable_btree_memory_for_users, Memory},
+        principal_storable::PrincipalStorable,
+    },
+    users::user::User,
 };
 
 #[derive(Serialize, Deserialize)]
@@ -99,10 +101,10 @@ impl UserStore {
 mod tests {
     use candid::Principal;
 
-    use crate::common::user::AddUserArgs;
     use crate::{
-        common::{error::SmartVaultErr, user::User},
-        smart_vaults::user_store::UserStore,
+        common::error::SmartVaultErr,
+        users::user::{AddUserArgs, User},
+        users::user_store::UserStore,
     };
 
     #[tokio::test]

@@ -8,8 +8,8 @@ use crate::smart_vaults::smart_vault::{
 };
 use crate::smart_vaults::testament::{Testament, TestamentID};
 use crate::smart_vaults::testament_registry::TestamentRegistryForHeirs;
-use crate::smart_vaults::user_store::UserStore;
 use crate::smart_vaults::user_vault_store::UserVaultStore;
+use crate::users::user_store::UserStore;
 use candid::{CandidType, Principal};
 use serde::{Deserialize, Serialize};
 

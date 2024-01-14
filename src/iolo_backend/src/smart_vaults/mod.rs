@@ -5,7 +5,6 @@ pub mod secret_store;
 pub mod smart_vault;
 pub mod testament;
 pub mod testament_registry;
-pub mod user_store;
 pub mod user_vault;
 pub mod user_vault_store;
 pub mod vetkd_types;
