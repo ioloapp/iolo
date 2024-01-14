@@ -1,23 +1,23 @@
 pub mod common;
 pub mod smart_vaults;
-pub mod smart_wallets;
+pub mod users;
 pub mod utils;
 
 use ic_cdk_macros::export_candid;
 
 // for the candid file creation
 use crate::common::error::SmartVaultErr;
-use crate::common::user::User;
 use crate::smart_vaults::key_manager::TestamentKeyDerviationArgs;
 use crate::smart_vaults::secret::SecretID;
 use crate::smart_vaults::secret::SecretListEntry;
 use crate::smart_vaults::secret::SecretSymmetricCryptoMaterial;
 use crate::smart_vaults::testament::AddTestamentArgs;
 use crate::smart_vaults::testament::Testament;
-use crate::smart_vaults::testament::TestamentResponse;
 use crate::smart_vaults::testament::TestamentID;
 use crate::smart_vaults::testament::TestamentListEntry;
-use crate::common::user::AddUserArgs;
+use crate::smart_vaults::testament::TestamentResponse;
+use crate::users::user::AddUserArgs;
+use crate::users::user::User;
 use crate::utils::login_date_condition;
 use candid::Principal;
 

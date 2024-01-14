@@ -1,11 +1,9 @@
-use candid::Principal;
 use ic_stable_structures::StableBTreeMap;
 use serde::{Deserialize, Serialize};
 
 use crate::common::{
     error::SmartVaultErr,
     memory::{get_stable_btree_memory_for_secrets, Memory},
-    user::User,
     uuid::UUID,
 };
 

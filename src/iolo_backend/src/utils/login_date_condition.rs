@@ -1,8 +1,8 @@
-use crate::common::user::User;
 use crate::smart_vaults::conditions::Condition;
 use crate::smart_vaults::smart_vault::{USER_STORE, USER_VAULT_STORE};
-use crate::smart_vaults::user_store::UserStore;
 use crate::smart_vaults::user_vault_store::UserVaultStore;
+use crate::users::user::User;
+use crate::users::user_store::UserStore;
 use candid::Principal;
 use ic_cdk_timers::TimerId;
 use std::collections::BTreeMap;
