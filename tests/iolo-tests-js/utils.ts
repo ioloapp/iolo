@@ -6,10 +6,14 @@ import * as crypto from "crypto";
 import {
     _SERVICE,
     AddSecretArgs,
+    Result_7,
+    Secret,
+    SecretCategory,
+    SecretSymmetricCryptoMaterial
 } from "../../src/declarations/iolo_backend/iolo_backend.did";
-import {SecretSymmetricCryptoMaterial} from "../../src/declarations/iolo_backend/iolo_backend.did";
-import  * as vetkd from './wasm/ic_vetkd_utils';
-import {SecretCategory} from "../../.dfx/local/canisters/iolo_backend/service.did";
+import * as vetkd from './wasm/ic_vetkd_utils';
+import {UiSecret, UiSecretCategory} from "../../src/iolo_frontend/src/services/IoloTypesForUi";
+import {Principal} from "@dfinity/principal";
 
 
 export function determineBackendCanisterId(): string {
@@ -45,13 +49,7 @@ export function createNewActor(identity: Secp256k1KeyIdentity, canisterId: strin
     return actor;
 }
 
-export enum SecretType {
-    Password,
-    Note,
-    Document,
-}
-
-export async function createSecret(actor: ActorSubclass<_SERVICE>, id: string, name?: string, url?: string, category?: SecretCategory, username?: string, password?: string, notes?: string): Promise<AddSecretArgs> {
+export async function createAddSecretArgs(actor: ActorSubclass<_SERVICE>, secret: UiSecret): Promise<AddSecretArgs> {
 
     // Create a local symmetric key
     const symmetricKey = await get_local_random_aes_256_gcm_key();
@@ -59,6 +57,7 @@ export async function createSecret(actor: ActorSubclass<_SERVICE>, id: string, n
 
     // Get vetKey
     const uservaultVetKey = await getVetKey(actor);
+    console.log("uservaultVetKey: " + hex_encode(uservaultVetKey));
 
     // Encrypt local symmetric key with vetKey
     const encryptedSymmetricKey = await aes_gcm_encrypt(symmetricKey, uservaultVetKey, ivSymmetricKey);
@@ -76,15 +75,76 @@ export async function createSecret(actor: ActorSubclass<_SERVICE>, id: string, n
         username_decryption_nonce: [new Uint8Array(ivUsername.buffer, ivUsername.byteOffset, ivUsername.length)],
     }
     return {
-        id: id,
-        name: name? [name] : [],
-        url: url? [url] : [],
-        username: username? [await aes_gcm_encrypt(username, symmetricKey, ivUsername)] : [],
-        password: username? [await aes_gcm_encrypt(password, symmetricKey, ivPassword)] : [],
-        notes: notes? [await aes_gcm_encrypt(notes, symmetricKey, ivNotes)] : [],
-        category: category? [category] : [],
+        id: secret.id,
+        name: secret.name? [secret.name] : [],
+        url: secret.url? [secret.url] : [],
+        username: secret.username? [await aes_gcm_encrypt(secret.username, symmetricKey, ivUsername)] : [],
+        password: secret.username? [await aes_gcm_encrypt(secret.password, symmetricKey, ivPassword)] : [],
+        notes: secret.notes? [await aes_gcm_encrypt(secret.notes, symmetricKey, ivNotes)] : [],
+        category: secret.category? [mapToSecretCategory(secret.category)] : [],
         symmetric_crypto_material: symmetricCryptoMaterial
     };
+}
+
+export async function decryptSecret(actor: ActorSubclass<_SERVICE>, secret: Secret): Promise<UiSecret> {
+
+    // Get vetKey
+    const uservaultVetKey: Uint8Array = await getVetKey(actor);
+    console.log("uservaultVetKey: " + hex_encode(uservaultVetKey));
+
+    // Read encryption material
+    const resultSymmetricCryptoMaterial: Result_7 = await actor.get_secret_symmetric_crypto_material(secret.id);
+
+    // Decrypt symmetric key
+    const decryptedSymmetricKey = await aes_gcm_decrypt(resultSymmetricCryptoMaterial['Ok'].encrypted_symmetric_key as Uint8Array, uservaultVetKey, resultSymmetricCryptoMaterial['Ok'].iv as Uint8Array);
+
+    // Decrypt attributes
+    let decryptedUsername = undefined;
+    if (secret.username.length > 0) {
+        decryptedUsername = await aes_gcm_decrypt(secret.username[0] as Uint8Array, decryptedSymmetricKey, resultSymmetricCryptoMaterial['Ok'].username_decryption_nonce[0] as Uint8Array);
+    }
+    let decryptedPassword = undefined;
+    if (secret.password.length > 0) {
+        decryptedPassword = await aes_gcm_decrypt(secret.password[0] as Uint8Array, decryptedSymmetricKey, resultSymmetricCryptoMaterial['Ok'].password_decryption_nonce[0] as Uint8Array);
+    }
+
+    let decryptedNotes = undefined;
+    if (secret.notes.length > 0) {
+        decryptedNotes = await aes_gcm_decrypt(secret.notes[0] as Uint8Array, decryptedSymmetricKey, resultSymmetricCryptoMaterial['Ok'].notes_decryption_nonce[0] as Uint8Array);
+    }
+
+    return {
+        id: secret.id,
+        name: secret.name[0],
+        url: secret.url[0],
+        username: secret.username.length == 1 ? decryptedUsername : null,
+        password: secret.password.length == 1 ? decryptedPassword : null,
+        notes: secret.notes.length == 1 ? decryptedNotes : null,
+        category: mapToUiSecretCategory(secret.category[0]),
+    };
+
+}
+
+function mapToUiSecretCategory(category: SecretCategory): UiSecretCategory {
+    if (category.hasOwnProperty('Password')) {
+        return UiSecretCategory.Password;
+    } else if (category.hasOwnProperty('Note')) {
+        return UiSecretCategory.Note;
+    } else if (category.hasOwnProperty('Document')) {
+        return UiSecretCategory.Document;
+    }
+
+}
+
+function mapToSecretCategory(category: UiSecretCategory): SecretCategory {
+    switch (category) {
+        case UiSecretCategory.Password:
+            return {Password: null};
+        case UiSecretCategory.Note:
+            return {Note: null};
+        case UiSecretCategory.Document:
+            return {Document: null};
+    }
 }
 
 export async function getVetKey(actor: ActorSubclass<_SERVICE>) {

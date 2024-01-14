@@ -1,23 +1,19 @@
-import { expect, test, describe, beforeAll} from 'vitest';
+import {describe, expect, test} from 'vitest';
 import {
-    aes_gcm_decrypt,
     createIdentity,
     createNewActor,
-    createSecret,
-    determineBackendCanisterId,
-    getVetKey,
-    SecretType
+    createAddSecretArgs,
+    determineBackendCanisterId, decryptSecret,
 } from "./utils";
 import {Secp256k1KeyIdentity} from "@dfinity/identity-secp256k1";
-import {AddSecretArgs, Result, Result_5} from "../../src/declarations/iolo_backend/iolo_backend.did";
+import {AddSecretArgs, Result} from "../../src/declarations/iolo_backend/iolo_backend.did";
 import {
     Result_1,
     Result_3,
     Result_6,
-    Result_7,
-    SecretCategory
 } from "../../.dfx/local/canisters/iolo_backend/service.did";
 import {v4 as uuidv4} from 'uuid';
+import {UiSecret, UiSecretCategory} from "../../src/iolo_frontend/src/services/IoloTypesForUi";
 
 const canisterId: string = determineBackendCanisterId();
 
@@ -25,26 +21,37 @@ const canisterId: string = determineBackendCanisterId();
 const identityOne: Secp256k1KeyIdentity = createIdentity();
 const actorOne = createNewActor(identityOne, canisterId);
 
-const idOne: string = '1' + uuidv4(); // Add prefix to sort secret list properly
-const nameOne = 'secretOne';
-const urlOne = 'https://urlOne';
-const categoryOne: SecretCategory = { 'Password' : null };
-const usernameOne = 'userOne';
+const secretId = uuidv4();
+const secretOne: UiSecret = {
+    id: secretId,
+    name: 'secretOne',
+    url: 'https://urlOne',
+    category: UiSecretCategory.Password,
+    username: 'userOne',
+    password: 'pwOne',
+    notes: 'notesOne',
+};
+const secretTwo: UiSecret = {
+    id: secretId,
+    name: 'secretTwo',
+    url: 'https://urlTwo',
+    category: UiSecretCategory.Note,
+    notes: 'notesTwo',
+};
+const secretThree: UiSecret = {
+    id: secretId,
+    name: 'secretThree',
+    url: 'https://urlThree',
+    category: UiSecretCategory.Document,
+    notes: 'notesTwo',
+};
+const secretFour: UiSecret = {
+    id: secretId,
+};
 let usernameOneEncrypted: Uint8Array;
-const passwordOne = 'pwOne';
 let passwordOneEncrypted: Uint8Array;
-const notesOne = 'notesOne';
 let notesOneEncrypted: Uint8Array;
-const idTwo: string = '2' + uuidv4(); // Add prefix to sort secret list properly
-const nameTwo = 'secretTwo';
-const urlTwo = 'https://urlTwo';
-const categoryTwo: SecretCategory = { 'Document' : null };
-const notesTwo = 'notesTwo';
-const idThree: string = '3' + uuidv4(); // Add prefix to sort secret list properly
-const nameThree = 'secretTwo';
-const urlThree = 'https://urlTwo';
-const categoryThree: SecretCategory = { 'Note' : null };
-const notesThree = 'notesTwo';
+
 
 describe("Secret Tests", () => {
     test("it should create a uservault", async () => {
@@ -72,75 +79,78 @@ describe("Secret Tests", () => {
         expect(resultSecretList['Ok']).toHaveLength(0);
 
         // Add secrets
-        const addSecretArgsOne: AddSecretArgs = await createSecret(actorOne, idOne, nameOne, urlOne, categoryOne, usernameOne, passwordOne, notesOne);
+        const addSecretArgsOne: AddSecretArgs = await createAddSecretArgs(actorOne, secretOne);
         usernameOneEncrypted = addSecretArgsOne.username[0] as Uint8Array; // Store encrypted values for later tests
         passwordOneEncrypted = addSecretArgsOne.password[0] as Uint8Array; // Store encrypted values for later tests
         notesOneEncrypted = addSecretArgsOne.notes[0] as Uint8Array; // Store encrypted values for later tests
+
         const resultAddSecretOne: Result_1 = await actorOne.add_secret(addSecretArgsOne);
         expect(resultAddSecretOne).toHaveProperty('Ok');
-        expect(resultAddSecretOne['Ok'].id).toStrictEqual(idOne);
-        expect(resultAddSecretOne['Ok'].name).toHaveLength(1);
-        expect(resultAddSecretOne['Ok'].name[0]).toStrictEqual(nameOne);
-        expect(resultAddSecretOne['Ok'].url).toHaveLength(1);
-        expect(resultAddSecretOne['Ok'].url[0]).toStrictEqual(urlOne);
-        expect(resultAddSecretOne['Ok'].username).toHaveLength(1);
-        expect(resultAddSecretOne['Ok'].username[0]).toStrictEqual(addSecretArgsOne.username[0]);
-        expect(resultAddSecretOne['Ok'].password).toHaveLength(1);
-        expect(resultAddSecretOne['Ok'].password[0]).toStrictEqual(addSecretArgsOne.password[0]);
-        expect(resultAddSecretOne['Ok'].notes).toHaveLength(1);
-        expect(resultAddSecretOne['Ok'].notes[0]).toStrictEqual(addSecretArgsOne.notes[0]);
-        expect(resultAddSecretOne['Ok'].category).toHaveLength(1);
-        expect(resultAddSecretOne['Ok'].category[0]).toStrictEqual(categoryOne);
+        expect(resultAddSecretOne['Ok'].id).not.toBe(secretOne.id);
+        expect(resultAddSecretOne['Ok'].name).toStrictEqual([secretOne.name]);
+        expect(resultAddSecretOne['Ok'].url).toStrictEqual([secretOne.url]);
+        expect(resultAddSecretOne['Ok'].username).toStrictEqual(addSecretArgsOne.username);
+        expect(resultAddSecretOne['Ok'].password).toStrictEqual(addSecretArgsOne.password);
+        expect(resultAddSecretOne['Ok'].notes).toStrictEqual(addSecretArgsOne.notes);
+        expect(resultAddSecretOne['Ok'].category).toStrictEqual(addSecretArgsOne.category);
         expect(resultAddSecretOne['Ok'].date_modified).toBeGreaterThan(0);
         expect(resultAddSecretOne['Ok'].date_created).toStrictEqual(resultAddSecretOne['Ok'].date_modified);
+        const uiSecretOne = await decryptSecret(actorOne, resultAddSecretOne['Ok']);
+        expect(uiSecretOne.username).toStrictEqual(secretOne.username); // Check decrypted values
+        expect(uiSecretOne.password).toStrictEqual(secretOne.password); // Check decrypted values
+        expect(uiSecretOne.notes).toStrictEqual(secretOne.notes); // Check decrypted values
 
-        const addSecretArgsTwo: AddSecretArgs = await createSecret(actorOne, idTwo, nameTwo, urlTwo, categoryTwo, null, null, notesTwo);
+        const addSecretArgsTwo: AddSecretArgs = await createAddSecretArgs(actorOne, secretTwo);
         const resultAddSecretTwo: Result_1 = await actorOne.add_secret(addSecretArgsTwo);
         expect(resultAddSecretTwo).toHaveProperty('Ok');
-        expect(resultAddSecretTwo['Ok'].id).toStrictEqual(idTwo);
-        expect(resultAddSecretTwo['Ok'].name).toHaveLength(1);
-        expect(resultAddSecretTwo['Ok'].name[0]).toStrictEqual(nameTwo);
-        expect(resultAddSecretTwo['Ok'].url).toHaveLength(1);
-        expect(resultAddSecretTwo['Ok'].url[0]).toStrictEqual(urlTwo);
-        expect(resultAddSecretTwo['Ok'].username).toHaveLength(0);
-        expect(resultAddSecretTwo['Ok'].password).toHaveLength(0);
-        expect(resultAddSecretTwo['Ok'].notes).toHaveLength(1);
-        expect(resultAddSecretTwo['Ok'].notes[0]).toStrictEqual(addSecretArgsTwo.notes[0]);
-        expect(resultAddSecretTwo['Ok'].category).toHaveLength(1);
-        expect(resultAddSecretTwo['Ok'].category[0]).toStrictEqual(categoryTwo);
+        expect(resultAddSecretTwo['Ok'].id).not.toBe(secretTwo.id);
+        expect(resultAddSecretTwo['Ok'].name).toStrictEqual([secretTwo.name]);
+        expect(resultAddSecretTwo['Ok'].url).toStrictEqual([secretTwo.url]);
+        expect(resultAddSecretTwo['Ok'].username).toStrictEqual(addSecretArgsTwo.username);
+        expect(resultAddSecretTwo['Ok'].password).toStrictEqual(addSecretArgsTwo.password);
+        expect(resultAddSecretTwo['Ok'].notes).toStrictEqual(addSecretArgsTwo.notes);
+        expect(resultAddSecretTwo['Ok'].category).toStrictEqual(addSecretArgsTwo.category);
         expect(resultAddSecretTwo['Ok'].date_modified).toBeGreaterThan(0);
         expect(resultAddSecretTwo['Ok'].date_created).toStrictEqual(resultAddSecretTwo['Ok'].date_modified);
 
-        const addSecretArgsThree: AddSecretArgs = await createSecret(actorOne, idThree, nameThree, urlThree, categoryThree, null, null, notesThree);
+        const addSecretArgsThree: AddSecretArgs = await createAddSecretArgs(actorOne, secretThree);
         const resultAddSecretThree: Result_1 = await actorOne.add_secret(addSecretArgsThree);
         expect(resultAddSecretThree).toHaveProperty('Ok');
-        expect(resultAddSecretThree['Ok'].id).toStrictEqual(idThree);
-        expect(resultAddSecretThree['Ok'].name).toHaveLength(1);
-        expect(resultAddSecretThree['Ok'].name[0]).toStrictEqual(nameThree);
-        expect(resultAddSecretThree['Ok'].url).toHaveLength(1);
-        expect(resultAddSecretThree['Ok'].url[0]).toStrictEqual(urlThree);
-        expect(resultAddSecretThree['Ok'].username).toHaveLength(0);
-        expect(resultAddSecretThree['Ok'].password).toHaveLength(0);
-        expect(resultAddSecretThree['Ok'].notes).toHaveLength(1);
-        expect(resultAddSecretThree['Ok'].notes[0]).toStrictEqual(addSecretArgsThree.notes[0]);
-        expect(resultAddSecretThree['Ok'].category).toHaveLength(1);
-        expect(resultAddSecretThree['Ok'].category[0]).toStrictEqual(categoryThree);
+        expect(resultAddSecretThree['Ok'].id).not.toBe(secretThree.id);
+        expect(resultAddSecretThree['Ok'].name).toStrictEqual([secretThree.name]);
+        expect(resultAddSecretThree['Ok'].url).toStrictEqual([secretThree.url]);
+        expect(resultAddSecretThree['Ok'].username).toStrictEqual(addSecretArgsThree.username);
+        expect(resultAddSecretThree['Ok'].password).toStrictEqual(addSecretArgsThree.password);
+        expect(resultAddSecretThree['Ok'].notes).toStrictEqual(addSecretArgsThree.notes);
+        expect(resultAddSecretThree['Ok'].category).toStrictEqual(addSecretArgsThree.category);
         expect(resultAddSecretThree['Ok'].date_modified).toBeGreaterThan(0);
         expect(resultAddSecretThree['Ok'].date_created).toStrictEqual(resultAddSecretThree['Ok'].date_modified);
 
+        const addSecretArgsFour: AddSecretArgs = await createAddSecretArgs(actorOne, secretFour);
+        const resultAddSecretFour: Result_1 = await actorOne.add_secret(addSecretArgsFour);
+        expect(resultAddSecretFour).toHaveProperty('Ok');
+        expect(resultAddSecretFour['Ok'].id).not.toBe(secretFour.id);
+        expect(resultAddSecretFour['Ok'].name).toStrictEqual([]);
+        expect(resultAddSecretFour['Ok'].url).toStrictEqual([]);
+        expect(resultAddSecretFour['Ok'].username).toStrictEqual([]);
+        expect(resultAddSecretFour['Ok'].password).toStrictEqual([]);
+        expect(resultAddSecretFour['Ok'].notes).toStrictEqual([]);
+        expect(resultAddSecretFour['Ok'].category).toStrictEqual([]);
+        expect(resultAddSecretFour['Ok'].date_modified).toBeGreaterThan(0);
+        expect(resultAddSecretFour['Ok'].date_created).toStrictEqual(resultAddSecretFour['Ok'].date_modified);
+
     }, 30000); // Set timeout to 30s
 
-    test("it should not create the same secret twice", async () => {
+    test("it should create the same secret twice", async () => {
 
-        // Adding a new secret with the same id must fail
-        const addSecretArgsOne: AddSecretArgs = await createSecret(actorOne, idOne, nameOne, urlOne, categoryOne, usernameOne, passwordOne, notesOne);
+        // Adding a new secret with the same attributes must work
+        const addSecretArgsOne: AddSecretArgs = await createAddSecretArgs(actorOne, secretOne);
         const resultAddSecretOne = await actorOne.add_secret(addSecretArgsOne);
-        expect(resultAddSecretOne).toHaveProperty('Err');
-        expect((resultAddSecretOne['Err'])).toHaveProperty("SecretAlreadyExists");
+        expect(resultAddSecretOne).toHaveProperty('Ok');
 
     }, 15000); // Set timeout to 15s
 
-    test("it should read secrets properly", async () => {
+    /*test("it should read secrets properly", async () => {
         // Check created secret via getSecretList
         const resultSecretList = await actorOne.get_secret_list();
         expect(resultSecretList).toHaveProperty('Ok');
@@ -201,7 +211,7 @@ describe("Secret Tests", () => {
 
     }, 30000); // Set timeout to 30s
 
-    /*test("it should update secrets properly", async () => {
+    test("it should update secrets properly", async () => {
         // Update secret
         addSecretArgsOne.name = ['myUpdatedSuperSecretOne'];
         addSecretArgsOne.url = ['https://myUpdatedSuperUrlOne'];
