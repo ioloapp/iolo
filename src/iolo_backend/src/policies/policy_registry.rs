@@ -1,18 +1,18 @@
 use std::collections::{BTreeMap, HashSet};
 
+use crate::common::error::SmartVaultErr;
+use crate::policies::conditions::{Condition, Validator};
+use crate::policies::policy::{Policy, PolicyID};
 use candid::{CandidType, Principal};
 use serde::Deserialize;
-use crate::common::error::SmartVaultErr;
-use crate::smart_vaults::conditions::{Condition, Validator};
-use crate::smart_vaults::testament::{Testament, TestamentID};
 
 #[derive(Debug, CandidType, Deserialize)]
-pub struct TestamentRegistryForHeirs {
-    heir_to_testaments: BTreeMap<Principal, HashSet<TestamentID>>,
-    testament_to_testator: BTreeMap<TestamentID, Principal>,
+pub struct PolicyRegistryForHeirs {
+    heir_to_testaments: BTreeMap<Principal, HashSet<PolicyID>>,
+    testament_to_testator: BTreeMap<PolicyID, Principal>,
 }
 
-impl TestamentRegistryForHeirs {
+impl PolicyRegistryForHeirs {
     pub fn new() -> Self {
         Self {
             heir_to_testaments: BTreeMap::new(),
@@ -20,7 +20,7 @@ impl TestamentRegistryForHeirs {
         }
     }
 
-    pub fn remove_testament_from_registry(&mut self, testament: &Testament) {
+    pub fn remove_testament_from_registry(&mut self, testament: &Policy) {
         for heir in testament.heirs() {
             if let Some(testament_ids) = self.heir_to_testaments.get_mut(heir) {
                 testament_ids.remove(testament.id());
@@ -32,7 +32,7 @@ impl TestamentRegistryForHeirs {
         self.testament_to_testator.remove(testament.id());
     }
 
-    pub fn add_testament_to_registry(&mut self, testament: &Testament) {
+    pub fn add_testament_to_registry(&mut self, testament: &Policy) {
         for heir in testament.heirs() {
             self.heir_to_testaments
                 .entry(heir.clone())
@@ -43,7 +43,7 @@ impl TestamentRegistryForHeirs {
             .insert(testament.id().clone(), testament.testator().clone());
     }
 
-    pub fn update_testament_in_registry(&mut self, testament_new: &Testament, testament_old: &Testament) {
+    pub fn update_testament_in_registry(&mut self, testament_new: &Policy, testament_old: &Policy) {
         // Delete all existing entries for old testament
         for heir in testament_old.heirs() {
             if let Some(testaments) = self.heir_to_testaments.get_mut(heir) {
@@ -59,11 +59,11 @@ impl TestamentRegistryForHeirs {
         self.add_testament_to_registry(testament_new);
     }
 
-    pub fn get_testament_id_as_heir (
+    pub fn get_testament_id_as_heir(
         &self,
         heir: Principal,
-        testament_id: TestamentID
-    ) -> Result<(TestamentID, Principal), SmartVaultErr> {
+        testament_id: PolicyID,
+    ) -> Result<(PolicyID, Principal), SmartVaultErr> {
         // Check if the heir exists in the map and contains the testament_id
         if let Some(testament_ids) = self.heir_to_testaments.get(&heir) {
             return if testament_ids.contains(&testament_id) {
@@ -77,16 +77,13 @@ impl TestamentRegistryForHeirs {
             } else {
                 // Return an error if heir doesn't have the specified testament_id
                 Err(SmartVaultErr::TestamentDoesNotExist(testament_id)) // Replace with appropriate error variant
-            }
+            };
         }
         // Return an error if the heir doesn't exist in the map
         Err(SmartVaultErr::TestamentDoesNotExist(testament_id))
     }
 
-    pub fn get_testament_ids_as_heir (
-        &self,
-        heir: Principal,
-    ) -> Vec<(TestamentID, Principal)> {
+    pub fn get_testament_ids_as_heir(&self, heir: Principal) -> Vec<(PolicyID, Principal)> {
         let mut result = Vec::new();
 
         // Check if the heir exists
@@ -101,18 +98,18 @@ impl TestamentRegistryForHeirs {
         result
     }
 
-    pub fn get_testator_of_testament(&self, testament_id: TestamentID) -> Option<Principal> {
+    pub fn get_testator_of_testament(&self, testament_id: PolicyID) -> Option<Principal> {
         self.testament_to_testator.get(&testament_id).copied()
     }
- }
-
-#[derive(Debug, CandidType, Deserialize)]
-pub struct TestamentRegistryForValidators {
-    validator_to_testaments: BTreeMap<Principal, HashSet<TestamentID>>,
-    testament_to_testator: BTreeMap<TestamentID, Principal>,
 }
 
-impl TestamentRegistryForValidators {
+#[derive(Debug, CandidType, Deserialize)]
+pub struct PolicyRegistryForValidators {
+    validator_to_testaments: BTreeMap<Principal, HashSet<PolicyID>>,
+    testament_to_testator: BTreeMap<PolicyID, Principal>,
+}
+
+impl PolicyRegistryForValidators {
     pub fn new() -> Self {
         Self {
             validator_to_testaments: BTreeMap::new(),
@@ -120,10 +117,10 @@ impl TestamentRegistryForValidators {
         }
     }
 
-    pub fn get_testament_ids_as_validator (
+    pub fn get_testament_ids_as_validator(
         &self,
         validator: Principal,
-    ) -> Vec<(TestamentID, Principal)> {
+    ) -> Vec<(PolicyID, Principal)> {
         let mut result = Vec::new();
 
         // Check if the validator exists
@@ -138,7 +135,12 @@ impl TestamentRegistryForValidators {
         result
     }
 
-    pub fn add_testament_to_registry(&mut self, validators: &Vec<Validator>, testament_id: &TestamentID, testator: &Principal) {
+    pub fn add_testament_to_registry(
+        &mut self,
+        validators: &Vec<Validator>,
+        testament_id: &PolicyID,
+        testator: &Principal,
+    ) {
         for validator in validators {
             self.validator_to_testaments
                 .entry(validator.id.clone())
@@ -149,13 +151,15 @@ impl TestamentRegistryForValidators {
             .insert(testament_id.clone(), testator.clone());
     }
 
-    pub fn update_testament_in_registry(&mut self, testament_new: &Testament, testament_old: &Testament) {
+    pub fn update_testament_in_registry(&mut self, testament_new: &Policy, testament_old: &Policy) {
         // Delete all existing entries for old testament
         for condition in testament_old.conditions().iter() {
             match condition {
                 Condition::XOutOfYCondition(xoutofy) => {
                     for validator in xoutofy.validators.iter() {
-                        if let Some(testaments) = self.validator_to_testaments.get_mut(&validator.id) {
+                        if let Some(testaments) =
+                            self.validator_to_testaments.get_mut(&validator.id)
+                        {
                             testaments.remove(testament_old.id());
                             if testaments.is_empty() {
                                 self.validator_to_testaments.remove(&validator.id);
@@ -172,7 +176,11 @@ impl TestamentRegistryForValidators {
         for condition in testament_new.conditions().iter() {
             match condition {
                 Condition::XOutOfYCondition(xoutofy) => {
-                    self.add_testament_to_registry(&xoutofy.validators, testament_new.id(), testament_new.testator());
+                    self.add_testament_to_registry(
+                        &xoutofy.validators,
+                        testament_new.id(),
+                        testament_new.testator(),
+                    );
                 }
                 _ => {}
             }

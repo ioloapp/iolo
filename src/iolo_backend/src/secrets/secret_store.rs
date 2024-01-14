@@ -1,13 +1,14 @@
 use ic_stable_structures::StableBTreeMap;
 use serde::{Deserialize, Serialize};
 
-use crate::common::{
-    error::SmartVaultErr,
-    memory::{get_stable_btree_memory_for_secrets, Memory},
-    uuid::UUID,
+use crate::{
+    common::{
+        error::SmartVaultErr,
+        memory::{get_stable_btree_memory_for_secrets, Memory},
+        uuid::UUID,
+    },
+    secrets::secret::Secret,
 };
-
-use super::secret::Secret;
 
 #[derive(Serialize, Deserialize)]
 pub struct SecretStore {

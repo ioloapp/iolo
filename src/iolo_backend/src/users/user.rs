@@ -4,7 +4,7 @@ use candid::{CandidType, Decode, Encode, Principal};
 use ic_stable_structures::{storable::Bound, Storable};
 use serde::{Deserialize, Serialize};
 
-use crate::{smart_vaults::user_vault::UserVaultID, utils::time};
+use crate::{user_vaults::user_vault::UserVaultID, utils::time};
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct User {

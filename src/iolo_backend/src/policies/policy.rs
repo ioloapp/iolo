@@ -1,19 +1,20 @@
 use std::collections::{BTreeMap, HashSet};
 
+use crate::policies::conditions::{Condition, Validator};
+use crate::secrets::secret::SecretListEntry;
+use crate::user_vaults::user_vault::KeyBox;
 use candid::{CandidType, Principal};
 use serde::{Deserialize, Serialize};
-use crate::smart_vaults::conditions::{Condition, Validator};
-use crate::smart_vaults::secret::SecretListEntry;
 
 use crate::utils::{caller::get_caller, time};
 
-use super::{secret::SecretID, user_vault::KeyBox};
+use crate::secrets::secret::SecretID;
 
-pub type TestamentID = String;
+pub type PolicyID = String;
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
-pub struct Testament {
-    id: TestamentID,
+pub struct Policy {
+    id: PolicyID,
     name: Option<String>,
     date_created: u64,
     date_modified: u64,
@@ -51,14 +52,14 @@ pub struct AddTestamentArgs {
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone, PartialEq)]
 pub struct TestamentListEntry {
-    pub id: TestamentID,
+    pub id: PolicyID,
     pub name: Option<String>,
     pub testator: Principal,
-    pub condition_status: bool
+    pub condition_status: bool,
 }
 
-impl From<Testament> for TestamentListEntry {
-    fn from(t: Testament) -> Self {
+impl From<Policy> for TestamentListEntry {
+    fn from(t: Policy) -> Self {
         TestamentListEntry {
             id: t.id().into(),
             name: t.name,
@@ -68,8 +69,7 @@ impl From<Testament> for TestamentListEntry {
     }
 }
 
-
-impl Testament {
+impl Policy {
     pub fn new(id: String) -> Self {
         let now: u64 = time::get_current_time();
         Self {
@@ -87,7 +87,7 @@ impl Testament {
         }
     }
 
-    pub fn id(&self) -> &TestamentID {
+    pub fn id(&self) -> &PolicyID {
         &self.id
     }
 
@@ -180,9 +180,9 @@ impl Testament {
     }
 }
 
-impl From<AddTestamentArgs> for Testament {
+impl From<AddTestamentArgs> for Policy {
     fn from(ata: AddTestamentArgs) -> Self {
-        let mut new_testament = Testament::new(ata.id);
+        let mut new_testament = Policy::new(ata.id);
         new_testament.name = ata.name;
         new_testament.heirs = ata.heirs;
         new_testament.secrets = ata.secrets;
@@ -196,7 +196,7 @@ impl From<AddTestamentArgs> for Testament {
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct TestamentResponse {
-    id: TestamentID,
+    id: PolicyID,
     name: Option<String>,
     date_created: u64,
     date_modified: u64,
@@ -232,8 +232,8 @@ impl TestamentResponse {
     }
 }
 
-impl From<Testament> for TestamentResponse {
-    fn from(t: Testament) -> Self {
+impl From<Policy> for TestamentResponse {
+    fn from(t: Policy) -> Self {
         let mut new_testament = TestamentResponse::new(t.id);
         new_testament.name = t.name;
         new_testament.testator = t.testator;

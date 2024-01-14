@@ -3,19 +3,15 @@ use std::{cell::RefCell, collections::BTreeMap};
 use candid::{CandidType, Deserialize, Principal};
 
 use crate::common::{error::SmartVaultErr, uuid::UUID};
-use crate::smart_vaults::conditions::Condition;
-use crate::smart_vaults::smart_vault::TESTAMENT_REGISTRY_FOR_VALIDATORS;
-use crate::smart_vaults::testament::TestamentID;
-use crate::smart_vaults::testament_registry::TestamentRegistryForValidators;
-use crate::users::user::{AddUserArgs, User};
-
-use super::{
-    secret::{AddSecretArgs, Secret},
-    smart_vault::TESTAMENT_REGISTRY_FOR_HEIRS,
-    testament::{AddTestamentArgs, Testament},
-    testament_registry::TestamentRegistryForHeirs,
-    user_vault::UserVault,
+use crate::policies::conditions::Condition;
+use crate::policies::policy::{AddTestamentArgs, Policy, PolicyID};
+use crate::policies::policy_registry::{PolicyRegistryForHeirs, PolicyRegistryForValidators};
+use crate::secrets::secret::{AddSecretArgs, Secret};
+use crate::smart_vaults::smart_vault::{
+    TESTAMENT_REGISTRY_FOR_HEIRS, TESTAMENT_REGISTRY_FOR_VALIDATORS,
 };
+use crate::user_vaults::user_vault::UserVault;
+use crate::users::user::{AddUserArgs, User};
 
 #[derive(CandidType, Deserialize, Clone, Debug)]
 pub struct UserVaultStore {
@@ -89,18 +85,18 @@ impl UserVaultStore {
         &mut self,
         vault_id: &UUID,
         ata: AddTestamentArgs, // might be required later
-    ) -> Result<Testament, SmartVaultErr> {
+    ) -> Result<Policy, SmartVaultErr> {
         if !self.user_vaults.contains_key(vault_id) {
             return Err(SmartVaultErr::UserVaultDoesNotExist(vault_id.to_string()));
         }
 
-        let testament: Testament = Testament::from(ata);
+        let testament: Policy = Policy::from(ata);
         let user_vault = self.user_vaults.get_mut(vault_id).unwrap();
         user_vault.add_testament(testament.clone())?;
 
         // Add entry to testament registry for heirs (reverse index)
         TESTAMENT_REGISTRY_FOR_HEIRS.with(
-            |tr: &RefCell<TestamentRegistryForHeirs>| -> Result<(), SmartVaultErr> {
+            |tr: &RefCell<PolicyRegistryForHeirs>| -> Result<(), SmartVaultErr> {
                 let mut testament_registry = tr.borrow_mut();
                 testament_registry.add_testament_to_registry(&testament);
                 Ok(())
@@ -112,12 +108,16 @@ impl UserVaultStore {
             match condition {
                 Condition::XOutOfYCondition(xoutofy) => {
                     TESTAMENT_REGISTRY_FOR_VALIDATORS.with(
-                            |tr: &RefCell<TestamentRegistryForValidators>| -> Result<(), SmartVaultErr> {
-                                let mut testament_registry = tr.borrow_mut();
-                                testament_registry.add_testament_to_registry(&xoutofy.validators, &testament.id(), &testament.testator());
-                                Ok(())
-                            },
-                        )?;
+                        |tr: &RefCell<PolicyRegistryForValidators>| -> Result<(), SmartVaultErr> {
+                            let mut testament_registry = tr.borrow_mut();
+                            testament_registry.add_testament_to_registry(
+                                &xoutofy.validators,
+                                &testament.id(),
+                                &testament.testator(),
+                            );
+                            Ok(())
+                        },
+                    )?;
                 }
                 _ => {}
             }
@@ -129,8 +129,8 @@ impl UserVaultStore {
     pub fn update_user_testament(
         &mut self,
         vault_id: &UUID,
-        t: Testament,
-    ) -> Result<Testament, SmartVaultErr> {
+        t: Policy,
+    ) -> Result<Policy, SmartVaultErr> {
         if !self.user_vaults.contains_key(vault_id) {
             return Err(SmartVaultErr::UserVaultDoesNotExist(vault_id.to_string()));
         }
@@ -139,7 +139,7 @@ impl UserVaultStore {
         // Update testament registry for heirs
         let t_old = user_vault.get_testament(&t.id())?;
         TESTAMENT_REGISTRY_FOR_HEIRS.with(
-            |tr: &RefCell<TestamentRegistryForHeirs>| -> Result<(), SmartVaultErr> {
+            |tr: &RefCell<PolicyRegistryForHeirs>| -> Result<(), SmartVaultErr> {
                 let mut testament_registry = tr.borrow_mut();
                 testament_registry.update_testament_in_registry(&t, &t_old);
                 Ok(())
@@ -148,7 +148,7 @@ impl UserVaultStore {
 
         // Update testament registry for heirs
         TESTAMENT_REGISTRY_FOR_VALIDATORS.with(
-            |tr: &RefCell<TestamentRegistryForValidators>| -> Result<(), SmartVaultErr> {
+            |tr: &RefCell<PolicyRegistryForValidators>| -> Result<(), SmartVaultErr> {
                 let mut testament_registry = tr.borrow_mut();
                 testament_registry.update_testament_in_registry(&t, &t_old);
                 Ok(())
@@ -162,7 +162,7 @@ impl UserVaultStore {
     pub fn get_user_testament_list_mut(
         &mut self,
         vault_id: &UUID,
-    ) -> Result<Vec<&mut Testament>, SmartVaultErr> {
+    ) -> Result<Vec<&mut Policy>, SmartVaultErr> {
         if !self.user_vaults.contains_key(vault_id) {
             return Err(SmartVaultErr::UserVaultDoesNotExist(vault_id.to_string()));
         }
@@ -202,7 +202,7 @@ impl UserVaultStore {
     pub fn remove_user_testament(
         &mut self,
         vault_id: &UUID,
-        testament_id: &TestamentID,
+        testament_id: &PolicyID,
     ) -> Result<(), SmartVaultErr> {
         if !self.user_vaults.contains_key(vault_id) {
             return Err(SmartVaultErr::UserVaultDoesNotExist(vault_id.to_string()));
@@ -211,7 +211,7 @@ impl UserVaultStore {
         let user_vault = self.user_vaults.get_mut(vault_id).unwrap();
         let testament = user_vault.get_testament(testament_id)?;
         TESTAMENT_REGISTRY_FOR_HEIRS.with(
-            |tr: &RefCell<TestamentRegistryForHeirs>| -> Result<(), SmartVaultErr> {
+            |tr: &RefCell<PolicyRegistryForHeirs>| -> Result<(), SmartVaultErr> {
                 let mut testament_registry = tr.borrow_mut();
                 testament_registry.remove_testament_from_registry(testament);
                 Ok(())
