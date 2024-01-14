@@ -3,9 +3,9 @@ use serde::Serialize;
 
 use std::collections::BTreeMap;
 
-use super::secret::{Secret, SecretID, SecretSymmetricCryptoMaterial};
-use super::testament::{Testament, TestamentID};
 use crate::common::uuid::UUID;
+use crate::policies::policy::{Policy, PolicyID};
+use crate::secrets::secret::{Secret, SecretID, SecretSymmetricCryptoMaterial};
 use crate::users::user::User;
 use crate::utils::time;
 use crate::SmartVaultErr;
@@ -29,7 +29,7 @@ pub struct UserVault {
     /// This key is itself encrypted using the UserVault decryption key,
     /// which itself is derived by vetkd.
     key_box: KeyBox, // TODO: make getter and setter
-    testaments: BTreeMap<TestamentID, Testament>,
+    testaments: BTreeMap<PolicyID, Policy>,
     heirs: BTreeMap<Principal, User>,
 }
 
@@ -123,7 +123,7 @@ impl UserVault {
         Ok(self.secrets.get(&sid).unwrap().clone())
     }
 
-    pub fn update_testament(&mut self, mut t: Testament) -> Result<Testament, SmartVaultErr> {
+    pub fn update_testament(&mut self, mut t: Policy) -> Result<Policy, SmartVaultErr> {
         if !self.testaments.contains_key(t.id()) {
             return Err(SmartVaultErr::SecretDoesNotExist(t.id().to_string()));
         }
@@ -143,15 +143,15 @@ impl UserVault {
         Ok(self.testaments.get(&tid).unwrap().clone())
     }
 
-    pub fn testaments(&self) -> &BTreeMap<TestamentID, Testament> {
+    pub fn testaments(&self) -> &BTreeMap<PolicyID, Policy> {
         &self.testaments
     }
 
-    pub fn testaments_mut(&mut self) -> &mut BTreeMap<TestamentID, Testament> {
+    pub fn testaments_mut(&mut self) -> &mut BTreeMap<PolicyID, Policy> {
         &mut self.testaments
     }
 
-    pub fn add_testament(&mut self, testament: Testament) -> Result<(), SmartVaultErr> {
+    pub fn add_testament(&mut self, testament: Policy) -> Result<(), SmartVaultErr> {
         if self.testaments.contains_key(testament.id()) {
             return Err(SmartVaultErr::SecretAlreadyExists(
                 testament.id().to_string(),
@@ -163,13 +163,13 @@ impl UserVault {
         Ok(())
     }
 
-    pub fn get_testament(&self, testament_id: &TestamentID) -> Result<&Testament, SmartVaultErr> {
+    pub fn get_testament(&self, testament_id: &PolicyID) -> Result<&Policy, SmartVaultErr> {
         self.testaments
             .get(testament_id)
             .ok_or_else(|| SmartVaultErr::TestamentDoesNotExist(testament_id.to_string()))
     }
 
-    pub fn remove_testament(&mut self, testament_id: &TestamentID) -> Result<(), SmartVaultErr> {
+    pub fn remove_testament(&mut self, testament_id: &PolicyID) -> Result<(), SmartVaultErr> {
         if !self.testaments.contains_key(testament_id) {
             return Err(SmartVaultErr::TestamentDoesNotExist(
                 testament_id.to_string(),

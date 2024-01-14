@@ -28,9 +28,22 @@ type Condition = variant {
   XOutOfYCondition : XOutOfYCondition;
 };
 type LogicalOperator = variant { Or; And };
+type Policy = record {
+  id : text;
+  heirs : vec principal;
+  date_created : nat64;
+  name : opt text;
+  conditions_logical_operator : LogicalOperator;
+  testator : principal;
+  secrets : vec text;
+  conditions_status : bool;
+  key_box : vec record { text; SecretSymmetricCryptoMaterial };
+  conditions : vec Condition;
+  date_modified : nat64;
+};
 type Result = variant { Ok : User; Err : SmartVaultErr };
 type Result_1 = variant { Ok : Secret; Err : SmartVaultErr };
-type Result_2 = variant { Ok : Testament; Err : SmartVaultErr };
+type Result_2 = variant { Ok : Policy; Err : SmartVaultErr };
 type Result_3 = variant { Ok; Err : SmartVaultErr };
 type Result_4 = variant { Ok : text; Err : SmartVaultErr };
 type Result_5 = variant { Ok : vec User; Err : SmartVaultErr };
@@ -81,19 +94,6 @@ type SmartVaultErr = variant {
   SecretAlreadyExists : text;
   NoTestamentsForHeir : text;
   KeyGenerationNotAllowed;
-};
-type Testament = record {
-  id : text;
-  heirs : vec principal;
-  date_created : nat64;
-  name : opt text;
-  conditions_logical_operator : LogicalOperator;
-  testator : principal;
-  secrets : vec text;
-  conditions_status : bool;
-  key_box : vec record { text; SecretSymmetricCryptoMaterial };
-  conditions : vec Condition;
-  date_modified : nat64;
 };
 type TestamentKeyDerviationArgs = record {
   encryption_public_key : vec nat8;
@@ -176,7 +176,7 @@ service : () -> {
   symmetric_key_verification_key : () -> (text);
   update_heir : (User) -> (Result);
   update_secret : (Secret) -> (Result_1);
-  update_testament : (Testament) -> (Result_2);
+  update_testament : (Policy) -> (Result_2);
   update_user : (User) -> (Result);
   update_user_login_date : () -> (Result);
   what_time_is_it : () -> (nat64) query;

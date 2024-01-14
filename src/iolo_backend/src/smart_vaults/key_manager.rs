@@ -3,12 +3,12 @@ use std::{str::FromStr, vec};
 
 use crate::common::error::SmartVaultErr;
 use crate::common::uuid::UUID;
+use crate::policies::policy::{Policy, PolicyID};
+use crate::policies::policy_registry::PolicyRegistryForHeirs;
 use crate::smart_vaults::smart_vault::{
     TESTAMENT_REGISTRY_FOR_HEIRS, USER_STORE, USER_VAULT_STORE,
 };
-use crate::smart_vaults::testament::{Testament, TestamentID};
-use crate::smart_vaults::testament_registry::TestamentRegistryForHeirs;
-use crate::smart_vaults::user_vault_store::UserVaultStore;
+use crate::user_vaults::user_vault_store::UserVaultStore;
 use crate::users::user_store::UserStore;
 use candid::{CandidType, Principal};
 use serde::{Deserialize, Serialize};
@@ -67,7 +67,7 @@ async fn encrypted_symmetric_key_for_testament(
 
     // Let's see if the testament is existing
     let result_1 = TESTAMENT_REGISTRY_FOR_HEIRS.with(
-        |tr: &RefCell<TestamentRegistryForHeirs>| -> Option<Principal> {
+        |tr: &RefCell<PolicyRegistryForHeirs>| -> Option<Principal> {
             let testament_registry = tr.borrow();
             testament_registry.get_testator_of_testament(args.testament_id.clone())
         },
@@ -84,7 +84,7 @@ async fn encrypted_symmetric_key_for_testament(
         } else {
             // Let's see if caller is heir
             let result_2 = TESTAMENT_REGISTRY_FOR_HEIRS.with(
-                |tr: &RefCell<TestamentRegistryForHeirs>| -> Result<(TestamentID, Principal), SmartVaultErr> {
+                |tr: &RefCell<PolicyRegistryForHeirs>| -> Result<(PolicyID, Principal), SmartVaultErr> {
                     let testament_registry = tr.borrow();
                     testament_registry.get_testament_id_as_heir(caller, args.testament_id.clone())
                 },
@@ -99,7 +99,7 @@ async fn encrypted_symmetric_key_for_testament(
                         .ok_or_else(|| SmartVaultErr::UserVaultDoesNotExist("".to_string()))
                 })?;
             let result_4 = USER_VAULT_STORE.with(
-                |mv: &RefCell<UserVaultStore>| -> Result<Testament, SmartVaultErr> {
+                |mv: &RefCell<UserVaultStore>| -> Result<Policy, SmartVaultErr> {
                     mv.borrow()
                         .get_user_vault(&result_3)?
                         .get_testament(&args.testament_id)
