@@ -4,15 +4,8 @@ import TextField from '@mui/material/TextField';
 import {useSelector} from "react-redux";
 import {selectGroupedSecrets} from "../../redux/secrets/secretsSelectors";
 import {useAppDispatch} from "../../redux/hooks";
-import {FormControl, ListItem, ListItemText, Typography} from "@mui/material";
-import {
-    ConditionType,
-    UiSecretListEntry,
-    UiTestamentResponse,
-    UiTimeBasedCondition,
-    UiUser,
-    UiXOutOfYCondition
-} from "../../services/IoloTypesForUi";
+import {FormControl, Typography} from "@mui/material";
+import {UiSecretListEntry, UiTestamentResponse, UiUser} from "../../services/IoloTypesForUi";
 import {testamentsActions} from "../../redux/testaments/testamentsSlice";
 import {selectTestamentDialogItem} from "../../redux/testaments/testamentsSelectors";
 import {selectHeirs} from "../../redux/heirs/heirsSelectors";
@@ -111,29 +104,6 @@ export const TestamentDialogContent: FC<TestamentDialogContentProps> = ({readonl
             },
         },
     };
-
-    const getCondition = (condition: UiTimeBasedCondition | UiXOutOfYCondition) => {
-        if(condition.type === ConditionType.TimeBasedCondition) {
-            const timeBasedCondition: UiTimeBasedCondition = condition;
-            return (
-                <ListItem>
-                    <ListItemText>TimeBasedCondition</ListItemText>
-                    <ListItemText>{timeBasedCondition.conditionStatus}</ListItemText>
-                    <ListItemText>{timeBasedCondition.numberOfDaysSinceLastLogin}</ListItemText>
-                </ListItem>
-            )
-        }
-        if(condition.type === ConditionType.XOutOfYCondition) {
-            const xOutOfYCondition: UiXOutOfYCondition = condition;
-            return (
-                <ListItem>
-                    <ListItemText>XOutOfYCondition</ListItemText>
-                    <ListItemText>{xOutOfYCondition.conditionStatus}</ListItemText>
-                    <ListItemText>{xOutOfYCondition.validators.map(v => v.user.id).join(', ')}</ListItemText>
-                </ListItem>
-            )
-        }
-    }
 
     return (
         <>

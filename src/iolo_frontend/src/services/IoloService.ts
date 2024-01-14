@@ -5,6 +5,7 @@ import {
     AddTestamentArgs,
     AddUserArgs,
     Condition,
+    Policy,
     Result,
     Result_1,
     Result_3,
@@ -17,7 +18,6 @@ import {
     SecretCategory,
     SecretListEntry,
     SecretSymmetricCryptoMaterial,
-    Testament,
     TestamentListEntry,
     TestamentResponse,
     TimeBasedCondition,
@@ -119,7 +119,6 @@ class IoloService {
     }
 
     public async createUser(uiUser: UiUser): Promise<UiUser> {
-        console.log("Start adding user...")
         let args: AddUserArgs = {
             id: Principal.anonymous(), // No principal needed, backend will take anyway the caller...
             email: uiUser.email ? [uiUser.email] : [],
@@ -258,7 +257,7 @@ class IoloService {
     public async addTestament(uiTestament: UiTestament): Promise<UiTestament> {
         console.debug('start adding testament...');
         uiTestament.id = uuidv4();
-        const testament: Testament = await this.mapUiTestamentToTestament(uiTestament);
+        const testament: Policy = await this.mapUiTestamentToTestament(uiTestament);
         const testamentArgs: AddTestamentArgs = {
             heirs: testament.heirs,
             id: testament.id,
@@ -279,7 +278,7 @@ class IoloService {
 
     public async updateTestament(uiTestament: UiTestament): Promise<UiTestament> {
         console.debug('start updating testament...')
-        const testament: Testament = await this.mapUiTestamentToTestament(uiTestament);
+        const testament: Policy = await this.mapUiTestamentToTestament(uiTestament);
 
         // Update testament
         const result = await (await this.getActor()).update_testament(testament);
@@ -607,7 +606,7 @@ class IoloService {
         }
     }
 
-    private async mapUiTestamentToTestament(uiTestament: UiTestament): Promise<Testament> {
+    private async mapUiTestamentToTestament(uiTestament: UiTestament): Promise<Policy> {
         const heirs = uiTestament.heirs.map((item) => {
             return Principal.fromText(item.id);
         });
@@ -661,7 +660,7 @@ class IoloService {
             const timeBasedCondition = {
                 id: tCondition.id,
                 condition_status: tCondition.conditionStatus,
-                number_of_days_since_last_login: BigInt(tCondition.numberOfDaysSinceLastLogin)
+                number_of_days_since_last_login: tCondition.numberOfDaysSinceLastLogin ? BigInt(tCondition.numberOfDaysSinceLastLogin): BigInt(100)
             } as TimeBasedCondition
             return {
                 TimeBasedCondition: timeBasedCondition
@@ -672,7 +671,7 @@ class IoloService {
             const xOutOfYCondition: XOutOfYCondition = {
                 id: xCondition.id,
                 condition_status: xCondition.conditionStatus,
-                quorum: BigInt(xCondition.quorum),
+                quorum: xCondition.quorum ? BigInt(xCondition.quorum): BigInt(xCondition.validators.length),
                 validators: xCondition.validators.map(v => {
                     return {
                         id: Principal.fromText(v.user.id),
@@ -686,7 +685,7 @@ class IoloService {
         }
     }
 
-    private mapTestamentToUiTestament(testament: Testament, role: UiTestamentListEntryRole): UiTestament {
+    private mapTestamentToUiTestament(testament: Policy, role: UiTestamentListEntryRole): UiTestament {
         return {
             id: testament.id,
             name: testament.name.length > 0 ? testament.name[0] : undefined,
