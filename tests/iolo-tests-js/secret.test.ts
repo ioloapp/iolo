@@ -3,7 +3,7 @@ import {
     createIdentity,
     createNewActor,
     createAddSecretArgs,
-    determineBackendCanisterId, decryptSecret,
+    determineBackendCanisterId, decryptSecret, mapToSecretCategory,
 } from "./utils";
 import {Secp256k1KeyIdentity} from "@dfinity/identity-secp256k1";
 import {AddSecretArgs, Result} from "../../src/declarations/iolo_backend/iolo_backend.did";
@@ -24,7 +24,7 @@ const actorOne = createNewActor(identityOne, canisterId);
 const secretId = uuidv4();
 const secretOne: UiSecret = {
     id: secretId,
-    name: 'secretOne',
+    name: 'secretA',
     url: 'https://urlOne',
     category: UiSecretCategory.Password,
     username: 'userOne',
@@ -33,17 +33,16 @@ const secretOne: UiSecret = {
 };
 const secretTwo: UiSecret = {
     id: secretId,
-    name: 'secretTwo',
+    name: 'secretB',
     url: 'https://urlTwo',
     category: UiSecretCategory.Note,
     notes: 'notesTwo',
 };
 const secretThree: UiSecret = {
     id: secretId,
-    name: 'secretThree',
-    url: 'https://urlThree',
+    name: 'secretC',
     category: UiSecretCategory.Document,
-    notes: 'notesTwo',
+    notes: 'notesThree',
 };
 const secretFour: UiSecret = {
     id: secretId,
@@ -69,7 +68,7 @@ describe("Secret Tests", () => {
         const hasVault: boolean = await actorOne.is_user_vault_existing();
         expect(hasVault).toBe(true)
 
-    }, 10000); // Set timeout to 10s
+    }, 10000); // Set timeout
 
     test("it should create secrets properly", async () => {
         // Check that no secret exists
@@ -95,10 +94,11 @@ describe("Secret Tests", () => {
         expect(resultAddSecretOne['Ok'].category).toStrictEqual(addSecretArgsOne.category);
         expect(resultAddSecretOne['Ok'].date_modified).toBeGreaterThan(0);
         expect(resultAddSecretOne['Ok'].date_created).toStrictEqual(resultAddSecretOne['Ok'].date_modified);
-        const uiSecretOne = await decryptSecret(actorOne, resultAddSecretOne['Ok']);
-        expect(uiSecretOne.username).toStrictEqual(secretOne.username); // Check decrypted values
-        expect(uiSecretOne.password).toStrictEqual(secretOne.password); // Check decrypted values
-        expect(uiSecretOne.notes).toStrictEqual(secretOne.notes); // Check decrypted values
+        const decryptedSecretOne = await decryptSecret(actorOne, resultAddSecretOne['Ok']);
+        expect(decryptedSecretOne.username).toStrictEqual(secretOne.username); // Check decrypted values
+        expect(decryptedSecretOne.password).toStrictEqual(secretOne.password); // Check decrypted values
+        expect(decryptedSecretOne.notes).toStrictEqual(secretOne.notes); // Check decrypted values
+        secretOne.id = resultAddSecretOne['Ok'].id; // Overwrite id with correct value generated from backend
 
         const addSecretArgsTwo: AddSecretArgs = await createAddSecretArgs(actorOne, secretTwo);
         const resultAddSecretTwo: Result_1 = await actorOne.add_secret(addSecretArgsTwo);
@@ -112,19 +112,21 @@ describe("Secret Tests", () => {
         expect(resultAddSecretTwo['Ok'].category).toStrictEqual(addSecretArgsTwo.category);
         expect(resultAddSecretTwo['Ok'].date_modified).toBeGreaterThan(0);
         expect(resultAddSecretTwo['Ok'].date_created).toStrictEqual(resultAddSecretTwo['Ok'].date_modified);
+        secretTwo.id = resultAddSecretTwo['Ok'].id; // Overwrite id with correct value generated from backend
 
         const addSecretArgsThree: AddSecretArgs = await createAddSecretArgs(actorOne, secretThree);
         const resultAddSecretThree: Result_1 = await actorOne.add_secret(addSecretArgsThree);
         expect(resultAddSecretThree).toHaveProperty('Ok');
         expect(resultAddSecretThree['Ok'].id).not.toBe(secretThree.id);
         expect(resultAddSecretThree['Ok'].name).toStrictEqual([secretThree.name]);
-        expect(resultAddSecretThree['Ok'].url).toStrictEqual([secretThree.url]);
+        expect(resultAddSecretThree['Ok'].url).toStrictEqual([]);
         expect(resultAddSecretThree['Ok'].username).toStrictEqual(addSecretArgsThree.username);
         expect(resultAddSecretThree['Ok'].password).toStrictEqual(addSecretArgsThree.password);
         expect(resultAddSecretThree['Ok'].notes).toStrictEqual(addSecretArgsThree.notes);
         expect(resultAddSecretThree['Ok'].category).toStrictEqual(addSecretArgsThree.category);
         expect(resultAddSecretThree['Ok'].date_modified).toBeGreaterThan(0);
         expect(resultAddSecretThree['Ok'].date_created).toStrictEqual(resultAddSecretThree['Ok'].date_modified);
+        secretThree.id = resultAddSecretThree['Ok'].id; // Overwrite id with correct value generated from backend
 
         const addSecretArgsFour: AddSecretArgs = await createAddSecretArgs(actorOne, secretFour);
         const resultAddSecretFour: Result_1 = await actorOne.add_secret(addSecretArgsFour);
@@ -138,8 +140,9 @@ describe("Secret Tests", () => {
         expect(resultAddSecretFour['Ok'].category).toStrictEqual([]);
         expect(resultAddSecretFour['Ok'].date_modified).toBeGreaterThan(0);
         expect(resultAddSecretFour['Ok'].date_created).toStrictEqual(resultAddSecretFour['Ok'].date_modified);
+        secretFour.id = resultAddSecretFour['Ok'].id; // Overwrite id with correct value generated from backend
 
-    }, 30000); // Set timeout to 30s
+    }, 60000); // Set timeout
 
     test("it should create the same secret twice", async () => {
 
@@ -148,70 +151,81 @@ describe("Secret Tests", () => {
         const resultAddSecretOne = await actorOne.add_secret(addSecretArgsOne);
         expect(resultAddSecretOne).toHaveProperty('Ok');
 
-    }, 15000); // Set timeout to 15s
+        // Delete it again
+        const resultRemoveSecret: Result_3 = await actorOne.remove_secret(resultAddSecretOne['Ok'].id);
+        expect(resultRemoveSecret).toHaveProperty('Ok');
 
-    /*test("it should read secrets properly", async () => {
+    }, 15000); // Set timeout
+
+    test("it should read secrets properly", async () => {
+        // Check created secret via getSecret
+        const resultSecretOne: Result_1 = await actorOne.get_secret(secretOne.id);
+        expect(resultSecretOne).toHaveProperty('Ok');
+        expect(resultSecretOne['Ok'].id).toStrictEqual(secretOne.id);
+        expect(resultSecretOne['Ok'].name).toStrictEqual([secretOne.name]);
+        expect(resultSecretOne['Ok'].url).toStrictEqual([secretOne.url]);
+        expect(resultSecretOne['Ok'].username).toStrictEqual([usernameOneEncrypted]);
+        expect(resultSecretOne['Ok'].password).toStrictEqual([passwordOneEncrypted]);
+        expect(resultSecretOne['Ok'].notes).toStrictEqual([notesOneEncrypted]);
+        expect(resultSecretOne['Ok'].category).toStrictEqual([mapToSecretCategory(secretOne.category)]);
+        expect(resultSecretOne['Ok'].date_modified).toBeGreaterThan(0);
+        expect(resultSecretOne['Ok'].date_created).toStrictEqual(resultSecretOne['Ok'].date_modified);
+        const decryptedSecretOne = await decryptSecret(actorOne, resultSecretOne['Ok']);
+        expect(decryptedSecretOne.username).toStrictEqual(secretOne.username); // Check decrypted values
+        expect(decryptedSecretOne.password).toStrictEqual(secretOne.password); // Check decrypted values
+        expect(decryptedSecretOne.notes).toStrictEqual(secretOne.notes); // Check decrypted values
+
+        const resultSecretTwo: Result_1 = await actorOne.get_secret(secretTwo.id);
+        expect(resultSecretTwo).toHaveProperty('Ok');
+        // Only validate differences to secretOne
+        expect(resultSecretTwo['Ok'].username).toStrictEqual([]);
+        expect(resultSecretTwo['Ok'].password).toStrictEqual([]);
+        expect(resultSecretTwo['Ok'].notes).toHaveLength(1);
+        expect(resultSecretTwo['Ok'].category).toStrictEqual([mapToSecretCategory(secretTwo.category)]);
+
+        const resultSecretThree: Result_1 = await actorOne.get_secret(secretThree.id);
+        expect(resultSecretThree).toHaveProperty('Ok');
+        // Only validate differences to secretOne and secretTwo
+        expect(resultSecretThree['Ok'].url).toStrictEqual([]);
+        expect(resultSecretThree['Ok'].category).toStrictEqual([mapToSecretCategory(secretThree.category)]);
+
+        const resultSecretFour: Result_1 = await actorOne.get_secret(secretFour.id);
+        expect(resultSecretFour).toHaveProperty('Ok');
+        // Only validate differences to secretOne, secretTwo and secretThree
+        expect(resultSecretFour['Ok'].name).toStrictEqual([]);
+        expect(resultSecretFour['Ok'].category).toStrictEqual([]);
+        expect(resultSecretFour['Ok'].notes).toStrictEqual([]);
+
+    }, 30000); // Set timeout
+
+    test("it should read the secret list properly", async () => {
         // Check created secret via getSecretList
-        const resultSecretList = await actorOne.get_secret_list();
+        const resultSecretList: Result_6 = await actorOne.get_secret_list();
         expect(resultSecretList).toHaveProperty('Ok');
         expect(Array.isArray(resultSecretList['Ok'])).toBe(true);
-        expect(resultSecretList['Ok']).toHaveLength(3);
-        resultSecretList['Ok'].sort((a, b) => a.id.localeCompare(b.id)); // Sort by id
-        expect(resultSecretList['Ok'][0].id).toStrictEqual(idOne);
-        expect(resultSecretList['Ok'][0].name).toHaveLength(1);
-        expect(resultSecretList['Ok'][0].name[0]).toStrictEqual(nameOne);
-        expect(resultSecretList['Ok'][0].category).toHaveLength(1);
-        expect(resultSecretList['Ok'][0].category[0]).toStrictEqual(categoryOne);
-        expect(resultSecretList['Ok'][1].id).toStrictEqual(idTwo);
-        expect(resultSecretList['Ok'][1].name).toHaveLength(1);
-        expect(resultSecretList['Ok'][1].name[0]).toStrictEqual(nameTwo);
-        expect(resultSecretList['Ok'][1].category).toHaveLength(1);
-        expect(resultSecretList['Ok'][1].category[0]).toStrictEqual(categoryTwo);
-        expect(resultSecretList['Ok'][2].id).toStrictEqual(idThree);
-        expect(resultSecretList['Ok'][2].name).toHaveLength(1);
-        expect(resultSecretList['Ok'][2].name[0]).toStrictEqual(nameThree);
-        expect(resultSecretList['Ok'][2].category).toHaveLength(1);
-        expect(resultSecretList['Ok'][2].category[0]).toStrictEqual(categoryThree);
+        // Sort the list by name
+        resultSecretList['Ok'].sort((a, b) => {
+            const nameA = a.name.length > 0 ? a.name[0] : '';
+            const nameB = b.name.length > 0 ? b.name[0] : '';
+            return nameA.localeCompare(nameB);
+        });
+        expect(resultSecretList['Ok']).toHaveLength(4);
+        expect(resultSecretList['Ok'][0].id).toStrictEqual(secretFour.id);
+        expect(resultSecretList['Ok'][0].name).toStrictEqual([]);
+        expect(resultSecretList['Ok'][0].category).toStrictEqual([]);
+        expect(resultSecretList['Ok'][1].id).toStrictEqual(secretOne.id);
+        expect(resultSecretList['Ok'][1].name).toStrictEqual([secretOne.name]);
+        expect(resultSecretList['Ok'][1].category).toStrictEqual([mapToSecretCategory(secretOne.category)]);
+        expect(resultSecretList['Ok'][2].id).toStrictEqual(secretTwo.id);
+        expect(resultSecretList['Ok'][2].name).toStrictEqual([secretTwo.name]);
+        expect(resultSecretList['Ok'][2].category).toStrictEqual([mapToSecretCategory(secretTwo.category)]);
+        expect(resultSecretList['Ok'][3].id).toStrictEqual(secretThree.id);
+        expect(resultSecretList['Ok'][3].name).toStrictEqual([secretThree.name]);
+        expect(resultSecretList['Ok'][3].category).toStrictEqual([mapToSecretCategory(secretThree.category)]);
 
-        // Check created secret (encrypted values) via getSecret
-        const resultSecretOne: Result_1 = await actorOne.get_secret(idOne);
-        expect(resultSecretOne).toHaveProperty('Ok');
-        expect(resultSecretOne['Ok'].id).toStrictEqual(idOne);
-        expect(resultSecretOne['Ok'].name).toHaveLength(1);
-        expect(resultSecretOne['Ok'].name[0]).toStrictEqual(nameOne);
-        expect(resultSecretOne['Ok'].url).toHaveLength(1);
-        expect(resultSecretOne['Ok'].url[0]).toStrictEqual(urlOne);
-        expect(resultSecretOne['Ok'].category).toHaveLength(1);
-        expect(resultSecretOne['Ok'].category[0]).toStrictEqual(categoryOne);
-        expect(resultSecretOne['Ok'].username).toHaveLength(1);
-        expect(resultSecretOne['Ok'].username[0]).toStrictEqual(usernameOneEncrypted);
-        expect(resultSecretOne['Ok'].password).toHaveLength(1);
-        expect(resultSecretOne['Ok'].password[0]).toStrictEqual(passwordOneEncrypted);
-        expect(resultSecretOne['Ok'].notes).toHaveLength(1);
-        expect(resultSecretOne['Ok'].notes[0]).toStrictEqual(notesOneEncrypted);
-        expect((resultSecretOne['Ok'].date_modified)).toBeGreaterThan(0);
-        expect((resultSecretOne['Ok'].date_created)).toStrictEqual(resultSecretOne['Ok'].date_modified);
+    }, 10000); // Set timeout
 
-        // Check decrypted values
-        const vetKey = await getVetKey(actorOne);
-        const resultSymmetricCryptoMaterial: Result_7 = await actorOne.get_secret_symmetric_crypto_material(idOne);
-        expect(resultSecretOne).toHaveProperty('Ok');
-
-        const decryptedSymmetricKey = await aes_gcm_decrypt(resultSymmetricCryptoMaterial['Ok'].encrypted_symmetric_key as Uint8Array, vetKey, resultSymmetricCryptoMaterial['Ok'].iv as Uint8Array);
-        const username = await aes_gcm_decrypt(resultSecretOne['Ok'].username[0] as Uint8Array, decryptedSymmetricKey, resultSymmetricCryptoMaterial['Ok'].username_decryption_nonce[0] as Uint8Array);
-        const password = await aes_gcm_decrypt(resultSecretOne['Ok'].password[0] as Uint8Array, decryptedSymmetricKey, resultSymmetricCryptoMaterial['Ok'].password_decryption_nonce[0] as Uint8Array);
-        const notes = await aes_gcm_decrypt(resultSecretOne['Ok'].notes[0] as Uint8Array, decryptedSymmetricKey, resultSymmetricCryptoMaterial['Ok'].notes_decryption_nonce[0] as Uint8Array);
-        expect(new TextDecoder().decode(username)).toStrictEqual(usernameOne);
-        expect(new TextDecoder().decode(password)).toStrictEqual(passwordOne);
-        expect(new TextDecoder().decode(notes)).toStrictEqual(notesOne);
-
-        // Delete secrets again for following tests
-        const resultRemoveSecretOne: Result_3 = await actorOne.remove_secret(idOne);
-        expect(resultRemoveSecretOne).toHaveProperty('Ok');
-
-    }, 30000); // Set timeout to 30s
-
-    test("it should update secrets properly", async () => {
+    /*test("it should update secrets properly", async () => {
         // Update secret
         addSecretArgsOne.name = ['myUpdatedSuperSecretOne'];
         addSecretArgsOne.url = ['https://myUpdatedSuperUrlOne'];

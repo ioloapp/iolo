@@ -13,7 +13,6 @@ import {
 } from "../../src/declarations/iolo_backend/iolo_backend.did";
 import * as vetkd from './wasm/ic_vetkd_utils';
 import {UiSecret, UiSecretCategory} from "../../src/iolo_frontend/src/services/IoloTypesForUi";
-import {Principal} from "@dfinity/principal";
 
 
 export function determineBackendCanisterId(): string {
@@ -57,7 +56,6 @@ export async function createAddSecretArgs(actor: ActorSubclass<_SERVICE>, secret
 
     // Get vetKey
     const uservaultVetKey = await getVetKey(actor);
-    console.log("uservaultVetKey: " + hex_encode(uservaultVetKey));
 
     // Encrypt local symmetric key with vetKey
     const encryptedSymmetricKey = await aes_gcm_encrypt(symmetricKey, uservaultVetKey, ivSymmetricKey);
@@ -76,12 +74,12 @@ export async function createAddSecretArgs(actor: ActorSubclass<_SERVICE>, secret
     }
     return {
         id: secret.id,
-        name: secret.name? [secret.name] : [],
-        url: secret.url? [secret.url] : [],
-        username: secret.username? [await aes_gcm_encrypt(secret.username, symmetricKey, ivUsername)] : [],
-        password: secret.username? [await aes_gcm_encrypt(secret.password, symmetricKey, ivPassword)] : [],
-        notes: secret.notes? [await aes_gcm_encrypt(secret.notes, symmetricKey, ivNotes)] : [],
-        category: secret.category? [mapToSecretCategory(secret.category)] : [],
+        name: secret.name ? [secret.name] : [],
+        url: secret.url ? [secret.url] : [],
+        username: secret.username ? [await aes_gcm_encrypt(secret.username, symmetricKey, ivUsername)] : [],
+        password: secret.username ? [await aes_gcm_encrypt(secret.password, symmetricKey, ivPassword)] : [],
+        notes: secret.notes ? [await aes_gcm_encrypt(secret.notes, symmetricKey, ivNotes)] : [],
+        category: secret.category ? [mapToSecretCategory(secret.category)] : [],
         symmetric_crypto_material: symmetricCryptoMaterial
     };
 }
@@ -90,7 +88,6 @@ export async function decryptSecret(actor: ActorSubclass<_SERVICE>, secret: Secr
 
     // Get vetKey
     const uservaultVetKey: Uint8Array = await getVetKey(actor);
-    console.log("uservaultVetKey: " + hex_encode(uservaultVetKey));
 
     // Read encryption material
     const resultSymmetricCryptoMaterial: Result_7 = await actor.get_secret_symmetric_crypto_material(secret.id);
@@ -117,15 +114,15 @@ export async function decryptSecret(actor: ActorSubclass<_SERVICE>, secret: Secr
         id: secret.id,
         name: secret.name[0],
         url: secret.url[0],
-        username: secret.username.length == 1 ? decryptedUsername : null,
-        password: secret.password.length == 1 ? decryptedPassword : null,
-        notes: secret.notes.length == 1 ? decryptedNotes : null,
+        username: secret.username.length == 1 ? new TextDecoder().decode(decryptedUsername) : null,
+        password: secret.password.length == 1 ? new TextDecoder().decode(decryptedPassword) : null,
+        notes: secret.notes.length == 1 ? new TextDecoder().decode(decryptedNotes) : null,
         category: mapToUiSecretCategory(secret.category[0]),
     };
 
 }
 
-function mapToUiSecretCategory(category: SecretCategory): UiSecretCategory {
+export function mapToUiSecretCategory(category: SecretCategory): UiSecretCategory {
     if (category.hasOwnProperty('Password')) {
         return UiSecretCategory.Password;
     } else if (category.hasOwnProperty('Note')) {
@@ -136,7 +133,7 @@ function mapToUiSecretCategory(category: SecretCategory): UiSecretCategory {
 
 }
 
-function mapToSecretCategory(category: UiSecretCategory): SecretCategory {
+export function mapToSecretCategory(category: UiSecretCategory): SecretCategory {
     switch (category) {
         case UiSecretCategory.Password:
             return {Password: null};
