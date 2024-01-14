@@ -2,13 +2,7 @@ import * as React from 'react';
 import {FC} from 'react';
 import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
-import {
-    UiTestamentResponse,
-    UiTimeBasedCondition,
-    UiUser,
-    UiValidator,
-    UiXOutOfYCondition
-} from "../../services/IoloTypesForUi";
+import {UiUser, UiValidator, UiXOutOfYCondition} from "../../services/IoloTypesForUi";
 import Collapse from "@mui/material/Collapse";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -20,11 +14,11 @@ import {useAppDispatch} from "../../redux/hooks";
 import {testamentsActions} from "../../redux/testaments/testamentsSlice";
 import {useSelector} from "react-redux";
 import {selectHeirs} from "../../redux/heirs/heirsSelectors";
-import {selectTestamentDialogItem} from "../../redux/testaments/testamentsSelectors";
 import {SelectListItem} from "../selectlist/select-list";
 import IconButton from "@mui/material/IconButton";
 import AddIcon from "@mui/icons-material/Add";
 import {MenuItem, Select} from "@mui/material";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 
 export interface ConditionXOutOfYProps {
     condition: UiXOutOfYCondition
@@ -38,12 +32,7 @@ interface SelectedValidator extends SelectListItem, UiValidator {
 export const ConditionXOutOfY: FC<ConditionXOutOfYProps> = ({condition, readonly, open}) => {
     const {t} = useTranslation();
     const dispatch = useAppDispatch();
-    const dialogItem: UiTestamentResponse = useSelector(selectTestamentDialogItem);
     const heirsList: UiUser[] = useSelector(selectHeirs);
-
-    const updateCondition = (condition: UiTimeBasedCondition) => {
-        dispatch(testamentsActions.updateConditionOfDialogItem(condition))
-    }
 
     const handleValidatorChange = (userId: string, index: number) => {
         console.log('s', userId, index)
@@ -68,6 +57,16 @@ export const ConditionXOutOfY: FC<ConditionXOutOfYProps> = ({condition, readonly
             status: false,
             user: {}
         })
+        dispatch(testamentsActions.updateConditionOfDialogItem(updatedConditon))
+    }
+
+    const deleteValidator = (validator: UiValidator) => {
+        const updatedConditon = {
+            ...condition,
+            validators: [
+                ...(condition.validators ? condition.validators.filter(v => v.user.id !== validator.user.id) : [])
+            ]
+        }
         dispatch(testamentsActions.updateConditionOfDialogItem(updatedConditon))
     }
 
@@ -118,6 +117,7 @@ export const ConditionXOutOfY: FC<ConditionXOutOfYProps> = ({condition, readonly
                                 <TableRow>
                                     <TableCell>{t('user.name')}</TableCell>
                                     <TableCell>{t('conditions.status')}</TableCell>
+                                    <TableCell>{t('conditions.delete')}</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
@@ -134,13 +134,23 @@ export const ConditionXOutOfY: FC<ConditionXOutOfYProps> = ({condition, readonly
                                             >
                                                 {heirsList
                                                     .map(user => {
-                                                        return <MenuItem key={user.id} value={user.id}>{user.name ? user.name : user.id}</MenuItem>
+                                                        return <MenuItem key={user.id}
+                                                                         value={user.id}>{user.name ? user.name : user.id}</MenuItem>
                                                     })
 
                                                 }
                                             </Select>
                                         </TableCell>
                                         <TableCell>{validator.status}</TableCell>
+                                        <TableCell>
+                                            <IconButton
+                                                aria-label="expand row"
+                                                size="small"
+                                                onClick={() => deleteValidator(validator)}
+                                            >
+                                                <DeleteOutlineIcon/>
+                                            </IconButton>
+                                        </TableCell>
                                     </TableRow>
                                 ))}
                             </TableBody>

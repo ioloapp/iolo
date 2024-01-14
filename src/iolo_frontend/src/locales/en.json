@@ -68,6 +68,11 @@
     "max-logout-time": "Max. time in days where you haven't been logged in to IOLO",
     "x-out-of-y": "Confirmers of your condition"
   },
+  "validators": {
+    "button":{
+      "add": "Add"
+    }
+  },
   "user": {
     "type": "Type of user",
     "name": "Name",
