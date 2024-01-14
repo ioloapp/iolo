@@ -41,27 +41,27 @@ impl UserStore {
 
     pub fn add_user(&mut self, user: User) -> Result<User, SmartVaultErr> {
         let principal_storable = PrincipalStorable::from(*user.id());
-        if self
-            .users
-            .insert(principal_storable, user.clone())
-            .is_some()
-        {
+
+        if self.users.contains_key(&principal_storable) {
             Err(SmartVaultErr::UserAlreadyExists(user.id().to_string()))
         } else {
+            self.users.insert(principal_storable, user.clone());
             self.get_user(user.id())
         }
     }
 
-    pub fn update_user(&mut self, user: User) -> Result<User, SmartVaultErr> {
-        let principal_storable = PrincipalStorable::from(*user.id());
-        if self
-            .users
-            .insert(principal_storable, user.clone())
-            .is_some()
-        {
-            self.get_user(user.id())
+    pub fn update_user(&mut self, user: User, caller: &Principal) -> Result<User, SmartVaultErr> {
+        let principal_storable = PrincipalStorable::from(*caller);
+
+        // Only name, email and user_type can be updated
+        if let Some(mut existing_user) = self.users.remove(&principal_storable) {
+            existing_user.name = user.name.clone();
+            existing_user.email = user.email.clone();
+            existing_user.user_type = user.user_type.clone();
+            self.users.insert(principal_storable, existing_user);
+            self.get_user(caller)
         } else {
-            Err(SmartVaultErr::UserDoesNotExist(user.id().to_string()))
+            Err(SmartVaultErr::UserDoesNotExist(caller.to_string()))
         }
     }
 

@@ -97,7 +97,7 @@ pub fn update_user(user: User) -> Result<User, SmartVaultErr> {
     // Update the user
     USER_STORE.with(|ur: &RefCell<UserStore>| -> Result<User, SmartVaultErr> {
         let mut user_store = ur.borrow_mut();
-        match user_store.update_user(user) {
+        match user_store.update_user(user, &get_caller()) {
             Ok(u) => Ok(u.clone()),
             Err(e) => Err(e),
         }
@@ -120,14 +120,7 @@ pub fn update_user_login_date() -> Result<User, SmartVaultErr> {
         })?;
 
     current_user.update_login_date();
-
-    USER_STORE.with(|ur: &RefCell<UserStore>| -> Result<User, SmartVaultErr> {
-        let mut user_store = ur.borrow_mut();
-        match user_store.update_user(current_user) {
-            Ok(u) => Ok(u.clone()),
-            Err(e) => Err(e),
-        }
-    })
+    Ok(current_user)
 }
 
 #[ic_cdk_macros::update]
