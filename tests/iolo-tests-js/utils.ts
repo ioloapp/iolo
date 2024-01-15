@@ -14,6 +14,8 @@ import {
 import * as vetkd from './wasm/ic_vetkd_utils';
 import {UiSecret, UiSecretCategory} from "../../src/iolo_frontend/src/services/IoloTypesForUi";
 
+let vetKey: Uint8Array = null;
+
 
 export function determineBackendCanisterId(): string {
     let canisterId: string = null;
@@ -55,10 +57,13 @@ export async function createAddSecretArgs(actor: ActorSubclass<_SERVICE>, secret
     const ivSymmetricKey = crypto.getRandomValues(new Uint8Array(12)); // 96-bits; unique per message
 
     // Get vetKey
-    const uservaultVetKey = await getVetKey(actor);
+    if (!vetKey) {
+        Actor.agentOf(actor).getPrincipal();
+        vetKey = await getVetKey(actor);
+    }
 
     // Encrypt local symmetric key with vetKey
-    const encryptedSymmetricKey = await aes_gcm_encrypt(symmetricKey, uservaultVetKey, ivSymmetricKey);
+    const encryptedSymmetricKey = await aes_gcm_encrypt(symmetricKey, vetKey, ivSymmetricKey);
 
     // Create a secret
     const ivUsername: Buffer = crypto.randomBytes(16);  // AES block size is 16 bytes
