@@ -67,8 +67,12 @@ export async function get_aes_256_gcm_key_for_testament(id: string, actor: Actor
     }
 }
 
-export async function aes_gcm_decrypt(ciphertext: Uint8Array, rawKey: Uint8Array, iv: Uint8Array): Promise<Uint8Array> {
-    const encryptedContent: Uint8Array = ciphertext;
+export async function aes_gcm_decrypt(ciphertext: Uint8Array, rawKey: Uint8Array, ivLength: number): Promise<Uint8Array> {
+    // Extract the IV from the ciphertext
+    const iv = ciphertext.slice(0, ivLength);
+
+    // Extract the encrypted content from the ciphertext
+    const encryptedContent = ciphertext.slice(ivLength);
     const aes_key: CryptoKey = await window.crypto.subtle.importKey("raw", rawKey, "AES-GCM", false, ["decrypt"]);
     const decryptedContent: ArrayBuffer = await window.crypto.subtle.decrypt(
         {name: "AES-GCM", iv: iv},
@@ -90,10 +94,9 @@ export async function aes_gcm_encrypt(plaintext: string | Uint8Array, rawKey: Ui
         plaintextArray
     );
 
-    return new Uint8Array(encryptedContent);
     // Combine the IV with the ciphertext for easier decryption
-    //const combined: Uint8Array = new Uint8Array(iv.byteLength + encryptedContent.byteLength);
-    //combined.set(iv, 0);
-    //combined.set(new Uint8Array(encryptedContent), iv.byteLength);
-    //return combined;
+    const combined: Uint8Array = new Uint8Array(iv.byteLength + encryptedContent.byteLength);
+    combined.set(iv, 0);
+    combined.set(new Uint8Array(encryptedContent), iv.byteLength);
+    return combined;
 }

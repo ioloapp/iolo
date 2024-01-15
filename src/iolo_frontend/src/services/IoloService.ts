@@ -61,6 +61,7 @@ class IoloService {
     private identity: Identity;
     private agent: HttpAgent
     private actor: ActorSubclass<_SERVICE>;
+    private ivLength = 12;
 
     constructor() {
         if (IoloService.instance) {
@@ -224,14 +225,23 @@ class IoloService {
             throw mapError(resultSymmetricCryptoMaterial['Err']);
         }
 
+        // Get secret with encrypted attributes incl. ivs
+        const resultSecret: Result_1 = await (await this.getActor()).get_secret(uiSecret.id);
+        let existingSecret: Secret;
+        if (resultSecret['Ok']) {
+            existingSecret = resultSecret['Ok'];
+        } else {
+            throw mapError(resultSecret['Err']);
+        }
+
         // Get the vetKey to decrypt the encryption key
         const uservaultVetKey: Uint8Array = await get_aes_256_gcm_key_for_uservault(await this.getUserPrincipal(),(await this.getActor()));
 
         // Decrypt symmetric key
-        const decryptedSymmetricKey = await aes_gcm_decrypt(symmetricCryptoMaterial.encrypted_symmetric_key as Uint8Array, uservaultVetKey, symmetricCryptoMaterial.iv as Uint8Array);
+        const decryptedSymmetricKey = await aes_gcm_decrypt(symmetricCryptoMaterial.encrypted_symmetric_key as Uint8Array, uservaultVetKey, this.ivLength);
 
         // Encrypt updated secret
-        const encryptedSecret: Secret = await this.encryptExistingSecret(uiSecret, decryptedSymmetricKey, symmetricCryptoMaterial.username_decryption_nonce[0] as Uint8Array, symmetricCryptoMaterial.password_decryption_nonce[0] as Uint8Array, symmetricCryptoMaterial.notes_decryption_nonce[0] as Uint8Array);
+        const encryptedSecret: Secret = await this.encryptExistingSecret(uiSecret, decryptedSymmetricKey, existingSecret);
 
         // Update encrypted secret
         const resultUpdate: Result_1 = await (await this.getActor()).update_secret(encryptedSecret);
@@ -444,21 +454,21 @@ class IoloService {
     private async mapEncryptedSecretToUiSecret(secret: Secret, keyMaterial: SecretSymmetricCryptoMaterial, vetKey: Uint8Array): Promise<UiSecret> {
 
         // Decrypt symmetric key
-        const decryptedSymmetricKey = await aes_gcm_decrypt(keyMaterial.encrypted_symmetric_key as Uint8Array, vetKey, keyMaterial.iv as Uint8Array);
+        const decryptedSymmetricKey = await aes_gcm_decrypt(keyMaterial.encrypted_symmetric_key as Uint8Array, vetKey, this.ivLength);
 
         // Decrypt attributes
         let decryptedUsername = undefined;
         if (secret.username.length > 0) {
-            decryptedUsername = await aes_gcm_decrypt(secret.username[0] as Uint8Array, decryptedSymmetricKey, keyMaterial.username_decryption_nonce[0] as Uint8Array);
+            decryptedUsername = await aes_gcm_decrypt(secret.username[0] as Uint8Array, decryptedSymmetricKey, this.ivLength);
         }
         let decryptedPassword = undefined;
         if (secret.password.length > 0) {
-            decryptedPassword = await aes_gcm_decrypt(secret.password[0] as Uint8Array, decryptedSymmetricKey, keyMaterial.password_decryption_nonce[0] as Uint8Array);
+            decryptedPassword = await aes_gcm_decrypt(secret.password[0] as Uint8Array, decryptedSymmetricKey, this.ivLength);
         }
 
         let decryptedNotes = undefined;
         if (secret.notes.length > 0) {
-            decryptedNotes = await aes_gcm_decrypt(secret.notes[0] as Uint8Array, decryptedSymmetricKey, keyMaterial.notes_decryption_nonce[0] as Uint8Array);
+            decryptedNotes = await aes_gcm_decrypt(secret.notes[0] as Uint8Array, decryptedSymmetricKey, this.ivLength);
         }
 
         return this.mapSecretToUiSecret(secret, new TextDecoder().decode(decryptedUsername), new TextDecoder().decode(decryptedPassword), new TextDecoder().decode(decryptedNotes));
@@ -507,35 +517,35 @@ class IoloService {
         try {
             // Encrypt the symmetric key
             const symmetricKey = await get_local_random_aes_256_gcm_key();
-            const ivSymmetricKey = window.crypto.getRandomValues(new Uint8Array(12)); // 96-bits; unique per message
+            const ivSymmetricKey = window.crypto.getRandomValues(new Uint8Array(this.ivLength)); // 96-bits; unique per message
             const uservaultVetKey = await get_aes_256_gcm_key_for_uservault(await this.getUserPrincipal(), (await this.getActor()));
             const encryptedSymmetricKey = await aes_gcm_encrypt(symmetricKey, uservaultVetKey, ivSymmetricKey);
 
             // Encrypt optional secret attributes
             let encryptedUsername = new Uint8Array(0);
-            const ivUsername = window.crypto.getRandomValues(new Uint8Array(12)); // Always create an iv because if the username is added later as an update operation we need the key material
+            const ivUsername = window.crypto.getRandomValues(new Uint8Array(this.ivLength)); // Always create an iv because if the username is added later as an update operation we need the key material
             if (uiSecret.username) {
                 encryptedUsername = await aes_gcm_encrypt(uiSecret.username, symmetricKey, ivUsername);
             }
 
             let encryptedPassword = new Uint8Array(0);
-            const ivPassword = window.crypto.getRandomValues(new Uint8Array(12)); // Always create an iv because if the password is added later as an update operation we need the key material
+            const ivPassword = window.crypto.getRandomValues(new Uint8Array(this.ivLength)); // Always create an iv because if the password is added later as an update operation we need the key material
             if (uiSecret.password) {
                 encryptedPassword = await aes_gcm_encrypt(uiSecret.password, symmetricKey, ivPassword);
             }
 
             let encryptedNotes = new Uint8Array(0);
-            const ivNotes = window.crypto.getRandomValues(new Uint8Array(12)); // Always create an iv because if the note is added later as an update operation we need the key material
+            const ivNotes = window.crypto.getRandomValues(new Uint8Array(this.ivLength)); // Always create an iv because if the note is added later as an update operation we need the key material
             if (uiSecret.notes) {
                 encryptedNotes = await aes_gcm_encrypt(uiSecret.notes, symmetricKey, ivNotes);
             }
 
             let symmetricCryptoMaterial: SecretSymmetricCryptoMaterial = {
                 encrypted_symmetric_key: encryptedSymmetricKey,
-                iv: ivSymmetricKey,
-                username_decryption_nonce: [ivUsername],
-                password_decryption_nonce: [ivPassword],
-                notes_decryption_nonce: [ivNotes],
+                iv: [],
+                username_decryption_nonce: [],
+                password_decryption_nonce: [],
+                notes_decryption_nonce: [],
             };
 
             return {
@@ -553,22 +563,52 @@ class IoloService {
         }
     }
 
-    private async encryptExistingSecret(uiSecret: UiSecret, symmetricKey:  Uint8Array, ivUsername: Uint8Array, ivPassword: Uint8Array, ivNotes: Uint8Array): Promise<Secret> {
+    private async encryptExistingSecret(uiSecret: UiSecret, symmetricKey:  Uint8Array, existingSecret: Secret): Promise<Secret> {
         // When updating existing secrets the existing encryption key and the existing ivs must be used
         try {
             // Encrypt optional secret attributes
             let encryptedUsername = new Uint8Array(0);
             if (uiSecret.username) {
+                // Check if username is already in existing secret
+                let ivUsername: Uint8Array;
+                if (existingSecret.username.length > 0) {
+                    // Use existing iv
+                    ivUsername = existingSecret.username[0].slice(0, this.ivLength) as Uint8Array;
+                } else {
+                    // Create new iv
+                    ivUsername = window.crypto.getRandomValues(new Uint8Array(this.ivLength)); // 96-bits; unique per message
+                }
                 encryptedUsername = await aes_gcm_encrypt(uiSecret.username, symmetricKey, ivUsername);
             }
+
             let encryptedPassword = new Uint8Array(0);
             if (uiSecret.password) {
+                // Check if password is already in existing secret
+                let ivPassword: Uint8Array;
+                if (existingSecret.password.length > 0) {
+                    // Use existing iv
+                    ivPassword = existingSecret.password[0].slice(0, this.ivLength) as Uint8Array;
+                } else {
+                    // Create new iv
+                    ivPassword = window.crypto.getRandomValues(new Uint8Array(this.ivLength)); // 96-bits; unique per message
+                }
                 encryptedPassword = await aes_gcm_encrypt(uiSecret.password, symmetricKey, ivPassword);
             }
+
             let encryptedNotes = new Uint8Array(0);
             if (uiSecret.notes) {
+                // Check if notes is already in existing secret
+                let ivNotes: Uint8Array;
+                if (existingSecret.notes.length > 0) {
+                    // Use existing iv
+                    ivNotes = existingSecret.notes[0].slice(0, this.ivLength) as Uint8Array;
+                } else {
+                    // Create new iv
+                    ivNotes = window.crypto.getRandomValues(new Uint8Array(this.ivLength)); // 96-bits; unique per message
+                }
                 encryptedNotes = await aes_gcm_encrypt(uiSecret.notes, symmetricKey, ivNotes);
             }
+
             return {
                 id: uiSecret.id,
                 url: uiSecret.url ? [uiSecret.url] : [],
@@ -623,7 +663,7 @@ class IoloService {
             const result: Result_7 = await (await this.getActor()).get_secret_symmetric_crypto_material(item);
             if (result['Ok']) {
                 // Decrypt symmetric key with uservault vetKey
-                const decryptedSymmetricKey = await aes_gcm_decrypt(result['Ok'].encrypted_symmetric_key as Uint8Array, uservaultVetKey, result['Ok'].iv as Uint8Array);
+                const decryptedSymmetricKey = await aes_gcm_decrypt(result['Ok'].encrypted_symmetric_key as Uint8Array, uservaultVetKey, this.ivLength);
 
                 // Enrcypt symmetric key with testament vetKey
                 const ivSymmetricKey = window.crypto.getRandomValues(new Uint8Array(12)); // 96-bits; unique per message
