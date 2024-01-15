@@ -41,13 +41,13 @@ import {
     ConditionType,
     LogicalOperator,
     UiCondition,
+    UiPolicy,
+    UiPolicyListEntry,
+    UiPolicyResponse,
     UiSecret,
     UiSecretCategory,
     UiSecretListEntry,
-    UiTestament,
-    UiTestamentListEntry,
     UiTestamentListEntryRole,
-    UiTestamentResponse,
     UiTimeBasedCondition,
     UiUser,
     UiUserType,
@@ -254,7 +254,7 @@ class IoloService {
         return await (await this.getActor()).is_user_vault_existing();
     }
 
-    public async addTestament(uiTestament: UiTestament): Promise<UiTestament> {
+    public async addPolicy(uiTestament: UiPolicy): Promise<UiPolicy> {
         console.debug('start adding testament...');
         uiTestament.id = uuidv4();
         const testament: Policy = await this.mapUiTestamentToTestament(uiTestament);
@@ -276,7 +276,7 @@ class IoloService {
 
     }
 
-    public async updateTestament(uiTestament: UiTestament): Promise<UiTestament> {
+    public async updatePolicy(uiTestament: UiPolicy): Promise<UiPolicy> {
         console.debug('start updating testament...')
         const testament: Policy = await this.mapUiTestamentToTestament(uiTestament);
 
@@ -287,11 +287,11 @@ class IoloService {
         } else throw mapError(result['Err']);
     }
 
-    public async getTestamentList(): Promise<UiTestamentListEntry[]> {
+    public async getPolicyList(): Promise<UiPolicyListEntry[]> {
         const resultAsTestator: Result_9 = await (await this.getActor()).get_testament_list_as_testator();
-        let testamentsAsTestator: UiTestamentListEntry[] = [];
+        let testamentsAsTestator: UiPolicyListEntry[] = [];
         if (resultAsTestator['Ok']) {
-            testamentsAsTestator = resultAsTestator['Ok'].map((item: TestamentListEntry): UiTestamentListEntry  => {
+            testamentsAsTestator = resultAsTestator['Ok'].map((item: TestamentListEntry): UiPolicyListEntry  => {
                 return {
                     id: item.id,
                     name: item.name?.length > 0 ? item.name[0] : undefined,
@@ -303,9 +303,9 @@ class IoloService {
         } else throw mapError(resultAsTestator['Err']);
 
         const resultAsHeir: Result_9 = await (await this.getActor()).get_testament_list_as_heir();
-        let testamentsAsHeir: UiTestamentListEntry[] =  [];
+        let testamentsAsHeir: UiPolicyListEntry[] =  [];
         if (resultAsHeir['Ok'] && resultAsHeir['Ok'].length > 0) {
-            testamentsAsHeir = resultAsHeir['Ok'].map((item: TestamentListEntry): UiTestamentListEntry  => {
+            testamentsAsHeir = resultAsHeir['Ok'].map((item: TestamentListEntry): UiPolicyListEntry  => {
                 return {
                     id: item.id,
                     name: item.name?.length > 0 ? item.name[0] : undefined,
@@ -320,7 +320,7 @@ class IoloService {
         return testamentsAsTestator.concat(testamentsAsHeir);
     }
 
-    public async getTestamentAsTestator(id: string): Promise<UiTestamentResponse> {
+    public async getPolicyAsOwner(id: string): Promise<UiPolicyResponse> {
         const result: Result_8 = await (await this.getActor()).get_testament_as_testator(id);
         console.debug('start get testament as testator', result);
         if (result['Ok']) {
@@ -329,7 +329,7 @@ class IoloService {
         throw mapError(result['Err']);
     }
 
-    public async getTestamentAsHeir(id: string): Promise<UiTestamentResponse> {
+    public async getPolicyAsBeneficary(id: string): Promise<UiPolicyResponse> {
         const result: Result_8 = await (await this.getActor()).get_testament_as_heir(id);
         if (result['Ok']) {
             return this.mapTestamentResponseToUiTestamentResponse(result['Ok'], UiTestamentListEntryRole.Heir);
@@ -337,7 +337,7 @@ class IoloService {
         throw mapError(result['Err']);
     }
 
-    public async deleteTestament(id: string): Promise<void> {
+    public async deletePolicy(id: string): Promise<void> {
         const result: Result_3 = await (await this.getActor()).remove_testament(id);
         if (result['Ok'] === null) {
             return;
@@ -353,7 +353,7 @@ class IoloService {
         throw mapError(result['Err']);
     }
 
-    public async addHeir(heir: UiUser): Promise<UiUser> {
+    public async addContact(heir: UiUser): Promise<UiUser> {
         console.debug('start adding heir: ', heir);
 
         // Check if it's a valid principal
@@ -378,7 +378,7 @@ class IoloService {
         throw mapError(result['Err']);
     }
 
-    public async getHeirsList(): Promise<UiUser[]> {
+    public async getContactsList(): Promise<UiUser[]> {
         const result: Result_5 = await (await this.getActor()).get_heir_list();
         if (result['Ok']) {
             return result['Ok'].map((item) => this.mapUserToUiUser(item)) ;
@@ -386,7 +386,7 @@ class IoloService {
         throw mapError(result['Err']);
     }
 
-    public async updateHeir(heir: UiUser): Promise<UiUser> {
+    public async updateContact(heir: UiUser): Promise<UiUser> {
         const user = this.mapUiUserToUser(heir);
         const result: Result = await (await this.getActor()).update_heir(user);
 
@@ -396,7 +396,7 @@ class IoloService {
         throw mapError(result['Err']);
     }
 
-    public async deleteHeir(id: string) {
+    public async deleteContact(id: string) {
         const result: Result_3 = await (await this.getActor()).remove_heir(Principal.fromText(id));
         if (result['Ok'] === null) {
             return;
@@ -606,7 +606,7 @@ class IoloService {
         }
     }
 
-    private async mapUiTestamentToTestament(uiTestament: UiTestament): Promise<Policy> {
+    private async mapUiTestamentToTestament(uiTestament: UiPolicy): Promise<Policy> {
         const heirs = uiTestament.heirs.map((item) => {
             return Principal.fromText(item.id);
         });
@@ -685,7 +685,7 @@ class IoloService {
         }
     }
 
-    private mapTestamentToUiTestament(testament: Policy, role: UiTestamentListEntryRole): UiTestament {
+    private mapTestamentToUiTestament(testament: Policy, role: UiTestamentListEntryRole): UiPolicy {
         return {
             id: testament.id,
             name: testament.name.length > 0 ? testament.name[0] : undefined,
@@ -730,7 +730,7 @@ class IoloService {
         }
     }
 
-    private mapTestamentResponseToUiTestamentResponse(testament: TestamentResponse, role: UiTestamentListEntryRole): UiTestamentResponse {
+    private mapTestamentResponseToUiTestamentResponse(testament: TestamentResponse, role: UiTestamentListEntryRole): UiPolicyResponse {
         let secrets: UiSecretListEntry[] = testament.secrets.map((item) => {
             let category = undefined;
             if (item.category.length > 0) {

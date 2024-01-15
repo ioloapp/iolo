@@ -1,7 +1,7 @@
 import {UiUser, UiUserType} from "../../services/IoloTypesForUi";
 
-export interface HeirsState {
-    heirsList: UiUser[],
+export interface ContactsState {
+    contactsList: UiUser[],
     dialogItem: UiUser
     dialogItemState: string,
     loadingState: string,
@@ -12,8 +12,8 @@ export interface HeirsState {
 }
 
 // Define the initial state using that type
-export const initialState: HeirsState = {
-    heirsList: [],
+export const initialState: ContactsState = {
+    contactsList: [],
     dialogItem: {
         type: UiUserType.Person,
         id: '',

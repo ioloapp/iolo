@@ -4,43 +4,34 @@ import {useEffect, useState} from "react";
 import {useAppDispatch} from "../../redux/hooks";
 import {PageLayout} from "../../components/layout/page-layout";
 import {useSelector} from "react-redux";
-import {
-    selectTestamentError,
-    selectTestaments,
-    selectTestamentsListState
-} from "../../redux/testaments/testamentsSelectors";
-import AddTestamentDialog from "../../components/testament/add-testament-dialog";
+import {selectPolicies, selectPoliciesListState, selectPolicyError} from "../../redux/policies/policiesSelectors";
+import AddPolicyDialog from "../../components/policies/add-policy-dialog";
 import HistoryEduOutlinedIcon from "@mui/icons-material/HistoryEduOutlined";
-import {
-    editTestamentThunk,
-    loadTestamentsThunk,
-    testamentsActions,
-    viewTestamentThunk
-} from "../../redux/testaments/testamentsSlice";
+import {editPolicyThunk, loadPoliciesThunk, policiesActions, viewPolicyThunk} from "../../redux/policies/policiesSlice";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteIcon from "@mui/icons-material/Delete";
-import {UiTestament, UiTestamentListEntryRole} from "../../services/IoloTypesForUi";
-import DeleteTestamentDialog from "../../components/testament/delete-testament-dialog";
-import EditTestamentDialog from "../../components/testament/edit-testament-dialog";
+import {UiPolicy, UiTestamentListEntryRole} from "../../services/IoloTypesForUi";
+import DeletePolicyDialog from "../../components/policies/delete-policy-dialog";
+import EditPolicyDialog from "../../components/policies/edit-policy-dialog";
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import {Error} from "../../components/error/error";
-import ViewTestamentDialog from "../../components/testament/view-testament-dialog";
+import ViewPolicyDialog from "../../components/policies/view-policy-dialog";
 import {selectSecretsListState} from "../../redux/secrets/secretsSelectors";
 import {loadSecretsThunk} from "../../redux/secrets/secretsSlice";
-import {loadHeirsThunk} from "../../redux/heirs/heirsSlice";
-import {selectHeirListState} from "../../redux/heirs/heirsSelectors";
+import {loadContactsThunk} from "../../redux/contacts/contactsSlice";
+import {selectContactsListState} from "../../redux/contacts/contactsSelectors";
 import ViewSecretDialog from "../../components/secret/view-secret-dialog";
 import {useTranslation} from "react-i18next";
 
-export function Testaments() {
+export function Policies() {
 
     const dispatch = useAppDispatch();
-    const testaments = useSelector(selectTestaments);
-    const testamentsListState = useSelector(selectTestamentsListState);
-    const testamentsListError = useSelector(selectTestamentError);
+    const testaments = useSelector(selectPolicies);
+    const testamentsListState = useSelector(selectPoliciesListState);
+    const testamentsListError = useSelector(selectPolicyError);
     const secretsListState = useSelector(selectSecretsListState);
-    const heirsListState = useSelector(selectHeirListState);
+    const heirsListState = useSelector(selectContactsListState);
     const { t } = useTranslation();
 
     useEffect(() => {
@@ -48,9 +39,9 @@ export function Testaments() {
             dispatch(loadSecretsThunk())
         }
         if (heirsListState === 'init') {
-            dispatch(loadHeirsThunk())
+            dispatch(loadContactsThunk())
         }
-        dispatch(loadTestamentsThunk())
+        dispatch(loadPoliciesThunk())
     }, [])
 
     useEffect(() => {
@@ -59,17 +50,17 @@ export function Testaments() {
 
     const [filteredTestaments, setFilteredTestaments] = useState(testaments)
 
-    const deleteTestament = (testament: UiTestament) => {
-        dispatch(testamentsActions.updateDialogItem({id: testament.id, name: testament.name}));
-        dispatch(testamentsActions.openDeleteDialog());
+    const deleteTestament = (testament: UiPolicy) => {
+        dispatch(policiesActions.updateDialogItem({id: testament.id, name: testament.name}));
+        dispatch(policiesActions.openDeleteDialog());
     }
 
-    const viewTestament = (testament: UiTestament) => {
-        dispatch(viewTestamentThunk(testament));
+    const viewTestament = (testament: UiPolicy) => {
+        dispatch(viewPolicyThunk(testament));
     }
 
-    const editTestament = (testament: UiTestament) => {
-        dispatch(editTestamentThunk(testament));
+    const editTestament = (testament: UiPolicy) => {
+        dispatch(editPolicyThunk(testament));
     }
 
     const filterTestamentList = (search: string) => {
@@ -95,7 +86,7 @@ export function Testaments() {
                     {!hasError() && filteredTestaments &&
                         <Box>
                             <List dense={false}>
-                                {filteredTestaments.flatMap(f => f ? [f] : []).map((testament: UiTestament) =>
+                                {filteredTestaments.flatMap(f => f ? [f] : []).map((testament: UiPolicy) =>
                                     <ListItem key={testament.id} secondaryAction={
                                         <>
                                             {
@@ -144,10 +135,10 @@ export function Testaments() {
                     }
                 </Box>
                 <ViewSecretDialog/>
-                <AddTestamentDialog/>
-                <ViewTestamentDialog/>
-                <EditTestamentDialog/>
-                <DeleteTestamentDialog/>
+                <AddPolicyDialog/>
+                <ViewPolicyDialog/>
+                <EditPolicyDialog/>
+                <DeletePolicyDialog/>
             </>
         </PageLayout>
     );

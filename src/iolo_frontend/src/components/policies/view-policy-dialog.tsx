@@ -1,30 +1,30 @@
 import * as React from 'react';
 import {useSelector} from "react-redux";
 import {useAppDispatch} from "../../redux/hooks";
-import {testamentsActions} from "../../redux/testaments/testamentsSlice";
+import {policiesActions} from "../../redux/policies/policiesSlice";
 import {
-    selectShowViewTestamentDialog,
-    selectTestamentDialogItem,
-    selectTestamentDialogItemState,
-    selectTestamentError
-} from "../../redux/testaments/testamentsSelectors";
+    selectPolicyDialogItem,
+    selectPolicyDialogItemState,
+    selectPolicyError,
+    selectShowViewPolicyDialog
+} from "../../redux/policies/policiesSelectors";
 import {BasicDialog} from "../dialog/basic-dialog";
-import {TestamentDialogContent} from './testament-dialog-content';
+import {PolicyDialogContent} from './policy-dialog-content';
 import {SelectListItem} from "../selectlist/select-list";
 import {getSecretInViewModeThunk} from "../../redux/secrets/secretsSlice";
-import {UiTestamentResponse} from "../../services/IoloTypesForUi";
+import {UiPolicyResponse} from "../../services/IoloTypesForUi";
 import {useTranslation} from "react-i18next";
 
-export default function ViewTestamentDialog() {
+export default function ViewPolicyDialog() {
     const dispatch = useAppDispatch();
     const { t } = useTranslation();
-    const showViewTestamentDialog = useSelector(selectShowViewTestamentDialog);
-    const testamentError = useSelector(selectTestamentError);
-    const dialogItemState = useSelector(selectTestamentDialogItemState);
-    const dialogItem: UiTestamentResponse = useSelector(selectTestamentDialogItem);
+    const showViewTestamentDialog = useSelector(selectShowViewPolicyDialog);
+    const testamentError = useSelector(selectPolicyError);
+    const dialogItemState = useSelector(selectPolicyDialogItemState);
+    const dialogItem: UiPolicyResponse = useSelector(selectPolicyDialogItem);
 
     const handleClose = () => {
-        dispatch(testamentsActions.closeViewDialog());
+        dispatch(policiesActions.closeViewDialog());
     };
 
     const viewSecret = (value: SelectListItem) => {
@@ -39,7 +39,7 @@ export default function ViewTestamentDialog() {
                      handleClose={handleClose}
                      error={testamentError}
                      dialogItemState={dialogItemState}>
-            <TestamentDialogContent readonly={true} viewSecret={viewSecret}/>
+            <PolicyDialogContent readonly={true} viewSecret={viewSecret}/>
         </BasicDialog>
     );
 }

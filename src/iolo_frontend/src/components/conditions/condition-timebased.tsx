@@ -8,7 +8,7 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import {useTranslation} from "react-i18next";
 import {useAppDispatch} from "../../redux/hooks";
-import {testamentsActions} from "../../redux/testaments/testamentsSlice";
+import {policiesActions} from "../../redux/policies/policiesSlice";
 import TextField from "@mui/material/TextField";
 
 export interface ConditionTimebasedProps {
@@ -22,7 +22,7 @@ export const ConditionTimebased: FC<ConditionTimebasedProps> = ({condition, read
     const dispatch = useAppDispatch();
 
     const updateCondition = (condition: UiTimeBasedCondition) => {
-        dispatch(testamentsActions.updateConditionOfDialogItem(condition))
+        dispatch(policiesActions.updateConditionOfDialogItem(condition))
     }
 
     if (readonly) {

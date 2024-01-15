@@ -11,9 +11,9 @@ import TableHead from "@mui/material/TableHead";
 import TableBody from "@mui/material/TableBody";
 import {Trans, useTranslation} from "react-i18next";
 import {useAppDispatch} from "../../redux/hooks";
-import {testamentsActions} from "../../redux/testaments/testamentsSlice";
+import {policiesActions} from "../../redux/policies/policiesSlice";
 import {useSelector} from "react-redux";
-import {selectHeirs} from "../../redux/heirs/heirsSelectors";
+import {selectContacts} from "../../redux/contacts/contactsSelectors";
 import {SelectListItem} from "../selectlist/select-list";
 import IconButton from "@mui/material/IconButton";
 import AddIcon from "@mui/icons-material/Add";
@@ -32,7 +32,7 @@ interface SelectedValidator extends SelectListItem, UiValidator {
 export const ConditionXOutOfY: FC<ConditionXOutOfYProps> = ({condition, readonly, open}) => {
     const {t} = useTranslation();
     const dispatch = useAppDispatch();
-    const heirsList: UiUser[] = useSelector(selectHeirs);
+    const heirsList: UiUser[] = useSelector(selectContacts);
 
     const handleValidatorChange = (userId: string, index: number) => {
         console.log('s', userId, index)
@@ -43,7 +43,7 @@ export const ConditionXOutOfY: FC<ConditionXOutOfYProps> = ({condition, readonly
             ...condition,
             validators: newValidators
         }
-        dispatch(testamentsActions.updateConditionOfDialogItem(updatedCondition))
+        dispatch(policiesActions.updateConditionOfDialogItem(updatedCondition))
     }
 
     const addValidator = () => {
@@ -57,7 +57,7 @@ export const ConditionXOutOfY: FC<ConditionXOutOfYProps> = ({condition, readonly
             status: false,
             user: {}
         })
-        dispatch(testamentsActions.updateConditionOfDialogItem(updatedConditon))
+        dispatch(policiesActions.updateConditionOfDialogItem(updatedConditon))
     }
 
     const deleteValidator = (validator: UiValidator) => {
@@ -67,7 +67,7 @@ export const ConditionXOutOfY: FC<ConditionXOutOfYProps> = ({condition, readonly
                 ...(condition.validators ? condition.validators.filter(v => v.user.id !== validator.user.id) : [])
             ]
         }
-        dispatch(testamentsActions.updateConditionOfDialogItem(updatedConditon))
+        dispatch(policiesActions.updateConditionOfDialogItem(updatedConditon))
     }
 
     if (readonly) {

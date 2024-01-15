@@ -4,42 +4,42 @@ import {useAppDispatch} from "../../redux/hooks";
 import AddIcon from "@mui/icons-material/Add";
 import {Fab} from "@mui/material";
 import {
-    selectHeirDialogItem,
-    selectHeirDialogItemState,
-    selectHeirError,
-    selectShowAddHeirDialog
-} from "../../redux/heirs/heirsSelectors";
-import {addHeirThunk, heirsActions, updateHeirThunk} from "../../redux/heirs/heirsSlice";
+    selectContactsDialogItem,
+    selectContactsDialogItemState,
+    selectContactsError,
+    selectShowAddContactsDialog
+} from "../../redux/contacts/contactsSelectors";
+import {addContactThunk, contactsActions, updateContactThunk} from "../../redux/contacts/contactsSlice";
 import {BasicDialog} from "../dialog/basic-dialog";
-import HeirDialogContent from "./heir-dialog-content";
+import ContactDialogContent from "./contact-dialog-content";
 import {useTranslation} from "react-i18next";
 
-export default function AddHeirDialog() {
+export default function AddContactDialog() {
     const dispatch = useAppDispatch();
     const { t } = useTranslation();
-    const showAddHeirDialog = useSelector(selectShowAddHeirDialog);
-    const dialogItem = useSelector(selectHeirDialogItem);
-    const dialogItemState = useSelector(selectHeirDialogItemState);
-    const heirError = useSelector(selectHeirError);
+    const showAddHeirDialog = useSelector(selectShowAddContactsDialog);
+    const dialogItem = useSelector(selectContactsDialogItem);
+    const dialogItemState = useSelector(selectContactsDialogItemState);
+    const heirError = useSelector(selectContactsError);
 
     const handleClickOpen = () => {
-        dispatch(heirsActions.openAddDialog());
+        dispatch(contactsActions.openAddDialog());
     };
 
     const handleClose = () => {
-        dispatch(heirsActions.closeAddDialog());
+        dispatch(contactsActions.closeAddDialog());
     };
 
-    const cancelAddHeir = () => {
-        dispatch(heirsActions.cancelAddHeir())
+    const cancelAddContact = () => {
+        dispatch(contactsActions.cancelAddContact())
     }
 
     const createHeir = async () => {
-        dispatch(addHeirThunk(dialogItem));
+        dispatch(addContactThunk(dialogItem));
     }
 
     const updateHeir = async () => {
-        dispatch(updateHeirThunk(dialogItem));
+        dispatch(updateContactThunk(dialogItem));
     }
 
     return (
@@ -55,12 +55,12 @@ export default function AddHeirDialog() {
             leadText={t('contacts.dialog.add.text')}
             isOpen={showAddHeirDialog}
             handleClose={handleClose}
-            cancelAction={cancelAddHeir}
+            cancelAction={cancelAddContact}
             okAction={createHeir}
             okButtonText={t('contacts.dialog.add.button')}
             error={heirError}
             dialogItemState={dialogItemState}>
-                <HeirDialogContent />
+                <ContactDialogContent />
             </BasicDialog>
         </div>
     );

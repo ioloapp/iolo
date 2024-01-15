@@ -5,10 +5,10 @@ import {useSelector} from "react-redux";
 import {selectGroupedSecrets} from "../../redux/secrets/secretsSelectors";
 import {useAppDispatch} from "../../redux/hooks";
 import {FormControl, Typography} from "@mui/material";
-import {UiSecretListEntry, UiTestamentResponse, UiUser} from "../../services/IoloTypesForUi";
-import {testamentsActions} from "../../redux/testaments/testamentsSlice";
-import {selectTestamentDialogItem} from "../../redux/testaments/testamentsSelectors";
-import {selectHeirs} from "../../redux/heirs/heirsSelectors";
+import {UiPolicyResponse, UiSecretListEntry, UiUser} from "../../services/IoloTypesForUi";
+import {policiesActions} from "../../redux/policies/policiesSlice";
+import {selectPolicyDialogItem} from "../../redux/policies/policiesSelectors";
+import {selectContacts} from "../../redux/contacts/contactsSelectors";
 import {SelectList, SelectListItem} from "../selectlist/select-list";
 import {useTranslation} from "react-i18next";
 import {Conditions} from "../conditions/conditions";
@@ -25,12 +25,12 @@ interface SelectedHeir extends SelectListItem, UiUser {
 interface SelectedSecret extends SelectListItem, UiSecretListEntry {
 }
 
-export const TestamentDialogContent: FC<TestamentDialogContentProps> = ({readonly, viewSecret}) => {
+export const PolicyDialogContent: FC<TestamentDialogContentProps> = ({readonly, viewSecret}) => {
     const dispatch = useAppDispatch();
     const { t } = useTranslation();
-    const dialogItem: UiTestamentResponse = useSelector(selectTestamentDialogItem);
+    const dialogItem: UiPolicyResponse = useSelector(selectPolicyDialogItem);
     const groupedSecretList = useSelector(selectGroupedSecrets);
-    const heirsList = useSelector(selectHeirs);
+    const heirsList = useSelector(selectContacts);
     const [selectedSecrets, setSelectedSecrets] = React.useState<SelectedSecret[]>([]);
     const [selectedHeirs, setSelectedHeirs] = React.useState<SelectedHeir[]>([]);
 
@@ -52,8 +52,8 @@ export const TestamentDialogContent: FC<TestamentDialogContentProps> = ({readonl
         }
     }, [dialogItem]);
 
-    const updateTestamentToAdd = (testament: UiTestamentResponse) => {
-        dispatch(testamentsActions.updateDialogItem(testament))
+    const updateTestamentToAdd = (testament: UiPolicyResponse) => {
+        dispatch(policiesActions.updateDialogItem(testament))
     }
 
     const handleSecretChange = (secret: SelectedSecret) => {
@@ -69,10 +69,10 @@ export const TestamentDialogContent: FC<TestamentDialogContentProps> = ({readonl
             setSelectedSecrets(selectedSecrets.map(s => s.id !== secret.id ? s : {...s, selected: true}));
         }
         //Add
-        dispatch(testamentsActions.updateDialogItem({
+        dispatch(policiesActions.updateDialogItem({
             ...dialogItem,
             secrets
-        } as UiTestamentResponse))
+        } as UiPolicyResponse))
     };
 
     const handleHeirChange = (heir: SelectedHeir) => {
@@ -88,7 +88,7 @@ export const TestamentDialogContent: FC<TestamentDialogContentProps> = ({readonl
             setSelectedHeirs(selectedHeirs.map(s => s.id !== heir.id ? s : {...s, selected: true}));
         }
         //Add
-        dispatch(testamentsActions.updateDialogItem({
+        dispatch(policiesActions.updateDialogItem({
             ...dialogItem,
             heirs: heirs
         }))

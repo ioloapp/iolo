@@ -1,38 +1,38 @@
 import * as React from 'react';
 import {useSelector} from "react-redux";
 import {useAppDispatch} from "../../redux/hooks";
-import {testamentsActions, updateTestamentThunk} from "../../redux/testaments/testamentsSlice";
+import {policiesActions, updatePolicyThunk} from "../../redux/policies/policiesSlice";
 import {
-    selectShowEditTestamentDialog,
-    selectTestamentDialogItem,
-    selectTestamentDialogItemState,
-    selectTestamentError
-} from "../../redux/testaments/testamentsSelectors";
+    selectPolicyDialogItem,
+    selectPolicyDialogItemState,
+    selectPolicyError,
+    selectShowEditPolicyDialog
+} from "../../redux/policies/policiesSelectors";
 import {selectCurrentUser} from "../../redux/user/userSelectors";
 import {BasicDialog} from "../dialog/basic-dialog";
-import {TestamentDialogContent} from './testament-dialog-content';
-import {UiTestamentResponse} from "../../services/IoloTypesForUi";
+import {PolicyDialogContent} from './policy-dialog-content';
+import {UiPolicyResponse} from "../../services/IoloTypesForUi";
 import {useTranslation} from "react-i18next";
 
-export default function EditTestamentDialog() {
+export default function EditPolicyDialog() {
     const dispatch = useAppDispatch();
     const { t } = useTranslation();
-    const showEditTestamentDialog = useSelector(selectShowEditTestamentDialog);
-    const dialogItem: UiTestamentResponse = useSelector(selectTestamentDialogItem);
-    const testamentError = useSelector(selectTestamentError);
-    const dialogItemState = useSelector(selectTestamentDialogItemState);
+    const showEditTestamentDialog = useSelector(selectShowEditPolicyDialog);
+    const dialogItem: UiPolicyResponse = useSelector(selectPolicyDialogItem);
+    const testamentError = useSelector(selectPolicyError);
+    const dialogItemState = useSelector(selectPolicyDialogItemState);
     const currentUser = useSelector(selectCurrentUser);
 
     const handleClose = () => {
-        dispatch(testamentsActions.closeEditDialog());
+        dispatch(policiesActions.closeEditDialog());
     };
 
-    const cancelEditTestament = () => {
-        dispatch(testamentsActions.cancelEditTestament());
+    const cancelEditPolicy = () => {
+        dispatch(policiesActions.cancelEditPolicy());
     }
 
     const updateTestament = async () => {
-        dispatch(updateTestamentThunk({
+        dispatch(updatePolicyThunk({
             ...dialogItem,
             secrets: dialogItem.secrets.map(s => s.id)
         }));
@@ -43,12 +43,12 @@ export default function EditTestamentDialog() {
                      leadText={t('policies.dialog.edit.text')}
                      isOpen={showEditTestamentDialog}
                      handleClose={handleClose}
-                     cancelAction={cancelEditTestament}
+                     cancelAction={cancelEditPolicy}
                      okAction={updateTestament}
                      okButtonText={t('policies.dialog.edit.button')}
                      error={testamentError}
                      dialogItemState={dialogItemState}>
-            <TestamentDialogContent/>
+            <PolicyDialogContent/>
         </BasicDialog>
     );
 }

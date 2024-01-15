@@ -4,41 +4,41 @@ import {useEffect, useState} from "react";
 import {PageLayout} from "../../components/layout/page-layout";
 import {useAppDispatch} from "../../redux/hooks";
 import {useSelector} from "react-redux";
-import {selectHeirError, selectHeirListState, selectHeirs} from "../../redux/heirs/heirsSelectors";
-import {heirsActions, loadHeirsThunk} from "../../redux/heirs/heirsSlice";
-import AddHeirDialog from "../../components/heir/add-heir-dialog";
+import {selectContacts, selectContactsError, selectContactsListState} from "../../redux/contacts/contactsSelectors";
+import {contactsActions, loadContactsThunk} from "../../redux/contacts/contactsSlice";
+import AddContactDialog from "../../components/contact/add-contact-dialog";
 import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
 import {UiUser, UiUserType} from "../../services/IoloTypesForUi";
 import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined';
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteIcon from "@mui/icons-material/Delete";
-import DeleteHeirDialog from "../../components/heir/delete-heir-dialog";
-import EditHeirDialog from "../../components/heir/edit-heir-dialog";
+import DeleteContactDialog from "../../components/contact/delete-contact-dialog";
+import EditContactDialog from "../../components/contact/edit-contact-dialog";
 import {Error} from "../../components/error/error";
 import {useLocation} from "react-router-dom";
 import {useTranslation} from "react-i18next";
 
-export function Heirs() {
+export function Contacts() {
 
     const dispatch = useAppDispatch();
-    const heirs = useSelector(selectHeirs);
-    const heirListState = useSelector(selectHeirListState);
-    const heirListError = useSelector(selectHeirError);
+    const heirs = useSelector(selectContacts);
+    const heirListState = useSelector(selectContactsListState);
+    const heirListError = useSelector(selectContactsError);
     const queryParams = new URLSearchParams(useLocation().search);
     const { t } = useTranslation();
 
     if (queryParams.get('action') === 'addHeirWithDeepLink' && queryParams.get('principalId') && queryParams.get('principalType')) {
-        dispatch(heirsActions.updateHeirToAdd({
+        dispatch(contactsActions.updateContactToAdd({
             type: queryParams.get('principalType'),
             email: queryParams.get('email') ? queryParams.get('email') : '',
             name: queryParams.get('name') ? queryParams.get('name') : '',
             id: queryParams.get('principalId')
         }));
-        dispatch(heirsActions.openAddDialog());
+        dispatch(contactsActions.openAddDialog());
     }
 
     useEffect(() => {
-        dispatch(loadHeirsThunk())
+        dispatch(loadContactsThunk())
     }, [])
 
     useEffect(() => {
@@ -48,13 +48,13 @@ export function Heirs() {
 
     const [filteredHeirs, setFilteredHeirs] = useState(heirs)
     const deleteHeir = (heir: UiUser) => {
-        dispatch(heirsActions.updateHeirToAdd(heir));
-        dispatch(heirsActions.openDeleteDialog());
+        dispatch(contactsActions.updateContactToAdd(heir));
+        dispatch(contactsActions.openDeleteDialog());
     }
 
     const editHeir = (heir: UiUser) => {
-        dispatch(heirsActions.updateHeirToAdd(heir));
-        dispatch(heirsActions.openEditDialog());
+        dispatch(contactsActions.updateContactToAdd(heir));
+        dispatch(contactsActions.openEditDialog());
     }
 
     const filterHeirsList = (search: string) => {
@@ -125,9 +125,9 @@ export function Heirs() {
                         </Box>
                     }
                 </Box>
-                <AddHeirDialog/>
-                <EditHeirDialog/>
-                <DeleteHeirDialog/>
+                <AddContactDialog/>
+                <EditContactDialog/>
+                <DeleteContactDialog/>
             </>
         </PageLayout>
     )

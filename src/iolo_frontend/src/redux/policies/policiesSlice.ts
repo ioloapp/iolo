@@ -1,35 +1,37 @@
 import {createAsyncThunk, createSlice, PayloadAction} from '@reduxjs/toolkit';
-import {initialState} from "./testamentsState";
+import {initialState} from "./policiesState";
 import IoloService from "../../services/IoloService";
 import {RootState} from "../store";
 import {
     UiCondition,
-    UiTestament,
-    UiTestamentListEntry,
-    UiTestamentListEntryRole,
-    UiTestamentResponse
+    UiPolicy,
+    UiPolicyListEntry,
+    UiPolicyResponse,
+    UiTestamentListEntryRole
 } from "../../services/IoloTypesForUi";
 import {mapError} from "../../utils/errorMapper";
 
 const ioloService = new IoloService();
 
-export const addTestamentThunk = createAsyncThunk<UiTestament, UiTestament, { state: RootState }>('policies/add',
-    async (uiTestament, {rejectWithValue}) => {
+export const addPolicyThunk = createAsyncThunk<UiPolicy, UiPolicy, { state: RootState }>(
+    'policies/add',
+    async (policy, {rejectWithValue}) => {
         try {
-            return await ioloService.addTestament(uiTestament);
+            return await ioloService.addPolicy(policy);
         } catch (e) {
             rejectWithValue(mapError(e))
         }
     }
 );
 
-export const viewTestamentThunk = createAsyncThunk<UiTestamentResponse, UiTestament, { state: RootState }>('policies/view',
-    (uiTestament, {rejectWithValue, getState}) => {
+export const viewPolicyThunk = createAsyncThunk<UiPolicyResponse, UiPolicy, { state: RootState }>(
+    'policies/view',
+    (policy, {rejectWithValue}) => {
         try {
-            if (uiTestament.role === UiTestamentListEntryRole.Testator) {
-                return ioloService.getTestamentAsTestator(uiTestament.id);
+            if (policy.role === UiTestamentListEntryRole.Testator) {
+                return ioloService.getPolicyAsOwner(policy.id);
             } else {
-                return ioloService.getTestamentAsHeir(uiTestament.id);
+                return ioloService.getPolicyAsBeneficary(policy.id);
             }
 
         } catch (e) {
@@ -38,13 +40,14 @@ export const viewTestamentThunk = createAsyncThunk<UiTestamentResponse, UiTestam
     }
 );
 
-export const editTestamentThunk = createAsyncThunk<UiTestamentResponse, UiTestament, { state: RootState }>('policies/edit',
-     (uiTestament, {rejectWithValue, getState}) => {
+export const editPolicyThunk = createAsyncThunk<UiPolicyResponse, UiPolicy, { state: RootState }>(
+    'policies/edit',
+     (policy, {rejectWithValue, getState}) => {
         try {
-            if (uiTestament.role === UiTestamentListEntryRole.Testator) {
-                return ioloService.getTestamentAsTestator(uiTestament.id);
+            if (policy.role === UiTestamentListEntryRole.Testator) {
+                return ioloService.getPolicyAsOwner(policy.id);
             } else {
-                return ioloService.getTestamentAsHeir(uiTestament.id);
+                return ioloService.getPolicyAsBeneficary(policy.id);
             }
 
         } catch (e) {
@@ -53,12 +56,12 @@ export const editTestamentThunk = createAsyncThunk<UiTestamentResponse, UiTestam
     }
 );
 
-export const updateTestamentThunk = createAsyncThunk<UiTestament, UiTestament, {
+export const updatePolicyThunk = createAsyncThunk<UiPolicy, UiPolicy, {
     state: RootState }
 >('policies/update',
-    async (uiTestament, {rejectWithValue}) => {
+    async (policy, {rejectWithValue}) => {
         try {
-            return await ioloService.updateTestament(uiTestament);
+            return await ioloService.updatePolicy(policy);
         } catch (e) {
             rejectWithValue(mapError(e))
         }
@@ -66,25 +69,25 @@ export const updateTestamentThunk = createAsyncThunk<UiTestament, UiTestament, {
 );
 
 
-export const deleteTestamentThunk = createAsyncThunk<string, string, {
+export const deletePolicyThunk = createAsyncThunk<string, string, {
     state: RootState
 }>('policies/delete',
-    async (testamentId, {rejectWithValue}) => {
+    async (policyId, {rejectWithValue}) => {
         try {
-            await ioloService.deleteTestament(testamentId);
-            return testamentId;
+            await ioloService.deletePolicy(policyId);
+            return policyId;
         } catch (e) {
             rejectWithValue(mapError(e))
         }
     }
 );
 
-export const loadTestamentsThunk = createAsyncThunk<UiTestamentListEntry[], void, {
+export const loadPoliciesThunk = createAsyncThunk<UiPolicyListEntry[], void, {
     state: RootState
 }>('policies/load',
     async (_, {rejectWithValue}) => {
         try {
-            return await ioloService.getTestamentList();
+            return await ioloService.getPolicyList();
         } catch (e) {
             rejectWithValue(mapError(e))
         }
@@ -92,7 +95,7 @@ export const loadTestamentsThunk = createAsyncThunk<UiTestamentListEntry[], void
 );
 
 // Define a type for the slice state
-export const testamentsSlice = createSlice({
+export const policiesSlice = createSlice({
     name: 'policies',
     initialState,
     reducers: {
@@ -109,11 +112,11 @@ export const testamentsSlice = createSlice({
             state.showAddDialog = true
             state.error = undefined
         },
-        cancelAddTestament: state => {
+        cancelAddPolicy: state => {
             state.dialogItem = initialState.dialogItem;
             state.showAddDialog = false;
         },
-        cancelEditTestament: state => {
+        cancelEditPolicy: state => {
             state.dialogItem = initialState.dialogItem;
             state.showEditDialog = false;
         },
@@ -129,11 +132,11 @@ export const testamentsSlice = createSlice({
             state.showDeleteDialog = false
             state.dialogItem = initialState.dialogItem;
         },
-        cancelDeleteTestament: state => {
+        cancelDeletePolicy: state => {
             state.dialogItem = initialState.dialogItem;
             state.showDeleteDialog = false;
         },
-        updateDialogItem: (state, action: PayloadAction<UiTestamentResponse>) => {
+        updateDialogItem: (state, action: PayloadAction<UiPolicyResponse>) => {
             state.dialogItem = action.payload;
         },
         addConditionToDialogItem: (state, action: PayloadAction<UiCondition>) => {
@@ -160,84 +163,84 @@ export const testamentsSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
-            .addCase(loadTestamentsThunk.pending, (state) => {
+            .addCase(loadPoliciesThunk.pending, (state) => {
                 state.loadingState = 'pending';
                 state.error = undefined;
             })
-            .addCase(loadTestamentsThunk.fulfilled, (state, action) => {
+            .addCase(loadPoliciesThunk.fulfilled, (state, action) => {
                 state.loadingState = 'succeeded';
-                state.testamentsList = action.payload
+                state.policyList = action.payload
             })
-            .addCase(loadTestamentsThunk.rejected, (state, action) => {
+            .addCase(loadPoliciesThunk.rejected, (state, action) => {
                 state.loadingState = 'failed';
                 state.error = action.error.message;
             })
-            .addCase(addTestamentThunk.pending, (state) => {
+            .addCase(addPolicyThunk.pending, (state) => {
                 state.dialogItemState = 'pending';
                 state.error = undefined;
                 state.showAddDialog = true;
             })
-            .addCase(addTestamentThunk.fulfilled, (state, action) => {
+            .addCase(addPolicyThunk.fulfilled, (state, action) => {
                 state.dialogItemState = 'succeeded';
                 state.showAddDialog = false;
                 state.dialogItem = initialState.dialogItem;
-                state.testamentsList = [...state.testamentsList, action.payload]
+                state.policyList = [...state.policyList, action.payload]
             })
-            .addCase(addTestamentThunk.rejected, (state, action) => {
+            .addCase(addPolicyThunk.rejected, (state, action) => {
                 state.dialogItemState = 'failed';
                 state.error = action.error.message;
                 state.showAddDialog = true;
             })
-            .addCase(viewTestamentThunk.pending, (state) => {
+            .addCase(viewPolicyThunk.pending, (state) => {
                 state.dialogItemState = 'pending';
                 state.error = undefined;
                 state.showViewDialog = true;
             })
-            .addCase(viewTestamentThunk.fulfilled, (state, action) => {
+            .addCase(viewPolicyThunk.fulfilled, (state, action) => {
                 state.dialogItemState = 'succeeded';
                 state.dialogItem = action.payload;
             })
-            .addCase(viewTestamentThunk.rejected, (state, action) => {
+            .addCase(viewPolicyThunk.rejected, (state, action) => {
                 state.dialogItemState = 'failed';
                 state.error = action.error.message;
             })
-            .addCase(editTestamentThunk.pending, (state) => {
+            .addCase(editPolicyThunk.pending, (state) => {
                 state.dialogItemState = 'pending';
                 state.error = undefined;
                 state.showEditDialog = true;
             })
-            .addCase(editTestamentThunk.fulfilled, (state, action) => {
+            .addCase(editPolicyThunk.fulfilled, (state, action) => {
                 state.dialogItemState = 'succeeded';
                 state.dialogItem = action.payload;
             })
-            .addCase(editTestamentThunk.rejected, (state, action) => {
+            .addCase(editPolicyThunk.rejected, (state, action) => {
                 state.dialogItemState = 'failed';
                 state.error = action.error.message;
             })
-            .addCase(updateTestamentThunk.pending, (state) => {
+            .addCase(updatePolicyThunk.pending, (state) => {
                 state.dialogItemState = 'pending';
                 state.error = undefined;
             })
-            .addCase(updateTestamentThunk.fulfilled, (state, action) => {
+            .addCase(updatePolicyThunk.fulfilled, (state, action) => {
                 state.dialogItemState = 'succeeded';
                 state.showEditDialog = false;
                 state.dialogItem = initialState.dialogItem;
-                state.testamentsList = [...state.testamentsList.filter(h => h.id != action.payload.id), action.payload]
+                state.policyList = [...state.policyList.filter(h => h.id != action.payload.id), action.payload]
             })
-            .addCase(updateTestamentThunk.rejected, (state, action) => {
+            .addCase(updatePolicyThunk.rejected, (state, action) => {
                 state.dialogItemState = 'failed';
                 state.error = action.error.message;
             })
-            .addCase(deleteTestamentThunk.pending, (state) => {
+            .addCase(deletePolicyThunk.pending, (state) => {
                 state.dialogItemState = 'pending';
                 state.error = undefined;
             })
-            .addCase(deleteTestamentThunk.fulfilled, (state, action) => {
+            .addCase(deletePolicyThunk.fulfilled, (state, action) => {
                 state.dialogItemState = 'succeeded';
                 state.showDeleteDialog = false;
-                state.testamentsList = [...state.testamentsList.filter(h => h.id != action.payload)]
+                state.policyList = [...state.policyList.filter(h => h.id != action.payload)]
             })
-            .addCase(deleteTestamentThunk.rejected, (state, action) => {
+            .addCase(deletePolicyThunk.rejected, (state, action) => {
                 state.dialogItemState = 'failed';
                 state.error = action.error.message;
             });
@@ -257,6 +260,6 @@ export const replaceConditions = (conditions: UiCondition[], condition: UiCondit
 }
 
 // Action creators are generated for each case reducer function
-export const testamentsActions = testamentsSlice.actions;
+export const policiesActions = policiesSlice.actions;
 
-export const testamentsReducer = testamentsSlice.reducer;
+export const policiesReducer = policiesSlice.reducer;

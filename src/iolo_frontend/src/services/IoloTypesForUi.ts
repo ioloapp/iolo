@@ -19,7 +19,7 @@ export interface UiSecret extends UiSecretListEntry {
     dateModified?: string,
 }
 
-export interface UiTestamentListEntry {
+export interface UiPolicyListEntry {
     id?: string,
     name?: string,
     testator?: UiUser,
@@ -27,7 +27,7 @@ export interface UiTestamentListEntry {
     conditionStatus?: boolean,
 }
 
-export interface UiTestament {
+export interface UiPolicy {
     id?: string,
     name?: string,
     testator?: UiUser,
@@ -41,7 +41,7 @@ export interface UiTestament {
     dateModified?: string,
 }
 
-export interface UiTestamentResponse {
+export interface UiPolicyResponse {
     id?: string,
     name?: string,
     testator?: UiUser,

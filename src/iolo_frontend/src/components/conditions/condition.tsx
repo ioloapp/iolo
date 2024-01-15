@@ -9,7 +9,7 @@ import {ConditionType, UiCondition, UiTimeBasedCondition, UiXOutOfYCondition} fr
 import {useTranslation} from "react-i18next";
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import {useAppDispatch} from "../../redux/hooks";
-import {testamentsActions} from "../../redux/testaments/testamentsSlice";
+import {policiesActions} from "../../redux/policies/policiesSlice";
 import {ConditionTimebased} from "./condition-timebased";
 import {ConditionXOutOfY} from "./condition-xoutofy";
 import {FormControl, MenuItem, Select, Typography} from "@mui/material";
@@ -25,11 +25,11 @@ export const Condition: FC<ConditionProps> = ({condition, readonly}) => {
     const dispatch = useAppDispatch();
 
     const deleteCondition = (condition: UiCondition) => {
-        dispatch(testamentsActions.deleteConditionOfDialogItem(condition))
+        dispatch(policiesActions.deleteConditionOfDialogItem(condition))
     }
 
     const updateCondition = (condition: UiCondition) => {
-        dispatch(testamentsActions.updateConditionOfDialogItem(condition))
+        dispatch(policiesActions.updateConditionOfDialogItem(condition))
     }
 
     return (
