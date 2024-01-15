@@ -14,7 +14,7 @@ import {
 import * as vetkd from './wasm/ic_vetkd_utils';
 import {UiSecret, UiSecretCategory} from "../../src/iolo_frontend/src/services/IoloTypesForUi";
 
-let vetKey: Uint8Array = null;
+let vetKeyMap = new Map<string, Uint8Array>();
 
 
 export function determineBackendCanisterId(): string {
@@ -56,26 +56,20 @@ export async function createAddSecretArgs(actor: ActorSubclass<_SERVICE>, secret
     const symmetricKey = await get_local_random_aes_256_gcm_key();
     const ivSymmetricKey = crypto.getRandomValues(new Uint8Array(12)); // 96-bits; unique per message
 
-    // Get vetKey
-    if (!vetKey) {
-        Actor.agentOf(actor).getPrincipal();
-        vetKey = await getVetKey(actor);
-    }
-
     // Encrypt local symmetric key with vetKey
-    const encryptedSymmetricKey = await aes_gcm_encrypt(symmetricKey, vetKey, ivSymmetricKey);
+    const encryptedSymmetricKey = await aes_gcm_encrypt(symmetricKey, await getVetKey(actor), ivSymmetricKey);
 
     // Create a secret
-    const ivUsername: Buffer = crypto.randomBytes(16);  // AES block size is 16 bytes
-    const ivPassword: Buffer = crypto.randomBytes(16);  // AES block size is 16 bytes
-    const ivNotes: Buffer = crypto.randomBytes(16);  // AES block size is 16 bytes
+    const ivUsername: Buffer = crypto.randomBytes(12);
+    const ivPassword: Buffer = crypto.randomBytes(12);
+    const ivNotes: Buffer = crypto.randomBytes(12);
 
     const symmetricCryptoMaterial: SecretSymmetricCryptoMaterial = {
         encrypted_symmetric_key: encryptedSymmetricKey,
-        iv: ivSymmetricKey,
-        notes_decryption_nonce: [new Uint8Array(ivNotes.buffer, ivNotes.byteOffset, ivNotes.length)],
-        password_decryption_nonce: [new Uint8Array(ivPassword.buffer, ivPassword.byteOffset, ivPassword.length)],
-        username_decryption_nonce: [new Uint8Array(ivUsername.buffer, ivUsername.byteOffset, ivUsername.length)],
+        iv: [],
+        notes_decryption_nonce: [],
+        password_decryption_nonce:  [],
+        username_decryption_nonce: [],
     }
     return {
         id: secret.id,
@@ -91,28 +85,26 @@ export async function createAddSecretArgs(actor: ActorSubclass<_SERVICE>, secret
 
 export async function decryptSecret(actor: ActorSubclass<_SERVICE>, secret: Secret): Promise<UiSecret> {
 
-    // Get vetKey
-    const uservaultVetKey: Uint8Array = await getVetKey(actor);
-
     // Read encryption material
     const resultSymmetricCryptoMaterial: Result_7 = await actor.get_secret_symmetric_crypto_material(secret.id);
 
     // Decrypt symmetric key
-    const decryptedSymmetricKey = await aes_gcm_decrypt(resultSymmetricCryptoMaterial['Ok'].encrypted_symmetric_key as Uint8Array, uservaultVetKey, resultSymmetricCryptoMaterial['Ok'].iv as Uint8Array);
+    const decryptedSymmetricKey = await aes_gcm_decrypt(resultSymmetricCryptoMaterial['Ok'].encrypted_symmetric_key as Uint8Array, await getVetKey(actor));
 
     // Decrypt attributes
     let decryptedUsername = undefined;
     if (secret.username.length > 0) {
-        decryptedUsername = await aes_gcm_decrypt(secret.username[0] as Uint8Array, decryptedSymmetricKey, resultSymmetricCryptoMaterial['Ok'].username_decryption_nonce[0] as Uint8Array);
+        decryptedUsername = await aes_gcm_decrypt(secret.username[0] as Uint8Array, decryptedSymmetricKey);
     }
+
     let decryptedPassword = undefined;
     if (secret.password.length > 0) {
-        decryptedPassword = await aes_gcm_decrypt(secret.password[0] as Uint8Array, decryptedSymmetricKey, resultSymmetricCryptoMaterial['Ok'].password_decryption_nonce[0] as Uint8Array);
+        decryptedPassword = await aes_gcm_decrypt(secret.password[0] as Uint8Array, decryptedSymmetricKey);
     }
 
     let decryptedNotes = undefined;
     if (secret.notes.length > 0) {
-        decryptedNotes = await aes_gcm_decrypt(secret.notes[0] as Uint8Array, decryptedSymmetricKey, resultSymmetricCryptoMaterial['Ok'].notes_decryption_nonce[0] as Uint8Array);
+        decryptedNotes = await aes_gcm_decrypt(secret.notes[0] as Uint8Array, decryptedSymmetricKey);
     }
 
     return {
@@ -150,18 +142,27 @@ export function mapToSecretCategory(category: UiSecretCategory): SecretCategory 
 }
 
 export async function getVetKey(actor: ActorSubclass<_SERVICE>) {
-    const seed = crypto.randomBytes(32);
-    const tsk = new vetkd.TransportSecretKey(seed);
-    const ek_bytes_hex = await actor.encrypted_symmetric_key_for_caller(tsk.public_key());
-    const pk_bytes_hex = await actor.symmetric_key_verification_key();
-    let app_backend_principal = await Actor.agentOf(actor).getPrincipal();
-    return tsk.decrypt_and_hash(
-        hex_decode(ek_bytes_hex),
-        hex_decode(pk_bytes_hex),
-        app_backend_principal.toUint8Array(),
-        32,
-        new TextEncoder().encode("aes-256-gcm")
-    );
+    let vetKey = null;
+    if (!vetKeyMap.has(Actor.agentOf(actor).getPrincipal().toString())) {
+        const seed = crypto.randomBytes(32);
+        const tsk = new vetkd.TransportSecretKey(seed);
+        const ek_bytes_hex = await actor.encrypted_symmetric_key_for_caller(tsk.public_key());
+        const pk_bytes_hex = await actor.symmetric_key_verification_key();
+        let app_backend_principal = await Actor.agentOf(actor).getPrincipal();
+        vetKey = tsk.decrypt_and_hash(
+            hex_decode(ek_bytes_hex),
+            hex_decode(pk_bytes_hex),
+            app_backend_principal.toUint8Array(),
+            32,
+            new TextEncoder().encode("aes-256-gcm")
+        );
+        vetKeyMap.set(Actor.agentOf(actor).getPrincipal().toString(), vetKey);
+    } else {
+        vetKey = vetKeyMap.get(Actor.agentOf(actor).getPrincipal().toString());
+    }
+    return vetKey;
+
+
 }
 
 const hex_decode = (hexString) =>
@@ -198,16 +199,21 @@ async function aes_gcm_encrypt(plaintext: string | Uint8Array, rawKey: Uint8Arra
         plaintextArray
     );
 
-    return new Uint8Array(encryptedContent);
-    // Combine the IV with the ciphertext for easier decryption
-    //const combined: Uint8Array = new Uint8Array(iv.byteLength + encryptedContent.byteLength);
-    //combined.set(iv, 0);
-    //combined.set(new Uint8Array(encryptedContent), iv.byteLength);
-    //return combined;
+    //return new Uint8Array(encryptedContent);
+    // Combine the IV with the ciphertext for easier storage of the symmetric crypto material
+    const combined: Uint8Array = new Uint8Array(iv.byteLength + encryptedContent.byteLength);
+    combined.set(iv, 0);
+    combined.set(new Uint8Array(encryptedContent), iv.byteLength);
+    return combined;
 }
 
-export async function aes_gcm_decrypt(ciphertext: Uint8Array, rawKey: Uint8Array, iv: Uint8Array): Promise<Uint8Array> {
-    const encryptedContent: Uint8Array = ciphertext;
+export async function aes_gcm_decrypt(ciphertext: Uint8Array, rawKey: Uint8Array): Promise<Uint8Array> {
+    // Extract the IV from the ciphertext
+    const iv = ciphertext.slice(0, 12);
+
+    // Extract the encrypted content from the ciphertext
+    const encryptedContent = ciphertext.slice(12);
+
     const aes_key = await crypto.subtle.importKey("raw", rawKey, "AES-GCM", false, ["decrypt"]);
     const decryptedContent: ArrayBuffer = await crypto.subtle.decrypt(
         {name: "AES-GCM", iv: iv},
