@@ -18,7 +18,7 @@ export const initialState: PoliciesState = {
     dialogItem: {
         name: '',
         secrets: [],
-        heirs: [],
+        beneficiaries: [],
         conditionsStatus: false,
         conditionsLogicalOperator: null,
         conditions: []

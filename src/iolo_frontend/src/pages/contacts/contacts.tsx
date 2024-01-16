@@ -4,7 +4,7 @@ import {useEffect, useState} from "react";
 import {PageLayout} from "../../components/layout/page-layout";
 import {useAppDispatch} from "../../redux/hooks";
 import {useSelector} from "react-redux";
-import {selectContacts, selectContactsError, selectContactsListState} from "../../redux/contacts/contactsSelectors";
+import {selectContactListState, selectContacts, selectContactsError} from "../../redux/contacts/contactsSelectors";
 import {contactsActions, loadContactsThunk} from "../../redux/contacts/contactsSlice";
 import AddContactDialog from "../../components/contact/add-contact-dialog";
 import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
@@ -21,9 +21,9 @@ import {useTranslation} from "react-i18next";
 export function Contacts() {
 
     const dispatch = useAppDispatch();
-    const heirs = useSelector(selectContacts);
-    const heirListState = useSelector(selectContactsListState);
-    const heirListError = useSelector(selectContactsError);
+    const contacts = useSelector(selectContacts);
+    const contactsListState = useSelector(selectContactListState);
+    const contactsListError = useSelector(selectContactsError);
     const queryParams = new URLSearchParams(useLocation().search);
     const { t } = useTranslation();
 
@@ -42,11 +42,11 @@ export function Contacts() {
     }, [])
 
     useEffect(() => {
-        setFilteredHeirs(heirs)
-    }, [heirs])
+        setFilteredContacts(contacts)
+    }, [contacts])
 
 
-    const [filteredHeirs, setFilteredHeirs] = useState(heirs)
+    const [filteredContacts, setFilteredContacts] = useState(contacts)
     const deleteHeir = (heir: UiUser) => {
         dispatch(contactsActions.updateContactToAdd(heir));
         dispatch(contactsActions.openDeleteDialog());
@@ -57,30 +57,30 @@ export function Contacts() {
         dispatch(contactsActions.openEditDialog());
     }
 
-    const filterHeirsList = (search: string) => {
+    const filterContactsList = (search: string) => {
         const searchString = search.toLowerCase();
         if (searchString.length === 0) {
-            setFilteredHeirs(heirs);
+            setFilteredContacts(contacts);
         } else {
-            setFilteredHeirs(heirs.filter(s => s.name.toLowerCase().indexOf(searchString) >= 0 || s.email.toLowerCase().indexOf(searchString) >= 0))
+            setFilteredContacts(contacts.filter(s => s.name.toLowerCase().indexOf(searchString) >= 0 || s.email.toLowerCase().indexOf(searchString) >= 0))
         }
     }
 
     const hasError = (): boolean => {
-        return heirListState === 'failed';
+        return contactsListState === 'failed';
     }
 
     return (
-        <PageLayout title={t('contacts.title')} filterList={filterHeirsList}>
+        <PageLayout title={t('contacts.title')} filterList={filterContactsList}>
             <>
                 <Box>
                     {hasError() &&
-                        <Error error={heirListError}/>
+                        <Error error={contactsListError}/>
                     }
-                    {!hasError() && filteredHeirs &&
+                    {!hasError() && filteredContacts &&
                         <Box>
                             <List dense={false}>
-                                {filteredHeirs.map((heir: UiUser) =>
+                                {filteredContacts.map((heir: UiUser) =>
                                     <ListItem key={heir.id} secondaryAction={
                                         <>
                                             <IconButton edge="end" aria-label="delete" onClick={() => editHeir(heir)}>

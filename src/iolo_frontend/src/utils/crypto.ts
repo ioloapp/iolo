@@ -42,7 +42,7 @@ export async function get_aes_256_gcm_key_for_uservault(principal: Principal, ac
     return result;
 }
 
-export async function get_aes_256_gcm_key_for_testament(id: string, actor: ActorSubclass<_SERVICE>) {
+export async function get_aes_256_gcm_key_for_policy(id: string, actor: ActorSubclass<_SERVICE>) {
     const seed = window.crypto.getRandomValues(new Uint8Array(32));
     const tsk = new vetkd.TransportSecretKey(seed);
     const ek_bytes_hex = await actor.encrypted_symmetric_key_for_testament({encryption_public_key: tsk.public_key(), testament_id: id});

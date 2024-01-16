@@ -17,9 +17,9 @@ import {useTranslation} from "react-i18next";
 export default function EditPolicyDialog() {
     const dispatch = useAppDispatch();
     const { t } = useTranslation();
-    const showEditTestamentDialog = useSelector(selectShowEditPolicyDialog);
+    const showEditPolicyDialog = useSelector(selectShowEditPolicyDialog);
     const dialogItem: UiPolicyResponse = useSelector(selectPolicyDialogItem);
-    const testamentError = useSelector(selectPolicyError);
+    const policyError = useSelector(selectPolicyError);
     const dialogItemState = useSelector(selectPolicyDialogItemState);
     const currentUser = useSelector(selectCurrentUser);
 
@@ -31,7 +31,7 @@ export default function EditPolicyDialog() {
         dispatch(policiesActions.cancelEditPolicy());
     }
 
-    const updateTestament = async () => {
+    const updatePolicy = async () => {
         dispatch(updatePolicyThunk({
             ...dialogItem,
             secrets: dialogItem.secrets.map(s => s.id)
@@ -41,12 +41,12 @@ export default function EditPolicyDialog() {
     return (
         <BasicDialog title={t('policies.dialog.edit.title')}
                      leadText={t('policies.dialog.edit.text')}
-                     isOpen={showEditTestamentDialog}
+                     isOpen={showEditPolicyDialog}
                      handleClose={handleClose}
                      cancelAction={cancelEditPolicy}
-                     okAction={updateTestament}
+                     okAction={updatePolicy}
                      okButtonText={t('policies.dialog.edit.button')}
-                     error={testamentError}
+                     error={policyError}
                      dialogItemState={dialogItemState}>
             <PolicyDialogContent/>
         </BasicDialog>

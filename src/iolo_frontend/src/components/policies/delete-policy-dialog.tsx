@@ -15,9 +15,9 @@ import {Trans, useTranslation} from "react-i18next";
 export default function DeletePolicyDialog() {
     const dispatch = useAppDispatch();
     const { t } = useTranslation();
-    const showDeleteTestamentDialog: boolean = useSelector(selectShowDeletePolicyDialog);
+    const showDeletePolicyDialog: boolean = useSelector(selectShowDeletePolicyDialog);
     const dialogItem: UiPolicyResponse = useSelector(selectPolicyDialogItem);
-    const testamentError = useSelector(selectPolicyError);
+    const policyError = useSelector(selectPolicyError);
     const dialogItemState = useSelector(selectPolicyDialogItemState);
 
     const handleClose = () => {
@@ -28,19 +28,19 @@ export default function DeletePolicyDialog() {
         dispatch(policiesActions.cancelDeletePolicy())
     }
 
-    const deleteTestament = async () => {
+    const deletePolicy = async () => {
         dispatch(deletePolicyThunk(dialogItem.id));
     }
 
     return (
         <BasicDialog  title={t('policies.dialog.delete.title')}
                       leadText={<Trans i18nKey="policies.dialog.delete.text" values={{policy: dialogItem.name}} />}
-                      isOpen={showDeleteTestamentDialog}
+                      isOpen={showDeletePolicyDialog}
                       handleClose={handleClose}
                       cancelAction={cancelDeletePolicy}
-                      okAction={deleteTestament}
+                      okAction={deletePolicy}
                       okButtonText={t('policies.dialog.delete.button')}
-                      error={testamentError}
+                      error={policyError}
                       dialogItemState={dialogItemState}>
         </BasicDialog>
     );

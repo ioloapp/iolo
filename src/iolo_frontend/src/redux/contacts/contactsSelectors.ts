@@ -2,7 +2,7 @@ import {RootState} from "../store";
 
 export const selectContacts = (state: RootState)  => state.contacts.contactsList;
 
-export const selectContactsListState = (state: RootState)  => state.contacts.loadingState;
+export const selectContactListState = (state: RootState)  => state.contacts.loadingState;
 
 export const selectShowAddContactsDialog = (state: RootState)  => state.contacts.showAddDialog;
 

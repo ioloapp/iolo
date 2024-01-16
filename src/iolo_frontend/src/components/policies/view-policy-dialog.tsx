@@ -18,8 +18,8 @@ import {useTranslation} from "react-i18next";
 export default function ViewPolicyDialog() {
     const dispatch = useAppDispatch();
     const { t } = useTranslation();
-    const showViewTestamentDialog = useSelector(selectShowViewPolicyDialog);
-    const testamentError = useSelector(selectPolicyError);
+    const showViewPolicyDialog = useSelector(selectShowViewPolicyDialog);
+    const policyError = useSelector(selectPolicyError);
     const dialogItemState = useSelector(selectPolicyDialogItemState);
     const dialogItem: UiPolicyResponse = useSelector(selectPolicyDialogItem);
 
@@ -28,16 +28,16 @@ export default function ViewPolicyDialog() {
     };
 
     const viewSecret = (value: SelectListItem) => {
-        dispatch(getSecretInViewModeThunk({secretId: value.id, testamentId: dialogItem.id}))
+        dispatch(getSecretInViewModeThunk({secretId: value.id, policyId: dialogItem.id}))
     }
 
 
     return (
         <BasicDialog title={t('policies.dialog.view.title')}
                      leadText={t('policies.dialog.view.text')}
-                     isOpen={showViewTestamentDialog}
+                     isOpen={showViewPolicyDialog}
                      handleClose={handleClose}
-                     error={testamentError}
+                     error={policyError}
                      dialogItemState={dialogItemState}>
             <PolicyDialogContent readonly={true} viewSecret={viewSecret}/>
         </BasicDialog>

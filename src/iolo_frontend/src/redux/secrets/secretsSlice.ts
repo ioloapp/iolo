@@ -32,15 +32,15 @@ export const getSecretThunk = createAsyncThunk<UiSecret, string, {
 );
 export interface GetSecret {
     secretId: string,
-    testamentId?: string
+    policyId?: string
 }
 export const getSecretInViewModeThunk = createAsyncThunk<UiSecret, GetSecret, {
     state: RootState
 }>('secrets/getView',
     async (getSecret: GetSecret, {rejectWithValue}) => {
         try {
-            if (getSecret.testamentId) {
-                return await ioloService.getSecretAsHeir(getSecret.secretId, getSecret.testamentId);
+            if (getSecret.policyId) {
+                return await ioloService.getSecretAsBeneficiary(getSecret.secretId, getSecret.policyId);
             } else {
                 return await ioloService.getSecret(getSecret.secretId);
             }

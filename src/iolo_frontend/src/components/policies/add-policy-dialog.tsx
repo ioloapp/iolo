@@ -19,9 +19,9 @@ import {useTranslation} from "react-i18next";
 export default function AddPolicyDialog() {
     const dispatch = useAppDispatch();
     const { t } = useTranslation();
-    const showAddTestamentDialog = useSelector(selectShowAddPolicyDialog);
+    const showAddPolicyDialog = useSelector(selectShowAddPolicyDialog);
     const dialogItem: UiPolicyResponse = useSelector(selectPolicyDialogItem);
-    const testamentError = useSelector(selectPolicyError);
+    const policyError = useSelector(selectPolicyError);
     const dialogItemState = useSelector(selectPolicyDialogItemState);
     const currentUser = useSelector(selectCurrentUser);
 
@@ -37,10 +37,10 @@ export default function AddPolicyDialog() {
         dispatch(policiesActions.cancelAddPolicy());
     }
 
-    const createTestament = async () => {
+    const createPolicy = async () => {
         dispatch(addPolicyThunk({
             ...dialogItem,
-            testator: currentUser,
+            owner: currentUser,
             secrets: dialogItem.secrets.map(s => s.id)
         } as UiPolicy));
     }
@@ -56,12 +56,12 @@ export default function AddPolicyDialog() {
             </Fab>
             <BasicDialog title={t('policies.dialog.add.title')}
                          leadText={t('policies.dialog.add.text')}
-                         isOpen={showAddTestamentDialog}
+                         isOpen={showAddPolicyDialog}
                          handleClose={handleClose}
                          cancelAction={cancelAddPolicy}
-                         okAction={createTestament}
+                         okAction={createPolicy}
                          okButtonText={t('policies.dialog.add.button')}
-                         error={testamentError}
+                         error={policyError}
                          dialogItemState={dialogItemState}>
                 <PolicyDialogContent/>
             </BasicDialog>

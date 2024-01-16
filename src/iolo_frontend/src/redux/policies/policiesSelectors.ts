@@ -2,7 +2,7 @@ import {RootState} from "../store";
 
 export const selectPolicies = (state: RootState)  => state.policies.policyList;
 
-export const selectPoliciesListState = (state: RootState)  => state.policies.loadingState;
+export const selectPolicyListState = (state: RootState)  => state.policies.loadingState;
 
 export const selectShowAddPolicyDialog = (state: RootState)  => state.policies.showAddDialog;
 

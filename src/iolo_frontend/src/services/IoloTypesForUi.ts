@@ -23,17 +23,17 @@ export interface UiPolicyListEntry {
     id?: string,
     name?: string,
     testator?: UiUser,
-    role?: UiTestamentListEntryRole
+    role?: UiPolicyListEntryRole
     conditionStatus?: boolean,
 }
 
 export interface UiPolicy {
     id?: string,
     name?: string,
-    testator?: UiUser,
-    role?: UiTestamentListEntryRole
+    owner?: UiUser,
+    role?: UiPolicyListEntryRole
     secrets?: string[],
-    heirs?: Array<UiUser>,
+    beneficiaries?: Array<UiUser>,
     conditions?: Array<UiCondition>,
     conditionsStatus?: boolean,
     conditionsLogicalOperator?: LogicalOperator,
@@ -44,10 +44,10 @@ export interface UiPolicy {
 export interface UiPolicyResponse {
     id?: string,
     name?: string,
-    testator?: UiUser,
-    role?: UiTestamentListEntryRole
+    owner?: UiUser,
+    role?: UiPolicyListEntryRole
     secrets?: UiSecretListEntry[],
-    heirs?: Array<UiUser>,
+    beneficiaries?: Array<UiUser>,
     conditions?: Array<UiCondition>,
     conditionsStatus?: boolean,
     conditionsLogicalOperator?: LogicalOperator,
@@ -88,7 +88,7 @@ export interface UiValidator {
     user: UiUser
 }
 
-export enum UiTestamentListEntryRole {
+export enum UiPolicyListEntryRole {
     Testator = "Testator",
     Heir = "Heir",
     Validator = "Validator",

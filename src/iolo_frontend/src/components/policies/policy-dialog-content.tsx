@@ -14,36 +14,36 @@ import {useTranslation} from "react-i18next";
 import {Conditions} from "../conditions/conditions";
 
 
-export interface TestamentDialogContentProps {
+export interface PolicyDialogContentProps {
     viewSecret?: (value: SelectListItem) => any;
     readonly?: boolean;
 }
 
-interface SelectedHeir extends SelectListItem, UiUser {
+interface SelectedBeneficiary extends SelectListItem, UiUser {
 }
 
 interface SelectedSecret extends SelectListItem, UiSecretListEntry {
 }
 
-export const PolicyDialogContent: FC<TestamentDialogContentProps> = ({readonly, viewSecret}) => {
+export const PolicyDialogContent: FC<PolicyDialogContentProps> = ({readonly, viewSecret}) => {
     const dispatch = useAppDispatch();
     const { t } = useTranslation();
     const dialogItem: UiPolicyResponse = useSelector(selectPolicyDialogItem);
     const groupedSecretList = useSelector(selectGroupedSecrets);
-    const heirsList = useSelector(selectContacts);
+    const contacts = useSelector(selectContacts);
     const [selectedSecrets, setSelectedSecrets] = React.useState<SelectedSecret[]>([]);
-    const [selectedHeirs, setSelectedHeirs] = React.useState<SelectedHeir[]>([]);
+    const [selectedContacts, setSelectedContacts] = React.useState<SelectedBeneficiary[]>([]);
 
     useEffect(() => {
         if (readonly){
             setSelectedSecrets(dialogItem.secrets);
-            setSelectedHeirs(dialogItem.heirs);
+            setSelectedContacts(dialogItem.beneficiaries);
         } else {
-            const selectedHeirs = heirsList.map(h => {
-                const heir = dialogItem.heirs.find(dh => dh.id === h.id);
+            const contactsSelection = contacts.map(h => {
+                const heir = dialogItem.beneficiaries.find(dh => dh.id === h.id);
                 return heir ? {...h, selected: true} : {...h, selected: false};
             })
-            setSelectedHeirs(selectedHeirs)
+            setSelectedContacts(contactsSelection)
             const selectedSecrets = [...groupedSecretList.passwordList, ...groupedSecretList.notesList, ...groupedSecretList.documentsList, ...groupedSecretList.othersList].map(s => {
                 const secret = dialogItem.secrets.find(ds => ds.id === s.id);
                 return secret ? {...s, selected: true} : {...s, selected: false};
@@ -52,8 +52,8 @@ export const PolicyDialogContent: FC<TestamentDialogContentProps> = ({readonly, 
         }
     }, [dialogItem]);
 
-    const updateTestamentToAdd = (testament: UiPolicyResponse) => {
-        dispatch(policiesActions.updateDialogItem(testament))
+    const updatePolicyToAdd = (policyResponse: UiPolicyResponse) => {
+        dispatch(policiesActions.updateDialogItem(policyResponse))
     }
 
     const handleSecretChange = (secret: SelectedSecret) => {
@@ -75,22 +75,22 @@ export const PolicyDialogContent: FC<TestamentDialogContentProps> = ({readonly, 
         } as UiPolicyResponse))
     };
 
-    const handleHeirChange = (heir: SelectedHeir) => {
-        const oldState = dialogItem.heirs.find(s => s.id === heir.id);
-        let heirs: UiUser[];
+    const handleBeneficiaryChange = (heir: SelectedBeneficiary) => {
+        const oldState = dialogItem.beneficiaries.find(s => s.id === heir.id);
+        let beneficiaries: UiUser[];
         if (oldState) {
             //not selected
-            heirs = dialogItem.heirs.filter(s => s.id !== heir.id)
-            setSelectedHeirs(selectedHeirs.map(s => s.id !== heir.id ? s : {...s, selected: false}));
+            beneficiaries = dialogItem.beneficiaries.filter(s => s.id !== heir.id)
+            setSelectedContacts(selectedContacts.map(s => s.id !== heir.id ? s : {...s, selected: false}));
         }else{
             //selected
-            heirs = [...dialogItem.heirs, heir]
-            setSelectedHeirs(selectedHeirs.map(s => s.id !== heir.id ? s : {...s, selected: true}));
+            beneficiaries = [...dialogItem.beneficiaries, heir]
+            setSelectedContacts(selectedContacts.map(s => s.id !== heir.id ? s : {...s, selected: true}));
         }
         //Add
         dispatch(policiesActions.updateDialogItem({
             ...dialogItem,
-            heirs: heirs
+            beneficiaries: beneficiaries
         }))
     };
 
@@ -118,19 +118,19 @@ export const PolicyDialogContent: FC<TestamentDialogContentProps> = ({readonly, 
                     variant="standard"
                     value={dialogItem.name}
                     disabled={readonly}
-                    onChange={e => updateTestamentToAdd({
+                    onChange={e => updatePolicyToAdd({
                         ...dialogItem,
                         name: e.target.value
                     })}
                 />
             </FormControl>
             <FormControl fullWidth>
-                <Typography variant="body2">Secrets</Typography>
+                <Typography variant="body2">{t('policies.dialog.content.secrets')}</Typography>
                 <SelectList handleToggle={handleSecretChange} listItem={selectedSecrets} readonly={readonly} viewItem={viewSecret}/>
             </FormControl>
             <FormControl fullWidth>
-                <Typography variant="body2">Heirs</Typography>
-                <SelectList handleToggle={handleHeirChange} listItem={selectedHeirs} readonly={readonly}/>
+                <Typography variant="body2">{t('policies.dialog.content.beneficiaries')}</Typography>
+                <SelectList handleToggle={handleBeneficiaryChange} listItem={selectedContacts} readonly={readonly}/>
             </FormControl>
             <FormControl fullWidth>
                 <Conditions conditions={dialogItem.conditions} readonly={readonly} />

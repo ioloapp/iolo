@@ -6,8 +6,8 @@ import {
     UiCondition,
     UiPolicy,
     UiPolicyListEntry,
-    UiPolicyResponse,
-    UiTestamentListEntryRole
+    UiPolicyListEntryRole,
+    UiPolicyResponse
 } from "../../services/IoloTypesForUi";
 import {mapError} from "../../utils/errorMapper";
 
@@ -28,7 +28,7 @@ export const viewPolicyThunk = createAsyncThunk<UiPolicyResponse, UiPolicy, { st
     'policies/view',
     (policy, {rejectWithValue}) => {
         try {
-            if (policy.role === UiTestamentListEntryRole.Testator) {
+            if (policy.role === UiPolicyListEntryRole.Testator) {
                 return ioloService.getPolicyAsOwner(policy.id);
             } else {
                 return ioloService.getPolicyAsBeneficary(policy.id);
@@ -44,7 +44,7 @@ export const editPolicyThunk = createAsyncThunk<UiPolicyResponse, UiPolicy, { st
     'policies/edit',
      (policy, {rejectWithValue, getState}) => {
         try {
-            if (policy.role === UiTestamentListEntryRole.Testator) {
+            if (policy.role === UiPolicyListEntryRole.Testator) {
                 return ioloService.getPolicyAsOwner(policy.id);
             } else {
                 return ioloService.getPolicyAsBeneficary(policy.id);

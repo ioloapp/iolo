@@ -5,12 +5,13 @@ import {useSelector} from "react-redux";
 import {selectCurrentUser} from "../../redux/user/userSelectors";
 import {QRCodeSVG} from "qrcode.react";
 import {useTranslation} from "react-i18next";
+import {ROUTE_POLICIES} from "../../components/layout/routes";
 
 export function ShareId() {
     const currentUser = useSelector(selectCurrentUser);
     const { t } = useTranslation();
     const hostname = process.env.NODE_ENV === 'production' ? 'https://' + process.env.IOLO_FRONTEND_CANISTER_ID + '.icp0.io' : 'http://localhost:8080';
-    let url = hostname + '/heirs?action=addHeirWithDeepLink&principalType=' + currentUser.type + '&principalId=' + currentUser.id;
+    let url = hostname + ROUTE_POLICIES + '?action=addHeirWithDeepLink&principalType=' + currentUser.type + '&principalId=' + currentUser.id;
     if (currentUser.name) {
         url += '&name=' + currentUser.name;
     }

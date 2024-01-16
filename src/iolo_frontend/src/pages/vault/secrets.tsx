@@ -14,7 +14,7 @@ import NotesIcon from '@mui/icons-material/Notes';
 import DescriptionIcon from '@mui/icons-material/Description';
 import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 import {useSelector} from "react-redux";
-import {selectGroupedSecrets, selectSecretsError, selectSecretsListState} from "../../redux/secrets/secretsSelectors";
+import {selectGroupedSecrets, selectSecretListState, selectSecretsError} from "../../redux/secrets/secretsSelectors";
 import AddSecretDialog from "../../components/secret/add-secret-dialog";
 import {UiSecretListEntry} from "../../services/IoloTypesForUi";
 import {SecretItem} from "./secret-item";
@@ -30,7 +30,7 @@ export function Secrets() {
     const dispatch = useAppDispatch();
     const { t } = useTranslation();
     const groupedSecretList = useSelector(selectGroupedSecrets);
-    const secretsListState = useSelector(selectSecretsListState);
+    const secretsListState = useSelector(selectSecretListState);
     const secretsListError = useSelector(selectSecretsError);
 
     const [filteredSecretList, setFilteredSecretList] = useState(groupedSecretList)
