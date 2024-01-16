@@ -22,7 +22,7 @@ export interface UiSecret extends UiSecretListEntry {
 export interface UiPolicyListEntry {
     id?: string,
     name?: string,
-    testator?: UiUser,
+    owner?: UiUser,
     role?: UiPolicyListEntryRole
     conditionStatus?: boolean,
 }

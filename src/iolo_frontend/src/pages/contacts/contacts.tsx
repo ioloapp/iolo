@@ -62,7 +62,7 @@ export function Contacts() {
         if (searchString.length === 0) {
             setFilteredContacts(contacts);
         } else {
-            setFilteredContacts(contacts.filter(s => s.name.toLowerCase().indexOf(searchString) >= 0 || s.email.toLowerCase().indexOf(searchString) >= 0))
+            setFilteredContacts(contacts.filter(s => s.name?.toLowerCase().indexOf(searchString) >= 0 || s.email?.toLowerCase().indexOf(searchString) >= 0))
         }
     }
 

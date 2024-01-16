@@ -305,7 +305,7 @@ class IoloService {
                 return {
                     id: item.id,
                     name: item.name?.length > 0 ? item.name[0] : undefined,
-                    testator: { id: item.testator?.toString()},
+                    owner: { id: item.testator?.toString()},
                     role: UiPolicyListEntryRole.Testator,
                     conditionStatus: item.condition_status,
                 }
@@ -319,7 +319,7 @@ class IoloService {
                 return {
                     id: item.id,
                     name: item.name?.length > 0 ? item.name[0] : undefined,
-                    testator: { id: item.testator?.toString()},
+                    owner: { id: item.testator?.toString()},
                     role: UiPolicyListEntryRole.Heir,
                     conditionStatus: item.condition_status,
                 }
