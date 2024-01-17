@@ -35,7 +35,7 @@ export function Login() {
                             justifyContent: 'center',
                         }}
                     >
-                        <CircularProgress/>
+                        <CircularProgress color="secondary"/>
                     </Box>
                 }
                 {loadingState !== 'pending' && <Box

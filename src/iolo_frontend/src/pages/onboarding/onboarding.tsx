@@ -157,7 +157,7 @@ export const Onboarding = () => {
                     sx={{color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1}}
                     open={loadingIconIsOpen}
                 >
-                    <CircularProgress color="inherit"/>
+                    <CircularProgress color="secondary"/>
                 </Backdrop>
             </>
         </PageLayout>

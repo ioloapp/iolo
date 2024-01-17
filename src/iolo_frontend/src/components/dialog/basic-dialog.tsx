@@ -31,7 +31,7 @@ export const BasicDialog = ({title, leadText, isOpen, handleClose, cancelAction,
 
     return (
         <Dialog open={isOpen} onClose={handleClose}>
-            {loading && <div className="popup-loading"><div className="popup-loader"><CircularProgress/></div></div>}
+            {loading && <div className="popup-loading"><div className="popup-loader"><CircularProgress color="secondary"/></div></div>}
             <DialogTitle className="popup-title">{title}</DialogTitle>
             <DialogContent>
                 <DialogContentText>{leadText}</DialogContentText>
