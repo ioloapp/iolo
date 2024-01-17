@@ -1,10 +1,21 @@
-use std::str::FromStr;
+use std::cell::RefCell;
+use std::{str::FromStr, vec};
 
-use candid::CandidType;
+use crate::common::error::SmartVaultErr;
+use crate::common::uuid::UUID;
+use crate::policies::policy::{Policy, PolicyID};
+use crate::policies::policy_registry::PolicyRegistryForBeneficiaries;
+use crate::smart_vaults::smart_vault::{
+    POLICY_REGISTRY_FOR_BENEFICIARIES, USER_STORE, USER_VAULT_STORE,
+};
+use crate::user_vaults::user_vault_store::UserVaultStore;
+use crate::users::user_store::UserStore;
+use candid::{CandidType, Principal};
 use serde::{Deserialize, Serialize};
 
 use super::vetkd_types::{
-    CanisterId, VetKDCurve, VetKDKeyId,
+    CanisterId, VetKDCurve, VetKDEncryptedKeyReply, VetKDEncryptedKeyRequest, VetKDKeyId,
+    VetKDPublicKeyReply, VetKDPublicKeyRequest,
 };
 
 const VETKD_SYSTEM_API_CANISTER_ID: &str = "cr2gw-4iaaa-aaaal-qcrda-cai";
