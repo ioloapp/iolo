@@ -35,12 +35,27 @@ pub struct UserVault {
 
 impl Default for UserVault {
     fn default() -> Self {
-        Self::new()
+        Self::new_sync()
     }
 }
 
 impl UserVault {
-    pub fn new() -> Self {
+    pub async fn new() -> Self {
+        let now: u64 = time::get_current_time();
+        let uuid = UUID::new_random().await;
+        Self {
+            id: uuid,
+            date_created: now,
+            date_modified: now,
+            secrets: BTreeMap::new(),
+            secret_ids: Vec::new(),
+            key_box: BTreeMap::new(),
+            testaments: BTreeMap::new(),
+            heirs: BTreeMap::new(),
+        }
+    }
+
+    pub fn new_sync() -> Self {
         let now: u64 = time::get_current_time();
         let uuid = UUID::new();
         Self {
@@ -92,6 +107,7 @@ impl UserVault {
             .ok_or_else(|| SmartVaultErr::SecretDoesNotExist(secret_id.to_string()))
     }
 
+    // TODO: remove this function eventually. it is not required anymore. we use the add_secret_id
     pub fn add_secret(&mut self, secret: Secret) -> Result<Secret, SmartVaultErr> {
         let sid = secret.id().clone();
         if self.secrets.contains_key(secret.id()) {
@@ -101,6 +117,16 @@ impl UserVault {
         self.secrets.insert(secret.id().clone(), secret);
         self.date_modified = time::get_current_time();
         Ok(self.secrets.get(&sid).unwrap().clone())
+    }
+
+    pub fn add_secret_id(&mut self, secret_id: UUID) -> Result<(), SmartVaultErr> {
+        if self.secret_ids.contains(&secret_id) {
+            return Err(SmartVaultErr::SecretAlreadyExists(secret_id.to_string()));
+        }
+
+        self.secret_ids.push(secret_id);
+        self.date_modified = time::get_current_time();
+        Ok(())
     }
 
     pub fn remove_secret(&mut self, secret_id: &str) -> Result<(), SmartVaultErr> {
@@ -226,12 +252,12 @@ mod tests {
     use super::*;
     use std::thread;
 
-    #[test]
-    fn utest_user_vault_create_uservault() {
+    #[tokio::test]
+    async fn utest_user_vault_create_uservault() {
         // Create empty user_vault
         let before = time::get_current_time();
         thread::sleep(std::time::Duration::from_millis(100)); // Sleep 100 milliseconds to ensure that user_vault has a different creation date
-        let user_vault: UserVault = UserVault::new();
+        let user_vault: UserVault = UserVault::new().await;
 
         // Check dates
         assert!(
@@ -255,7 +281,7 @@ mod tests {
         );
 
         // Create 2nd user_vault
-        let user_vault_2: UserVault = UserVault::new();
+        let user_vault_2: UserVault = UserVault::new().await;
         assert_ne!(
             user_vault.id(),
             user_vault_2.id(),
@@ -265,10 +291,10 @@ mod tests {
         );
     }
 
-    #[test]
-    fn utest_user_vault_add_secret() {
+    #[tokio::test]
+    async fn utest_user_vault_add_secret() {
         // Create empty user_vault
-        let mut user_vault: UserVault = UserVault::new();
+        let mut user_vault: UserVault = UserVault::new().await;
 
         // Create secret stuff...
         let _secret_name = String::from("my-first-secret");
@@ -347,10 +373,10 @@ mod tests {
         );
     }
 
-    #[test]
-    fn utest_user_vault_update_secret() {
+    #[tokio::test]
+    async fn utest_user_vault_update_secret() {
         // Create empty user_vault
-        let mut user_vault: UserVault = UserVault::new();
+        let mut user_vault: UserVault = UserVault::new().await;
 
         // Add secret to user_vault
         let secret_name = String::from("my-first-secret");
@@ -396,10 +422,10 @@ mod tests {
         );
     }
 
-    #[test]
-    fn utest_user_vault_remove_secret() {
+    #[tokio::test]
+    async fn utest_user_vault_remove_secret() {
         // Create empty user_vault
-        let mut user_vault: UserVault = UserVault::new();
+        let mut user_vault: UserVault = UserVault::new().await;
 
         // Add secret to user_vault
         let secret_name = String::from("my-first-secret");

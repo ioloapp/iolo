@@ -17,7 +17,7 @@ pub struct UserStore {
     // be serialized/deserialized in upgrades, so we tell serde to skip it.
     #[serde(skip, default = "init_stable_data")]
     // users: StableBTreeMap<u128, u128, Memory>,
-    users: StableBTreeMap<PrincipalStorable, User, Memory>,
+    pub users: StableBTreeMap<PrincipalStorable, User, Memory>,
 }
 
 fn init_stable_data() -> StableBTreeMap<PrincipalStorable, User, Memory> {

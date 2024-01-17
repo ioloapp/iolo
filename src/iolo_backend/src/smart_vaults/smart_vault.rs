@@ -9,7 +9,7 @@ use crate::policies::policy::TestamentResponse;
 use crate::secrets::ii_secrets::add_secret_impl;
 use crate::user_vaults::user_vault::UserVaultID;
 use crate::user_vaults::user_vault_store::UserVaultStore;
-use crate::users::ii_users::create_user_impl;
+use crate::users::ii_users::{create_user_impl, delete_user_impl, get_user};
 use crate::users::user::{AddUserArgs, User};
 use crate::users::user_store::UserStore;
 use crate::utils::caller::get_caller;
@@ -42,32 +42,13 @@ thread_local! {
 }
 
 #[ic_cdk_macros::update]
-pub fn create_user(args: AddUserArgs) -> Result<User, SmartVaultErr> {
-    // we strictyl separate interface from logic
-    create_user_impl(args, &get_caller())
-}
-
-pub fn get_user(user: &Principal) -> Result<User, SmartVaultErr> {
-    // get current user
-    USER_STORE.with(|ur: &RefCell<UserStore>| -> Result<User, SmartVaultErr> {
-        let user_store = ur.borrow();
-        match user_store.get_user(&user) {
-            Ok(u) => Ok(u.clone()),
-            Err(e) => Err(e),
-        }
-    })
+pub async fn create_user(args: AddUserArgs) -> Result<User, SmartVaultErr> {
+    create_user_impl(args, &get_caller()).await
 }
 
 #[ic_cdk_macros::query]
 pub fn get_current_user() -> Result<User, SmartVaultErr> {
-    // get current user
-    USER_STORE.with(|ur: &RefCell<UserStore>| -> Result<User, SmartVaultErr> {
-        let user_store = ur.borrow();
-        match user_store.get_user(&get_caller()) {
-            Ok(u) => Ok(u.clone()),
-            Err(e) => Err(e),
-        }
-    })
+    get_user(&get_caller())
 }
 
 #[ic_cdk_macros::update]
@@ -103,20 +84,7 @@ pub fn update_user_login_date() -> Result<User, SmartVaultErr> {
 
 #[ic_cdk_macros::update]
 pub fn delete_user() -> Result<(), SmartVaultErr> {
-    let principal = get_caller();
-    let user_vault_id: UUID = get_vault_id_for(principal)?;
-
-    USER_VAULT_STORE.with(|ms: &RefCell<UserVaultStore>| {
-        let mut master_vault = ms.borrow_mut();
-        master_vault.remove_user_vault(&user_vault_id);
-    });
-
-    // delete the user
-    USER_STORE.with(|ur: &RefCell<UserStore>| -> Result<User, SmartVaultErr> {
-        let mut user_store = ur.borrow_mut();
-        user_store.delete_user(&principal)
-    })?;
-    Ok(())
+    delete_user_impl(&get_caller())
 }
 
 #[ic_cdk_macros::update]

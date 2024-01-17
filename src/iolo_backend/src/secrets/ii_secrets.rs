@@ -4,6 +4,7 @@ use candid::Principal;
 
 use crate::{
     common::{error::SmartVaultErr, uuid::UUID},
+    secrets::secret::SecretSymmetricCryptoMaterial,
     smart_vaults::smart_vault::{get_vault_id_for, SECRET_STORE, USER_VAULT_STORE},
     user_vaults::user_vault_store::UserVaultStore,
 };
@@ -13,6 +14,15 @@ use super::{
     secret_store::SecretStore,
 };
 
+/*
+ * This is the implementation of the add_secret candid method exposed by the iolo backend.
+ * It adds a secret to the user vault by doing the following:
+ *
+ * 1. Generate a new UUID for the secret
+ * 2. Generate the secret and produce the decryption material
+ * 3. Add the secret to the secret store
+ * 4. Add the secret id to the user vault's secret id list
+ */
 pub async fn add_secret_impl(
     mut args: AddSecretArgs,
     caller: &Principal,
@@ -21,29 +31,43 @@ pub async fn add_secret_impl(
 
     // new: we generate a new UUID for the secret and overwrite it
     args.id = UUID::new_random().await.into();
-    let secret: Secret = args.clone().into();
 
-    // we add the secret to the secret store
-    let test = SECRET_STORE.with(
+    // we generate the secret and produce the decryption material
+    let secret: Secret = args.clone().into();
+    let decryption_material: SecretSymmetricCryptoMaterial = args.symmetric_crypto_material.clone();
+
+    // Add the secret to the secret store (secrets: StableBTreeMap<UUID, Secret, Memory>,)
+    SECRET_STORE.with(
         |secret_store_rc: &RefCell<SecretStore>| -> Result<Secret, SmartVaultErr> {
             let mut secret_store = secret_store_rc.borrow_mut();
-            secret_store.add(secret)
+            secret_store.add(secret.clone())
         },
-    );
+    )?;
 
-    // TODO: user_vault_store::add_user_secret_id() must be newly implemented
-
+    // add the secret id to the user vault
     USER_VAULT_STORE.with(
-        |ms: &RefCell<UserVaultStore>| -> Result<Secret, SmartVaultErr> {
+        |ms: &RefCell<UserVaultStore>| -> Result<UUID, SmartVaultErr> {
             let mut user_vault_store = ms.borrow_mut();
-            user_vault_store.add_user_secret(&user_vault_id, args)
+            user_vault_store.add_user_secret_by_id(
+                &user_vault_id,
+                &secret.id().clone().into(),
+                decryption_material,
+            )
         },
-    )
+    )?;
+
+    // the old way
+    // USER_VAULT_STORE.with(
+    //     |ms: &RefCell<UserVaultStore>| -> Result<Secret, SmartVaultErr> {
+    //         let mut user_vault_store = ms.borrow_mut();
+    //         user_vault_store.add_user_secret(&user_vault_id, args)
+    //     },
+    // )
+    Ok(secret)
 }
 
 #[cfg(test)]
 mod tests {
-    use std::cell::RefCell;
 
     use candid::Principal;
 
@@ -53,13 +77,13 @@ mod tests {
             ii_secrets::add_secret_impl,
             secret::{AddSecretArgs, SecretSymmetricCryptoMaterial},
         },
-        smart_vaults::smart_vault::{get_user, SECRET_STORE, USER_STORE, USER_VAULT_STORE},
-        user_vaults::user_vault_store::UserVaultStore,
-        users::{ii_users::create_user_impl, user::AddUserArgs, user_store::UserStore},
+        smart_vaults::smart_vault::USER_VAULT_STORE,
+        smart_vaults::smart_vault::{get_vault_id_for, SECRET_STORE},
+        users::{ii_users::create_user_impl, user::AddUserArgs},
     };
 
     #[tokio::test]
-    async fn sv_test_secret_lifecycle() {
+    async fn itest_secret_lifecycle() {
         // Create empty user_vault
         let principal = create_principal();
 
@@ -70,25 +94,7 @@ mod tests {
             email: None,
             user_type: None,
         };
-        let created_user = create_user_impl(aua, &principal).unwrap();
-        let fetched_user = get_user(&principal).unwrap();
-        assert_eq!(&created_user.id(), &fetched_user.id());
-        assert_eq!(&created_user.email, &fetched_user.email);
-
-        // Check if user vault exists
-        let user_vault_id: UUID = USER_STORE.with(|ur: &RefCell<UserStore>| {
-            let user_store = ur.borrow();
-            let user = user_store.get_user(&principal); //.unwrap();
-            assert!(user.is_ok());
-            user.unwrap().user_vault_id.unwrap()
-        });
-        USER_VAULT_STORE.with(|ms: &RefCell<UserVaultStore>| {
-            let user_vault_store = ms.borrow();
-            let uv = user_vault_store.get_user_vault(&user_vault_id);
-            assert!(uv.is_ok());
-            // user vault needs to be empty
-            assert!(uv.unwrap().secret_ids.is_empty());
-        });
+        let _new_user = create_user_impl(aua, &principal).await.unwrap();
 
         // Create Mock Secret
         let sscm: SecretSymmetricCryptoMaterial = SecretSymmetricCryptoMaterial {
@@ -121,10 +127,24 @@ mod tests {
             let secret = secret_store
                 .get(&UUID::from(added_secret.id().clone()))
                 .unwrap();
+            assert_eq!(secret.id(), added_secret.id());
             assert_eq!(secret.name(), added_secret.name());
             assert_eq!(secret.username().cloned(), added_secret.username().cloned());
             assert_eq!(secret.password().cloned(), added_secret.password().cloned());
         });
+
+        // check if the secret is in the users user vault
+        let user_vault_id = get_vault_id_for(principal.clone()).unwrap();
+        USER_VAULT_STORE.with(|user_vault_store_ref| {
+            let user_vault_store = user_vault_store_ref.borrow();
+            let user_vault = user_vault_store.get_user_vault(&user_vault_id).unwrap();
+            assert_eq!(user_vault.secret_ids.len(), 1);
+            assert_eq!(user_vault.secret_ids[0], added_secret.id().clone().into());
+        });
+
+        // dump_user_store();
+        // dump_user_vault_store();
+        // dump_secret_store();
     }
 
     fn create_principal() -> Principal {

@@ -16,7 +16,7 @@ pub struct SecretStore {
     // be serialized/deserialized in upgrades, so we tell serde to skip it.
     #[serde(skip, default = "init_stable_data")]
     // users: StableBTreeMap<u128, u128, Memory>,
-    secrets: StableBTreeMap<UUID, Secret, Memory>,
+    pub secrets: StableBTreeMap<UUID, Secret, Memory>,
 }
 
 fn init_stable_data() -> StableBTreeMap<UUID, Secret, Memory> {
@@ -53,13 +53,13 @@ impl SecretStore {
 
     pub fn add(&mut self, secret: Secret) -> Result<Secret, SmartVaultErr> {
         // TODO: DO WE REALLY WANT TO INSERT IF THE SECRET ALREADY EXISTS?
-        let secret_id = secret.id.clone();
+        let secret_id: UUID = secret.id().clone().into();
         let s = self
             .secrets
             .insert(secret_id.clone().into(), secret.clone());
         match s {
             Some(_) => {
-                return Err(SmartVaultErr::SecretAlreadyExists(secret_id));
+                return Err(SmartVaultErr::SecretAlreadyExists(secret_id.to_string()));
             }
             None => {
                 return Ok(secret);

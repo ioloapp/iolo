@@ -6,7 +6,7 @@ use crate::common::{error::SmartVaultErr, uuid::UUID};
 use crate::policies::conditions::Condition;
 use crate::policies::policy::{AddTestamentArgs, Policy, PolicyID};
 use crate::policies::policy_registry::{PolicyRegistryForHeirs, PolicyRegistryForValidators};
-use crate::secrets::secret::{AddSecretArgs, Secret};
+use crate::secrets::secret::{AddSecretArgs, Secret, SecretSymmetricCryptoMaterial};
 use crate::smart_vaults::smart_vault::{
     TESTAMENT_REGISTRY_FOR_HEIRS, TESTAMENT_REGISTRY_FOR_VALIDATORS,
 };
@@ -15,7 +15,7 @@ use crate::users::user::{AddUserArgs, User};
 
 #[derive(CandidType, Deserialize, Clone, Debug)]
 pub struct UserVaultStore {
-    user_vaults: BTreeMap<UUID, UserVault>,
+    pub user_vaults: BTreeMap<UUID, UserVault>,
 }
 
 impl Default for UserVaultStore {
@@ -39,8 +39,14 @@ impl UserVaultStore {
         self.user_vaults.contains_key(vault_id)
     }
 
-    pub fn create_user_vault(&mut self) -> UUID {
-        let new_user_vault = UserVault::new();
+    pub async fn create_and_add_user_vault(&mut self) -> UUID {
+        let new_user_vault = UserVault::new().await;
+        let new_user_vault_id = *new_user_vault.id();
+        self.user_vaults.insert(new_user_vault_id, new_user_vault);
+        new_user_vault_id
+    }
+
+    pub fn add_user_vault(&mut self, new_user_vault: UserVault) -> UUID {
         let new_user_vault_id = *new_user_vault.id();
         self.user_vaults.insert(new_user_vault_id, new_user_vault);
         new_user_vault_id
@@ -59,6 +65,7 @@ impl UserVaultStore {
         self.user_vaults.remove(id);
     }
 
+    // TODO: this is old. remove the function and rename the new one below to add_user_secret()
     pub fn add_user_secret(
         &mut self,
         vault_id: &UUID,
@@ -78,6 +85,27 @@ impl UserVaultStore {
             .insert(added_secret.id().clone(), decryption_material);
 
         Ok(added_secret)
+    }
+
+    // TODO: rename this to add_user_secret
+    pub fn add_user_secret_by_id(
+        &mut self,
+        vault_id: &UUID,
+        secret_id: &UUID,
+        decryption_material: SecretSymmetricCryptoMaterial,
+    ) -> Result<UUID, SmartVaultErr> {
+        if !self.user_vaults.contains_key(vault_id) {
+            return Err(SmartVaultErr::UserVaultDoesNotExist(vault_id.to_string()));
+        }
+
+        let user_vault = self.user_vaults.get_mut(vault_id).unwrap();
+        user_vault.add_secret_id(secret_id.clone())?;
+
+        user_vault
+            .key_box_mut()
+            .insert(secret_id.to_string().clone(), decryption_material);
+
+        Ok(secret_id.to_owned())
     }
 
     // Inserts a testament into a user's vault.
@@ -261,8 +289,8 @@ mod tests {
 
     use super::*;
 
-    #[test]
-    fn utest_new_user_vault_store() {
+    #[tokio::test]
+    async fn utest_new_user_vault_store() {
         let user_vault_store = UserVaultStore::new();
 
         assert_eq!(
@@ -273,15 +301,15 @@ mod tests {
         );
     }
 
-    #[test]
-    fn utest_create_user_vault() {
+    #[tokio::test]
+    async fn utest_create_user_vault() {
         let mut user_vault_store = UserVaultStore::new();
 
         // no user vault yet
         assert_eq!(user_vault_store.user_vaults().len(), 0);
 
         // Create a new empty user_vault
-        let new_uv_id = user_vault_store.create_user_vault();
+        let new_uv_id = user_vault_store.create_and_add_user_vault().await;
 
         // new user vault exists
         assert!(user_vault_store.get_user_vault(&new_uv_id).is_ok());
@@ -300,12 +328,12 @@ mod tests {
         );
     }
 
-    #[test]
-    fn utest_get_user_vault() {
+    #[tokio::test]
+    async fn utest_get_user_vault() {
         let mut user_vault_store = UserVaultStore::new();
 
         // Create a new empty user_vault
-        let new_uv_id = user_vault_store.create_user_vault();
+        let new_uv_id = user_vault_store.create_and_add_user_vault().await;
 
         // new user vault exists
         assert!(user_vault_store.get_user_vault(&new_uv_id).is_ok());
@@ -314,15 +342,15 @@ mod tests {
         assert!(user_vault_store.get_user_vault(&UUID::new()).is_err());
     }
 
-    #[test]
-    fn utest_remove_user_vault() {
+    #[tokio::test]
+    async fn utest_remove_user_vault() {
         let mut user_vault_store = UserVaultStore::new();
 
         // no user vault yet
         assert_eq!(user_vault_store.user_vaults().len(), 0);
 
         // Create a new empty user_vault
-        let new_uv_id = user_vault_store.create_user_vault();
+        let new_uv_id = user_vault_store.create_and_add_user_vault().await;
 
         // new user vault exists
         assert!(user_vault_store.get_user_vault(&new_uv_id).is_ok());
@@ -339,10 +367,10 @@ mod tests {
         assert_eq!(user_vault_store.user_vaults().len(), 0);
     }
 
-    #[test]
-    fn utest_user_vault_store() {
+    #[tokio::test]
+    async fn utest_user_vault_store() {
         let mut user_vault_store = UserVaultStore::new();
-        let new_uv_id = user_vault_store.create_user_vault();
+        let new_uv_id = user_vault_store.create_and_add_user_vault().await;
 
         // user vault must be empty
         assert_eq!(
