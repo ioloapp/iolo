@@ -1,14 +1,13 @@
 use std::collections::{BTreeMap, HashSet};
 
-use crate::policies::conditions::{Condition, Validator};
-use crate::secrets::secret::SecretListEntry;
-use crate::user_vaults::user_vault::KeyBox;
 use candid::{CandidType, Principal};
 use serde::{Deserialize, Serialize};
 
-use crate::utils::{caller::get_caller, time};
-
+use crate::policies::conditions::{Condition, Validator};
 use crate::secrets::secret::SecretID;
+use crate::secrets::secret::SecretListEntry;
+use crate::user_vaults::user_vault::KeyBox;
+use crate::utils::{caller::get_caller, time};
 
 pub type PolicyID = String;
 
@@ -18,14 +17,14 @@ pub struct Policy {
     name: Option<String>,
     date_created: u64,
     date_modified: u64,
-    testator: Principal,
-    heirs: HashSet<Principal>,
-    // References to the secrets contained in this testament
-    // Path to secret: testator -> testator uservault -> secret
+    owner: Principal,
+    beneficiaries: HashSet<Principal>,
+    // References to the secrets contained in this policy
+    // Path to secret: owner -> owner uservault -> secret
     secrets: HashSet<SecretID>,
     /// Contains all the keys required to decrypt the secrets:
     /// Every secret is encrypted by using dedicated key.
-    /// This key is itself encrypted using the Testament decryption key,
+    /// This key is itself encrypted using the policy decryption key,
     /// which itself is derived by vetkd.
     key_box: KeyBox,
     conditions_status: bool,
@@ -40,10 +39,10 @@ pub enum LogicalOperator {
 }
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
-pub struct AddTestamentArgs {
+pub struct AddPolicyArgs {
     pub id: String,
     name: Option<String>,
-    heirs: HashSet<Principal>,
+    beneficiaries: HashSet<Principal>,
     secrets: HashSet<SecretID>,
     key_box: KeyBox,
     condition_logical_operator: LogicalOperator,
@@ -51,19 +50,19 @@ pub struct AddTestamentArgs {
 }
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone, PartialEq)]
-pub struct TestamentListEntry {
+pub struct PolicyListEntry {
     pub id: PolicyID,
     pub name: Option<String>,
-    pub testator: Principal,
+    pub owner: Principal,
     pub condition_status: bool,
 }
 
-impl From<Policy> for TestamentListEntry {
+impl From<Policy> for PolicyListEntry {
     fn from(t: Policy) -> Self {
-        TestamentListEntry {
+        PolicyListEntry {
             id: t.id().into(),
             name: t.name,
-            testator: t.testator.clone(),
+            owner: t.owner.clone(),
             condition_status: t.conditions_status,
         }
     }
@@ -77,8 +76,8 @@ impl Policy {
             name: None,
             date_created: now,
             date_modified: now,
-            testator: get_caller(),
-            heirs: HashSet::new(),
+            owner: get_caller(),
+            beneficiaries: HashSet::new(),
             secrets: HashSet::new(),
             key_box: BTreeMap::new(),
             conditions_status: false,
@@ -99,16 +98,16 @@ impl Policy {
         &self.date_modified
     }
 
-    pub fn testator(&self) -> &Principal {
-        &self.testator
+    pub fn owner(&self) -> &Principal {
+        &self.owner
     }
 
     pub fn name(&self) -> &Option<String> {
         &self.name
     }
 
-    pub fn heirs(&self) -> &HashSet<Principal> {
-        &self.heirs
+    pub fn beneficiaries(&self) -> &HashSet<Principal> {
+        &self.beneficiaries
     }
 
     pub fn secrets(&self) -> &HashSet<SecretID> {
@@ -131,15 +130,15 @@ impl Policy {
         self.conditions_status = status;
     }
     /// Returns whether the value was newly inserted. That is:
-    /// - If heirs did not previously contain this heir, true is returned.
-    /// - If heirs already contained this heir, false is returned, and the set is not modified.
+    /// - If beneficiaries did not previously contain this beneficiary, true is returned.
+    /// - If beneficiaries already contained this beneficiary, false is returned, and the set is not modified.
     ///   Original value is not replaced, and the value passed as argument is dropped.
-    pub fn add_heir(&mut self, heir: Principal) -> bool {
-        self.heirs.insert(heir)
+    pub fn add_beneficiary(&mut self, beneficiary: Principal) -> bool {
+        self.beneficiaries.insert(beneficiary)
     }
 
-    pub fn remove_heir(&mut self, heir: &Principal) -> bool {
-        self.heirs.remove(heir)
+    pub fn remove_beneficiary(&mut self, beneficiary: &Principal) -> bool {
+        self.beneficiaries.remove(beneficiary)
     }
 
     pub fn add_secret(&mut self, secret: SecretID) -> bool {
@@ -180,28 +179,28 @@ impl Policy {
     }
 }
 
-impl From<AddTestamentArgs> for Policy {
-    fn from(ata: AddTestamentArgs) -> Self {
-        let mut new_testament = Policy::new(ata.id);
-        new_testament.name = ata.name;
-        new_testament.heirs = ata.heirs;
-        new_testament.secrets = ata.secrets;
-        new_testament.key_box = ata.key_box;
-        new_testament.conditions = ata.conditions;
-        new_testament.conditions_logical_operator = ata.condition_logical_operator;
-        new_testament.conditions_status = false;
-        new_testament
+impl From<AddPolicyArgs> for Policy {
+    fn from(ata: AddPolicyArgs) -> Self {
+        let mut new_policy = Policy::new(ata.id);
+        new_policy.name = ata.name;
+        new_policy.beneficiaries = ata.beneficiaries;
+        new_policy.secrets = ata.secrets;
+        new_policy.key_box = ata.key_box;
+        new_policy.conditions = ata.conditions;
+        new_policy.conditions_logical_operator = ata.condition_logical_operator;
+        new_policy.conditions_status = false;
+        new_policy
     }
 }
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
-pub struct TestamentResponse {
+pub struct PolicyResponse {
     id: PolicyID,
     name: Option<String>,
     date_created: u64,
     date_modified: u64,
-    testator: Principal,
-    heirs: HashSet<Principal>,
+    owner: Principal,
+    beneficiaries: HashSet<Principal>,
     secrets: HashSet<SecretListEntry>,
     key_box: KeyBox,
     conditions_status: bool,
@@ -209,7 +208,7 @@ pub struct TestamentResponse {
     conditions: Vec<Condition>,
 }
 
-impl TestamentResponse {
+impl PolicyResponse {
     pub fn new(id: String) -> Self {
         let now: u64 = time::get_current_time();
         Self {
@@ -217,8 +216,8 @@ impl TestamentResponse {
             name: None,
             date_created: now,
             date_modified: now,
-            testator: get_caller(),
-            heirs: HashSet::new(),
+            owner: get_caller(),
+            beneficiaries: HashSet::new(),
             secrets: HashSet::new(),
             key_box: BTreeMap::new(),
             conditions: Vec::new(),
@@ -232,16 +231,16 @@ impl TestamentResponse {
     }
 }
 
-impl From<Policy> for TestamentResponse {
+impl From<Policy> for PolicyResponse {
     fn from(t: Policy) -> Self {
-        let mut new_testament = TestamentResponse::new(t.id);
-        new_testament.name = t.name;
-        new_testament.testator = t.testator;
-        new_testament.heirs = t.heirs;
-        new_testament.key_box = t.key_box;
-        new_testament.conditions = t.conditions;
-        new_testament.conditions_logical_operator = t.conditions_logical_operator;
-        new_testament.conditions_status = t.conditions_status;
-        new_testament
+        let mut new_policies = PolicyResponse::new(t.id);
+        new_policies.name = t.name;
+        new_policies.owner = t.owner;
+        new_policies.beneficiaries = t.beneficiaries;
+        new_policies.key_box = t.key_box;
+        new_policies.conditions = t.conditions;
+        new_policies.conditions_logical_operator = t.conditions_logical_operator;
+        new_policies.conditions_status = t.conditions_status;
+        new_policies
     }
 }

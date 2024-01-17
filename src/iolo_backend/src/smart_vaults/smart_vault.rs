@@ -1,25 +1,15 @@
-use candid::Principal;
-use ic_cdk::{post_upgrade, pre_upgrade, storage};
 use std::cell::RefCell;
+
+use candid::Principal;
+use ic_cdk::{post_upgrade, pre_upgrade};
 
 use crate::common::error::SmartVaultErr;
 use crate::common::uuid::UUID;
-use crate::policies::policy::TestamentResponse;
-
-use crate::secrets::ii_secrets::add_secret_impl;
+use crate::policies::policy_registry::{PolicyRegistryForBeneficiaries, PolicyRegistryForValidators};
+use crate::secrets::secret_store::SecretStore;
 use crate::user_vaults::user_vault::UserVaultID;
 use crate::user_vaults::user_vault_store::UserVaultStore;
-use crate::users::ii_users::{create_user_impl, delete_user_impl, get_user};
-use crate::users::user::{AddUserArgs, User};
 use crate::users::user_store::UserStore;
-use crate::utils::caller::get_caller;
-
-use crate::policies::policy::{AddTestamentArgs, Policy, PolicyID, TestamentListEntry};
-use crate::policies::policy_registry::{PolicyRegistryForHeirs, PolicyRegistryForValidators};
-use crate::secrets::secret::{
-    AddSecretArgs, Secret, SecretID, SecretListEntry, SecretSymmetricCryptoMaterial,
-};
-use crate::secrets::secret_store::SecretStore;
 
 thread_local! {
     // User vault store holding all the user vaults
@@ -31,11 +21,11 @@ thread_local! {
     // Secret Store
     pub static SECRET_STORE: RefCell<SecretStore> = RefCell::new(SecretStore::new());
 
-    // Testament Registry for heirs
-    pub static TESTAMENT_REGISTRY_FOR_HEIRS: RefCell<PolicyRegistryForHeirs> = RefCell::new(PolicyRegistryForHeirs::new());
+    // policy Registry for beneficiaries
+    pub static POLICY_REGISTRY_FOR_BENEFICIARIES: RefCell<PolicyRegistryForBeneficiaries> = RefCell::new(PolicyRegistryForBeneficiaries::new());
 
-    // Testament Registry for validators
-    pub static TESTAMENT_REGISTRY_FOR_VALIDATORS: RefCell<PolicyRegistryForValidators> = RefCell::new(PolicyRegistryForValidators::new());
+    // policy Registry for validators
+    pub static POLICY_REGISTRY_FOR_VALIDATORS: RefCell<PolicyRegistryForValidators> = RefCell::new(PolicyRegistryForValidators::new());
 
     // counter for the UUIDs
     pub static UUID_COUNTER: RefCell<u128>  = RefCell::new(1);
@@ -121,33 +111,33 @@ pub fn get_secret(sid: SecretID) -> Result<Secret, SmartVaultErr> {
 }
 
 #[ic_cdk_macros::query]
-pub fn get_secret_as_heir(sid: SecretID, testament_id: PolicyID) -> Result<Secret, SmartVaultErr> {
+pub fn get_secret_as_beneficiary(sid: SecretID, policy_id: PolicyID) -> Result<Secret, SmartVaultErr> {
     let principal = get_caller();
 
-    // Verify that heir belongs to testament
-    let result_tr = TESTAMENT_REGISTRY_FOR_HEIRS.with(
-        |tr: &RefCell<PolicyRegistryForHeirs>| -> Result<(PolicyID, Principal), SmartVaultErr> {
-            let testament_registry = tr.borrow();
-            testament_registry.get_testament_id_as_heir(principal, testament_id.clone())
+    // Verify that beneficiary belongs to policy
+    let result_pr = POLICY_REGISTRY_FOR_BENEFICIARIES.with(
+        |pr: &RefCell<PolicyRegistryForBeneficiaries>| -> Result<(PolicyID, Principal), SmartVaultErr> {
+            let policy_registry = pr.borrow();
+            policy_registry.get_policy_id_as_beneficiary(principal, policy_id.clone())
         },
     )?;
 
-    // Get user vault of testator
-    let user_vault_id: UUID = get_vault_id_for(result_tr.1)?;
+    // Get user vault of owner
+    let user_vault_id: UUID = get_vault_id_for(result_pr.1)?;
 
-    // Read testament
+    // Read policy
     let result_mv = USER_VAULT_STORE.with(
         |mv: &RefCell<UserVaultStore>| -> Result<Policy, SmartVaultErr> {
             mv.borrow()
                 .get_user_vault(&user_vault_id)?
-                .get_testament(&testament_id)
+                .get_policy(&policy_id)
                 .cloned()
         },
     )?;
 
-    // Check that heir is allowed to read testament
+    // Check that beneficiary is allowed to read policy
     if result_mv.conditions_status().clone() {
-        // Read secret in testator user vault
+        // Read secret in owner user vault
         USER_VAULT_STORE.with(
             |mv: &RefCell<UserVaultStore>| -> Result<Secret, SmartVaultErr> {
                 mv.borrow()
@@ -157,7 +147,7 @@ pub fn get_secret_as_heir(sid: SecretID, testament_id: PolicyID) -> Result<Secre
             },
         )
     } else {
-        Err(SmartVaultErr::InvalidTestamentCondition)
+        Err(SmartVaultErr::InvalidPolicyCondition)
     }
 }
 
@@ -210,73 +200,73 @@ pub fn get_secret_symmetric_crypto_material(
 }
 
 #[ic_cdk_macros::query]
-pub fn get_secret_symmetric_crypto_material_as_heir(
+pub fn get_secret_symmetric_crypto_material_as_beneficiary(
     secret_id: SecretID,
-    testament_id: PolicyID,
+    policy_id: PolicyID,
 ) -> Result<SecretSymmetricCryptoMaterial, SmartVaultErr> {
     let principal = get_caller();
 
-    // Verify that heir belongs to testament
-    let result_tr = TESTAMENT_REGISTRY_FOR_HEIRS.with(
-        |tr: &RefCell<PolicyRegistryForHeirs>| -> Result<(PolicyID, Principal), SmartVaultErr> {
-            let testament_registry = tr.borrow();
-            testament_registry.get_testament_id_as_heir(principal, testament_id.clone())
+    // Verify that beneficiary belongs to policy
+    let result_tr = POLICY_REGISTRY_FOR_BENEFICIARIES.with(
+        |tr: &RefCell<PolicyRegistryForBeneficiaries>| -> Result<(PolicyID, Principal), SmartVaultErr> {
+            let policy_registry = tr.borrow();
+            policy_registry.get_policy_id_as_beneficiary(principal, policy_id.clone())
         },
     )?;
 
-    // Get user vault of testator
+    // Get user vault of owner
     let user_vault_id: UUID = get_vault_id_for(result_tr.1)?;
 
-    // Read testament
+    // Read policy
     let result_mv = USER_VAULT_STORE.with(
         |mv: &RefCell<UserVaultStore>| -> Result<Policy, SmartVaultErr> {
             mv.borrow()
                 .get_user_vault(&user_vault_id)?
-                .get_testament(&testament_id)
+                .get_policy(&policy_id)
                 .cloned()
         },
     )?;
 
-    // Check that heir is allowed to read testament
+    // Check that beneficiary is allowed to read policy
     if result_mv.conditions_status().clone() {
-        // Read secret crypto material from testament
+        // Read secret crypto material from policy
 
         Ok(result_mv.key_box().get(&secret_id).unwrap().clone())
     } else {
-        Err(SmartVaultErr::InvalidTestamentCondition)
+        Err(SmartVaultErr::InvalidPolicyCondition)
     }
 }
 
 #[ic_cdk_macros::update]
-pub fn add_testament(args: AddTestamentArgs) -> Result<Policy, SmartVaultErr> {
+pub fn add_policy(args: AddPolicyArgs) -> Result<Policy, SmartVaultErr> {
     let principal = get_caller();
     let user_vault_id: UUID = get_vault_id_for(principal)?;
 
     USER_VAULT_STORE.with(
         |ms: &RefCell<UserVaultStore>| -> Result<Policy, SmartVaultErr> {
             let mut master_vault = ms.borrow_mut();
-            master_vault.add_user_testament(&user_vault_id, args)
+            master_vault.add_user_policy(&user_vault_id, args)
         },
     )
 }
 
 #[ic_cdk_macros::update]
-pub fn update_testament(t: Policy) -> Result<Policy, SmartVaultErr> {
+pub fn update_policy(policy: Policy) -> Result<Policy, SmartVaultErr> {
     let principal = get_caller();
     let user_vault_id: UUID = get_vault_id_for(principal)?;
 
     USER_VAULT_STORE.with(
         |ms: &RefCell<UserVaultStore>| -> Result<Policy, SmartVaultErr> {
             let mut master_vault = ms.borrow_mut();
-            master_vault.update_user_testament(&user_vault_id, t)
+            master_vault.update_user_policy(&user_vault_id, policy)
         },
     )
 }
 
 #[ic_cdk_macros::query]
-pub fn get_testament_as_testator(
-    testament_id: PolicyID,
-) -> Result<TestamentResponse, SmartVaultErr> {
+pub fn get_policy_as_owner(
+    policy_id: PolicyID,
+) -> Result<PolicyResponse, SmartVaultErr> {
     let principal = get_caller();
     let user_vault_id: UUID = get_vault_id_for(principal)?;
 
@@ -284,11 +274,11 @@ pub fn get_testament_as_testator(
         |mv: &RefCell<UserVaultStore>| -> Result<Policy, SmartVaultErr> {
             mv.borrow()
                 .get_user_vault(&user_vault_id)?
-                .get_testament(&testament_id)
+                .get_policy(&policy_id)
                 .cloned()
         },
     )?;
-    let mut testament_for_testator = TestamentResponse::from(result.clone());
+    let mut policy_for_owner = PolicyResponse::from(result.clone());
     for secret in result.secrets() {
         let result_mv_2 = USER_VAULT_STORE.with(
             |mv: &RefCell<UserVaultStore>| -> Result<Secret, SmartVaultErr> {
@@ -303,44 +293,44 @@ pub fn get_testament_as_testator(
             category: result_mv_2.category(),
             name: result_mv_2.name(),
         };
-        testament_for_testator.secrets().insert(secret_list_entry);
+        policy_for_owner.secrets().insert(secret_list_entry);
     }
-    Ok(testament_for_testator)
+    Ok(policy_for_owner)
 }
 
 #[ic_cdk_macros::query]
-pub fn get_testament_as_heir(testament_id: PolicyID) -> Result<TestamentResponse, SmartVaultErr> {
-    // Verify that heir belongs to testament
-    let result_tr = TESTAMENT_REGISTRY_FOR_HEIRS.with(
-        |tr: &RefCell<PolicyRegistryForHeirs>| -> Result<(PolicyID, Principal), SmartVaultErr> {
-            let testament_registry = tr.borrow();
-            testament_registry.get_testament_id_as_heir(get_caller(), testament_id.clone())
+pub fn get_policy_as_beneficiary(policy_id: PolicyID) -> Result<PolicyResponse, SmartVaultErr> {
+    // Verify that beneficiary belongs to policy
+    let result_pr = POLICY_REGISTRY_FOR_BENEFICIARIES.with(
+        |pr: &RefCell<PolicyRegistryForBeneficiaries>| -> Result<(PolicyID, Principal), SmartVaultErr> {
+            let policy_registry = pr.borrow();
+            policy_registry.get_policy_id_as_beneficiary(get_caller(), policy_id.clone())
         },
     )?;
 
-    // Get user vault of testator
-    let user_vault_id: UUID = get_vault_id_for(result_tr.1)?;
+    // Get user vault of owner
+    let user_vault_id: UUID = get_vault_id_for(result_pr.1)?;
 
-    // Read testament
+    // Read policy
     let result_mv = USER_VAULT_STORE.with(
         |mv: &RefCell<UserVaultStore>| -> Result<Policy, SmartVaultErr> {
             mv.borrow()
                 .get_user_vault(&user_vault_id)?
-                .get_testament(&testament_id)
+                .get_policy(&policy_id)
                 .cloned()
         },
     )?;
 
-    // Check that heir is allowed to read testament
+    // Check that beneficiary is allowed to read policy
     if result_mv.conditions_status().clone() {
-        // Get more secret data for heirs...
-        let testator_vault_id = get_vault_id_for(*result_mv.testator())?;
-        let mut testament_for_heir = TestamentResponse::from(result_mv.clone());
+        // Get more secret data for beneficiary...
+        let owner_vault_id = get_vault_id_for(*result_mv.owner())?;
+        let mut policy_for_beneficiary = PolicyResponse::from(result_mv.clone());
         for secret in result_mv.secrets() {
             let result_mv_2 = USER_VAULT_STORE.with(
                 |mv: &RefCell<UserVaultStore>| -> Result<Secret, SmartVaultErr> {
                     mv.borrow()
-                        .get_user_vault(&testator_vault_id)?
+                        .get_user_vault(&owner_vault_id)?
                         .get_secret(secret)
                         .cloned()
                 },
@@ -350,106 +340,106 @@ pub fn get_testament_as_heir(testament_id: PolicyID) -> Result<TestamentResponse
                 category: result_mv_2.category(),
                 name: result_mv_2.name(),
             };
-            testament_for_heir.secrets().insert(secret_list_entry);
+            policy_for_beneficiary.secrets().insert(secret_list_entry);
         }
-        Ok(testament_for_heir)
+        Ok(policy_for_beneficiary)
     } else {
-        Err(SmartVaultErr::InvalidTestamentCondition)
+        Err(SmartVaultErr::InvalidPolicyCondition)
     }
 }
 
 #[ic_cdk_macros::query]
-pub fn get_testament_list_as_heir() -> Result<Vec<TestamentListEntry>, SmartVaultErr> {
-    let result_tr = TESTAMENT_REGISTRY_FOR_HEIRS.with(
-        |tr: &RefCell<PolicyRegistryForHeirs>| -> Vec<(PolicyID, Principal)> {
-            let testament_registry = tr.borrow();
-            testament_registry.get_testament_ids_as_heir(get_caller())
+pub fn get_policy_list_as_beneficiary() -> Result<Vec<PolicyListEntry>, SmartVaultErr> {
+    let result_pr = POLICY_REGISTRY_FOR_BENEFICIARIES.with(
+        |pr: &RefCell<PolicyRegistryForBeneficiaries>| -> Vec<(PolicyID, Principal)> {
+            let policy_registry = pr.borrow();
+            policy_registry.get_policy_ids_as_beneficiary(get_caller())
         },
     );
 
     let mut response = Vec::new();
-    for item in result_tr {
+    for item in result_pr {
         let user_vault_id: UUID = get_vault_id_for(item.1.clone())?;
         let result_mv = USER_VAULT_STORE.with(
             |mv: &RefCell<UserVaultStore>| -> Result<Policy, SmartVaultErr> {
                 mv.borrow()
                     .get_user_vault(&user_vault_id)?
-                    .get_testament(&item.0)
+                    .get_policy(&item.0)
                     .cloned()
             },
         )?;
-        let entry = TestamentListEntry::from(result_mv);
+        let entry = PolicyListEntry::from(result_mv);
         response.push(entry)
     }
     Ok(response)
 }
 
 #[ic_cdk_macros::query]
-pub fn get_testament_list_as_validator() -> Result<Vec<TestamentListEntry>, SmartVaultErr> {
-    let result_tr = TESTAMENT_REGISTRY_FOR_VALIDATORS.with(
-        |tr: &RefCell<PolicyRegistryForValidators>| -> Vec<(PolicyID, Principal)> {
-            let testament_registry = tr.borrow();
-            testament_registry.get_testament_ids_as_validator(get_caller())
+pub fn get_policy_list_as_validator() -> Result<Vec<PolicyListEntry>, SmartVaultErr> {
+    let result_pr = POLICY_REGISTRY_FOR_VALIDATORS.with(
+        |pr: &RefCell<PolicyRegistryForValidators>| -> Vec<(PolicyID, Principal)> {
+            let policy_registry = pr.borrow();
+            policy_registry.get_policy_ids_as_validator(get_caller())
         },
     );
 
     let mut response = Vec::new();
-    for item in result_tr {
+    for item in result_pr {
         let user_vault_id: UUID = get_vault_id_for(item.1.clone())?;
         let result_mv = USER_VAULT_STORE.with(
             |mv: &RefCell<UserVaultStore>| -> Result<Policy, SmartVaultErr> {
                 mv.borrow()
                     .get_user_vault(&user_vault_id)?
-                    .get_testament(&item.0)
+                    .get_policy(&item.0)
                     .cloned()
             },
         )?;
-        let entry = TestamentListEntry::from(result_mv);
+        let entry = PolicyListEntry::from(result_mv);
         response.push(entry)
     }
     Ok(response)
 }
 
 #[ic_cdk_macros::query]
-pub fn get_testament_list_as_testator() -> Result<Vec<TestamentListEntry>, SmartVaultErr> {
+pub fn get_policy_list_as_owner() -> Result<Vec<PolicyListEntry>, SmartVaultErr> {
     let principal = get_caller();
     let user_vault_id: UUID = get_vault_id_for(principal)?;
 
     USER_VAULT_STORE.with(|mv: &RefCell<UserVaultStore>| {
-        let testaments: Vec<Policy> = mv
+        let policies: Vec<Policy> = mv
             .borrow()
             .get_user_vault(&user_vault_id)?
-            .testaments()
+            .policies()
             .clone()
             .into_values()
             .collect();
-        Ok(testaments
+        Ok(policies
             .into_iter()
-            .map(TestamentListEntry::from)
+            .map(PolicyListEntry::from)
             .collect())
     })
 }
 
 #[ic_cdk_macros::update]
 pub fn confirm_x_out_of_y_condition(
-    testator: Principal,
-    testament_id: PolicyID,
+    owner: Principal,
+    policy_id: PolicyID,
     status: bool,
 ) -> Result<(), SmartVaultErr> {
-    // Get user vault of testator
-    let user_vault_id: UUID = get_vault_id_for(testator)?;
+    // Get user vault of owner
+    let user_vault_id: UUID = get_vault_id_for(owner)?;
 
-    // Read testament
+    // Read policy
     let mut result_mv = USER_VAULT_STORE.with(
         |mv: &RefCell<UserVaultStore>| -> Result<Policy, SmartVaultErr> {
             mv.borrow()
                 .get_user_vault(&user_vault_id)?
-                .get_testament(&testament_id)
+                .get_policy(&policy_id)
                 .cloned()
         },
     )?;
 
-    // Check that there is a XOutOfYCondition in the testament and that the caller is one of the confirmers
+    // Check that there is a XOutOfYCondition in the policy and that the caller is one of the confirmers
     match result_mv.find_validator_mut(&get_caller()) {
         Some(confirmer) => {
             // Modify the confirmer as needed
@@ -461,70 +451,70 @@ pub fn confirm_x_out_of_y_condition(
 }
 
 #[ic_cdk_macros::update]
-pub fn remove_testament(testament_id: String) -> Result<(), SmartVaultErr> {
+pub fn remove_policy(policy_id: String) -> Result<(), SmartVaultErr> {
     let principal = get_caller();
     let user_vault_id: UUID = get_vault_id_for(principal)?;
 
     USER_VAULT_STORE.with(
         |ms: &RefCell<UserVaultStore>| -> Result<(), SmartVaultErr> {
             let mut master_vault = ms.borrow_mut();
-            master_vault.remove_user_testament(&user_vault_id, &testament_id)
+            master_vault.remove_user_policies(&user_vault_id, &policy_id)
         },
     )
 }
 
 #[ic_cdk_macros::update]
-pub fn add_heir(args: AddUserArgs) -> Result<User, SmartVaultErr> {
+pub fn add_beneficiary(args: AddUserArgs) -> Result<User, SmartVaultErr> {
     let principal = get_caller();
     let user_vault_id: UUID = get_vault_id_for(principal)?;
 
     USER_VAULT_STORE.with(
         |ms: &RefCell<UserVaultStore>| -> Result<User, SmartVaultErr> {
             let mut master_vault = ms.borrow_mut();
-            master_vault.add_heir(&user_vault_id, args)
+            master_vault.add_beneficiary(&user_vault_id, args)
         },
     )
 }
 
 #[ic_cdk_macros::query]
-pub fn get_heir_list() -> Result<Vec<User>, SmartVaultErr> {
+pub fn get_beneficiary_list() -> Result<Vec<User>, SmartVaultErr> {
     let principal = get_caller();
     let user_vault_id: UUID = get_vault_id_for(principal)?;
 
     USER_VAULT_STORE.with(|mv: &RefCell<UserVaultStore>| {
-        let heirs: Vec<User> = mv
+        let beneficiaries: Vec<User> = mv
             .borrow()
             .get_user_vault(&user_vault_id)?
-            .heirs()
+            .beneficiaries()
             .clone()
             .into_values()
             .collect();
-        Ok(heirs.into_iter().map(User::from).collect())
+        Ok(beneficiaries.into_iter().map(User::from).collect())
     })
 }
 
 #[ic_cdk_macros::update]
-pub fn update_heir(u: User) -> Result<User, SmartVaultErr> {
+pub fn update_beneficiary(u: User) -> Result<User, SmartVaultErr> {
     let principal = get_caller();
     let user_vault_id: UUID = get_vault_id_for(principal)?;
 
     USER_VAULT_STORE.with(
         |ms: &RefCell<UserVaultStore>| -> Result<User, SmartVaultErr> {
             let mut master_vault = ms.borrow_mut();
-            master_vault.update_user_heir(&user_vault_id, u)
+            master_vault.update_user_beneficiary(&user_vault_id, u)
         },
     )
 }
 
 #[ic_cdk_macros::update]
-pub fn remove_heir(user_id: Principal) -> Result<(), SmartVaultErr> {
+pub fn remove_beneficiary(user_id: Principal) -> Result<(), SmartVaultErr> {
     let principal = get_caller();
     let user_vault_id: UUID = get_vault_id_for(principal)?;
 
     USER_VAULT_STORE.with(
         |ms: &RefCell<UserVaultStore>| -> Result<(), SmartVaultErr> {
             let mut master_vault = ms.borrow_mut();
-            master_vault.remove_user_heir(&user_vault_id, &user_id)
+            master_vault.remove_user_beneficiary(&user_vault_id, &user_id)
         },
     )
 }
@@ -552,8 +542,8 @@ pub fn get_vault_id_for(principal: Principal) -> Result<UserVaultID, SmartVaultE
 fn pre_upgrade() {
     USER_VAULT_STORE.with(|ms| storage::stable_save((ms,)).unwrap());
     // USER_STORE.with(|ur| storage::stable_save((ur,)).unwrap());
-    TESTAMENT_REGISTRY_FOR_HEIRS.with(|tr| storage::stable_save((tr,)).unwrap());
-    TESTAMENT_REGISTRY_FOR_VALIDATORS.with(|tr| storage::stable_save((tr,)).unwrap());
+    POLICY_REGISTRY_FOR_BENEFICIARIES.with(|tr| storage::stable_save((tr,)).unwrap());
+    POLICY_REGISTRY_FOR_VALIDATORS.with(|tr| storage::stable_save((tr,)).unwrap());
     UUID_COUNTER.with(|c| storage::stable_save((c,)).unwrap());
 }
 
@@ -565,8 +555,8 @@ fn post_upgrade() {
     // let (old_ur,): (UserStore,) = storage::stable_restore().unwrap();
     // USER_STORE.with(|ur| *ur.borrow_mut() = old_ur);
 
-    let (old_tr,): (PolicyRegistryForHeirs,) = storage::stable_restore().unwrap();
-    TESTAMENT_REGISTRY_FOR_HEIRS.with(|tr| *tr.borrow_mut() = old_tr);
+    let (old_tr,): (PolicyRegistryForBeneficiaries,) = storage::stable_restore().unwrap();
+    POLICY_REGISTRY_FOR_BENEFICIARIES.with(|tr| *tr.borrow_mut() = old_tr);
 
     let (old_c,): (u128,) = storage::stable_restore().unwrap();
     UUID_COUNTER.with(|c| *c.borrow_mut() = old_c);

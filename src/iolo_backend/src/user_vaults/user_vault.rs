@@ -1,14 +1,14 @@
+use std::collections::BTreeMap;
+
 use candid::{CandidType, Deserialize, Principal};
 use serde::Serialize;
-
-use std::collections::BTreeMap;
 
 use crate::common::uuid::UUID;
 use crate::policies::policy::{Policy, PolicyID};
 use crate::secrets::secret::{Secret, SecretID, SecretSymmetricCryptoMaterial};
+use crate::SmartVaultErr;
 use crate::users::user::User;
 use crate::utils::time;
-use crate::SmartVaultErr;
 
 pub type UserVaultID = UUID;
 pub type KeyBox = BTreeMap<SecretID, SecretSymmetricCryptoMaterial>;
@@ -29,8 +29,8 @@ pub struct UserVault {
     /// This key is itself encrypted using the UserVault decryption key,
     /// which itself is derived by vetkd.
     key_box: KeyBox, // TODO: make getter and setter
-    testaments: BTreeMap<PolicyID, Policy>,
-    heirs: BTreeMap<Principal, User>,
+    policies: BTreeMap<PolicyID, Policy>,
+    beneficiaries: BTreeMap<Principal, User>,
 }
 
 impl Default for UserVault {
@@ -50,8 +50,8 @@ impl UserVault {
             secrets: BTreeMap::new(),
             secret_ids: Vec::new(),
             key_box: BTreeMap::new(),
-            testaments: BTreeMap::new(),
-            heirs: BTreeMap::new(),
+            policies: BTreeMap::new(),
+            beneficiaries: BTreeMap::new(),
         }
     }
 
@@ -65,8 +65,8 @@ impl UserVault {
             secrets: BTreeMap::new(),
             secret_ids: Vec::new(),
             key_box: BTreeMap::new(),
-            testaments: BTreeMap::new(),
-            heirs: BTreeMap::new(),
+            policies: BTreeMap::new(),
+            beneficiaries: BTreeMap::new(),
         }
     }
 
@@ -149,98 +149,98 @@ impl UserVault {
         Ok(self.secrets.get(&sid).unwrap().clone())
     }
 
-    pub fn update_testament(&mut self, mut t: Policy) -> Result<Policy, SmartVaultErr> {
-        if !self.testaments.contains_key(t.id()) {
+    pub fn update_policy(&mut self, mut t: Policy) -> Result<Policy, SmartVaultErr> {
+        if !self.policies.contains_key(t.id()) {
             return Err(SmartVaultErr::SecretDoesNotExist(t.id().to_string()));
         }
         let tid = t.id().clone();
 
         // condition_status cannot be updated
         t.set_condition_status(
-            self.testaments
+            self.policies
                 .get(t.id())
                 .unwrap()
                 .conditions_status()
                 .clone(),
         );
 
-        self.testaments.insert(t.id().clone(), t);
+        self.policies.insert(t.id().clone(), t);
         self.date_modified = time::get_current_time();
-        Ok(self.testaments.get(&tid).unwrap().clone())
+        Ok(self.policies.get(&tid).unwrap().clone())
     }
 
-    pub fn testaments(&self) -> &BTreeMap<PolicyID, Policy> {
-        &self.testaments
+    pub fn policies(&self) -> &BTreeMap<PolicyID, Policy> {
+        &self.policies
     }
 
-    pub fn testaments_mut(&mut self) -> &mut BTreeMap<PolicyID, Policy> {
-        &mut self.testaments
+    pub fn policies_mut(&mut self) -> &mut BTreeMap<PolicyID, Policy> {
+        &mut self.policies
     }
 
-    pub fn add_testament(&mut self, testament: Policy) -> Result<(), SmartVaultErr> {
-        if self.testaments.contains_key(testament.id()) {
+    pub fn add_policy(&mut self, policy: Policy) -> Result<(), SmartVaultErr> {
+        if self.policies.contains_key(policy.id()) {
             return Err(SmartVaultErr::SecretAlreadyExists(
-                testament.id().to_string(),
+                policy.id().to_string(),
             ));
         }
 
-        self.testaments.insert(testament.id().clone(), testament);
+        self.policies.insert(policy.id().clone(), policy);
         self.date_modified = time::get_current_time();
         Ok(())
     }
 
-    pub fn get_testament(&self, testament_id: &PolicyID) -> Result<&Policy, SmartVaultErr> {
-        self.testaments
-            .get(testament_id)
-            .ok_or_else(|| SmartVaultErr::TestamentDoesNotExist(testament_id.to_string()))
+    pub fn get_policy(&self, policy_id: &PolicyID) -> Result<&Policy, SmartVaultErr> {
+        self.policies
+            .get(policy_id)
+            .ok_or_else(|| SmartVaultErr::PolicyDoesNotExist(policy_id.to_string()))
     }
 
-    pub fn remove_testament(&mut self, testament_id: &PolicyID) -> Result<(), SmartVaultErr> {
-        if !self.testaments.contains_key(testament_id) {
-            return Err(SmartVaultErr::TestamentDoesNotExist(
-                testament_id.to_string(),
+    pub fn remove_policy(&mut self, policy_id: &PolicyID) -> Result<(), SmartVaultErr> {
+        if !self.policies.contains_key(policy_id) {
+            return Err(SmartVaultErr::PolicyDoesNotExist(
+                policy_id.to_string(),
             ));
         }
-        self.testaments.remove(testament_id);
+        self.policies.remove(policy_id);
         self.date_modified = time::get_current_time();
         Ok(())
     }
 
-    pub fn heirs(&self) -> &BTreeMap<Principal, User> {
-        &self.heirs
+    pub fn beneficiaries(&self) -> &BTreeMap<Principal, User> {
+        &self.beneficiaries
     }
 
-    pub fn get_heir(&self, user_id: &Principal) -> Result<&User, SmartVaultErr> {
-        self.heirs
+    pub fn get_beneficiary(&self, user_id: &Principal) -> Result<&User, SmartVaultErr> {
+        self.beneficiaries
             .get(user_id)
             .ok_or_else(|| SmartVaultErr::UserDoesNotExist(user_id.to_string()))
     }
 
-    pub fn add_heir(&mut self, user: User) -> Result<&User, SmartVaultErr> {
-        if self.heirs.insert(*user.id(), user.clone()).is_some() {
+    pub fn add_beneficiary(&mut self, user: User) -> Result<&User, SmartVaultErr> {
+        if self.beneficiaries.insert(*user.id(), user.clone()).is_some() {
             Err(SmartVaultErr::UserAlreadyExists(user.id().to_string()))
         } else {
             self.date_modified = time::get_current_time();
-            self.get_heir(user.id())
+            self.get_beneficiary(user.id())
         }
     }
 
-    pub fn update_heir(&mut self, user: User) -> Result<User, SmartVaultErr> {
+    pub fn update_beneficiary(&mut self, user: User) -> Result<User, SmartVaultErr> {
         let uid = user.id().clone();
-        if !self.heirs.contains_key(user.id()) {
+        if !self.beneficiaries.contains_key(user.id()) {
             return Err(SmartVaultErr::UserDoesNotExist(user.id().to_string()));
         }
 
-        self.heirs.insert(uid.clone(), user);
+        self.beneficiaries.insert(uid.clone(), user);
         self.date_modified = time::get_current_time();
-        Ok(self.heirs.get(&uid).unwrap().clone())
+        Ok(self.beneficiaries.get(&uid).unwrap().clone())
     }
 
-    pub fn remove_heir(&mut self, user_id: &Principal) -> Result<(), SmartVaultErr> {
-        if !self.heirs.contains_key(user_id) {
+    pub fn remove_beneficiary(&mut self, user_id: &Principal) -> Result<(), SmartVaultErr> {
+        if !self.beneficiaries.contains_key(user_id) {
             return Err(SmartVaultErr::UserDoesNotExist(user_id.to_string()));
         }
-        self.heirs.remove(user_id);
+        self.beneficiaries.remove(user_id);
         self.date_modified = time::get_current_time();
         Ok(())
     }
@@ -248,9 +248,9 @@ impl UserVault {
 
 #[cfg(test)]
 mod tests {
+    use std::thread;
 
     use super::*;
-    use std::thread;
 
     #[tokio::test]
     async fn utest_user_vault_create_uservault() {

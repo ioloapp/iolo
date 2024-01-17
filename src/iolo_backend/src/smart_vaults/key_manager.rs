@@ -1,29 +1,18 @@
-use std::cell::RefCell;
-use std::{str::FromStr, vec};
+use std::str::FromStr;
 
-use crate::common::error::SmartVaultErr;
-use crate::common::uuid::UUID;
-use crate::policies::policy::{Policy, PolicyID};
-use crate::policies::policy_registry::PolicyRegistryForHeirs;
-use crate::smart_vaults::smart_vault::{
-    TESTAMENT_REGISTRY_FOR_HEIRS, USER_STORE, USER_VAULT_STORE,
-};
-use crate::user_vaults::user_vault_store::UserVaultStore;
-use crate::users::user_store::UserStore;
-use candid::{CandidType, Principal};
+use candid::CandidType;
 use serde::{Deserialize, Serialize};
 
 use super::vetkd_types::{
-    CanisterId, VetKDCurve, VetKDEncryptedKeyReply, VetKDEncryptedKeyRequest, VetKDKeyId,
-    VetKDPublicKeyReply, VetKDPublicKeyRequest,
+    CanisterId, VetKDCurve, VetKDKeyId,
 };
 
 const VETKD_SYSTEM_API_CANISTER_ID: &str = "cr2gw-4iaaa-aaaal-qcrda-cai";
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
-pub struct TestamentKeyDerviationArgs {
+pub struct PolicyKeyDerviationArgs {
     pub encryption_public_key: Vec<u8>,
-    pub testament_id: String,
+    pub policy_id: String,
 }
 
 /// Computes a fresh vetkd symmetric key to encrypt the secrets in a user vault.
@@ -53,44 +42,44 @@ async fn encrypted_symmetric_key_for_uservault(encryption_public_key: Vec<u8>) -
     hex::encode(response.encrypted_key)
 }
 
-/// Computes a fresh vetkd symmetric key to encrypt the secrets in a testament.
+/// Computes a fresh vetkd symmetric key to encrypt the secrets in a policy.
 ///
 /// The key is encrypted using the provided encryption_public_key.
 #[ic_cdk_macros::update]
-async fn encrypted_symmetric_key_for_testament(
-    args: TestamentKeyDerviationArgs,
+async fn encrypted_symmetric_key_for_policies(
+    args: PolicyKeyDerviationArgs,
 ) -> Result<String, SmartVaultErr> {
     let caller = ic_cdk::caller(); //.as_slice().to_vec();
 
     // check if caller has the right to derive this key
     let mut key_can_be_generated = false;
 
-    // Let's see if the testament is existing
-    let result_1 = TESTAMENT_REGISTRY_FOR_HEIRS.with(
-        |tr: &RefCell<PolicyRegistryForHeirs>| -> Option<Principal> {
-            let testament_registry = tr.borrow();
-            testament_registry.get_testator_of_testament(args.testament_id.clone())
+    // Let's see if the policy is existing
+    let result_1 = POLICY_REGISTRY_FOR_BENEFICIARIES.with(
+        |tr: &RefCell<PolicyRegistryForBeneficiaries>| -> Option<Principal> {
+            let policy_registry = tr.borrow();
+            policy_registry.get_owner_of_policy(args.policy_id.clone())
         },
     );
 
     if result_1.is_none() {
-        // No testament with this id is existing, we can easily create a vetkey
+        // No policy with this id is existing, we can easily create a vetkey
         key_can_be_generated = true;
     } else {
-        // Testament is existing, further checks are needed
+        // policy is existing, further checks are needed
         if result_1.unwrap() == caller {
-            // Caller is testator, all good
+            // Caller is owner, all good
             key_can_be_generated = true;
         } else {
-            // Let's see if caller is heir
-            let result_2 = TESTAMENT_REGISTRY_FOR_HEIRS.with(
-                |tr: &RefCell<PolicyRegistryForHeirs>| -> Result<(PolicyID, Principal), SmartVaultErr> {
-                    let testament_registry = tr.borrow();
-                    testament_registry.get_testament_id_as_heir(caller, args.testament_id.clone())
+            // Let's see if caller is beneficiary
+            let result_2 = POLICY_REGISTRY_FOR_BENEFICIARIES.with(
+                |tr: &RefCell<PolicyRegistryForBeneficiaries>| -> Result<(PolicyID, Principal), SmartVaultErr> {
+                    let policy_registry = tr.borrow();
+                    policy_registry.get_policy_id_as_beneficiary(caller, args.policy_id.clone())
                 },
             )?;
 
-            // Caller is heir, let's see if the associated testament is in correct condition status.
+            // Caller is beneficiary, let's see if the associated policy is in correct condition status.
             let result_3 =
                 USER_STORE.with(|ur: &RefCell<UserStore>| -> Result<UUID, SmartVaultErr> {
                     let user_store = ur.borrow();
@@ -102,7 +91,7 @@ async fn encrypted_symmetric_key_for_testament(
                 |mv: &RefCell<UserVaultStore>| -> Result<Policy, SmartVaultErr> {
                     mv.borrow()
                         .get_user_vault(&result_3)?
-                        .get_testament(&args.testament_id)
+                        .get_policy(&args.policy_id)
                         .cloned()
                 },
             )?;
@@ -123,13 +112,13 @@ async fn encrypted_symmetric_key_for_testament(
         &derivation_id,
     );
 
-    derivation_id.extend_from_slice(&args.testament_id.as_bytes());
+    derivation_id.extend_from_slice(&args.policy_id.as_bytes());
     ic_cdk::println!(
-        "testament id: {:?}",
-        &args.testament_id.as_bytes()
+        "policy id: {:?}",
+        &args.policy_id.as_bytes()
     );*/
 
-    let derivation_id = args.testament_id.as_bytes().to_vec();
+    let derivation_id = args.policy_id.as_bytes().to_vec();
 
     let request = VetKDEncryptedKeyRequest {
         derivation_id,

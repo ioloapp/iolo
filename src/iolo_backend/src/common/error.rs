@@ -13,10 +13,10 @@ pub enum SmartVaultErr {
     SecretDoesNotExist(String),
     SecretHasNoId,
     SecretAlreadyExists(String),
-    TestamentAlreadyExists(String),
-    TestamentDoesNotExist(String),
-    InvalidTestamentCondition,
-    NoTestamentsForHeir(String),
+    PolicyAlreadyExists(String),
+    PolicyDoesNotExist(String),
+    InvalidPolicyCondition,
+    NoPolicyForBeneficiary(String),
     KeyGenerationNotAllowed,
     Unauthorized,
 }
@@ -61,23 +61,23 @@ impl Display for SmartVaultErr {
             SmartVaultErr::SecretAlreadyExists(id) => {
                 write!(f, "Failed to create secret with the following id: {}", id)
             }
-            SmartVaultErr::TestamentAlreadyExists(id) => {
+            SmartVaultErr::PolicyAlreadyExists(id) => {
                 write!(
                     f,
-                    "Failed to create testament with the following id: {}",
+                    "Failed to create policy with the following id: {}",
                     id
                 )
             }
-            SmartVaultErr::TestamentDoesNotExist(id) => {
-                write!(f, "Failed to read testament with the following id: {}", id)
+            SmartVaultErr::PolicyDoesNotExist(id) => {
+                write!(f, "Failed to read policy with the following id: {}", id)
             }
-            SmartVaultErr::NoTestamentsForHeir(id) => {
-                write!(f, "Failed to read testament for heir: {}", id)
+            SmartVaultErr::NoPolicyForBeneficiary(id) => {
+                write!(f, "Failed to read policy for beneficiary: {}", id)
             }
-            SmartVaultErr::InvalidTestamentCondition => {
+            SmartVaultErr::InvalidPolicyCondition => {
                 write!(
                     f,
-                    "Testament cannot be read by heir because of wrong condition state"
+                    "Policy cannot be read by beneficiary because of wrong condition state"
                 )
             }
             SmartVaultErr::KeyGenerationNotAllowed => {
