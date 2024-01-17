@@ -2,7 +2,7 @@ import {ActorSubclass, HttpAgent, Identity} from "@dfinity/agent";
 import {
     _SERVICE,
     AddSecretArgs,
-    AddTestamentArgs,
+    AddPolicyArgs,
     AddUserArgs,
     Condition,
     Policy,
@@ -18,12 +18,12 @@ import {
     SecretCategory,
     SecretListEntry,
     SecretSymmetricCryptoMaterial,
-    TestamentListEntry,
-    TestamentResponse,
+    PolicyListEntry,
+    PolicyResponse,
     TimeBasedCondition,
     User,
     UserType,
-    XOutOfYCondition
+    XOutOfYCondition, Result_2
 } from "../../../declarations/iolo_backend/iolo_backend.did";
 import {AuthClient} from "@dfinity/auth-client";
 import {createActor} from "../../../declarations/iolo_backend";
@@ -158,7 +158,7 @@ class IoloService {
     }
 
     public async getSecretList(): Promise<UiSecretListEntry[]> {
-        const result: Result_6 = await (await this.getActor()).get_secret_list();
+        const result: Result_8 = await (await this.getActor()).get_secret_list();
         if (result['Ok']) {
             return result['Ok'].map((secretListEntry: SecretListEntry): UiSecretListEntry => {
                 return {
@@ -190,8 +190,8 @@ class IoloService {
 
     public async getSecretAsBeneficiary(secretId: string, policyId: string): Promise<UiSecret> {
         console.debug('start getting secret for heir...')
-        const result1 = (await this.getActor()).get_secret_as_heir(secretId, policyId);
-        const result2 = (await this.getActor()).get_secret_symmetric_crypto_material_as_heir(secretId, policyId);
+        const result1 = (await this.getActor()).get_secret_as_beneficiary(secretId, policyId);
+        const result2 = (await this.getActor()).get_secret_symmetric_crypto_material_as_beneficiary(secretId, policyId);
 
         // Wait for both promises to complete
         const [value1, value2] = await Promise.all([result1, result2]);
@@ -207,7 +207,7 @@ class IoloService {
     public async addSecret(uiSecret: UiSecret): Promise<UiSecret> {
         console.debug('start adding secret...')
         const encryptedSecret: AddSecretArgs = await this.encryptNewSecret(uiSecret)
-        const result: Result_1 = await (await this.getActor()).add_secret(encryptedSecret);
+        const result: Result_2 = await (await this.getActor()).add_secret(encryptedSecret);
         if (result['Ok']) {
             return this.mapSecretToUiSecret(result['Ok'], uiSecret.username, uiSecret.password, uiSecret.notes);
         }
@@ -216,7 +216,7 @@ class IoloService {
 
     public async updateSecret(uiSecret: UiSecret): Promise<UiSecret> {
         console.debug('start updating secret...')
-        const resultSymmetricCryptoMaterial: Result_7 = await (await this.getActor()).get_secret_symmetric_crypto_material(uiSecret.id);
+        const resultSymmetricCryptoMaterial: Result_9 = await (await this.getActor()).get_secret_symmetric_crypto_material(uiSecret.id);
 
         let symmetricCryptoMaterial: SecretSymmetricCryptoMaterial;
         if (resultSymmetricCryptoMaterial['Ok']) {
@@ -226,7 +226,7 @@ class IoloService {
         }
 
         // Get secret with encrypted attributes incl. ivs
-        const resultSecret: Result_1 = await (await this.getActor()).get_secret(uiSecret.id);
+        const resultSecret: Result_2 = await (await this.getActor()).get_secret(uiSecret.id);
         let existingSecret: Secret;
         if (resultSecret['Ok']) {
             existingSecret = resultSecret['Ok'];
@@ -244,7 +244,7 @@ class IoloService {
         const encryptedSecret: Secret = await this.encryptExistingSecret(uiSecret, decryptedSymmetricKey, existingSecret);
 
         // Update encrypted secret
-        const resultUpdate: Result_1 = await (await this.getActor()).update_secret(encryptedSecret);
+        const resultUpdate: Result_2 = await (await this.getActor()).update_secret(encryptedSecret);
 
         if (resultUpdate['Ok']) {
             return this.mapSecretToUiSecret(resultUpdate['Ok'], uiSecret.username, uiSecret.password, uiSecret.notes);
@@ -268,8 +268,8 @@ class IoloService {
         console.debug('start adding policy...');
         uiPolicy.id = uuidv4();
         const policy: Policy = await this.mapUiPolicyToPolicy(uiPolicy);
-        const addPolicyArgs: AddTestamentArgs = {
-            heirs: policy.heirs,
+        const addPolicyArgs: AddPolicyArgs = {
+            beneficiaries: policy.beneficiaries,
             id: policy.id,
             key_box: policy.key_box,
             name: policy.name,
@@ -279,7 +279,7 @@ class IoloService {
         }
 
         // Add policy
-        const result = await (await this.getActor()).add_testament(addPolicyArgs);
+        const result = await (await this.getActor()).add_policy(addPolicyArgs);
         if (result['Ok']) {
             return this.mapPolicyToUiPolicy(result['Ok'], UiPolicyListEntryRole.Testator);
         } else throw mapError(result['Err']);
@@ -291,35 +291,35 @@ class IoloService {
         const policy: Policy = await this.mapUiPolicyToPolicy(uiPolicy);
 
         // Update policy
-        const result = await (await this.getActor()).update_testament(policy);
+        const result = await (await this.getActor()).update_policy(policy);
         if (result['Ok']) {
             return this.mapPolicyToUiPolicy(result['Ok'], UiPolicyListEntryRole.Testator);
         } else throw mapError(result['Err']);
     }
 
     public async getPolicyList(): Promise<UiPolicyListEntry[]> {
-        const resultAsTestator: Result_9 = await (await this.getActor()).get_testament_list_as_testator();
+        const resultAsTestator: Result_7 = await (await this.getActor()).get_policy_list_as_owner();
         let policiesAsTestator: UiPolicyListEntry[] = [];
         if (resultAsTestator['Ok']) {
-            policiesAsTestator = resultAsTestator['Ok'].map((item: TestamentListEntry): UiPolicyListEntry  => {
+            policiesAsTestator = resultAsTestator['Ok'].map((item: PolicyListEntry): UiPolicyListEntry  => {
                 return {
                     id: item.id,
                     name: item.name?.length > 0 ? item.name[0] : undefined,
-                    owner: { id: item.testator?.toString()},
+                    owner: { id: item.owner?.toString()},
                     role: UiPolicyListEntryRole.Testator,
                     conditionStatus: item.condition_status,
                 }
             });
         } else throw mapError(resultAsTestator['Err']);
 
-        const resultAsBeneficiary: Result_9 = await (await this.getActor()).get_testament_list_as_heir();
+        const resultAsBeneficiary: Result_7 = await (await this.getActor()).get_policy_list_as_beneficiary();
         let policiesAsBeneficiary: UiPolicyListEntry[] =  [];
         if (resultAsBeneficiary['Ok'] && resultAsBeneficiary['Ok'].length > 0) {
-            policiesAsBeneficiary = resultAsBeneficiary['Ok'].map((item: TestamentListEntry): UiPolicyListEntry  => {
+            policiesAsBeneficiary = resultAsBeneficiary['Ok'].map((item: PolicyListEntry): UiPolicyListEntry  => {
                 return {
                     id: item.id,
                     name: item.name?.length > 0 ? item.name[0] : undefined,
-                    owner: { id: item.testator?.toString()},
+                    owner: { id: item.owner?.toString()},
                     role: UiPolicyListEntryRole.Heir,
                     conditionStatus: item.condition_status,
                 }
@@ -331,7 +331,7 @@ class IoloService {
     }
 
     public async getPolicyAsOwner(id: string): Promise<UiPolicyResponse> {
-        const result: Result_8 = await (await this.getActor()).get_testament_as_testator(id);
+        const result: Result_6 = await (await this.getActor()).get_policy_as_owner(id);
         console.debug('start get policies as owner', result);
         if (result['Ok']) {
             return this.mapPolicyResponseToUiPolicyResponse(result['Ok'], UiPolicyListEntryRole.Testator);
@@ -340,7 +340,7 @@ class IoloService {
     }
 
     public async getPolicyAsBeneficary(id: string): Promise<UiPolicyResponse> {
-        const result: Result_8 = await (await this.getActor()).get_testament_as_heir(id);
+        const result: Result_6 = await (await this.getActor()).get_policy_as_beneficiary(id);
         if (result['Ok']) {
             return this.mapPolicyResponseToUiPolicyResponse(result['Ok'], UiPolicyListEntryRole.Heir);
         }
@@ -348,7 +348,7 @@ class IoloService {
     }
 
     public async deletePolicy(id: string): Promise<void> {
-        const result: Result_3 = await (await this.getActor()).remove_testament(id);
+        const result: Result_3 = await (await this.getActor()).remove_policy(id);
         if (result['Ok'] === null) {
             return;
         }
@@ -381,7 +381,7 @@ class IoloService {
             user_type: user.user_type,
         }
 
-        const result: Result = await (await this.getActor()).add_heir(addUserArgs);
+        const result: Result = await (await this.getActor()).add_beneficiary(addUserArgs);
         if (result['Ok']) {
             return this.mapUserToUiUser(result['Ok']);
         }
@@ -389,7 +389,7 @@ class IoloService {
     }
 
     public async getContactsList(): Promise<UiUser[]> {
-        const result: Result_5 = await (await this.getActor()).get_heir_list();
+        const result: Result_5 = await (await this.getActor()).get_beneficiary_list();
         if (result['Ok']) {
             return result['Ok'].map((item) => this.mapUserToUiUser(item)) ;
         }
@@ -398,7 +398,7 @@ class IoloService {
 
     public async updateContact(heir: UiUser): Promise<UiUser> {
         const user = this.mapUiUserToUser(heir);
-        const result: Result = await (await this.getActor()).update_heir(user);
+        const result: Result = await (await this.getActor()).update_beneficiary(user);
 
         if (result['Ok']) {
             return this.mapUserToUiUser(result['Ok']);
@@ -407,7 +407,7 @@ class IoloService {
     }
 
     public async deleteContact(id: string) {
-        const result: Result_3 = await (await this.getActor()).remove_heir(Principal.fromText(id));
+        const result: Result_3 = await (await this.getActor()).remove_beneficiary(Principal.fromText(id));
         if (result['Ok'] === null) {
             return;
         }
@@ -660,7 +660,7 @@ class IoloService {
         // Create key_box by encrypting symmetric secrets key with policy vetKey
         let keyBox = new Array<[string, SecretSymmetricCryptoMaterial]>;
         for (const item of uiPolicy.secrets) {
-            const result: Result_7 = await (await this.getActor()).get_secret_symmetric_crypto_material(item);
+            const result: Result_9 = await (await this.getActor()).get_secret_symmetric_crypto_material(item);
             if (result['Ok']) {
                 // Decrypt symmetric key with uservault vetKey
                 const decryptedSymmetricKey = await aes_gcm_decrypt(result['Ok'].encrypted_symmetric_key as Uint8Array, uservaultVetKey, this.ivLength);
@@ -681,9 +681,9 @@ class IoloService {
 
         return {
             id: uiPolicy.id,
-            heirs: beneficiaries,
+            beneficiaries: beneficiaries,
             name: [uiPolicy.name],
-            testator: Principal.fromText(uiPolicy.owner.id),
+            owner: Principal.fromText(uiPolicy.owner.id),
             secrets: uiPolicy.secrets,
             key_box: keyBox,
             conditions_logical_operator: uiPolicy.conditionsLogicalOperator == LogicalOperator.And ? { 'And' : null } : { 'Or' : null },
@@ -729,9 +729,9 @@ class IoloService {
         return {
             id: policy.id,
             name: policy.name.length > 0 ? policy.name[0] : undefined,
-            owner: { id: policy.testator.toString() },
+            owner: { id: policy.owner.toString() },
             secrets: policy.secrets,
-            beneficiaries: policy.heirs.map((item) => {return {id: item.toString()}}),
+            beneficiaries: policy.beneficiaries.map((item) => {return {id: item.toString()}}),
             conditionsLogicalOperator: policy.conditions_logical_operator.hasOwnProperty('And') ? LogicalOperator.And : LogicalOperator.Or,
             conditionsStatus: policy.conditions_status,
             conditions: policy.conditions.map(condition => this.mapConditionToUiCondition(condition)),
@@ -770,7 +770,7 @@ class IoloService {
         }
     }
 
-    private mapPolicyResponseToUiPolicyResponse(policy: TestamentResponse, role: UiPolicyListEntryRole): UiPolicyResponse {
+    private mapPolicyResponseToUiPolicyResponse(policy: PolicyResponse, role: UiPolicyListEntryRole): UiPolicyResponse {
         let secrets: UiSecretListEntry[] = policy.secrets.map((item) => {
             let category = undefined;
             if (item.category.length > 0) {
@@ -791,9 +791,9 @@ class IoloService {
         return {
             id: policy.id,
             name: policy.name.length > 0 ? policy.name[0] : undefined,
-            owner: { id: policy.testator.toString() },
+            owner: { id: policy.owner.toString() },
             secrets: secrets,
-            beneficiaries: policy.heirs.map((item) => {return {id: item.toString()}}),
+            beneficiaries: policy.beneficiaries.map((item) => {return {id: item.toString()}}),
             conditionsLogicalOperator: policy.conditions_logical_operator.hasOwnProperty('And') ? LogicalOperator.And : LogicalOperator.Or,
             conditionsStatus: policy.conditions_status,
             conditions: policy.conditions.map(condition => this.mapConditionToUiCondition(condition)),

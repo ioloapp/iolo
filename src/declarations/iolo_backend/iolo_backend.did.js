@@ -21,19 +21,20 @@ export const idlFactory = ({ IDL }) => {
     'SecretHasNoId' : IDL.Null,
     'UserDeletionFailed' : IDL.Text,
     'SecretDoesNotExist' : IDL.Text,
-    'TestamentAlreadyExists' : IDL.Text,
+    'NoPolicyForBeneficiary' : IDL.Text,
     'Unauthorized' : IDL.Null,
-    'TestamentDoesNotExist' : IDL.Text,
     'UserUpdateFailed' : IDL.Text,
-    'InvalidTestamentCondition' : IDL.Null,
+    'PolicyAlreadyExists' : IDL.Text,
     'UserVaultCreationFailed' : IDL.Text,
+    'PolicyDoesNotExist' : IDL.Text,
     'UserDoesNotExist' : IDL.Text,
     'UserVaultDoesNotExist' : IDL.Text,
     'SecretAlreadyExists' : IDL.Text,
-    'NoTestamentsForHeir' : IDL.Text,
+    'InvalidPolicyCondition' : IDL.Null,
     'KeyGenerationNotAllowed' : IDL.Null,
   });
   const Result = IDL.Variant({ 'Ok' : User, 'Err' : SmartVaultErr });
+  const LogicalOperator = IDL.Variant({ 'Or' : IDL.Null, 'And' : IDL.Null });
   const SecretSymmetricCryptoMaterial = IDL.Record({
     'iv' : IDL.Vec(IDL.Nat8),
     'password_decryption_nonce' : IDL.Opt(IDL.Vec(IDL.Nat8)),
@@ -41,6 +42,45 @@ export const idlFactory = ({ IDL }) => {
     'encrypted_symmetric_key' : IDL.Vec(IDL.Nat8),
     'username_decryption_nonce' : IDL.Opt(IDL.Vec(IDL.Nat8)),
   });
+  const TimeBasedCondition = IDL.Record({
+    'id' : IDL.Text,
+    'condition_status' : IDL.Bool,
+    'number_of_days_since_last_login' : IDL.Nat64,
+  });
+  const Validator = IDL.Record({ 'id' : IDL.Principal, 'status' : IDL.Bool });
+  const XOutOfYCondition = IDL.Record({
+    'id' : IDL.Text,
+    'condition_status' : IDL.Bool,
+    'quorum' : IDL.Nat64,
+    'validators' : IDL.Vec(Validator),
+  });
+  const Condition = IDL.Variant({
+    'TimeBasedCondition' : TimeBasedCondition,
+    'XOutOfYCondition' : XOutOfYCondition,
+  });
+  const AddPolicyArgs = IDL.Record({
+    'id' : IDL.Text,
+    'condition_logical_operator' : LogicalOperator,
+    'name' : IDL.Opt(IDL.Text),
+    'secrets' : IDL.Vec(IDL.Text),
+    'beneficiaries' : IDL.Vec(IDL.Principal),
+    'key_box' : IDL.Vec(IDL.Tuple(IDL.Text, SecretSymmetricCryptoMaterial)),
+    'conditions' : IDL.Vec(Condition),
+  });
+  const Policy = IDL.Record({
+    'id' : IDL.Text,
+    'date_created' : IDL.Nat64,
+    'owner' : IDL.Principal,
+    'name' : IDL.Opt(IDL.Text),
+    'conditions_logical_operator' : LogicalOperator,
+    'secrets' : IDL.Vec(IDL.Text),
+    'conditions_status' : IDL.Bool,
+    'beneficiaries' : IDL.Vec(IDL.Principal),
+    'key_box' : IDL.Vec(IDL.Tuple(IDL.Text, SecretSymmetricCryptoMaterial)),
+    'conditions' : IDL.Vec(Condition),
+    'date_modified' : IDL.Nat64,
+  });
+  const Result_1 = IDL.Variant({ 'Ok' : Policy, 'Err' : SmartVaultErr });
   const SecretCategory = IDL.Variant({
     'Password' : IDL.Null,
     'Note' : IDL.Null,
@@ -67,51 +107,11 @@ export const idlFactory = ({ IDL }) => {
     'category' : IDL.Opt(SecretCategory),
     'date_modified' : IDL.Nat64,
   });
-  const Result_1 = IDL.Variant({ 'Ok' : Secret, 'Err' : SmartVaultErr });
-  const LogicalOperator = IDL.Variant({ 'Or' : IDL.Null, 'And' : IDL.Null });
-  const TimeBasedCondition = IDL.Record({
-    'id' : IDL.Text,
-    'condition_status' : IDL.Bool,
-    'number_of_days_since_last_login' : IDL.Nat64,
-  });
-  const Validator = IDL.Record({ 'id' : IDL.Principal, 'status' : IDL.Bool });
-  const XOutOfYCondition = IDL.Record({
-    'id' : IDL.Text,
-    'condition_status' : IDL.Bool,
-    'quorum' : IDL.Nat64,
-    'validators' : IDL.Vec(Validator),
-  });
-  const Condition = IDL.Variant({
-    'TimeBasedCondition' : TimeBasedCondition,
-    'XOutOfYCondition' : XOutOfYCondition,
-  });
-  const AddTestamentArgs = IDL.Record({
-    'id' : IDL.Text,
-    'heirs' : IDL.Vec(IDL.Principal),
-    'condition_logical_operator' : LogicalOperator,
-    'name' : IDL.Opt(IDL.Text),
-    'secrets' : IDL.Vec(IDL.Text),
-    'key_box' : IDL.Vec(IDL.Tuple(IDL.Text, SecretSymmetricCryptoMaterial)),
-    'conditions' : IDL.Vec(Condition),
-  });
-  const Policy = IDL.Record({
-    'id' : IDL.Text,
-    'heirs' : IDL.Vec(IDL.Principal),
-    'date_created' : IDL.Nat64,
-    'name' : IDL.Opt(IDL.Text),
-    'conditions_logical_operator' : LogicalOperator,
-    'testator' : IDL.Principal,
-    'secrets' : IDL.Vec(IDL.Text),
-    'conditions_status' : IDL.Bool,
-    'key_box' : IDL.Vec(IDL.Tuple(IDL.Text, SecretSymmetricCryptoMaterial)),
-    'conditions' : IDL.Vec(Condition),
-    'date_modified' : IDL.Nat64,
-  });
-  const Result_2 = IDL.Variant({ 'Ok' : Policy, 'Err' : SmartVaultErr });
+  const Result_2 = IDL.Variant({ 'Ok' : Secret, 'Err' : SmartVaultErr });
   const Result_3 = IDL.Variant({ 'Ok' : IDL.Null, 'Err' : SmartVaultErr });
-  const TestamentKeyDerviationArgs = IDL.Record({
+  const PolicyKeyDerviationArgs = IDL.Record({
     'encryption_public_key' : IDL.Vec(IDL.Nat8),
-    'testament_id' : IDL.Text,
+    'policy_id' : IDL.Text,
   });
   const Result_4 = IDL.Variant({ 'Ok' : IDL.Text, 'Err' : SmartVaultErr });
   const Result_5 = IDL.Variant({ 'Ok' : IDL.Vec(User), 'Err' : SmartVaultErr });
@@ -120,45 +120,45 @@ export const idlFactory = ({ IDL }) => {
     'name' : IDL.Opt(IDL.Text),
     'category' : IDL.Opt(SecretCategory),
   });
-  const Result_6 = IDL.Variant({
-    'Ok' : IDL.Vec(SecretListEntry),
-    'Err' : SmartVaultErr,
-  });
-  const Result_7 = IDL.Variant({
-    'Ok' : SecretSymmetricCryptoMaterial,
-    'Err' : SmartVaultErr,
-  });
-  const TestamentResponse = IDL.Record({
+  const PolicyResponse = IDL.Record({
     'id' : IDL.Text,
-    'heirs' : IDL.Vec(IDL.Principal),
     'date_created' : IDL.Nat64,
+    'owner' : IDL.Principal,
     'name' : IDL.Opt(IDL.Text),
     'conditions_logical_operator' : LogicalOperator,
-    'testator' : IDL.Principal,
     'secrets' : IDL.Vec(SecretListEntry),
     'conditions_status' : IDL.Bool,
+    'beneficiaries' : IDL.Vec(IDL.Principal),
     'key_box' : IDL.Vec(IDL.Tuple(IDL.Text, SecretSymmetricCryptoMaterial)),
     'conditions' : IDL.Vec(Condition),
     'date_modified' : IDL.Nat64,
   });
-  const Result_8 = IDL.Variant({
-    'Ok' : TestamentResponse,
+  const Result_6 = IDL.Variant({
+    'Ok' : PolicyResponse,
     'Err' : SmartVaultErr,
   });
-  const TestamentListEntry = IDL.Record({
+  const PolicyListEntry = IDL.Record({
     'id' : IDL.Text,
+    'owner' : IDL.Principal,
     'condition_status' : IDL.Bool,
     'name' : IDL.Opt(IDL.Text),
-    'testator' : IDL.Principal,
+  });
+  const Result_7 = IDL.Variant({
+    'Ok' : IDL.Vec(PolicyListEntry),
+    'Err' : SmartVaultErr,
+  });
+  const Result_8 = IDL.Variant({
+    'Ok' : IDL.Vec(SecretListEntry),
+    'Err' : SmartVaultErr,
   });
   const Result_9 = IDL.Variant({
-    'Ok' : IDL.Vec(TestamentListEntry),
+    'Ok' : SecretSymmetricCryptoMaterial,
     'Err' : SmartVaultErr,
   });
   return IDL.Service({
-    'add_heir' : IDL.Func([AddUserArgs], [Result], []),
-    'add_secret' : IDL.Func([AddSecretArgs], [Result_1], []),
-    'add_testament' : IDL.Func([AddTestamentArgs], [Result_2], []),
+    'add_beneficiary' : IDL.Func([AddUserArgs], [Result], []),
+    'add_policy' : IDL.Func([AddPolicyArgs], [Result_1], []),
+    'add_secret' : IDL.Func([AddSecretArgs], [Result_2], []),
     'confirm_x_out_of_y_condition' : IDL.Func(
         [IDL.Principal, IDL.Text, IDL.Bool],
         [Result_3],
@@ -176,8 +176,8 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Text],
         [],
       ),
-    'encrypted_symmetric_key_for_testament' : IDL.Func(
-        [TestamentKeyDerviationArgs],
+    'encrypted_symmetric_key_for_policies' : IDL.Func(
+        [PolicyKeyDerviationArgs],
         [Result_4],
         [],
       ),
@@ -186,39 +186,39 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Text],
         [],
       ),
+    'get_beneficiary_list' : IDL.Func([], [Result_5], ['query']),
     'get_current_user' : IDL.Func([], [Result], ['query']),
-    'get_heir_list' : IDL.Func([], [Result_5], ['query']),
-    'get_secret' : IDL.Func([IDL.Text], [Result_1], ['query']),
-    'get_secret_as_heir' : IDL.Func(
+    'get_policy_as_beneficiary' : IDL.Func([IDL.Text], [Result_6], ['query']),
+    'get_policy_as_owner' : IDL.Func([IDL.Text], [Result_6], ['query']),
+    'get_policy_list_as_beneficiary' : IDL.Func([], [Result_7], ['query']),
+    'get_policy_list_as_owner' : IDL.Func([], [Result_7], ['query']),
+    'get_policy_list_as_validator' : IDL.Func([], [Result_7], ['query']),
+    'get_secret' : IDL.Func([IDL.Text], [Result_2], ['query']),
+    'get_secret_as_beneficiary' : IDL.Func(
         [IDL.Text, IDL.Text],
-        [Result_1],
+        [Result_2],
         ['query'],
       ),
-    'get_secret_list' : IDL.Func([], [Result_6], ['query']),
+    'get_secret_list' : IDL.Func([], [Result_8], ['query']),
     'get_secret_symmetric_crypto_material' : IDL.Func(
         [IDL.Text],
-        [Result_7],
+        [Result_9],
         ['query'],
       ),
-    'get_secret_symmetric_crypto_material_as_heir' : IDL.Func(
+    'get_secret_symmetric_crypto_material_as_beneficiary' : IDL.Func(
         [IDL.Text, IDL.Text],
-        [Result_7],
+        [Result_9],
         ['query'],
       ),
-    'get_testament_as_heir' : IDL.Func([IDL.Text], [Result_8], ['query']),
-    'get_testament_as_testator' : IDL.Func([IDL.Text], [Result_8], ['query']),
-    'get_testament_list_as_heir' : IDL.Func([], [Result_9], ['query']),
-    'get_testament_list_as_testator' : IDL.Func([], [Result_9], ['query']),
-    'get_testament_list_as_validator' : IDL.Func([], [Result_9], ['query']),
     'ibe_encryption_key' : IDL.Func([], [IDL.Text], []),
     'is_user_vault_existing' : IDL.Func([], [IDL.Bool], ['query']),
-    'remove_heir' : IDL.Func([IDL.Principal], [Result_3], []),
+    'remove_beneficiary' : IDL.Func([IDL.Principal], [Result_3], []),
+    'remove_policy' : IDL.Func([IDL.Text], [Result_3], []),
     'remove_secret' : IDL.Func([IDL.Text], [Result_3], []),
-    'remove_testament' : IDL.Func([IDL.Text], [Result_3], []),
     'symmetric_key_verification_key' : IDL.Func([], [IDL.Text], []),
-    'update_heir' : IDL.Func([User], [Result], []),
-    'update_secret' : IDL.Func([Secret], [Result_1], []),
-    'update_testament' : IDL.Func([Policy], [Result_2], []),
+    'update_beneficiary' : IDL.Func([User], [Result], []),
+    'update_policy' : IDL.Func([Policy], [Result_1], []),
+    'update_secret' : IDL.Func([Secret], [Result_2], []),
     'update_user' : IDL.Func([User], [Result], []),
     'update_user_login_date' : IDL.Func([], [Result], []),
     'what_time_is_it' : IDL.Func([], [IDL.Nat64], ['query']),

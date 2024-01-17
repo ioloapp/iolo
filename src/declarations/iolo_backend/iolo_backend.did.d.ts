@@ -1,6 +1,15 @@
-import type {Principal} from '@dfinity/principal';
-import type {ActorMethod} from '@dfinity/agent';
+import type { Principal } from '@dfinity/principal';
+import type { ActorMethod } from '@dfinity/agent';
 
+export interface AddPolicyArgs {
+  'id' : string,
+  'condition_logical_operator' : LogicalOperator,
+  'name' : [] | [string],
+  'secrets' : Array<string>,
+  'beneficiaries' : Array<Principal>,
+  'key_box' : Array<[string, SecretSymmetricCryptoMaterial]>,
+  'conditions' : Array<Condition>,
+}
 export interface AddSecretArgs {
   'id' : string,
   'url' : [] | [string],
@@ -10,15 +19,6 @@ export interface AddSecretArgs {
   'symmetric_crypto_material' : SecretSymmetricCryptoMaterial,
   'notes' : [] | [Uint8Array | number[]],
   'category' : [] | [SecretCategory],
-}
-export interface AddTestamentArgs {
-  'id' : string,
-  'heirs' : Array<Principal>,
-  'condition_logical_operator' : LogicalOperator,
-  'name' : [] | [string],
-  'secrets' : Array<string>,
-  'key_box' : Array<[string, SecretSymmetricCryptoMaterial]>,
-  'conditions' : Array<Condition>,
 }
 export interface AddUserArgs {
   'id' : Principal,
@@ -32,22 +32,45 @@ export type LogicalOperator = { 'Or' : null } |
   { 'And' : null };
 export interface Policy {
   'id' : string,
-  'heirs' : Array<Principal>,
   'date_created' : bigint,
+  'owner' : Principal,
   'name' : [] | [string],
   'conditions_logical_operator' : LogicalOperator,
-  'testator' : Principal,
   'secrets' : Array<string>,
   'conditions_status' : boolean,
+  'beneficiaries' : Array<Principal>,
+  'key_box' : Array<[string, SecretSymmetricCryptoMaterial]>,
+  'conditions' : Array<Condition>,
+  'date_modified' : bigint,
+}
+export interface PolicyKeyDerviationArgs {
+  'encryption_public_key' : Uint8Array | number[],
+  'policy_id' : string,
+}
+export interface PolicyListEntry {
+  'id' : string,
+  'owner' : Principal,
+  'condition_status' : boolean,
+  'name' : [] | [string],
+}
+export interface PolicyResponse {
+  'id' : string,
+  'date_created' : bigint,
+  'owner' : Principal,
+  'name' : [] | [string],
+  'conditions_logical_operator' : LogicalOperator,
+  'secrets' : Array<SecretListEntry>,
+  'conditions_status' : boolean,
+  'beneficiaries' : Array<Principal>,
   'key_box' : Array<[string, SecretSymmetricCryptoMaterial]>,
   'conditions' : Array<Condition>,
   'date_modified' : bigint,
 }
 export type Result = { 'Ok' : User } |
   { 'Err' : SmartVaultErr };
-export type Result_1 = { 'Ok' : Secret } |
+export type Result_1 = { 'Ok' : Policy } |
   { 'Err' : SmartVaultErr };
-export type Result_2 = { 'Ok' : Policy } |
+export type Result_2 = { 'Ok' : Secret } |
   { 'Err' : SmartVaultErr };
 export type Result_3 = { 'Ok' : null } |
   { 'Err' : SmartVaultErr };
@@ -55,13 +78,13 @@ export type Result_4 = { 'Ok' : string } |
   { 'Err' : SmartVaultErr };
 export type Result_5 = { 'Ok' : Array<User> } |
   { 'Err' : SmartVaultErr };
-export type Result_6 = { 'Ok' : Array<SecretListEntry> } |
+export type Result_6 = { 'Ok' : PolicyResponse } |
   { 'Err' : SmartVaultErr };
-export type Result_7 = { 'Ok' : SecretSymmetricCryptoMaterial } |
+export type Result_7 = { 'Ok' : Array<PolicyListEntry> } |
   { 'Err' : SmartVaultErr };
-export type Result_8 = { 'Ok' : TestamentResponse } |
+export type Result_8 = { 'Ok' : Array<SecretListEntry> } |
   { 'Err' : SmartVaultErr };
-export type Result_9 = { 'Ok' : Array<TestamentListEntry> } |
+export type Result_9 = { 'Ok' : SecretSymmetricCryptoMaterial } |
   { 'Err' : SmartVaultErr };
 export interface Secret {
   'id' : string,
@@ -93,40 +116,17 @@ export type SmartVaultErr = { 'UserAlreadyExists' : string } |
   { 'SecretHasNoId' : null } |
   { 'UserDeletionFailed' : string } |
   { 'SecretDoesNotExist' : string } |
-  { 'TestamentAlreadyExists' : string } |
+  { 'NoPolicyForBeneficiary' : string } |
   { 'Unauthorized' : null } |
-  { 'TestamentDoesNotExist' : string } |
   { 'UserUpdateFailed' : string } |
-  { 'InvalidTestamentCondition' : null } |
+  { 'PolicyAlreadyExists' : string } |
   { 'UserVaultCreationFailed' : string } |
+  { 'PolicyDoesNotExist' : string } |
   { 'UserDoesNotExist' : string } |
   { 'UserVaultDoesNotExist' : string } |
   { 'SecretAlreadyExists' : string } |
-  { 'NoTestamentsForHeir' : string } |
+  { 'InvalidPolicyCondition' : null } |
   { 'KeyGenerationNotAllowed' : null };
-export interface TestamentKeyDerviationArgs {
-  'encryption_public_key' : Uint8Array | number[],
-  'testament_id' : string,
-}
-export interface TestamentListEntry {
-  'id' : string,
-  'condition_status' : boolean,
-  'name' : [] | [string],
-  'testator' : Principal,
-}
-export interface TestamentResponse {
-  'id' : string,
-  'heirs' : Array<Principal>,
-  'date_created' : bigint,
-  'name' : [] | [string],
-  'conditions_logical_operator' : LogicalOperator,
-  'testator' : Principal,
-  'secrets' : Array<SecretListEntry>,
-  'conditions_status' : boolean,
-  'key_box' : Array<[string, SecretSymmetricCryptoMaterial]>,
-  'conditions' : Array<Condition>,
-  'date_modified' : bigint,
-}
 export interface TimeBasedCondition {
   'id' : string,
   'condition_status' : boolean,
@@ -152,9 +152,9 @@ export interface XOutOfYCondition {
   'validators' : Array<Validator>,
 }
 export interface _SERVICE {
-  'add_heir' : ActorMethod<[AddUserArgs], Result>,
-  'add_secret' : ActorMethod<[AddSecretArgs], Result_1>,
-  'add_testament' : ActorMethod<[AddTestamentArgs], Result_2>,
+  'add_beneficiary' : ActorMethod<[AddUserArgs], Result>,
+  'add_policy' : ActorMethod<[AddPolicyArgs], Result_1>,
+  'add_secret' : ActorMethod<[AddSecretArgs], Result_2>,
   'confirm_x_out_of_y_condition' : ActorMethod<
     [Principal, string, boolean],
     Result_3
@@ -169,38 +169,38 @@ export interface _SERVICE {
     [Uint8Array | number[]],
     string
   >,
-  'encrypted_symmetric_key_for_testament' : ActorMethod<
-    [TestamentKeyDerviationArgs],
+  'encrypted_symmetric_key_for_policies' : ActorMethod<
+    [PolicyKeyDerviationArgs],
     Result_4
   >,
   'encrypted_symmetric_key_for_uservault' : ActorMethod<
     [Uint8Array | number[]],
     string
   >,
+  'get_beneficiary_list' : ActorMethod<[], Result_5>,
   'get_current_user' : ActorMethod<[], Result>,
-  'get_heir_list' : ActorMethod<[], Result_5>,
-  'get_secret' : ActorMethod<[string], Result_1>,
-  'get_secret_as_heir' : ActorMethod<[string, string], Result_1>,
-  'get_secret_list' : ActorMethod<[], Result_6>,
-  'get_secret_symmetric_crypto_material' : ActorMethod<[string], Result_7>,
-  'get_secret_symmetric_crypto_material_as_heir' : ActorMethod<
+  'get_policy_as_beneficiary' : ActorMethod<[string], Result_6>,
+  'get_policy_as_owner' : ActorMethod<[string], Result_6>,
+  'get_policy_list_as_beneficiary' : ActorMethod<[], Result_7>,
+  'get_policy_list_as_owner' : ActorMethod<[], Result_7>,
+  'get_policy_list_as_validator' : ActorMethod<[], Result_7>,
+  'get_secret' : ActorMethod<[string], Result_2>,
+  'get_secret_as_beneficiary' : ActorMethod<[string, string], Result_2>,
+  'get_secret_list' : ActorMethod<[], Result_8>,
+  'get_secret_symmetric_crypto_material' : ActorMethod<[string], Result_9>,
+  'get_secret_symmetric_crypto_material_as_beneficiary' : ActorMethod<
     [string, string],
-    Result_7
+    Result_9
   >,
-  'get_testament_as_heir' : ActorMethod<[string], Result_8>,
-  'get_testament_as_testator' : ActorMethod<[string], Result_8>,
-  'get_testament_list_as_heir' : ActorMethod<[], Result_9>,
-  'get_testament_list_as_testator' : ActorMethod<[], Result_9>,
-  'get_testament_list_as_validator' : ActorMethod<[], Result_9>,
   'ibe_encryption_key' : ActorMethod<[], string>,
   'is_user_vault_existing' : ActorMethod<[], boolean>,
-  'remove_heir' : ActorMethod<[Principal], Result_3>,
+  'remove_beneficiary' : ActorMethod<[Principal], Result_3>,
+  'remove_policy' : ActorMethod<[string], Result_3>,
   'remove_secret' : ActorMethod<[string], Result_3>,
-  'remove_testament' : ActorMethod<[string], Result_3>,
   'symmetric_key_verification_key' : ActorMethod<[], string>,
-  'update_heir' : ActorMethod<[User], Result>,
-  'update_secret' : ActorMethod<[Secret], Result_1>,
-  'update_testament' : ActorMethod<[Policy], Result_2>,
+  'update_beneficiary' : ActorMethod<[User], Result>,
+  'update_policy' : ActorMethod<[Policy], Result_1>,
+  'update_secret' : ActorMethod<[Secret], Result_2>,
   'update_user' : ActorMethod<[User], Result>,
   'update_user_login_date' : ActorMethod<[], Result>,
   'what_time_is_it' : ActorMethod<[], bigint>,
