@@ -5,17 +5,29 @@ import {mobileWidth, sidebarWith} from "../../App";
 import {LogoIcon, SearchField, StyledAppBar, UserProfile} from "./search-bar";
 import SearchIcon from "@mui/icons-material/Search";
 import useWindowResize from "../../utils/useWindowResize";
+import LogoutIcon from "@mui/icons-material/Logout";
+import {useTranslation} from "react-i18next";
+import {userActions} from "../../redux/user/userSlice";
+import {useAppDispatch} from "../../redux/hooks";
+import {IoloLogo} from "../../resources/logo";
 
 export interface PageLayoutProps {
     title: string
     children: ReactElement,
     filterList?: (value: string) => void;
     showAppBar?: boolean;
+    withMenu?: boolean;
 }
 
-export const PageLayout: FC<PageLayoutProps> = ({title, children, filterList, showAppBar = true}: PageLayoutProps) => {
+export const PageLayout: FC<PageLayoutProps> = ({title, children, filterList, showAppBar = true, withMenu=true}: PageLayoutProps) => {
 
     const {width} = useWindowResize();
+    const {t} = useTranslation();
+    const dispatch = useAppDispatch();
+
+    const logoutUser = () => {
+        dispatch(userActions.logOut())
+    }
 
     return (
         <Box
@@ -29,11 +41,14 @@ export const PageLayout: FC<PageLayoutProps> = ({title, children, filterList, sh
         >
             {showAppBar &&
                 <StyledAppBar position="sticky" sx={{
-                    width: width >= mobileWidth ? width - sidebarWith : '100%',
-                    minHeight: '56px'
+                    width: withMenu && (width >= mobileWidth) ? width - sidebarWith : '100%',
+                    minHeight: '56px', maxHeight: '56px'
                 }}>
-                    {width < mobileWidth &&
+                    {width < mobileWidth && withMenu &&
                         <LogoIcon/>
+                    }
+                    {!withMenu &&
+                        <IoloLogo />
                     }
                     {filterList &&
                         <>
@@ -44,8 +59,20 @@ export const PageLayout: FC<PageLayoutProps> = ({title, children, filterList, sh
                             </IconButton>
                         </>
                     }
-                    {width < mobileWidth &&
+                    {withMenu && width < mobileWidth &&
                         <UserProfile/>
+                    }
+                    { !withMenu &&
+                        <IconButton
+                            size="large"
+                            aria-label={t('user.icon.label')}
+                            aria-controls="menu-appbar"
+                            aria-haspopup="true"
+                            onClick={logoutUser}
+                            color="inherit"
+                        >
+                            <LogoutIcon className="navigation-icon"/>
+                        </IconButton>
                     }
                 </StyledAppBar>
             }

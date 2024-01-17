@@ -8,6 +8,7 @@ import {useSelector} from "react-redux";
 import {selectLoginStatus} from "../../redux/user/userSelectors";
 import {IoloLogo} from "../../resources/logo";
 import {useTranslation} from "react-i18next";
+import './login.css';
 
 
 export function Login() {
@@ -46,7 +47,7 @@ export function Login() {
                         justifyContent: 'center',
                     }}
                 >
-                    <Button variant="contained" onClick={handleLogin}>{t('login.button')}</Button>
+                    <Button variant="contained" onClick={handleLogin} className="login-button">{t('login.button')}</Button>
                 </Box>}
             </>
         </PageLayout>

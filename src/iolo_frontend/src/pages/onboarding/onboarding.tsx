@@ -1,6 +1,21 @@
 // IC
 import {useAppDispatch} from "../../redux/hooks";
-import {Backdrop, Box, Button, CircularProgress, Container, MenuItem, Select, Typography} from "@mui/material";
+import {
+    Backdrop,
+    Box,
+    Button,
+    CircularProgress,
+    Container,
+    Divider,
+    Drawer,
+    List,
+    ListItem,
+    ListItemIcon,
+    ListItemText,
+    MenuItem,
+    Select,
+    Typography
+} from "@mui/material";
 import * as React from "react";
 import {createUserThunk, userActions} from "../../redux/user/userSlice";
 import {PageLayout} from "../../components/layout/page-layout";
@@ -11,14 +26,21 @@ import {selectCurrentUser} from "../../redux/user/userSelectors";
 import {useTranslation} from "react-i18next";
 import {supportedLanguage} from "../../locales/i18n";
 import i18n from "i18next";
+import {IoloLogo} from "../../resources/logo";
+import {mobileWidth, sidebarWith} from "../../App";
+import LogoutIcon from "@mui/icons-material/Logout";
+import useWindowResize from "../../utils/useWindowResize";
+import {StyledAppBar} from "../../components/layout/search-bar";
+import IconButton from "@mui/material/IconButton";
 
 
 export const Onboarding = () => {
 
     const dispatch = useAppDispatch();
-    const { t } = useTranslation();
+    const {t} = useTranslation();
     const currentUser = useSelector(selectCurrentUser);
     const [loadingIconIsOpen, setLoadingIcon] = React.useState(false);
+    const {width} = useWindowResize();
 
     // Login/Logout
     const createUser = () => {
@@ -46,7 +68,7 @@ export const Onboarding = () => {
     }
 
     return (
-        <PageLayout title={t('onboarding.title')}>
+        <PageLayout title={t('onboarding.title')} showAppBar={true} withMenu={false}>
             <>
                 <Container maxWidth="sm">
                     <Typography paragraph>
@@ -137,19 +159,6 @@ export const Onboarding = () => {
                         </Box>
                         <Button variant="contained" sx={{m: '20px auto 0px auto'}} onClick={createUser}>
                             {t('user.button.create')}
-                        </Button>
-                    </Box>
-                    <Box
-                        sx={{
-                            flexGrow: 1,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            marginTop: '3rem'
-                        }}
-                    >
-                        <Button variant="contained" sx={{m: '0px auto 0px auto'}} onClick={logoutUser}>
-                            Logout
                         </Button>
                     </Box>
                 </Container>
