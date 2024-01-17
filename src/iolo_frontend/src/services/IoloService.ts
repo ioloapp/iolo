@@ -5,6 +5,7 @@ import {
     AddTestamentArgs,
     AddUserArgs,
     Condition,
+    Policy,
     Result,
     Result_1,
     Result_3,
@@ -17,7 +18,6 @@ import {
     SecretCategory,
     SecretListEntry,
     SecretSymmetricCryptoMaterial,
-    Testament,
     TestamentListEntry,
     TestamentResponse,
     TimeBasedCondition,
@@ -33,7 +33,7 @@ import {Principal} from "@dfinity/principal";
 import {
     aes_gcm_decrypt,
     aes_gcm_encrypt,
-    get_aes_256_gcm_key_for_testament,
+    get_aes_256_gcm_key_for_policy,
     get_aes_256_gcm_key_for_uservault,
     get_local_random_aes_256_gcm_key
 } from "../utils/crypto";
@@ -41,13 +41,13 @@ import {
     ConditionType,
     LogicalOperator,
     UiCondition,
+    UiPolicy,
+    UiPolicyListEntry,
+    UiPolicyListEntryRole,
+    UiPolicyResponse,
     UiSecret,
     UiSecretCategory,
     UiSecretListEntry,
-    UiTestament,
-    UiTestamentListEntry,
-    UiTestamentListEntryRole,
-    UiTestamentResponse,
     UiTimeBasedCondition,
     UiUser,
     UiUserType,
@@ -61,6 +61,7 @@ class IoloService {
     private identity: Identity;
     private agent: HttpAgent
     private actor: ActorSubclass<_SERVICE>;
+    private ivLength = 12;
 
     constructor() {
         if (IoloService.instance) {
@@ -119,7 +120,6 @@ class IoloService {
     }
 
     public async createUser(uiUser: UiUser): Promise<UiUser> {
-        console.log("Start adding user...")
         let args: AddUserArgs = {
             id: Principal.anonymous(), // No principal needed, backend will take anyway the caller...
             email: uiUser.email ? [uiUser.email] : [],
@@ -188,10 +188,10 @@ class IoloService {
         } else throw mapError(value1['Err']);
     }
 
-    public async getSecretAsHeir(secretId: string, testamentId: string): Promise<UiSecret> {
+    public async getSecretAsBeneficiary(secretId: string, policyId: string): Promise<UiSecret> {
         console.debug('start getting secret for heir...')
-        const result1 = (await this.getActor()).get_secret_as_heir(secretId, testamentId);
-        const result2 = (await this.getActor()).get_secret_symmetric_crypto_material_as_heir(secretId, testamentId);
+        const result1 = (await this.getActor()).get_secret_as_heir(secretId, policyId);
+        const result2 = (await this.getActor()).get_secret_symmetric_crypto_material_as_heir(secretId, policyId);
 
         // Wait for both promises to complete
         const [value1, value2] = await Promise.all([result1, result2]);
@@ -199,8 +199,8 @@ class IoloService {
         // Now you can use value1 and value2
         if (value1['Ok'] && value2['Ok']) {
             // Get the vetKey to decrypt the encryption key
-            const testamentVetKey: Uint8Array = await get_aes_256_gcm_key_for_testament(testamentId, (await this.getActor()));
-            return this.mapEncryptedSecretToUiSecret(value1['Ok'], value2['Ok'], testamentVetKey);
+            const policyVetKey: Uint8Array = await get_aes_256_gcm_key_for_policy(policyId, (await this.getActor()));
+            return this.mapEncryptedSecretToUiSecret(value1['Ok'], value2['Ok'], policyVetKey);
         } else throw mapError(value1['Err']);
     }
 
@@ -225,14 +225,23 @@ class IoloService {
             throw mapError(resultSymmetricCryptoMaterial['Err']);
         }
 
+        // Get secret with encrypted attributes incl. ivs
+        const resultSecret: Result_1 = await (await this.getActor()).get_secret(uiSecret.id);
+        let existingSecret: Secret;
+        if (resultSecret['Ok']) {
+            existingSecret = resultSecret['Ok'];
+        } else {
+            throw mapError(resultSecret['Err']);
+        }
+
         // Get the vetKey to decrypt the encryption key
         const uservaultVetKey: Uint8Array = await get_aes_256_gcm_key_for_uservault(await this.getUserPrincipal(),(await this.getActor()));
 
         // Decrypt symmetric key
-        const decryptedSymmetricKey = await aes_gcm_decrypt(symmetricCryptoMaterial.encrypted_symmetric_key as Uint8Array, uservaultVetKey, symmetricCryptoMaterial.iv as Uint8Array);
+        const decryptedSymmetricKey = await aes_gcm_decrypt(symmetricCryptoMaterial.encrypted_symmetric_key as Uint8Array, uservaultVetKey, this.ivLength);
 
         // Encrypt updated secret
-        const encryptedSecret: Secret = await this.encryptExistingSecret(uiSecret, decryptedSymmetricKey, symmetricCryptoMaterial.username_decryption_nonce[0] as Uint8Array, symmetricCryptoMaterial.password_decryption_nonce[0] as Uint8Array, symmetricCryptoMaterial.notes_decryption_nonce[0] as Uint8Array);
+        const encryptedSecret: Secret = await this.encryptExistingSecret(uiSecret, decryptedSymmetricKey, existingSecret);
 
         // Update encrypted secret
         const resultUpdate: Result_1 = await (await this.getActor()).update_secret(encryptedSecret);
@@ -255,90 +264,90 @@ class IoloService {
         return await (await this.getActor()).is_user_vault_existing();
     }
 
-    public async addTestament(uiTestament: UiTestament): Promise<UiTestament> {
-        console.debug('start adding testament...');
-        uiTestament.id = uuidv4();
-        const testament: Testament = await this.mapUiTestamentToTestament(uiTestament);
-        const testamentArgs: AddTestamentArgs = {
-            heirs: testament.heirs,
-            id: testament.id,
-            key_box: testament.key_box,
-            name: testament.name,
-            secrets: testament.secrets,
-            conditions: testament.conditions,
-            condition_logical_operator: testament.conditions_logical_operator,
+    public async addPolicy(uiPolicy: UiPolicy): Promise<UiPolicy> {
+        console.debug('start adding policy...');
+        uiPolicy.id = uuidv4();
+        const policy: Policy = await this.mapUiPolicyToPolicy(uiPolicy);
+        const addPolicyArgs: AddTestamentArgs = {
+            heirs: policy.heirs,
+            id: policy.id,
+            key_box: policy.key_box,
+            name: policy.name,
+            secrets: policy.secrets,
+            conditions: policy.conditions,
+            condition_logical_operator: policy.conditions_logical_operator,
         }
 
-        // Add testament
-        const result = await (await this.getActor()).add_testament(testamentArgs);
+        // Add policy
+        const result = await (await this.getActor()).add_testament(addPolicyArgs);
         if (result['Ok']) {
-            return this.mapTestamentToUiTestament(result['Ok'], UiTestamentListEntryRole.Testator);
+            return this.mapPolicyToUiPolicy(result['Ok'], UiPolicyListEntryRole.Testator);
         } else throw mapError(result['Err']);
 
     }
 
-    public async updateTestament(uiTestament: UiTestament): Promise<UiTestament> {
-        console.debug('start updating testament...')
-        const testament: Testament = await this.mapUiTestamentToTestament(uiTestament);
+    public async updatePolicy(uiPolicy: UiPolicy): Promise<UiPolicy> {
+        console.debug('start updating policy...')
+        const policy: Policy = await this.mapUiPolicyToPolicy(uiPolicy);
 
-        // Update testament
-        const result = await (await this.getActor()).update_testament(testament);
+        // Update policy
+        const result = await (await this.getActor()).update_testament(policy);
         if (result['Ok']) {
-            return this.mapTestamentToUiTestament(result['Ok'], UiTestamentListEntryRole.Testator);
+            return this.mapPolicyToUiPolicy(result['Ok'], UiPolicyListEntryRole.Testator);
         } else throw mapError(result['Err']);
     }
 
-    public async getTestamentList(): Promise<UiTestamentListEntry[]> {
+    public async getPolicyList(): Promise<UiPolicyListEntry[]> {
         const resultAsTestator: Result_9 = await (await this.getActor()).get_testament_list_as_testator();
-        let testamentsAsTestator: UiTestamentListEntry[] = [];
+        let policiesAsTestator: UiPolicyListEntry[] = [];
         if (resultAsTestator['Ok']) {
-            testamentsAsTestator = resultAsTestator['Ok'].map((item: TestamentListEntry): UiTestamentListEntry  => {
+            policiesAsTestator = resultAsTestator['Ok'].map((item: TestamentListEntry): UiPolicyListEntry  => {
                 return {
                     id: item.id,
                     name: item.name?.length > 0 ? item.name[0] : undefined,
-                    testator: { id: item.testator?.toString()},
-                    role: UiTestamentListEntryRole.Testator,
+                    owner: { id: item.testator?.toString()},
+                    role: UiPolicyListEntryRole.Testator,
                     conditionStatus: item.condition_status,
                 }
             });
         } else throw mapError(resultAsTestator['Err']);
 
-        const resultAsHeir: Result_9 = await (await this.getActor()).get_testament_list_as_heir();
-        let testamentsAsHeir: UiTestamentListEntry[] =  [];
-        if (resultAsHeir['Ok'] && resultAsHeir['Ok'].length > 0) {
-            testamentsAsHeir = resultAsHeir['Ok'].map((item: TestamentListEntry): UiTestamentListEntry  => {
+        const resultAsBeneficiary: Result_9 = await (await this.getActor()).get_testament_list_as_heir();
+        let policiesAsBeneficiary: UiPolicyListEntry[] =  [];
+        if (resultAsBeneficiary['Ok'] && resultAsBeneficiary['Ok'].length > 0) {
+            policiesAsBeneficiary = resultAsBeneficiary['Ok'].map((item: TestamentListEntry): UiPolicyListEntry  => {
                 return {
                     id: item.id,
                     name: item.name?.length > 0 ? item.name[0] : undefined,
-                    testator: { id: item.testator?.toString()},
-                    role: UiTestamentListEntryRole.Heir,
+                    owner: { id: item.testator?.toString()},
+                    role: UiPolicyListEntryRole.Heir,
                     conditionStatus: item.condition_status,
                 }
             });
-        } else if (resultAsHeir['Err']) {
+        } else if (resultAsBeneficiary['Err']) {
             throw mapError(resultAsTestator['Err']);
         }
-        return testamentsAsTestator.concat(testamentsAsHeir);
+        return policiesAsTestator.concat(policiesAsBeneficiary);
     }
 
-    public async getTestamentAsTestator(id: string): Promise<UiTestamentResponse> {
+    public async getPolicyAsOwner(id: string): Promise<UiPolicyResponse> {
         const result: Result_8 = await (await this.getActor()).get_testament_as_testator(id);
-        console.debug('start get testament as testator', result);
+        console.debug('start get policies as owner', result);
         if (result['Ok']) {
-            return this.mapTestamentResponseToUiTestamentResponse(result['Ok'], UiTestamentListEntryRole.Testator);
+            return this.mapPolicyResponseToUiPolicyResponse(result['Ok'], UiPolicyListEntryRole.Testator);
         }
         throw mapError(result['Err']);
     }
 
-    public async getTestamentAsHeir(id: string): Promise<UiTestamentResponse> {
+    public async getPolicyAsBeneficary(id: string): Promise<UiPolicyResponse> {
         const result: Result_8 = await (await this.getActor()).get_testament_as_heir(id);
         if (result['Ok']) {
-            return this.mapTestamentResponseToUiTestamentResponse(result['Ok'], UiTestamentListEntryRole.Heir);
+            return this.mapPolicyResponseToUiPolicyResponse(result['Ok'], UiPolicyListEntryRole.Heir);
         }
         throw mapError(result['Err']);
     }
 
-    public async deleteTestament(id: string): Promise<void> {
+    public async deletePolicy(id: string): Promise<void> {
         const result: Result_3 = await (await this.getActor()).remove_testament(id);
         if (result['Ok'] === null) {
             return;
@@ -346,15 +355,15 @@ class IoloService {
         throw mapError(result['Err']);
     }
 
-    public async confirmXOutOfYCondition (testator: Principal, testamentId: string, status: boolean): Promise<void> {
-        const result: Result_3 = await (await this.getActor()).confirm_x_out_of_y_condition(testator, testamentId, status);
+    public async confirmXOutOfYCondition (testator: Principal, policyId: string, status: boolean): Promise<void> {
+        const result: Result_3 = await (await this.getActor()).confirm_x_out_of_y_condition(testator, policyId, status);
         if (result['Ok'] === null) {
             return;
         }
         throw mapError(result['Err']);
     }
 
-    public async addHeir(heir: UiUser): Promise<UiUser> {
+    public async addContact(heir: UiUser): Promise<UiUser> {
         console.debug('start adding heir: ', heir);
 
         // Check if it's a valid principal
@@ -379,7 +388,7 @@ class IoloService {
         throw mapError(result['Err']);
     }
 
-    public async getHeirsList(): Promise<UiUser[]> {
+    public async getContactsList(): Promise<UiUser[]> {
         const result: Result_5 = await (await this.getActor()).get_heir_list();
         if (result['Ok']) {
             return result['Ok'].map((item) => this.mapUserToUiUser(item)) ;
@@ -387,7 +396,7 @@ class IoloService {
         throw mapError(result['Err']);
     }
 
-    public async updateHeir(heir: UiUser): Promise<UiUser> {
+    public async updateContact(heir: UiUser): Promise<UiUser> {
         const user = this.mapUiUserToUser(heir);
         const result: Result = await (await this.getActor()).update_heir(user);
 
@@ -397,7 +406,7 @@ class IoloService {
         throw mapError(result['Err']);
     }
 
-    public async deleteHeir(id: string) {
+    public async deleteContact(id: string) {
         const result: Result_3 = await (await this.getActor()).remove_heir(Principal.fromText(id));
         if (result['Ok'] === null) {
             return;
@@ -445,21 +454,21 @@ class IoloService {
     private async mapEncryptedSecretToUiSecret(secret: Secret, keyMaterial: SecretSymmetricCryptoMaterial, vetKey: Uint8Array): Promise<UiSecret> {
 
         // Decrypt symmetric key
-        const decryptedSymmetricKey = await aes_gcm_decrypt(keyMaterial.encrypted_symmetric_key as Uint8Array, vetKey, keyMaterial.iv as Uint8Array);
+        const decryptedSymmetricKey = await aes_gcm_decrypt(keyMaterial.encrypted_symmetric_key as Uint8Array, vetKey, this.ivLength);
 
         // Decrypt attributes
         let decryptedUsername = undefined;
         if (secret.username.length > 0) {
-            decryptedUsername = await aes_gcm_decrypt(secret.username[0] as Uint8Array, decryptedSymmetricKey, keyMaterial.username_decryption_nonce[0] as Uint8Array);
+            decryptedUsername = await aes_gcm_decrypt(secret.username[0] as Uint8Array, decryptedSymmetricKey, this.ivLength);
         }
         let decryptedPassword = undefined;
         if (secret.password.length > 0) {
-            decryptedPassword = await aes_gcm_decrypt(secret.password[0] as Uint8Array, decryptedSymmetricKey, keyMaterial.password_decryption_nonce[0] as Uint8Array);
+            decryptedPassword = await aes_gcm_decrypt(secret.password[0] as Uint8Array, decryptedSymmetricKey, this.ivLength);
         }
 
         let decryptedNotes = undefined;
         if (secret.notes.length > 0) {
-            decryptedNotes = await aes_gcm_decrypt(secret.notes[0] as Uint8Array, decryptedSymmetricKey, keyMaterial.notes_decryption_nonce[0] as Uint8Array);
+            decryptedNotes = await aes_gcm_decrypt(secret.notes[0] as Uint8Array, decryptedSymmetricKey, this.ivLength);
         }
 
         return this.mapSecretToUiSecret(secret, new TextDecoder().decode(decryptedUsername), new TextDecoder().decode(decryptedPassword), new TextDecoder().decode(decryptedNotes));
@@ -508,35 +517,35 @@ class IoloService {
         try {
             // Encrypt the symmetric key
             const symmetricKey = await get_local_random_aes_256_gcm_key();
-            const ivSymmetricKey = window.crypto.getRandomValues(new Uint8Array(12)); // 96-bits; unique per message
+            const ivSymmetricKey = window.crypto.getRandomValues(new Uint8Array(this.ivLength)); // 96-bits; unique per message
             const uservaultVetKey = await get_aes_256_gcm_key_for_uservault(await this.getUserPrincipal(), (await this.getActor()));
             const encryptedSymmetricKey = await aes_gcm_encrypt(symmetricKey, uservaultVetKey, ivSymmetricKey);
 
             // Encrypt optional secret attributes
             let encryptedUsername = new Uint8Array(0);
-            const ivUsername = window.crypto.getRandomValues(new Uint8Array(12)); // Always create an iv because if the username is added later as an update operation we need the key material
+            const ivUsername = window.crypto.getRandomValues(new Uint8Array(this.ivLength)); // Always create an iv because if the username is added later as an update operation we need the key material
             if (uiSecret.username) {
                 encryptedUsername = await aes_gcm_encrypt(uiSecret.username, symmetricKey, ivUsername);
             }
 
             let encryptedPassword = new Uint8Array(0);
-            const ivPassword = window.crypto.getRandomValues(new Uint8Array(12)); // Always create an iv because if the password is added later as an update operation we need the key material
+            const ivPassword = window.crypto.getRandomValues(new Uint8Array(this.ivLength)); // Always create an iv because if the password is added later as an update operation we need the key material
             if (uiSecret.password) {
                 encryptedPassword = await aes_gcm_encrypt(uiSecret.password, symmetricKey, ivPassword);
             }
 
             let encryptedNotes = new Uint8Array(0);
-            const ivNotes = window.crypto.getRandomValues(new Uint8Array(12)); // Always create an iv because if the note is added later as an update operation we need the key material
+            const ivNotes = window.crypto.getRandomValues(new Uint8Array(this.ivLength)); // Always create an iv because if the note is added later as an update operation we need the key material
             if (uiSecret.notes) {
                 encryptedNotes = await aes_gcm_encrypt(uiSecret.notes, symmetricKey, ivNotes);
             }
 
             let symmetricCryptoMaterial: SecretSymmetricCryptoMaterial = {
                 encrypted_symmetric_key: encryptedSymmetricKey,
-                iv: ivSymmetricKey,
-                username_decryption_nonce: [ivUsername],
-                password_decryption_nonce: [ivPassword],
-                notes_decryption_nonce: [ivNotes],
+                iv: [],
+                username_decryption_nonce: [],
+                password_decryption_nonce: [],
+                notes_decryption_nonce: [],
             };
 
             return {
@@ -554,22 +563,52 @@ class IoloService {
         }
     }
 
-    private async encryptExistingSecret(uiSecret: UiSecret, symmetricKey:  Uint8Array, ivUsername: Uint8Array, ivPassword: Uint8Array, ivNotes: Uint8Array): Promise<Secret> {
+    private async encryptExistingSecret(uiSecret: UiSecret, symmetricKey:  Uint8Array, existingSecret: Secret): Promise<Secret> {
         // When updating existing secrets the existing encryption key and the existing ivs must be used
         try {
             // Encrypt optional secret attributes
             let encryptedUsername = new Uint8Array(0);
             if (uiSecret.username) {
+                // Check if username is already in existing secret
+                let ivUsername: Uint8Array;
+                if (existingSecret.username.length > 0) {
+                    // Use existing iv
+                    ivUsername = existingSecret.username[0].slice(0, this.ivLength) as Uint8Array;
+                } else {
+                    // Create new iv
+                    ivUsername = window.crypto.getRandomValues(new Uint8Array(this.ivLength)); // 96-bits; unique per message
+                }
                 encryptedUsername = await aes_gcm_encrypt(uiSecret.username, symmetricKey, ivUsername);
             }
+
             let encryptedPassword = new Uint8Array(0);
             if (uiSecret.password) {
+                // Check if password is already in existing secret
+                let ivPassword: Uint8Array;
+                if (existingSecret.password.length > 0) {
+                    // Use existing iv
+                    ivPassword = existingSecret.password[0].slice(0, this.ivLength) as Uint8Array;
+                } else {
+                    // Create new iv
+                    ivPassword = window.crypto.getRandomValues(new Uint8Array(this.ivLength)); // 96-bits; unique per message
+                }
                 encryptedPassword = await aes_gcm_encrypt(uiSecret.password, symmetricKey, ivPassword);
             }
+
             let encryptedNotes = new Uint8Array(0);
             if (uiSecret.notes) {
+                // Check if notes is already in existing secret
+                let ivNotes: Uint8Array;
+                if (existingSecret.notes.length > 0) {
+                    // Use existing iv
+                    ivNotes = existingSecret.notes[0].slice(0, this.ivLength) as Uint8Array;
+                } else {
+                    // Create new iv
+                    ivNotes = window.crypto.getRandomValues(new Uint8Array(this.ivLength)); // 96-bits; unique per message
+                }
                 encryptedNotes = await aes_gcm_encrypt(uiSecret.notes, symmetricKey, ivNotes);
             }
+
             return {
                 id: uiSecret.id,
                 url: uiSecret.url ? [uiSecret.url] : [],
@@ -607,28 +646,28 @@ class IoloService {
         }
     }
 
-    private async mapUiTestamentToTestament(uiTestament: UiTestament): Promise<Testament> {
-        const heirs = uiTestament.heirs.map((item) => {
+    private async mapUiPolicyToPolicy(uiPolicy: UiPolicy): Promise<Policy> {
+        const beneficiaries = uiPolicy.beneficiaries.map((item) => {
             return Principal.fromText(item.id);
         });
 
         // Get the uservault vetKey to decrypt the symmetric encryption key
         const uservaultVetKey: Uint8Array = await get_aes_256_gcm_key_for_uservault(await this.getUserPrincipal(), (await this.getActor()));
 
-        // Get vetkey for testaments
-        const testamentVetKey = await get_aes_256_gcm_key_for_testament(uiTestament.id, (await this.getActor()));
+        // Get vetkey for policies
+        const policyVetKey = await get_aes_256_gcm_key_for_policy(uiPolicy.id, (await this.getActor()));
 
-        // Create key_box by encrypting symmetric secrets key with testament vetKey
+        // Create key_box by encrypting symmetric secrets key with policy vetKey
         let keyBox = new Array<[string, SecretSymmetricCryptoMaterial]>;
-        for (const item of uiTestament.secrets) {
+        for (const item of uiPolicy.secrets) {
             const result: Result_7 = await (await this.getActor()).get_secret_symmetric_crypto_material(item);
             if (result['Ok']) {
                 // Decrypt symmetric key with uservault vetKey
-                const decryptedSymmetricKey = await aes_gcm_decrypt(result['Ok'].encrypted_symmetric_key as Uint8Array, uservaultVetKey, result['Ok'].iv as Uint8Array);
+                const decryptedSymmetricKey = await aes_gcm_decrypt(result['Ok'].encrypted_symmetric_key as Uint8Array, uservaultVetKey, this.ivLength);
 
-                // Enrcypt symmetric key with testament vetKey
+                // Enrcypt symmetric key with policy vetKey
                 const ivSymmetricKey = window.crypto.getRandomValues(new Uint8Array(12)); // 96-bits; unique per message
-                const encryptedSymmetricKey = await aes_gcm_encrypt(decryptedSymmetricKey, testamentVetKey, ivSymmetricKey);
+                const encryptedSymmetricKey = await aes_gcm_encrypt(decryptedSymmetricKey, policyVetKey, ivSymmetricKey);
 
                 keyBox.push([item, {
                     iv: ivSymmetricKey,
@@ -641,17 +680,17 @@ class IoloService {
         }
 
         return {
-            id: uiTestament.id,
-            heirs: heirs,
-            name: [uiTestament.name],
-            testator: Principal.fromText(uiTestament.testator.id),
-            secrets: uiTestament.secrets,
+            id: uiPolicy.id,
+            heirs: beneficiaries,
+            name: [uiPolicy.name],
+            testator: Principal.fromText(uiPolicy.owner.id),
+            secrets: uiPolicy.secrets,
             key_box: keyBox,
-            conditions_logical_operator: uiTestament.conditionsLogicalOperator == LogicalOperator.And ? { 'And' : null } : { 'Or' : null },
-            conditions_status: uiTestament.conditionsStatus,
-            conditions: uiTestament.conditions.map(uiCondition => this.mapUiConditionToCondition(uiCondition)),
-            date_created: uiTestament.dateCreated ? this.dateToNanosecondsInBigint(uiTestament.dateCreated) : 0n,
-            date_modified: uiTestament.dateModified ? this.dateToNanosecondsInBigint(uiTestament.dateModified) : 0n,
+            conditions_logical_operator: uiPolicy.conditionsLogicalOperator == LogicalOperator.And ? { 'And' : null } : { 'Or' : null },
+            conditions_status: uiPolicy.conditionsStatus,
+            conditions: uiPolicy.conditions.map(uiCondition => this.mapUiConditionToCondition(uiCondition)),
+            date_created: uiPolicy.dateCreated ? this.dateToNanosecondsInBigint(uiPolicy.dateCreated) : 0n,
+            date_modified: uiPolicy.dateModified ? this.dateToNanosecondsInBigint(uiPolicy.dateModified) : 0n,
         }
     }
 
@@ -661,7 +700,7 @@ class IoloService {
             const timeBasedCondition = {
                 id: tCondition.id,
                 condition_status: tCondition.conditionStatus,
-                number_of_days_since_last_login: BigInt(tCondition.numberOfDaysSinceLastLogin)
+                number_of_days_since_last_login: tCondition.numberOfDaysSinceLastLogin ? BigInt(tCondition.numberOfDaysSinceLastLogin): BigInt(100)
             } as TimeBasedCondition
             return {
                 TimeBasedCondition: timeBasedCondition
@@ -672,7 +711,7 @@ class IoloService {
             const xOutOfYCondition: XOutOfYCondition = {
                 id: xCondition.id,
                 condition_status: xCondition.conditionStatus,
-                quorum: BigInt(xCondition.quorum),
+                quorum: xCondition.quorum ? BigInt(xCondition.quorum): BigInt(xCondition.validators.length),
                 validators: xCondition.validators.map(v => {
                     return {
                         id: Principal.fromText(v.user.id),
@@ -686,18 +725,18 @@ class IoloService {
         }
     }
 
-    private mapTestamentToUiTestament(testament: Testament, role: UiTestamentListEntryRole): UiTestament {
+    private mapPolicyToUiPolicy(policy: Policy, role: UiPolicyListEntryRole): UiPolicy {
         return {
-            id: testament.id,
-            name: testament.name.length > 0 ? testament.name[0] : undefined,
-            testator: { id: testament.testator.toString() },
-            secrets: testament.secrets,
-            heirs: testament.heirs.map((item) => {return {id: item.toString()}}),
-            conditionsLogicalOperator: testament.conditions_logical_operator.hasOwnProperty('And') ? LogicalOperator.And : LogicalOperator.Or,
-            conditionsStatus: testament.conditions_status,
-            conditions: testament.conditions.map(condition => this.mapConditionToUiCondition(condition)),
-            dateCreated: this.nanosecondsInBigintToIsoString(testament.date_created),
-            dateModified: this.nanosecondsInBigintToIsoString(testament.date_modified),
+            id: policy.id,
+            name: policy.name.length > 0 ? policy.name[0] : undefined,
+            owner: { id: policy.testator.toString() },
+            secrets: policy.secrets,
+            beneficiaries: policy.heirs.map((item) => {return {id: item.toString()}}),
+            conditionsLogicalOperator: policy.conditions_logical_operator.hasOwnProperty('And') ? LogicalOperator.And : LogicalOperator.Or,
+            conditionsStatus: policy.conditions_status,
+            conditions: policy.conditions.map(condition => this.mapConditionToUiCondition(condition)),
+            dateCreated: this.nanosecondsInBigintToIsoString(policy.date_created),
+            dateModified: this.nanosecondsInBigintToIsoString(policy.date_modified),
             role
         };
     }
@@ -731,8 +770,8 @@ class IoloService {
         }
     }
 
-    private mapTestamentResponseToUiTestamentResponse(testament: TestamentResponse, role: UiTestamentListEntryRole): UiTestamentResponse {
-        let secrets: UiSecretListEntry[] = testament.secrets.map((item) => {
+    private mapPolicyResponseToUiPolicyResponse(policy: TestamentResponse, role: UiPolicyListEntryRole): UiPolicyResponse {
+        let secrets: UiSecretListEntry[] = policy.secrets.map((item) => {
             let category = undefined;
             if (item.category.length > 0) {
                 if (item.category[0].hasOwnProperty('Password')) {
@@ -750,16 +789,16 @@ class IoloService {
             }
         })
         return {
-            id: testament.id,
-            name: testament.name.length > 0 ? testament.name[0] : undefined,
-            testator: { id: testament.testator.toString() },
+            id: policy.id,
+            name: policy.name.length > 0 ? policy.name[0] : undefined,
+            owner: { id: policy.testator.toString() },
             secrets: secrets,
-            heirs: testament.heirs.map((item) => {return {id: item.toString()}}),
-            conditionsLogicalOperator: testament.conditions_logical_operator.hasOwnProperty('And') ? LogicalOperator.And : LogicalOperator.Or,
-            conditionsStatus: testament.conditions_status,
-            conditions: testament.conditions.map(condition => this.mapConditionToUiCondition(condition)),
-            dateCreated: this.nanosecondsInBigintToIsoString(testament.date_created),
-            dateModified: this.nanosecondsInBigintToIsoString(testament.date_modified),
+            beneficiaries: policy.heirs.map((item) => {return {id: item.toString()}}),
+            conditionsLogicalOperator: policy.conditions_logical_operator.hasOwnProperty('And') ? LogicalOperator.And : LogicalOperator.Or,
+            conditionsStatus: policy.conditions_status,
+            conditions: policy.conditions.map(condition => this.mapConditionToUiCondition(condition)),
+            dateCreated: this.nanosecondsInBigintToIsoString(policy.date_created),
+            dateModified: this.nanosecondsInBigintToIsoString(policy.date_modified),
             role
         };
     }

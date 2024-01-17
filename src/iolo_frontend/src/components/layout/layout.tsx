@@ -1,8 +1,8 @@
 import {BrowserRouter as Router, Route, Routes} from 'react-router-dom';
 import AppBottomNavigation from '../navigation/bottom/bottom-navigation';
-import {Secrets} from '../../pages/secrets/secrets';
-import {Testaments} from '../../pages/testaments/testaments';
-import {Heirs} from '../../pages/heirs/heirs';
+import {Secrets} from '../../pages/vault/secrets';
+import {Policies} from '../../pages/policies/policies';
+import {Contacts} from '../../pages/contacts/contacts';
 import {Login} from '../../pages/login/login';
 import * as React from 'react';
 import {FC} from 'react';
@@ -15,7 +15,7 @@ import {SideBar} from "../navigation/sidebar/sidbar";
 import {Box} from "@mui/material";
 import {mobileWidth} from "../../App";
 import useWindowResize from "../../utils/useWindowResize";
-import {ROUTE_HEIRS, ROUTE_PROFILE, ROUTE_SECRETS, ROUTE_SHARE, ROUTE_TESTAMENTS} from "./routes";
+import {ROUTE_CONTACTS, ROUTE_POLICIES, ROUTE_PROFILE, ROUTE_SECRETS, ROUTE_SHARE} from "./routes";
 
 export const Layout: FC = () => {
     const isLoggedIn = useSelector(selectPrincipal);
@@ -42,8 +42,8 @@ export const Layout: FC = () => {
                 >
                     <Routes>
                         <Route path={ROUTE_SECRETS} Component={Secrets}/>
-                        <Route path={ROUTE_TESTAMENTS} Component={Testaments}/>
-                        <Route path={ROUTE_HEIRS} Component={Heirs}/>
+                        <Route path={ROUTE_POLICIES} Component={Policies}/>
+                        <Route path={ROUTE_CONTACTS} Component={Contacts}/>
                         <Route path={ROUTE_PROFILE} Component={Profile}/>
                         <Route path={ROUTE_SHARE} Component={ShareId}/>
                     </Routes>

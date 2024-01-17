@@ -16,9 +16,7 @@ const actorOne = createNewActor(identityOne, canisterId);
 const actorTwo = createNewActor(identityTwo, canisterId);
 const actorThree = createNewActor(identityThree, canisterId);
 
-let userOneDateCreated: bigint;
-let userOneDateModified: bigint;
-let userOneDateLastLogin: bigint;
+let userOneForComparison: User = {} as User;
 
 describe("User Tests", () => {
     test("it should create different users", async () => {
@@ -35,26 +33,23 @@ describe("User Tests", () => {
         };
         const userOne: Result = await actorOne.create_user(addUserArgsOne);
         expect(userOne).toHaveProperty('Ok');
-        expect(userOne['Ok'].date_created).toBeGreaterThan(0);
-        expect(userOne['Ok'].date_created).toStrictEqual(userOne['Ok'].date_modified);
+        expect(userOne['Ok'].id).toStrictEqual(identityOne.getPrincipal());
         expect(userOne['Ok'].user_vault_id).toHaveLength(1);
         expect(userOne['Ok'].user_vault_id[0]).toBeGreaterThan(0);
-        expect(userOne['Ok'].id).toStrictEqual(identityOne.getPrincipal());
-        expect(userOne['Ok'].user_type).toHaveLength(1);
-        expect(userOne['Ok'].user_type[0]).toStrictEqual({ 'Person' : null });
-        expect(userOne['Ok'].name).toHaveLength(1);
-        expect(userOne['Ok'].name[0]).toStrictEqual('Alice');
-        expect(userOne['Ok'].email).toHaveLength(1);
-        expect(userOne['Ok'].email[0]).toStrictEqual('alice@ioloapp.io');
+        expect(userOne['Ok'].user_type).toStrictEqual([{ 'Person' : null }]);
+        expect(userOne['Ok'].name).toStrictEqual(['Alice']);
+        expect(userOne['Ok'].email).toStrictEqual(['alice@ioloapp.io']);
         expect(userOne['Ok'].date_last_login).toHaveLength(1);
         expect(userOne['Ok'].date_last_login[0]).toBeGreaterThan(0);
         expect(userOne['Ok'].date_last_login[0]).toStrictEqual(userOne['Ok'].date_created);
-        userOneDateCreated = userOne['Ok'].date_created; // For later comparison
-        userOneDateModified = userOne['Ok'].date_modified; // For later comparison
-        userOneDateLastLogin = userOne['Ok'].date_last_login[0]; // For later comparison
+        expect(userOne['Ok'].date_created).toBeGreaterThan(0);
+        expect(userOne['Ok'].date_modified).toBeGreaterThan(0);
+        expect(userOne['Ok'].date_created).toStrictEqual(userOne['Ok'].date_modified);
 
+        // Save user for later comparison
+        userOneForComparison = userOne['Ok'];
 
-        // Create user of type Person wit all optional fields
+        // Create user of type Company with all optional fields
         const addUserArgsTwo = {
             id: identityTwo.getPrincipal(), // will be overwritten anyway by the backend
             name: ['AliceCompany'],
@@ -63,19 +58,18 @@ describe("User Tests", () => {
         };
         const userTwo: Result = await actorTwo.create_user(addUserArgsTwo);
         expect(userTwo).toHaveProperty('Ok');
-        expect(userTwo['Ok'].date_created).toBeGreaterThan(0);
-        expect(userTwo['Ok'].date_created).toStrictEqual(userTwo['Ok'].date_modified);
+        expect(userTwo['Ok'].id).toStrictEqual(identityTwo.getPrincipal());
         expect(userTwo['Ok'].user_vault_id).toHaveLength(1);
         expect(userTwo['Ok'].user_vault_id[0]).toBeGreaterThan(0);
-        expect(userTwo['Ok'].id).toStrictEqual(identityTwo.getPrincipal());
-        expect(userTwo['Ok'].user_type).toHaveLength(1);
-        expect(userTwo['Ok'].user_type[0]).toStrictEqual({ 'Company' : null });
-        expect(userTwo['Ok'].name).toHaveLength(1);
-        expect(userTwo['Ok'].name[0]).toStrictEqual('AliceCompany');
-        expect(userTwo['Ok'].email).toHaveLength(1);
-        expect(userTwo['Ok'].email[0]).toStrictEqual('alicecompany@ioloapp.io');
+        expect(userTwo['Ok'].user_type).toStrictEqual([{ 'Company' : null }]);
+        expect(userTwo['Ok'].name).toStrictEqual(['AliceCompany']);
+        expect(userTwo['Ok'].email).toStrictEqual(['alicecompany@ioloapp.io']);
+        expect(userTwo['Ok'].date_last_login).toHaveLength(1);
         expect(userTwo['Ok'].date_last_login[0]).toBeGreaterThan(0);
         expect(userTwo['Ok'].date_last_login[0]).toStrictEqual(userTwo['Ok'].date_created);
+        expect(userTwo['Ok'].date_created).toBeGreaterThan(0);
+        expect(userTwo['Ok'].date_modified).toBeGreaterThan(0);
+        expect(userTwo['Ok'].date_created).toStrictEqual(userTwo['Ok'].date_modified);
 
         // Create user with only mandatory fields
         const addUserArgsThree = {
@@ -86,16 +80,17 @@ describe("User Tests", () => {
         };
         const userThree: Result = await actorThree.create_user(addUserArgsThree);
         expect(userThree).toHaveProperty('Ok');
-        expect(userThree['Ok'].date_created).toBeGreaterThan(0);
-        expect(userThree['Ok'].date_created).toStrictEqual(userThree['Ok'].date_modified);
+        expect(userThree['Ok'].id).toStrictEqual(identityThree.getPrincipal());
         expect(userThree['Ok'].user_vault_id).toHaveLength(1);
         expect(userThree['Ok'].user_vault_id[0]).toBeGreaterThan(0);
-        expect(userThree['Ok'].id).toStrictEqual(identityThree.getPrincipal());
         expect(userThree['Ok'].user_type).toHaveLength(0);
         expect(userThree['Ok'].name).toHaveLength(0);
         expect(userThree['Ok'].email).toHaveLength(0);
         expect(userThree['Ok'].date_last_login[0]).toBeGreaterThan(0);
         expect(userThree['Ok'].date_last_login[0]).toStrictEqual(userThree['Ok'].date_created);
+        expect(userThree['Ok'].date_created).toBeGreaterThan(0);
+        expect(userThree['Ok'].date_modified).toBeGreaterThan(0);
+        expect(userThree['Ok'].date_created).toStrictEqual(userThree['Ok'].date_modified);
 
         // All users should have an uservault
         const vaultOne: boolean = await actorOne.is_user_vault_existing();
@@ -112,7 +107,7 @@ describe("User Tests", () => {
         const addUserArgsOne = {
             id: identityOne.getPrincipal(),
             name: ['Eve'],
-            email: ['eve@ioloapp.org'],
+            email: ['eve@ioloapp.io'],
             user_type: [{ 'Person' : null }],
         };
 
@@ -120,56 +115,62 @@ describe("User Tests", () => {
         expect(userOneAgain).toHaveProperty('Err');
         expect(userOneAgain['Err']).toHaveProperty('UserAlreadyExists');
 
-        // The next test ensures that the user has not been overwritten
+        // The next test ensures that no attributes of the user have been overwritten
 
     }, 10000); // Set timeout
 
     test("it should read the current user properly", async () => {
         const currentUser: Result = await actorOne.get_current_user();
+
         expect(currentUser).toHaveProperty('Ok');
-        expect(currentUser['Ok'].date_created).toStrictEqual(userOneDateCreated);
-        expect(currentUser['Ok'].date_modified).toStrictEqual(userOneDateModified);
-        expect(currentUser['Ok'].user_vault_id).toHaveLength(1);
-        expect(currentUser['Ok'].user_vault_id[0]).toBeGreaterThan(0);
-        expect(currentUser['Ok'].id).toStrictEqual(identityOne.getPrincipal());
-        expect(currentUser['Ok'].user_type).toHaveLength(1);
-        expect(currentUser['Ok'].user_type[0]).toStrictEqual({ 'Person' : null });
-        expect(currentUser['Ok'].name).toHaveLength(1);
-        expect(currentUser['Ok'].name[0]).toStrictEqual('Alice');
-        expect(currentUser['Ok'].email).toHaveLength(1);
-        expect(currentUser['Ok'].email[0]).toStrictEqual('alice@ioloapp.io');
-        expect(currentUser['Ok'].date_last_login).toHaveLength(1);
-        expect(currentUser['Ok'].date_last_login[0]).toStrictEqual(userOneDateLastLogin);
+        expect(currentUser['Ok']).toStrictEqual(userOneForComparison);
     }, 10000); // Set timeout
 
     test("it should update a user properly", async () => {
-        const currentUser: Result = await actorOne.get_current_user(); // Get current user to compare later
+        const currentUser: Result = await actorOne.get_current_user();
         expect(currentUser).toHaveProperty('Ok');
 
-        const updatedUser: User = currentUser['Ok'];
-        updatedUser.id = identityTwo.getPrincipal(); // Should not be updatable
-        updatedUser.name = ['AliceUpdated'];
-        updatedUser.email = ['aliceupdated@ioloapp.io'];
-        updatedUser.user_type = [{ 'Company' : null }]; // Should not be updatable
-        updatedUser.date_modified = BigInt(Date.now() * 1000); // Should not be updatable
-        updatedUser.date_created = BigInt(Date.now() * 1000); // Should not be updatable
-        updatedUser.date_last_login = [BigInt(Date.now() * 1000)]; // Should not be updatable
+        const updatedUser: User = {
+            id: identityTwo.getPrincipal(), // Should not be updatable
+            user_vault_id: [BigInt(0)], // Should not be updatable
+            name: ['AliceUpdated'],
+            email: ['aliceupdated@ioloapp.io'],
+            user_type: [{ 'Company' : null }],
+            date_modified: BigInt(Date.now() * 1000), // Should not be updatable
+            date_created: BigInt(Date.now() * 1000), // Should not be updatable
+            date_last_login: [BigInt(Date.now() * 1000)], // Should not be updatable
+        };
 
-        // Only mail and name should have been updated
+
+        // Only mail, name and user_type should have been updated
         const resultUpdatedUser: Result = await actorOne.update_user(updatedUser);
         expect(resultUpdatedUser).toHaveProperty('Ok');
-        expect(resultUpdatedUser['Ok'].date_created).toStrictEqual(currentUser['Ok'].date_created);
-        expect(resultUpdatedUser['Ok'].date_modified).toStrictEqual(currentUser['Ok'].date_modified);
+        expect(resultUpdatedUser['Ok'].id).toStrictEqual(currentUser['Ok'].id);
         expect(resultUpdatedUser['Ok'].user_vault_id).toStrictEqual(currentUser['Ok'].user_vault_id);
-        expect(resultUpdatedUser['Ok'].id).toStrictEqual(identityOne.getPrincipal());
-        expect(resultUpdatedUser['Ok'].user_type).toStrictEqual(currentUser['Ok'].user_type);
+        expect(resultUpdatedUser['Ok'].user_type).toStrictEqual(updatedUser.user_type);
         expect(resultUpdatedUser['Ok'].name).toStrictEqual(updatedUser.name);
         expect(resultUpdatedUser['Ok'].email).toStrictEqual(updatedUser.email);
         expect(resultUpdatedUser['Ok'].date_last_login).toStrictEqual(currentUser['Ok'].date_last_login);
+        expect(resultUpdatedUser['Ok'].date_created).toStrictEqual(currentUser['Ok'].date_created);
+        expect(resultUpdatedUser['Ok'].date_modified).toStrictEqual(currentUser['Ok'].date_modified);
 
     }, 15000); // Set timeout
 
     test("it should update the last_login_date properly", async () => {
+        const currentUser: Result = await actorOne.get_current_user();
+        expect(currentUser).toHaveProperty('Ok');
+
+        const resultUpdatedUser: Result = await actorOne.update_user_login_date();
+        expect(resultUpdatedUser).toHaveProperty('Ok');
+        expect(resultUpdatedUser['Ok'].id).toStrictEqual(currentUser['Ok'].id);
+        expect(resultUpdatedUser['Ok'].user_vault_id).toStrictEqual(currentUser['Ok'].user_vault_id);
+        expect(resultUpdatedUser['Ok'].user_type).toStrictEqual(currentUser['Ok'].user_type);
+        expect(resultUpdatedUser['Ok'].name).toStrictEqual(currentUser['Ok'].name);
+        expect(resultUpdatedUser['Ok'].email).toStrictEqual(currentUser['Ok'].email);
+        expect(resultUpdatedUser['Ok'].date_last_login).toHaveLength(1);
+        expect(resultUpdatedUser['Ok'].date_last_login[0]).toBeGreaterThan(currentUser['Ok'].date_last_login[0]);
+        expect(resultUpdatedUser['Ok'].date_created).toStrictEqual(currentUser['Ok'].date_created);
+        expect(resultUpdatedUser['Ok'].date_modified).toBeGreaterThan(currentUser['Ok'].date_modified);
 
     }, 15000); // Set timeout
 
@@ -185,6 +186,7 @@ describe("User Tests", () => {
         // Delete user again, must fail
         resultOne = await actorOne.delete_user();
         expect(resultOne).toHaveProperty('Err');
+        expect(resultOne['Err']).toHaveProperty('UserDoesNotExist');
 
         // Create same user again, must work because it has been deleted
         const addUserArgsOne = {
@@ -196,6 +198,14 @@ describe("User Tests", () => {
         const userOneAgain: Result = await actorOne.create_user(addUserArgsOne);
         expect(userOneAgain).toHaveProperty('Ok');
         expect(userOneAgain['Ok'].id).toStrictEqual(identityOne.getPrincipal());
+
+        // Delete user
+        let resultTwo = await actorTwo.delete_user();
+        expect(resultTwo).toHaveProperty('Ok');
+
+        // Delete user
+        let resultThree = await actorThree.delete_user();
+        expect(resultThree).toHaveProperty('Ok');
 
     }, 15000); // Set timeout
 });

@@ -3,46 +3,46 @@ import {useSelector} from "react-redux";
 import {useAppDispatch} from "../../redux/hooks";
 import AddIcon from "@mui/icons-material/Add";
 import {Fab} from "@mui/material";
-import {addTestamentThunk, testamentsActions} from "../../redux/testaments/testamentsSlice";
+import {addPolicyThunk, policiesActions} from "../../redux/policies/policiesSlice";
 import {
-    selectShowAddTestamentDialog,
-    selectTestamentDialogItem,
-    selectTestamentDialogItemState,
-    selectTestamentError
-} from "../../redux/testaments/testamentsSelectors";
+    selectPolicyDialogItem,
+    selectPolicyDialogItemState,
+    selectPolicyError,
+    selectShowAddPolicyDialog
+} from "../../redux/policies/policiesSelectors";
 import {selectCurrentUser} from "../../redux/user/userSelectors";
 import {BasicDialog} from "../dialog/basic-dialog";
-import {TestamentDialogContent} from './testament-dialog-content';
-import {UiTestament, UiTestamentResponse} from "../../services/IoloTypesForUi";
+import {PolicyDialogContent} from './policy-dialog-content';
+import {UiPolicy, UiPolicyResponse} from "../../services/IoloTypesForUi";
 import {useTranslation} from "react-i18next";
 
-export default function AddTestamentDialog() {
+export default function AddPolicyDialog() {
     const dispatch = useAppDispatch();
     const { t } = useTranslation();
-    const showAddTestamentDialog = useSelector(selectShowAddTestamentDialog);
-    const dialogItem: UiTestamentResponse = useSelector(selectTestamentDialogItem);
-    const testamentError = useSelector(selectTestamentError);
-    const dialogItemState = useSelector(selectTestamentDialogItemState);
+    const showAddPolicyDialog = useSelector(selectShowAddPolicyDialog);
+    const dialogItem: UiPolicyResponse = useSelector(selectPolicyDialogItem);
+    const policyError = useSelector(selectPolicyError);
+    const dialogItemState = useSelector(selectPolicyDialogItemState);
     const currentUser = useSelector(selectCurrentUser);
 
     const handleClickOpen = () => {
-        dispatch(testamentsActions.openAddDialog());
+        dispatch(policiesActions.openAddDialog());
     };
 
     const handleClose = () => {
-        dispatch(testamentsActions.closeAddDialog());
+        dispatch(policiesActions.closeAddDialog());
     };
 
-    const cancelAddTestament = () => {
-        dispatch(testamentsActions.cancelAddTestament());
+    const cancelAddPolicy = () => {
+        dispatch(policiesActions.cancelAddPolicy());
     }
 
-    const createTestament = async () => {
-        dispatch(addTestamentThunk({
+    const createPolicy = async () => {
+        dispatch(addPolicyThunk({
             ...dialogItem,
-            testator: currentUser,
+            owner: currentUser,
             secrets: dialogItem.secrets.map(s => s.id)
-        } as UiTestament));
+        } as UiPolicy));
     }
 
     return (
@@ -56,14 +56,14 @@ export default function AddTestamentDialog() {
             </Fab>
             <BasicDialog title={t('policies.dialog.add.title')}
                          leadText={t('policies.dialog.add.text')}
-                         isOpen={showAddTestamentDialog}
+                         isOpen={showAddPolicyDialog}
                          handleClose={handleClose}
-                         cancelAction={cancelAddTestament}
-                         okAction={createTestament}
+                         cancelAction={cancelAddPolicy}
+                         okAction={createPolicy}
                          okButtonText={t('policies.dialog.add.button')}
-                         error={testamentError}
+                         error={policyError}
                          dialogItemState={dialogItemState}>
-                <TestamentDialogContent/>
+                <PolicyDialogContent/>
             </BasicDialog>
         </div>
     );

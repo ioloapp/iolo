@@ -3,8 +3,8 @@ import {persistReducer, persistStore} from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 import {userReducer} from './user/userSlice';
 import {secretsReducer} from "./secrets/secretsSlice";
-import {testamentsReducer} from "./testaments/testamentsSlice";
-import {heirsReducer} from "./heirs/heirsSlice";
+import {policiesReducer} from "./policies/policiesSlice";
+import {contactsReducer} from "./contacts/contactsSlice";
 
 const persistConfig = {
     key: 'iolo',
@@ -14,8 +14,8 @@ const persistConfig = {
 const appReducer = combineReducers({
     user: userReducer,
     secrets: secretsReducer,
-    testaments: testamentsReducer,
-    heirs: heirsReducer,
+    policies: policiesReducer,
+    contacts: contactsReducer,
 });
 
 const rootReducer = (state, action) => {

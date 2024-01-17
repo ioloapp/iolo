@@ -94,7 +94,7 @@ export const idlFactory = ({ IDL }) => {
     'key_box' : IDL.Vec(IDL.Tuple(IDL.Text, SecretSymmetricCryptoMaterial)),
     'conditions' : IDL.Vec(Condition),
   });
-  const Testament = IDL.Record({
+  const Policy = IDL.Record({
     'id' : IDL.Text,
     'heirs' : IDL.Vec(IDL.Principal),
     'date_created' : IDL.Nat64,
@@ -107,7 +107,7 @@ export const idlFactory = ({ IDL }) => {
     'conditions' : IDL.Vec(Condition),
     'date_modified' : IDL.Nat64,
   });
-  const Result_2 = IDL.Variant({ 'Ok' : Testament, 'Err' : SmartVaultErr });
+  const Result_2 = IDL.Variant({ 'Ok' : Policy, 'Err' : SmartVaultErr });
   const Result_3 = IDL.Variant({ 'Ok' : IDL.Null, 'Err' : SmartVaultErr });
   const TestamentKeyDerviationArgs = IDL.Record({
     'encryption_public_key' : IDL.Vec(IDL.Nat8),
@@ -218,7 +218,7 @@ export const idlFactory = ({ IDL }) => {
     'symmetric_key_verification_key' : IDL.Func([], [IDL.Text], []),
     'update_heir' : IDL.Func([User], [Result], []),
     'update_secret' : IDL.Func([Secret], [Result_1], []),
-    'update_testament' : IDL.Func([Testament], [Result_2], []),
+    'update_testament' : IDL.Func([Policy], [Result_2], []),
     'update_user' : IDL.Func([User], [Result], []),
     'update_user_login_date' : IDL.Func([], [Result], []),
     'what_time_is_it' : IDL.Func([], [IDL.Nat64], ['query']),

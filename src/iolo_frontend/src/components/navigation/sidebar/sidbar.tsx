@@ -12,7 +12,7 @@ import {userActions} from "../../../redux/user/userSlice";
 import {useAppDispatch} from "../../../redux/hooks";
 import {sidebarWith} from "../../../App";
 import {useTranslation} from "react-i18next";
-import {ROUTE_HEIRS, ROUTE_PROFILE, ROUTE_SECRETS, ROUTE_SHARE, ROUTE_TESTAMENTS} from "../../layout/routes";
+import {ROUTE_CONTACTS, ROUTE_POLICIES, ROUTE_PROFILE, ROUTE_SECRETS, ROUTE_SHARE} from "../../layout/routes";
 import {IoloLogo} from "../../../resources/logo";
 
 export const SideBar = () => {
@@ -47,13 +47,13 @@ export const SideBar = () => {
                     </ListItemIcon>
                     <ListItemText primary={t('secrets.title')} className="sidebar-link"/>
                 </ListItem>
-                <ListItem component={Link} to={ROUTE_TESTAMENTS}>
+                <ListItem component={Link} to={ROUTE_POLICIES}>
                     <ListItemIcon>
                         <HistoryEduOutlinedIcon className="navigation-icon"/>
                     </ListItemIcon>
                     <ListItemText primary={t('policies.title')} className="sidebar-link"/>
                 </ListItem>
-                <ListItem component={Link} to={ROUTE_HEIRS}>
+                <ListItem component={Link} to={ROUTE_CONTACTS}>
                     <ListItemIcon>
                         <PeopleOutlineIcon className="navigation-icon"/>
                     </ListItemIcon>

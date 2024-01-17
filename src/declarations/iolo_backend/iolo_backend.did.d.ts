@@ -1,5 +1,5 @@
-import type { Principal } from '@dfinity/principal';
-import type { ActorMethod } from '@dfinity/agent';
+import type {Principal} from '@dfinity/principal';
+import type {ActorMethod} from '@dfinity/agent';
 
 export interface AddSecretArgs {
   'id' : string,
@@ -30,11 +30,24 @@ export type Condition = { 'TimeBasedCondition' : TimeBasedCondition } |
   { 'XOutOfYCondition' : XOutOfYCondition };
 export type LogicalOperator = { 'Or' : null } |
   { 'And' : null };
+export interface Policy {
+  'id' : string,
+  'heirs' : Array<Principal>,
+  'date_created' : bigint,
+  'name' : [] | [string],
+  'conditions_logical_operator' : LogicalOperator,
+  'testator' : Principal,
+  'secrets' : Array<string>,
+  'conditions_status' : boolean,
+  'key_box' : Array<[string, SecretSymmetricCryptoMaterial]>,
+  'conditions' : Array<Condition>,
+  'date_modified' : bigint,
+}
 export type Result = { 'Ok' : User } |
   { 'Err' : SmartVaultErr };
 export type Result_1 = { 'Ok' : Secret } |
   { 'Err' : SmartVaultErr };
-export type Result_2 = { 'Ok' : Testament } |
+export type Result_2 = { 'Ok' : Policy } |
   { 'Err' : SmartVaultErr };
 export type Result_3 = { 'Ok' : null } |
   { 'Err' : SmartVaultErr };
@@ -91,19 +104,6 @@ export type SmartVaultErr = { 'UserAlreadyExists' : string } |
   { 'SecretAlreadyExists' : string } |
   { 'NoTestamentsForHeir' : string } |
   { 'KeyGenerationNotAllowed' : null };
-export interface Testament {
-  'id' : string,
-  'heirs' : Array<Principal>,
-  'date_created' : bigint,
-  'name' : [] | [string],
-  'conditions_logical_operator' : LogicalOperator,
-  'testator' : Principal,
-  'secrets' : Array<string>,
-  'conditions_status' : boolean,
-  'key_box' : Array<[string, SecretSymmetricCryptoMaterial]>,
-  'conditions' : Array<Condition>,
-  'date_modified' : bigint,
-}
 export interface TestamentKeyDerviationArgs {
   'encryption_public_key' : Uint8Array | number[],
   'testament_id' : string,
@@ -200,7 +200,7 @@ export interface _SERVICE {
   'symmetric_key_verification_key' : ActorMethod<[], string>,
   'update_heir' : ActorMethod<[User], Result>,
   'update_secret' : ActorMethod<[Secret], Result_1>,
-  'update_testament' : ActorMethod<[Testament], Result_2>,
+  'update_testament' : ActorMethod<[Policy], Result_2>,
   'update_user' : ActorMethod<[User], Result>,
   'update_user_login_date' : ActorMethod<[], Result>,
   'what_time_is_it' : ActorMethod<[], bigint>,

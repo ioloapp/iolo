@@ -12,7 +12,7 @@ import {ConditionType, UiCondition} from "../../services/IoloTypesForUi";
 import {Condition} from "./condition";
 import IconButton from "@mui/material/IconButton";
 import {useAppDispatch} from "../../redux/hooks";
-import {testamentsActions} from "../../redux/testaments/testamentsSlice";
+import {policiesActions} from "../../redux/policies/policiesSlice";
 import {v4 as uuidv4} from 'uuid';
 import AddIcon from '@mui/icons-material/Add';
 
@@ -26,7 +26,7 @@ export const Conditions: FC<ConditionsProps> = ({conditions, readonly}) => {
     const dispatch = useAppDispatch();
 
     const addCondition = () => {
-        dispatch(testamentsActions.addConditionToDialogItem({
+        dispatch(policiesActions.addConditionToDialogItem({
             id: uuidv4(),
             conditionStatus: false,
             type: ConditionType.Undefined,

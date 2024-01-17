@@ -2,33 +2,33 @@ import * as React from 'react';
 import {useSelector} from "react-redux";
 import {useAppDispatch} from "../../redux/hooks";
 import {
-    selectHeirDialogItem,
-    selectHeirDialogItemState,
-    selectHeirError,
-    selectShowDeleteHeirDialog
-} from "../../redux/heirs/heirsSelectors";
-import {deleteHeirThunk, heirsActions} from "../../redux/heirs/heirsSlice";
+    selectContactsDialogItem,
+    selectContactsDialogItemState,
+    selectContactsError,
+    selectShowDeleteContactsDialog
+} from "../../redux/contacts/contactsSelectors";
+import {contactsActions, deleteContactThunk} from "../../redux/contacts/contactsSlice";
 import {BasicDialog} from "../dialog/basic-dialog";
 import {Trans, useTranslation} from "react-i18next";
 
-export default function DeleteHeirDialog() {
+export default function DeleteContactDialog() {
     const dispatch = useAppDispatch();
     const { t } = useTranslation();
-    const showDeleteHeirDialog: boolean = useSelector(selectShowDeleteHeirDialog);
-    const heirToAdd = useSelector(selectHeirDialogItem);
-    const heirError = useSelector(selectHeirError);
-    const heirToAddState = useSelector(selectHeirDialogItemState);
+    const showDeleteHeirDialog: boolean = useSelector(selectShowDeleteContactsDialog);
+    const heirToAdd = useSelector(selectContactsDialogItem);
+    const heirError = useSelector(selectContactsError);
+    const heirToAddState = useSelector(selectContactsDialogItemState);
 
     const handleClose = () => {
-        dispatch(heirsActions.closeDeleteDialog());
+        dispatch(contactsActions.closeDeleteDialog());
     };
 
-    const cancelDeleteHeir = () => {
-        dispatch(heirsActions.cancelDeleteHeir())
+    const cancelDeleteContact = () => {
+        dispatch(contactsActions.cancelDeleteContact())
     }
 
     const deleteHeir = async () => {
-        dispatch(deleteHeirThunk(heirToAdd));
+        dispatch(deleteContactThunk(heirToAdd));
     }
 
     return (
@@ -36,7 +36,7 @@ export default function DeleteHeirDialog() {
                       leadText={<Trans i18nKey='contacts.dialog.delete.text' values={{contact: heirToAdd.name}} />}
                       isOpen={showDeleteHeirDialog}
                       handleClose={handleClose}
-                      cancelAction={cancelDeleteHeir}
+                      cancelAction={cancelDeleteContact}
                       okAction={deleteHeir}
                       okButtonText={t('contacts.dialog.delete.button')}
                       error={heirError}

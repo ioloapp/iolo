@@ -1,8 +1,8 @@
-import {UiTestamentListEntry, UiTestamentResponse} from "../../services/IoloTypesForUi";
+import {UiPolicyListEntry, UiPolicyResponse} from "../../services/IoloTypesForUi";
 
-export interface TestamentsState {
-    testamentsList: UiTestamentListEntry[],
-    dialogItem: UiTestamentResponse
+export interface PoliciesState {
+    policyList: UiPolicyListEntry[],
+    dialogItem: UiPolicyResponse
     dialogItemState: string,
     loadingState: string,
     error?: string;
@@ -13,12 +13,12 @@ export interface TestamentsState {
 }
 
 // Define the initial state using that type
-export const initialState: TestamentsState = {
-    testamentsList: [],
+export const initialState: PoliciesState = {
+    policyList: [],
     dialogItem: {
         name: '',
         secrets: [],
-        heirs: [],
+        beneficiaries: [],
         conditionsStatus: false,
         conditionsLogicalOperator: null,
         conditions: []

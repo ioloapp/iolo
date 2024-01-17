@@ -2,7 +2,7 @@ import {RootState} from "../store";
 
 export const selectGroupedSecrets = (state: RootState)  => state.secrets.groupedSecretList;
 
-export const selectSecretsListState = (state: RootState)  => state.secrets.listItemsState;
+export const selectSecretListState = (state: RootState)  => state.secrets.listItemsState;
 
 export const selectShowAddSecretDialog = (state: RootState)  => state.secrets.showAddDialog;
 

@@ -24,7 +24,9 @@
       },
       "content": {
         "name": "Name",
-        "max-logout-time": "Max. logout time in days"
+        "max-logout-time": "Max. logout time in days",
+        "beneficiaries": "Beneficiaries",
+        "secrets": "Secrets"
       }
     }
   },
@@ -67,6 +69,11 @@
     },
     "max-logout-time": "Max. time in days where you haven't been logged in to IOLO",
     "x-out-of-y": "Confirmers of your condition"
+  },
+  "validators": {
+    "button":{
+      "add": "Add"
+    }
   },
   "user": {
     "type": "Type of user",

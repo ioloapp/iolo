@@ -4,15 +4,15 @@ import {useSelector} from "react-redux";
 import {useAppDispatch} from "../../redux/hooks";
 import {FormControl, MenuItem, Select, Typography} from "@mui/material";
 import {UiUser, UiUserType} from "../../services/IoloTypesForUi";
-import {selectHeirDialogItem} from "../../redux/heirs/heirsSelectors";
-import {heirsActions} from "../../redux/heirs/heirsSlice";
+import {selectContactsDialogItem} from "../../redux/contacts/contactsSelectors";
+import {contactsActions} from "../../redux/contacts/contactsSlice";
 
-export default function HeirDialogContent() {
+export default function ContactDialogContent() {
     const dispatch = useAppDispatch();
-    const dialogItem = useSelector(selectHeirDialogItem);
+    const dialogItem = useSelector(selectContactsDialogItem);
 
-    const updateHeirToAdd = (heir: UiUser) => {
-        dispatch(heirsActions.updateHeirToAdd(heir))
+    const updateContactToAdd = (heir: UiUser) => {
+        dispatch(contactsActions.updateContactToAdd(heir))
     }
 
     return (
@@ -24,7 +24,7 @@ export default function HeirDialogContent() {
                     id="type"
                     value={dialogItem.type}
                     label="Category"
-                    onChange={e => updateHeirToAdd({
+                    onChange={e => updateContactToAdd({
                         ...dialogItem,
                         type: UiUserType[e.target.value as keyof typeof UiUserType]
                     })}
@@ -47,7 +47,7 @@ export default function HeirDialogContent() {
                     fullWidth
                     variant="standard"
                     value={dialogItem.id}
-                    onChange={e => updateHeirToAdd({
+                    onChange={e => updateContactToAdd({
                         ...dialogItem,
                         id: e.target.value
                     })}
@@ -63,7 +63,7 @@ export default function HeirDialogContent() {
                     fullWidth
                     variant="standard"
                     value={dialogItem.name}
-                    onChange={e => updateHeirToAdd({
+                    onChange={e => updateContactToAdd({
                         ...dialogItem,
                         name: e.target.value
                     })}
@@ -79,7 +79,7 @@ export default function HeirDialogContent() {
                     fullWidth
                     variant="standard"
                     value={dialogItem.email}
-                    onChange={e => updateHeirToAdd({
+                    onChange={e => updateContactToAdd({
                         ...dialogItem,
                         email: e.target.value
                     })}
