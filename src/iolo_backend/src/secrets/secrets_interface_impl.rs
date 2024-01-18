@@ -4,13 +4,14 @@ use candid::{types::principal, Principal};
 
 use crate::{
     common::{error::SmartVaultErr, uuid::UUID},
-    secrets::secret::SecretSymmetricCryptoMaterial,
+    secrets::{self, secret::SecretSymmetricCryptoMaterial},
     smart_vaults::smart_vault::{get_vault_id_for, SECRET_STORE, USER_VAULT_STORE},
     user_vaults::user_vault_store::UserVaultStore,
+    utils::dumper::dump_user_vault_store,
 };
 
 use super::{
-    secret::{AddSecretArgs, Secret, SecretID},
+    secret::{AddSecretArgs, Secret, SecretID, SecretListEntry},
     secret_store::SecretStore,
 };
 
@@ -69,6 +70,37 @@ pub fn get_secret_impl(sid: SecretID, principal: &Principal) -> Result<Secret, S
     })
 }
 
+pub fn get_secret_list_impl(principal: &Principal) -> Result<Vec<SecretListEntry>, SmartVaultErr> {
+    let user_vault_id: UUID = get_vault_id_for(principal.clone())?;
+
+    dbg!("get_secret_list_impl: user_vault_id: {:?}", user_vault_id);
+
+    let secret_ids: Vec<UUID> = USER_VAULT_STORE
+        .with(
+            |mv: &RefCell<UserVaultStore>| -> Result<Vec<UUID>, SmartVaultErr> {
+                let secret_ids: Vec<UUID> = mv
+                    .borrow()
+                    .get_user_vault(&user_vault_id)?
+                    .secret_ids
+                    .clone();
+                Ok(secret_ids)
+            },
+        )
+        .unwrap();
+
+    // get all the corresponding secrets
+    let secrets: Vec<Secret> = SECRET_STORE.with(|x| {
+        let secret_store = x.borrow();
+        let secrets: Vec<Secret> = secret_ids
+            .iter()
+            .map(|sid| secret_store.get(sid).unwrap())
+            .collect();
+        secrets
+    });
+
+    Ok(secrets.into_iter().map(SecretListEntry::from).collect())
+}
+
 pub fn update_secret_impl(s: Secret, principal: &Principal) -> Result<Secret, SmartVaultErr> {
     let _user_vault_id: UUID = get_vault_id_for(principal.clone())?;
 
@@ -100,7 +132,8 @@ mod tests {
         secrets::{
             secret::{AddSecretArgs, SecretSymmetricCryptoMaterial},
             secrets_interface_impl::{
-                add_secret_impl, get_secret_impl, remove_secret_impl, update_secret_impl,
+                add_secret_impl, get_secret_impl, get_secret_list_impl, remove_secret_impl,
+                update_secret_impl,
             },
         },
         smart_vaults::smart_vault::USER_VAULT_STORE,
@@ -130,7 +163,7 @@ mod tests {
             password_decryption_nonce: Some(vec![1, 2, 3]),
             notes_decryption_nonce: Some(vec![1, 2, 3]),
         };
-        let asa: AddSecretArgs = AddSecretArgs {
+        let mut asa: AddSecretArgs = AddSecretArgs {
             id: "".to_string(),
             category: None,
             name: Some("Google".to_string()),
@@ -177,6 +210,18 @@ mod tests {
         assert_eq!(added_secret.name(), fetched_secret.name());
         assert_eq!(added_secret.username(), fetched_secret.username());
         assert_eq!(added_secret.password(), fetched_secret.password());
+
+        // check get secret list
+        let secrets_list = get_secret_list_impl(&principal).unwrap();
+        assert_eq!(secrets_list.len(), 1);
+
+        // add secret again
+        asa.name = Some("iolo".to_string());
+        add_secret_impl(asa.clone(), &principal).await.unwrap();
+
+        // check get secret list
+        let secrets_list = get_secret_list_impl(&principal).unwrap();
+        assert_eq!(secrets_list.len(), 2);
 
         // update secret
         fetched_secret.set_name("iolo".to_string());

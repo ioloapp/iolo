@@ -10,8 +10,6 @@ use crate::{
     secrets::secret::Secret,
 };
 
-use super::secret;
-
 #[derive(Serialize, Deserialize)]
 pub struct SecretStore {
     // An example `StableBTreeMap`. Data stored in `StableBTreeMap` doesn't need to
