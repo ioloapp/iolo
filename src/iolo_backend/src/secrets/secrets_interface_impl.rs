@@ -1,6 +1,6 @@
 use std::cell::RefCell;
 
-use candid::Principal;
+use candid::{types::principal, Principal};
 
 use crate::{
     common::{error::SmartVaultErr, uuid::UUID},
@@ -10,7 +10,7 @@ use crate::{
 };
 
 use super::{
-    secret::{AddSecretArgs, Secret},
+    secret::{AddSecretArgs, Secret, SecretID},
     secret_store::SecretStore,
 };
 
@@ -40,7 +40,7 @@ pub async fn add_secret_impl(
     SECRET_STORE.with(
         |secret_store_rc: &RefCell<SecretStore>| -> Result<Secret, SmartVaultErr> {
             let mut secret_store = secret_store_rc.borrow_mut();
-            secret_store.add(secret.clone())
+            secret_store.add_secret(secret.clone())
         },
     )?;
 
@@ -55,15 +55,39 @@ pub async fn add_secret_impl(
             )
         },
     )?;
-
-    // the old way
-    // USER_VAULT_STORE.with(
-    //     |ms: &RefCell<UserVaultStore>| -> Result<Secret, SmartVaultErr> {
-    //         let mut user_vault_store = ms.borrow_mut();
-    //         user_vault_store.add_user_secret(&user_vault_id, args)
-    //     },
-    // )
     Ok(secret)
+}
+
+pub fn get_secret_impl(sid: SecretID, principal: &Principal) -> Result<Secret, SmartVaultErr> {
+    let _user_vault_id: UUID = get_vault_id_for(principal.clone())?;
+
+    SECRET_STORE.with(|x| {
+        let secret_store = x.borrow();
+        let secret = secret_store.get(&UUID::from(sid.clone()));
+        // TODO: check if the secret is in the user vault
+        secret
+    })
+}
+
+pub fn update_secret_impl(s: Secret, principal: &Principal) -> Result<Secret, SmartVaultErr> {
+    let _user_vault_id: UUID = get_vault_id_for(principal.clone())?;
+
+    SECRET_STORE.with(|x| {
+        let mut secret_store = x.borrow_mut();
+        // TODO: check if the secret is in the user vault
+        secret_store.update_secret(s)
+    })
+}
+
+pub fn remove_secret_impl(secret_id: String, principal: &Principal) -> Result<(), SmartVaultErr> {
+    let user_vault_id: UUID = get_vault_id_for(principal.clone())?;
+
+    SECRET_STORE.with(
+        |secret_store_rc: &RefCell<SecretStore>| -> Result<(), SmartVaultErr> {
+            let mut secret_store = secret_store_rc.borrow_mut();
+            secret_store.remove_secret(&user_vault_id, &secret_id)
+        },
+    )
 }
 
 #[cfg(test)]
@@ -72,14 +96,16 @@ mod tests {
     use candid::Principal;
 
     use crate::{
-        common::uuid::UUID,
+        common::{error::SmartVaultErr, uuid::UUID},
         secrets::{
-            ii_secrets::add_secret_impl,
             secret::{AddSecretArgs, SecretSymmetricCryptoMaterial},
+            secrets_interface_impl::{
+                add_secret_impl, get_secret_impl, remove_secret_impl, update_secret_impl,
+            },
         },
         smart_vaults::smart_vault::USER_VAULT_STORE,
         smart_vaults::smart_vault::{get_vault_id_for, SECRET_STORE},
-        users::{ii_users::create_user_impl, user::AddUserArgs},
+        users::{user::AddUserArgs, users_interface_impl::create_user_impl},
     };
 
     #[tokio::test]
@@ -142,9 +168,30 @@ mod tests {
             assert_eq!(user_vault.secret_ids[0], added_secret.id().clone().into());
         });
 
-        // dump_user_store();
-        // dump_user_vault_store();
-        // dump_secret_store();
+        // get secret from proper interface implementation
+        let fetched_secret_res = get_secret_impl(added_secret.id().clone(), &principal);
+        assert!(fetched_secret_res.is_ok());
+        let mut fetched_secret = fetched_secret_res.unwrap();
+
+        assert_eq!(added_secret.id(), fetched_secret.id());
+        assert_eq!(added_secret.name(), fetched_secret.name());
+        assert_eq!(added_secret.username(), fetched_secret.username());
+        assert_eq!(added_secret.password(), fetched_secret.password());
+
+        // update secret
+        fetched_secret.set_name("iolo".to_string());
+        let updated_secret = update_secret_impl(fetched_secret, &principal).unwrap();
+        assert_eq!(updated_secret.name(), Some("iolo".to_string()));
+
+        // delete secret
+        let deleted_secret = remove_secret_impl(updated_secret.id().to_string(), &principal);
+        assert!(deleted_secret.is_ok());
+        let test_fetch = get_secret_impl(added_secret.id().clone(), &principal);
+        assert!(test_fetch.is_err());
+        assert_eq!(
+            test_fetch.unwrap_err(),
+            SmartVaultErr::SecretDoesNotExist(updated_secret.id().to_string())
+        );
     }
 
     fn create_principal() -> Principal {

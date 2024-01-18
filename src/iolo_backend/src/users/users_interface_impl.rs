@@ -84,9 +84,9 @@ mod tests {
         smart_vaults::smart_vault::{USER_STORE, USER_VAULT_STORE},
         user_vaults::user_vault_store::UserVaultStore,
         users::{
-            ii_users::{create_user_impl, delete_user_impl, get_user},
             user::AddUserArgs,
             user_store::UserStore,
+            users_interface_impl::{create_user_impl, delete_user_impl, get_user},
         },
     };
 

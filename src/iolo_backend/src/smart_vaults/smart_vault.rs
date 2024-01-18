@@ -6,16 +6,20 @@ use crate::common::error::SmartVaultErr;
 use crate::common::uuid::UUID;
 use crate::policies::policy::PolicyResponse;
 
-use crate::secrets::ii_secrets::add_secret_impl;
+use crate::secrets::secrets_interface_impl::{
+    add_secret_impl, get_secret_impl, remove_secret_impl, update_secret_impl,
+};
 use crate::user_vaults::user_vault::UserVaultID;
 use crate::user_vaults::user_vault_store::UserVaultStore;
-use crate::users::ii_users::{create_user_impl, delete_user_impl, get_user};
 use crate::users::user::{AddUserArgs, User};
 use crate::users::user_store::UserStore;
+use crate::users::users_interface_impl::{create_user_impl, delete_user_impl, get_user};
 use crate::utils::caller::get_caller;
 
 use crate::policies::policy::{AddPolicyArgs, Policy, PolicyID, PolicyListEntry};
-use crate::policies::policy_registry::{PolicyRegistryForBeneficiaries, PolicyRegistryForValidators};
+use crate::policies::policy_registry::{
+    PolicyRegistryForBeneficiaries, PolicyRegistryForValidators,
+};
 use crate::secrets::secret::{
     AddSecretArgs, Secret, SecretID, SecretListEntry, SecretSymmetricCryptoMaterial,
 };
@@ -94,34 +98,19 @@ pub async fn add_secret(args: AddSecretArgs) -> Result<Secret, SmartVaultErr> {
 
 #[ic_cdk_macros::update]
 pub fn update_secret(s: Secret) -> Result<Secret, SmartVaultErr> {
-    let principal = get_caller();
-    let user_vault_id: UUID = get_vault_id_for(principal)?;
-
-    USER_VAULT_STORE.with(
-        |ms: &RefCell<UserVaultStore>| -> Result<Secret, SmartVaultErr> {
-            let mut master_vault = ms.borrow_mut();
-            master_vault.update_user_secret(&user_vault_id, s)
-        },
-    )
+    update_secret_impl(s, &get_caller())
 }
 
 #[ic_cdk_macros::query]
 pub fn get_secret(sid: SecretID) -> Result<Secret, SmartVaultErr> {
-    let principal = get_caller();
-    let user_vault_id: UUID = get_vault_id_for(principal)?;
-
-    USER_VAULT_STORE.with(
-        |mv: &RefCell<UserVaultStore>| -> Result<Secret, SmartVaultErr> {
-            mv.borrow()
-                .get_user_vault(&user_vault_id)?
-                .get_secret(&sid)
-                .cloned()
-        },
-    )
+    get_secret_impl(sid, &get_caller())
 }
 
 #[ic_cdk_macros::query]
-pub fn get_secret_as_beneficiary(sid: SecretID, policy_id: PolicyID) -> Result<Secret, SmartVaultErr> {
+pub fn get_secret_as_beneficiary(
+    sid: SecretID,
+    policy_id: PolicyID,
+) -> Result<Secret, SmartVaultErr> {
     let principal = get_caller();
 
     // Verify that beneficiary belongs to policy
@@ -163,15 +152,7 @@ pub fn get_secret_as_beneficiary(sid: SecretID, policy_id: PolicyID) -> Result<S
 
 #[ic_cdk_macros::update]
 pub fn remove_secret(secret_id: String) -> Result<(), SmartVaultErr> {
-    let principal = get_caller();
-    let user_vault_id: UUID = get_vault_id_for(principal)?;
-
-    USER_VAULT_STORE.with(
-        |ms: &RefCell<UserVaultStore>| -> Result<(), SmartVaultErr> {
-            let mut master_vault = ms.borrow_mut();
-            master_vault.remove_user_secret(&user_vault_id, &secret_id)
-        },
-    )
+    remove_secret_impl(secret_id, &get_caller())
 }
 
 #[ic_cdk_macros::query]
@@ -274,9 +255,7 @@ pub fn update_policy(policy: Policy) -> Result<Policy, SmartVaultErr> {
 }
 
 #[ic_cdk_macros::query]
-pub fn get_policy_as_owner(
-    policy_id: PolicyID,
-) -> Result<PolicyResponse, SmartVaultErr> {
+pub fn get_policy_as_owner(policy_id: PolicyID) -> Result<PolicyResponse, SmartVaultErr> {
     let principal = get_caller();
     let user_vault_id: UUID = get_vault_id_for(principal)?;
 
@@ -423,10 +402,7 @@ pub fn get_policy_list_as_owner() -> Result<Vec<PolicyListEntry>, SmartVaultErr>
             .clone()
             .into_values()
             .collect();
-        Ok(policies
-            .into_iter()
-            .map(PolicyListEntry::from)
-            .collect())
+        Ok(policies.into_iter().map(PolicyListEntry::from).collect())
     })
 }
 
