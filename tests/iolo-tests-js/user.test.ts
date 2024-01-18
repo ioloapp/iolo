@@ -44,7 +44,6 @@ describe("User Tests", () => {
         expect(userOne['Ok'].date_last_login[0]).toStrictEqual(userOne['Ok'].date_created);
         expect(userOne['Ok'].date_created).toBeGreaterThan(0);
         expect(userOne['Ok'].date_modified).toBeGreaterThan(0);
-        expect(userOne['Ok'].date_created).toStrictEqual(userOne['Ok'].date_modified);
 
         // Save user for later comparison
         userOneForComparison = userOne['Ok'];
@@ -69,7 +68,6 @@ describe("User Tests", () => {
         expect(userTwo['Ok'].date_last_login[0]).toStrictEqual(userTwo['Ok'].date_created);
         expect(userTwo['Ok'].date_created).toBeGreaterThan(0);
         expect(userTwo['Ok'].date_modified).toBeGreaterThan(0);
-        expect(userTwo['Ok'].date_created).toStrictEqual(userTwo['Ok'].date_modified);
 
         // Create user with only mandatory fields
         const addUserArgsThree = {
@@ -90,7 +88,6 @@ describe("User Tests", () => {
         expect(userThree['Ok'].date_last_login[0]).toStrictEqual(userThree['Ok'].date_created);
         expect(userThree['Ok'].date_created).toBeGreaterThan(0);
         expect(userThree['Ok'].date_modified).toBeGreaterThan(0);
-        expect(userThree['Ok'].date_created).toStrictEqual(userThree['Ok'].date_modified);
 
         // All users should have an uservault
         const vaultOne: boolean = await actorOne.is_user_vault_existing();

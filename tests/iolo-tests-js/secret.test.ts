@@ -26,7 +26,6 @@ const identityTwo: Secp256k1KeyIdentity = createIdentity();
 const actorOne = createNewActor(identityOne, canisterId);
 const actorTwo = createNewActor(identityTwo, canisterId);
 
-const secretId = uuidv4();
 const symmetricCryptoMaterial: SecretSymmetricCryptoMaterial = {
     encrypted_symmetric_key: new TextEncoder().encode('mySuperKey'), // just a byte array, no symmetric key
     iv: crypto.getRandomValues(new Uint8Array(12)),  // Add arbitrary byte array
@@ -35,7 +34,7 @@ const symmetricCryptoMaterial: SecretSymmetricCryptoMaterial = {
     username_decryption_nonce: [crypto.getRandomValues(new Uint8Array(12))],  // Add arbitrary byte array
 };
 const secretOne: Secret = {
-    id: secretId,
+    id: uuidv4(),
     name: ['secretA'],
     url: ['https://urlOne'],
     category: [{'Password': null}],
@@ -46,7 +45,7 @@ const secretOne: Secret = {
     date_modified: BigInt(Date.now()),
 };
 const secretTwo: Secret = {
-    id: secretId,
+    id: uuidv4(),
     name: ['secretB'],
     url: ['https://urlTwo'],
     category: [{'Note': null}],
@@ -57,7 +56,7 @@ const secretTwo: Secret = {
     date_modified: BigInt(Date.now()),
 };
 const secretThree: Secret = {
-    id: secretId,
+    id: uuidv4(),
     name: ['secretC'],
     url: [],
     category: [{'Document': null}],
@@ -68,7 +67,7 @@ const secretThree: Secret = {
     date_modified: BigInt(Date.now()),
 };
 const secretFour: Secret = {
-    id: secretId,
+    id: uuidv4(),
     name: [],
     url: [],
     category: [],
