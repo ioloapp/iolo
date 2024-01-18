@@ -63,15 +63,13 @@ pub fn get_secret_impl(sid: SecretID, principal: &Principal) -> Result<Secret, S
 
     SECRET_STORE.with(|x| {
         let secret_store = x.borrow();
-        // TODO: check if the secret is in the user vault
+        // TODO: check if caller is allowed to retrieve the secret (it must be in the user vault)
         secret_store.get(&UUID::from(sid.clone()))
     })
 }
 
 pub fn get_secret_list_impl(principal: &Principal) -> Result<Vec<SecretListEntry>, SmartVaultErr> {
     let user_vault_id: UUID = get_vault_id_for(*principal)?;
-
-    dbg!("get_secret_list_impl: user_vault_id: {:?}", user_vault_id);
 
     let secret_ids: Vec<UUID> = USER_VAULT_STORE
         .with(
