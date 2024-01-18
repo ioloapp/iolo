@@ -54,9 +54,7 @@ impl SecretStore {
     pub fn add_secret(&mut self, secret: Secret) -> Result<Secret, SmartVaultErr> {
         // TODO: DO WE REALLY WANT TO INSERT IF THE SECRET ALREADY EXISTS?
         let secret_id: UUID = secret.id().clone().into();
-        let s = self
-            .secrets
-            .insert(secret_id.clone().into(), secret.clone());
+        let s = self.secrets.insert(secret_id, secret.clone());
         match s {
             Some(_) => {
                 return Err(SmartVaultErr::SecretAlreadyExists(secret_id.to_string()));
@@ -73,7 +71,7 @@ impl SecretStore {
             return Err(SmartVaultErr::SecretDoesNotExist(secret.id().to_string()));
         }
 
-        self.secrets.insert(sid.clone(), secret);
+        self.secrets.insert(sid, secret);
         // self.date_modified = time::get_current_time();
         Ok(self.secrets.get(&sid).unwrap().clone())
     }

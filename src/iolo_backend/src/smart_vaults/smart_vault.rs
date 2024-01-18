@@ -135,7 +135,7 @@ pub fn get_secret_as_beneficiary(
     )?;
 
     // Check that beneficiary is allowed to read policy
-    if result_mv.conditions_status().clone() {
+    if *result_mv.conditions_status() {
         // Read secret in owner user vault
         USER_VAULT_STORE.with(
             |mv: &RefCell<UserVaultStore>| -> Result<Secret, SmartVaultErr> {
@@ -204,7 +204,7 @@ pub fn get_secret_symmetric_crypto_material_as_beneficiary(
     )?;
 
     // Check that beneficiary is allowed to read policy
-    if result_mv.conditions_status().clone() {
+    if *result_mv.conditions_status() {
         // Read secret crypto material from policy
 
         Ok(result_mv.key_box().get(&secret_id).unwrap().clone())
@@ -296,7 +296,7 @@ pub fn get_policy_as_beneficiary(policy_id: PolicyID) -> Result<PolicyResponse, 
     )?;
 
     // Check that beneficiary is allowed to read policy
-    if result_mv.conditions_status().clone() {
+    if *result_mv.conditions_status() {
         // Get more secret data for beneficiary...
         let owner_vault_id = get_vault_id_for(*result_mv.owner())?;
         let mut policy_for_beneficiary = PolicyResponse::from(result_mv.clone());
@@ -333,7 +333,7 @@ pub fn get_policy_list_as_beneficiary() -> Result<Vec<PolicyListEntry>, SmartVau
 
     let mut response = Vec::new();
     for item in result_pr {
-        let user_vault_id: UUID = get_vault_id_for(item.1.clone())?;
+        let user_vault_id: UUID = get_vault_id_for(item.1)?;
         let result_mv = USER_VAULT_STORE.with(
             |mv: &RefCell<UserVaultStore>| -> Result<Policy, SmartVaultErr> {
                 mv.borrow()
@@ -359,7 +359,7 @@ pub fn get_policy_list_as_validator() -> Result<Vec<PolicyListEntry>, SmartVault
 
     let mut response = Vec::new();
     for item in result_pr {
-        let user_vault_id: UUID = get_vault_id_for(item.1.clone())?;
+        let user_vault_id: UUID = get_vault_id_for(item.1)?;
         let result_mv = USER_VAULT_STORE.with(
             |mv: &RefCell<UserVaultStore>| -> Result<Policy, SmartVaultErr> {
                 mv.borrow()

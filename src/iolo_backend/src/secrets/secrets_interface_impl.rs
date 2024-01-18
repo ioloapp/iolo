@@ -1,13 +1,12 @@
 use std::cell::RefCell;
 
-use candid::{types::principal, Principal};
+use candid::Principal;
 
 use crate::{
     common::{error::SmartVaultErr, uuid::UUID},
-    secrets::{self, secret::SecretSymmetricCryptoMaterial},
+    secrets::secret::SecretSymmetricCryptoMaterial,
     smart_vaults::smart_vault::{get_vault_id_for, SECRET_STORE, USER_VAULT_STORE},
     user_vaults::user_vault_store::UserVaultStore,
-    utils::dumper::dump_user_vault_store,
 };
 
 use super::{
@@ -28,7 +27,7 @@ pub async fn add_secret_impl(
     mut args: AddSecretArgs,
     caller: &Principal,
 ) -> Result<Secret, SmartVaultErr> {
-    let user_vault_id: UUID = get_vault_id_for(caller.clone())?;
+    let user_vault_id: UUID = get_vault_id_for(*caller)?;
 
     // new: we generate a new UUID for the secret and overwrite it
     args.id = UUID::new_random().await.into();
@@ -60,18 +59,17 @@ pub async fn add_secret_impl(
 }
 
 pub fn get_secret_impl(sid: SecretID, principal: &Principal) -> Result<Secret, SmartVaultErr> {
-    let _user_vault_id: UUID = get_vault_id_for(principal.clone())?;
+    let _user_vault_id: UUID = get_vault_id_for(*principal)?;
 
     SECRET_STORE.with(|x| {
         let secret_store = x.borrow();
-        let secret = secret_store.get(&UUID::from(sid.clone()));
         // TODO: check if the secret is in the user vault
-        secret
+        secret_store.get(&UUID::from(sid.clone()))
     })
 }
 
 pub fn get_secret_list_impl(principal: &Principal) -> Result<Vec<SecretListEntry>, SmartVaultErr> {
-    let user_vault_id: UUID = get_vault_id_for(principal.clone())?;
+    let user_vault_id: UUID = get_vault_id_for(*principal)?;
 
     dbg!("get_secret_list_impl: user_vault_id: {:?}", user_vault_id);
 
@@ -102,7 +100,7 @@ pub fn get_secret_list_impl(principal: &Principal) -> Result<Vec<SecretListEntry
 }
 
 pub fn update_secret_impl(s: Secret, principal: &Principal) -> Result<Secret, SmartVaultErr> {
-    let _user_vault_id: UUID = get_vault_id_for(principal.clone())?;
+    let _user_vault_id: UUID = get_vault_id_for(*principal)?;
 
     SECRET_STORE.with(|x| {
         let mut secret_store = x.borrow_mut();
@@ -112,7 +110,7 @@ pub fn update_secret_impl(s: Secret, principal: &Principal) -> Result<Secret, Sm
 }
 
 pub fn remove_secret_impl(secret_id: String, principal: &Principal) -> Result<(), SmartVaultErr> {
-    let user_vault_id: UUID = get_vault_id_for(principal.clone())?;
+    let user_vault_id: UUID = get_vault_id_for(*principal)?;
 
     SECRET_STORE.with(
         |secret_store_rc: &RefCell<SecretStore>| -> Result<(), SmartVaultErr> {
@@ -193,7 +191,7 @@ mod tests {
         });
 
         // check if the secret is in the users user vault
-        let user_vault_id = get_vault_id_for(principal.clone()).unwrap();
+        let user_vault_id = get_vault_id_for(principal).unwrap();
         USER_VAULT_STORE.with(|user_vault_store_ref| {
             let user_vault_store = user_vault_store_ref.borrow();
             let user_vault = user_vault_store.get_user_vault(&user_vault_id).unwrap();

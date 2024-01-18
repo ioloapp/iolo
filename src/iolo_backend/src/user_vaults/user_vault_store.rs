@@ -5,7 +5,9 @@ use candid::{CandidType, Deserialize, Principal};
 use crate::common::{error::SmartVaultErr, uuid::UUID};
 use crate::policies::conditions::Condition;
 use crate::policies::policy::{AddPolicyArgs, Policy, PolicyID};
-use crate::policies::policy_registry::{PolicyRegistryForBeneficiaries, PolicyRegistryForValidators};
+use crate::policies::policy_registry::{
+    PolicyRegistryForBeneficiaries, PolicyRegistryForValidators,
+};
 use crate::secrets::secret::{AddSecretArgs, Secret, SecretSymmetricCryptoMaterial};
 use crate::smart_vaults::smart_vault::{
     POLICY_REGISTRY_FOR_BENEFICIARIES, POLICY_REGISTRY_FOR_VALIDATORS,
@@ -99,7 +101,7 @@ impl UserVaultStore {
         }
 
         let user_vault = self.user_vaults.get_mut(vault_id).unwrap();
-        user_vault.add_secret_id(secret_id.clone())?;
+        user_vault.add_secret_id(*secret_id)?;
 
         user_vault
             .key_box_mut()
@@ -165,11 +167,11 @@ impl UserVaultStore {
         let user_vault = self.user_vaults.get_mut(vault_id).unwrap();
 
         // Update policy registry for beneficiaries
-        let t_old = user_vault.get_policy(&t.id())?;
+        let t_old = user_vault.get_policy(t.id())?;
         POLICY_REGISTRY_FOR_BENEFICIARIES.with(
             |tr: &RefCell<PolicyRegistryForBeneficiaries>| -> Result<(), SmartVaultErr> {
                 let mut policy_registry = tr.borrow_mut();
-                policy_registry.update_policy_in_registry(&t, &t_old);
+                policy_registry.update_policy_in_registry(&t, t_old);
                 Ok(())
             },
         )?;
@@ -178,7 +180,7 @@ impl UserVaultStore {
         POLICY_REGISTRY_FOR_VALIDATORS.with(
             |tr: &RefCell<PolicyRegistryForValidators>| -> Result<(), SmartVaultErr> {
                 let mut policy_registry = tr.borrow_mut();
-                policy_registry.update_policy_in_registry(&t, &t_old);
+                policy_registry.update_policy_in_registry(&t, t_old);
                 Ok(())
             },
         )?;
@@ -249,7 +251,11 @@ impl UserVaultStore {
     }
 
     // Add a user to the address_book
-    pub fn add_beneficiary(&mut self, vault_id: &UUID, aua: AddUserArgs) -> Result<User, SmartVaultErr> {
+    pub fn add_beneficiary(
+        &mut self,
+        vault_id: &UUID,
+        aua: AddUserArgs,
+    ) -> Result<User, SmartVaultErr> {
         if !self.user_vaults.contains_key(vault_id) {
             return Err(SmartVaultErr::UserVaultDoesNotExist(vault_id.to_string()));
         }
@@ -261,7 +267,11 @@ impl UserVaultStore {
         Ok(added_user.clone())
     }
 
-    pub fn update_user_beneficiary(&mut self, vault_id: &UUID, u: User) -> Result<User, SmartVaultErr> {
+    pub fn update_user_beneficiary(
+        &mut self,
+        vault_id: &UUID,
+        u: User,
+    ) -> Result<User, SmartVaultErr> {
         if !self.user_vaults.contains_key(vault_id) {
             return Err(SmartVaultErr::UserVaultDoesNotExist(vault_id.to_string()));
         }

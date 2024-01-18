@@ -84,7 +84,10 @@ impl PolicyRegistryForBeneficiaries {
         Err(SmartVaultErr::PolicyDoesNotExist(policy_id))
     }
 
-    pub fn get_policy_ids_as_beneficiary(&self, beneficiary: Principal) -> Vec<(PolicyID, Principal)> {
+    pub fn get_policy_ids_as_beneficiary(
+        &self,
+        beneficiary: Principal,
+    ) -> Vec<(PolicyID, Principal)> {
         let mut result = Vec::new();
 
         // Check if the beneficiary exists
@@ -118,10 +121,7 @@ impl PolicyRegistryForValidators {
         }
     }
 
-    pub fn get_policy_ids_as_validator(
-        &self,
-        validator: Principal,
-    ) -> Vec<(PolicyID, Principal)> {
+    pub fn get_policy_ids_as_validator(&self, validator: Principal) -> Vec<(PolicyID, Principal)> {
         let mut result = Vec::new();
 
         // Check if the validator exists
@@ -129,7 +129,7 @@ impl PolicyRegistryForValidators {
             // For each policy_id, get the corresponding owner
             for policy_id in policy_ids {
                 if let Some(owner) = self.policy_to_owner.get(policy_id) {
-                    result.push((policy_id.clone(), owner.clone()));
+                    result.push((policy_id.clone(), *owner));
                 }
             }
         }
@@ -158,9 +158,7 @@ impl PolicyRegistryForValidators {
             match condition {
                 Condition::XOutOfYCondition(xoutofy) => {
                     for validator in xoutofy.validators.iter() {
-                        if let Some(policies) =
-                            self.validator_to_policies.get_mut(&validator.id)
-                        {
+                        if let Some(policies) = self.validator_to_policies.get_mut(&validator.id) {
                             policies.remove(policy_old.id());
                             if policies.is_empty() {
                                 self.validator_to_policies.remove(&validator.id);

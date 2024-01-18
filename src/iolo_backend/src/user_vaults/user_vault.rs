@@ -6,9 +6,9 @@ use serde::Serialize;
 use crate::common::uuid::UUID;
 use crate::policies::policy::{Policy, PolicyID};
 use crate::secrets::secret::{Secret, SecretID, SecretSymmetricCryptoMaterial};
-use crate::SmartVaultErr;
 use crate::users::user::User;
 use crate::utils::time;
+use crate::SmartVaultErr;
 
 pub type UserVaultID = UUID;
 pub type KeyBox = BTreeMap<SecretID, SecretSymmetricCryptoMaterial>;
@@ -156,13 +156,7 @@ impl UserVault {
         let tid = t.id().clone();
 
         // condition_status cannot be updated
-        t.set_condition_status(
-            self.policies
-                .get(t.id())
-                .unwrap()
-                .conditions_status()
-                .clone(),
-        );
+        t.set_condition_status(*self.policies.get(t.id()).unwrap().conditions_status());
 
         self.policies.insert(t.id().clone(), t);
         self.date_modified = time::get_current_time();
@@ -179,9 +173,7 @@ impl UserVault {
 
     pub fn add_policy(&mut self, policy: Policy) -> Result<(), SmartVaultErr> {
         if self.policies.contains_key(policy.id()) {
-            return Err(SmartVaultErr::SecretAlreadyExists(
-                policy.id().to_string(),
-            ));
+            return Err(SmartVaultErr::SecretAlreadyExists(policy.id().to_string()));
         }
 
         self.policies.insert(policy.id().clone(), policy);
@@ -197,9 +189,7 @@ impl UserVault {
 
     pub fn remove_policy(&mut self, policy_id: &PolicyID) -> Result<(), SmartVaultErr> {
         if !self.policies.contains_key(policy_id) {
-            return Err(SmartVaultErr::PolicyDoesNotExist(
-                policy_id.to_string(),
-            ));
+            return Err(SmartVaultErr::PolicyDoesNotExist(policy_id.to_string()));
         }
         self.policies.remove(policy_id);
         self.date_modified = time::get_current_time();
@@ -217,7 +207,11 @@ impl UserVault {
     }
 
     pub fn add_beneficiary(&mut self, user: User) -> Result<&User, SmartVaultErr> {
-        if self.beneficiaries.insert(*user.id(), user.clone()).is_some() {
+        if self
+            .beneficiaries
+            .insert(*user.id(), user.clone())
+            .is_some()
+        {
             Err(SmartVaultErr::UserAlreadyExists(user.id().to_string()))
         } else {
             self.date_modified = time::get_current_time();
@@ -226,12 +220,12 @@ impl UserVault {
     }
 
     pub fn update_beneficiary(&mut self, user: User) -> Result<User, SmartVaultErr> {
-        let uid = user.id().clone();
+        let uid = *user.id();
         if !self.beneficiaries.contains_key(user.id()) {
             return Err(SmartVaultErr::UserDoesNotExist(user.id().to_string()));
         }
 
-        self.beneficiaries.insert(uid.clone(), user);
+        self.beneficiaries.insert(uid, user);
         self.date_modified = time::get_current_time();
         Ok(self.beneficiaries.get(&uid).unwrap().clone())
     }
@@ -357,18 +351,18 @@ mod tests {
         );
         let uuid = "UUID::new()";
         assert_eq!(
-            user_vault.get_secret(&uuid),
+            user_vault.get_secret(uuid),
             Err(SmartVaultErr::SecretDoesNotExist(uuid.to_string())),
             "Error must be {:?} but is {:?}",
             SmartVaultErr::SecretDoesNotExist(uuid.to_string()),
-            user_vault.get_secret(&uuid)
+            user_vault.get_secret(uuid)
         );
 
         // Check get_secret_mut()
-        let secret_mut = user_vault.get_secret_mut(secret.id()).unwrap();
+        let _secret_mut = user_vault.get_secret_mut(secret.id()).unwrap();
         let uuid = "UUID::new()";
         assert_eq!(
-            user_vault.get_secret_mut(&uuid),
+            user_vault.get_secret_mut(uuid),
             Err(SmartVaultErr::SecretDoesNotExist(uuid.to_string()))
         );
     }
@@ -379,11 +373,11 @@ mod tests {
         let mut user_vault: UserVault = UserVault::new().await;
 
         // Add secret to user_vault
-        let secret_name = String::from("my-first-secret");
+        let _secret_name = String::from("my-first-secret");
         let mut secret: Secret = Secret::new_test_instance();
         let mut modified_before_update = user_vault.date_modified;
         let mut created_before_update = user_vault.date_created;
-        user_vault.add_secret(secret.clone());
+        let _ = user_vault.add_secret(secret.clone());
 
         // Update secret
         let username = String::from("my-username");
@@ -428,7 +422,7 @@ mod tests {
         let mut user_vault: UserVault = UserVault::new().await;
 
         // Add secret to user_vault
-        let secret_name = String::from("my-first-secret");
+        let _secret_name = String::from("my-first-secret");
         let secret: Secret = Secret::new_test_instance();
         let mut modified_before_update = user_vault.date_modified;
         let mut created_before_update = user_vault.date_created;
