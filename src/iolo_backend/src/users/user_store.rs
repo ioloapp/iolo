@@ -11,6 +11,7 @@ use crate::{
     },
     secrets::secret::SecretSymmetricCryptoMaterial,
     users::user::User,
+    utils::time,
 };
 
 #[derive(Serialize, Deserialize)]
@@ -67,6 +68,20 @@ impl UserStore {
         }
     }
 
+    pub fn update_user_login_date(&mut self, caller: &Principal) -> Result<User, SmartVaultErr> {
+        let principal_storable = PrincipalStorable::from(*caller);
+
+        if let Some(mut existing_user) = self.users.remove(&principal_storable) {
+            let now = time::get_current_time();
+            existing_user.date_last_login = Some(now);
+            existing_user.date_modified = now;
+            self.users.insert(principal_storable, existing_user.clone());
+            Ok(existing_user)
+        } else {
+            Err(SmartVaultErr::UserDoesNotExist(caller.to_string()))
+        }
+    }
+
     pub fn add_secret_to_user(
         &mut self,
         caller: &Principal,
@@ -96,12 +111,6 @@ impl UserStore {
             .remove(&PrincipalStorable::from(user_id.clone()))
             .ok_or_else(|| SmartVaultErr::UserDeletionFailed(user_id.to_string()))
     }
-
-    // pub fn get_user_mut(&mut self, user_id: &PrincipalStorable) -> Result<&mut User, SmartVaultErr> {
-    //     self.users
-    //         .get_mut(user_id)
-    //         .ok_or_else(|| SmartVaultErr::UserDoesNotExist(user_id.to_string()))
-    // }
 
     pub fn get_all_last_login_dates(&self) -> Vec<(Principal, u64)> {
         self.users

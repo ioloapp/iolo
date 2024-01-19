@@ -63,7 +63,6 @@ impl From<Secret> for SecretListEntry {
 ///
 /// 1) The aes gcm decryption key encrypted with the uservault's vetkd key
 /// 2) The nonce/iv required to decrypt the decryption key
-/// 3) The nonces requried to decrypt the different fields
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone, Default)]
 pub struct SecretSymmetricCryptoMaterial {
     /// the "decryption key" (encrypted using the users vetkd) required to decrypt username, password and notes

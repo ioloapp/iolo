@@ -15,7 +15,9 @@ use crate::user_vaults::user_vault::UserVaultID;
 use crate::user_vaults::user_vault_store::UserVaultStore;
 use crate::users::user::{AddUserArgs, User};
 use crate::users::user_store::UserStore;
-use crate::users::users_interface_impl::{create_user_impl, delete_user_impl, get_user};
+use crate::users::users_interface_impl::{
+    create_user_impl, delete_user_impl, get_user, update_user_impl, update_user_login_date_impl,
+};
 use crate::utils::caller::get_caller;
 
 use crate::policies::policy::{AddPolicyArgs, Policy, PolicyID, PolicyListEntry};
@@ -62,33 +64,12 @@ pub fn get_current_user() -> Result<User, SmartVaultErr> {
 
 #[ic_cdk_macros::update]
 pub fn update_user(user: User) -> Result<User, SmartVaultErr> {
-    // Update the user
-    USER_STORE.with(|ur: &RefCell<UserStore>| -> Result<User, SmartVaultErr> {
-        let mut user_store = ur.borrow_mut();
-        match user_store.update_user(user, &get_caller()) {
-            Ok(u) => Ok(u.clone()),
-            Err(e) => Err(e),
-        }
-    })
+    update_user_impl(user, &get_caller())
 }
 
 #[ic_cdk_macros::update]
 pub fn update_user_login_date() -> Result<User, SmartVaultErr> {
-    // Update the login date
-    // let ps = PrincipalStorable::from(get_caller().clone());
-
-    // get current user
-    let mut current_user =
-        USER_STORE.with(|ur: &RefCell<UserStore>| -> Result<User, SmartVaultErr> {
-            let user_store = ur.borrow();
-            match user_store.get_user(&get_caller()) {
-                Ok(u) => Ok(u.clone()),
-                Err(e) => Err(e),
-            }
-        })?;
-
-    current_user.update_login_date();
-    Ok(current_user)
+    update_user_login_date_impl(&get_caller())
 }
 
 #[ic_cdk_macros::update]

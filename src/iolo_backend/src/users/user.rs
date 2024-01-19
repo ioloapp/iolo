@@ -103,6 +103,10 @@ impl User {
         &self.key_box
     }
 
+    pub fn date_last_login(&self) -> &Option<u64> {
+        &self.date_last_login
+    }
+
     pub fn add_secret(
         &mut self,
         secret_id: UUID,

@@ -2,11 +2,7 @@ use std::cell::RefCell;
 
 use candid::Principal;
 
-use crate::{
-    common::{error::SmartVaultErr, uuid::UUID},
-    smart_vaults::smart_vault::{get_vault_id_for, USER_STORE, USER_VAULT_STORE},
-    user_vaults::user_vault_store::UserVaultStore,
-};
+use crate::{common::error::SmartVaultErr, smart_vaults::smart_vault::USER_STORE};
 
 use super::{
     user::{AddUserArgs, User},
@@ -55,6 +51,14 @@ pub fn update_user_impl(user: User, principal: &Principal) -> Result<User, Smart
     })
 }
 
+pub fn update_user_login_date_impl(principal: &Principal) -> Result<User, SmartVaultErr> {
+    // get current user
+    USER_STORE.with(|ur: &RefCell<UserStore>| -> Result<User, SmartVaultErr> {
+        let mut user_store = ur.borrow_mut();
+        user_store.update_user_login_date(principal)
+    })
+}
+
 pub fn delete_user_impl(principal: &Principal) -> Result<(), SmartVaultErr> {
     // delete the user
     USER_STORE.with(|ur: &RefCell<UserStore>| -> Result<User, SmartVaultErr> {
@@ -78,6 +82,7 @@ mod tests {
             user_store::UserStore,
             users_interface_impl::{
                 create_user_impl, delete_user_impl, get_user, update_user_impl,
+                update_user_login_date_impl,
             },
         },
     };
@@ -105,6 +110,14 @@ mod tests {
         update_user_impl(fetched_user.clone(), &principal).unwrap();
         let fetched_user = get_user(&principal).unwrap();
         assert_eq!(fetched_user.email, Some("donald@ducktown.com".to_string()));
+
+        // update login date
+        let old_login_date = fetched_user.date_last_login().clone().unwrap();
+        std::thread::sleep(std::time::Duration::from_millis(1));
+        update_user_login_date_impl(&principal).unwrap();
+        let fetched_user = get_user(&principal).unwrap();
+        let new_login_date = fetched_user.date_last_login().clone().unwrap();
+        assert!(new_login_date > old_login_date);
 
         // delete user
         let _deleted_user = delete_user_impl(&principal);
