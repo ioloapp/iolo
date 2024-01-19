@@ -11,7 +11,7 @@ use crate::utils::time;
 use crate::SmartVaultErr;
 
 pub type UserVaultID = UUID;
-pub type KeyBox = BTreeMap<SecretID, SecretSymmetricCryptoMaterial>;
+pub type KeyBox = BTreeMap<UUID, SecretSymmetricCryptoMaterial>;
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct UserVault {

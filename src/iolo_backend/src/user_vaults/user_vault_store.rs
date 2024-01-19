@@ -82,7 +82,7 @@ impl UserVaultStore {
 
         user_vault
             .key_box_mut()
-            .insert(secret_id.to_string().clone(), decryption_material);
+            .insert(secret_id.clone(), decryption_material);
 
         Ok(secret_id.to_owned())
     }

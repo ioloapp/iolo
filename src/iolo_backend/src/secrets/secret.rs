@@ -66,16 +66,10 @@ impl From<Secret> for SecretListEntry {
 /// 3) The nonces requried to decrypt the different fields
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone, Default)]
 pub struct SecretSymmetricCryptoMaterial {
-    /// the "decryption key" (encrypted using the uservaults vetkd) required to decrypt username, password and notes
+    /// the "decryption key" (encrypted using the users vetkd) required to decrypt username, password and notes
     pub encrypted_symmetric_key: Vec<u8>,
     /// the initialization vector (iv/nonce) to decrypt the encrypted_decryption_key
     pub iv: Vec<u8>,
-    /// the iv/nonce required to decrypt the encrypted username using the "decryption key"
-    pub username_decryption_nonce: Option<Vec<u8>>,
-    /// the iv/nonce required to decrypt the encrypted password using the "decryption key"
-    pub password_decryption_nonce: Option<Vec<u8>>,
-    /// the iv/nonce required to decrypt the encrypted notes using the "decryption key"
-    pub notes_decryption_nonce: Option<Vec<u8>>,
 }
 
 impl Secret {
@@ -219,11 +213,6 @@ mod tests {
             symmetric_crypto_material: SecretSymmetricCryptoMaterial {
                 encrypted_symmetric_key: vec![1, 2, 3],
                 iv: vec![1, 2, 3],
-                username_decryption_nonce: Some(vec![1, 2, 3]),
-                password_decryption_nonce: Some(vec![1, 2, 3]),
-                notes_decryption_nonce: Some(vec![1, 2, 3]),
-                // Populate the fields for SecretDecryptionMaterial
-                // as per your structure...
             },
         };
 

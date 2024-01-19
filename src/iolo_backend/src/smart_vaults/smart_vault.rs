@@ -162,7 +162,7 @@ pub fn get_secret_list() -> Result<Vec<SecretListEntry>, SmartVaultErr> {
 
 #[ic_cdk_macros::query]
 pub fn get_secret_symmetric_crypto_material(
-    sid: SecretID,
+    sid: UUID,
 ) -> Result<SecretSymmetricCryptoMaterial, SmartVaultErr> {
     let principal = get_caller();
     let user_vault_id: UUID = get_vault_id_for(principal)?;
@@ -177,7 +177,7 @@ pub fn get_secret_symmetric_crypto_material(
 
 #[ic_cdk_macros::query]
 pub fn get_secret_symmetric_crypto_material_as_beneficiary(
-    secret_id: SecretID,
+    secret_id: UUID,
     policy_id: PolicyID,
 ) -> Result<SecretSymmetricCryptoMaterial, SmartVaultErr> {
     let principal = get_caller();

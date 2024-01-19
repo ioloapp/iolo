@@ -5,12 +5,12 @@ use candid::Principal;
 use crate::{
     common::{error::SmartVaultErr, uuid::UUID},
     secrets::secret::SecretSymmetricCryptoMaterial,
-    smart_vaults::smart_vault::{get_vault_id_for, SECRET_STORE, USER_VAULT_STORE},
+    smart_vaults::smart_vault::{get_vault_id_for, SECRET_STORE, USER_STORE, USER_VAULT_STORE},
     user_vaults::user_vault_store::UserVaultStore,
 };
 
 use super::{
-    secret::{AddSecretArgs, Secret, SecretID, SecretListEntry},
+    secret::{AddSecretArgs, Secret, SecretListEntry},
     secret_store::SecretStore,
 };
 
@@ -27,8 +27,6 @@ pub async fn add_secret_impl(
     args: AddSecretArgs,
     caller: &Principal,
 ) -> Result<Secret, SmartVaultErr> {
-    let user_vault_id: UUID = get_vault_id_for(*caller)?;
-
     // generate a new UUID for the secret
     let new_secret_id: UUID = UUID::new_random().await.into();
 
@@ -44,17 +42,11 @@ pub async fn add_secret_impl(
         },
     )?;
 
-    // add the secret id to the user vault
-    USER_VAULT_STORE.with(
-        |ms: &RefCell<UserVaultStore>| -> Result<UUID, SmartVaultErr> {
-            let mut user_vault_store = ms.borrow_mut();
-            user_vault_store.add_user_secret(
-                &user_vault_id,
-                &secret.id().clone().into(),
-                decryption_material,
-            )
-        },
-    )?;
+    // add the secret id to the user in the USER_STORE
+    USER_STORE.with(|us| {
+        let mut user_store = us.borrow_mut();
+        user_store.add_secret_to_user(&caller, new_secret_id, decryption_material)
+    })?;
     Ok(secret)
 }
 
@@ -69,20 +61,12 @@ pub fn get_secret_impl(sid: UUID, principal: &Principal) -> Result<Secret, Smart
 }
 
 pub fn get_secret_list_impl(principal: &Principal) -> Result<Vec<SecretListEntry>, SmartVaultErr> {
-    let user_vault_id: UUID = get_vault_id_for(*principal)?;
-
-    let secret_ids: Vec<UUID> = USER_VAULT_STORE
-        .with(
-            |mv: &RefCell<UserVaultStore>| -> Result<Vec<UUID>, SmartVaultErr> {
-                let secret_ids: Vec<UUID> = mv
-                    .borrow()
-                    .get_user_vault(&user_vault_id)?
-                    .secret_ids
-                    .clone();
-                Ok(secret_ids)
-            },
-        )
-        .unwrap();
+    // get secret ids from user in user store
+    let secret_ids: Vec<UUID> = USER_STORE.with(|us| {
+        let user_store = us.borrow();
+        let user = user_store.get_user(&principal).unwrap();
+        user.secrets.clone()
+    });
 
     // get all the corresponding secrets
     let secrets: Vec<Secret> = SECRET_STORE.with(|x| {
@@ -132,8 +116,8 @@ mod tests {
                 update_secret_impl,
             },
         },
-        smart_vaults::smart_vault::USER_VAULT_STORE,
         smart_vaults::smart_vault::{get_vault_id_for, SECRET_STORE},
+        smart_vaults::smart_vault::{USER_STORE, USER_VAULT_STORE},
         users::{user::AddUserArgs, users_interface_impl::create_user_impl},
     };
 
@@ -155,9 +139,6 @@ mod tests {
         let sscm: SecretSymmetricCryptoMaterial = SecretSymmetricCryptoMaterial {
             encrypted_symmetric_key: vec![1, 2, 3],
             iv: vec![1, 2, 3],
-            username_decryption_nonce: Some(vec![1, 2, 3]),
-            password_decryption_nonce: Some(vec![1, 2, 3]),
-            notes_decryption_nonce: Some(vec![1, 2, 3]),
         };
         let mut asa: AddSecretArgs = AddSecretArgs {
             category: None,
@@ -187,13 +168,12 @@ mod tests {
             assert_eq!(secret.password().cloned(), added_secret.password().cloned());
         });
 
-        // check if the secret is in the users user vault
-        let user_vault_id = get_vault_id_for(principal).unwrap();
-        USER_VAULT_STORE.with(|user_vault_store_ref| {
-            let user_vault_store = user_vault_store_ref.borrow();
-            let user_vault = user_vault_store.get_user_vault(&user_vault_id).unwrap();
-            assert_eq!(user_vault.secret_ids.len(), 1);
-            assert_eq!(user_vault.secret_ids[0], added_secret.id().clone().into());
+        // check if the secret is in the user object
+        USER_STORE.with(|us| {
+            let user_store = us.borrow();
+            let user = user_store.get_user(&principal).unwrap();
+            assert_eq!(user.secrets.len(), 1, "suer should hold 1 secret now");
+            assert_eq!(user.secrets[0], added_secret.id().clone().into());
         });
 
         // get secret from proper interface implementation
@@ -208,7 +188,7 @@ mod tests {
 
         // check get secret list
         let secrets_list = get_secret_list_impl(&principal).unwrap();
-        assert_eq!(secrets_list.len(), 1);
+        assert_eq!(secrets_list.len(), 1, "secrets list is not length 1");
 
         // add secret again
         asa.name = Some("iolo".to_string());

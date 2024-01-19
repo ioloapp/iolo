@@ -4,7 +4,12 @@ use candid::{CandidType, Decode, Encode, Principal};
 use ic_stable_structures::{storable::Bound, Storable};
 use serde::{Deserialize, Serialize};
 
-use crate::{common::uuid::UUID, user_vaults::user_vault::UserVaultID, utils::time};
+use crate::{
+    common::uuid::UUID,
+    secrets::secret::SecretSymmetricCryptoMaterial,
+    user_vaults::user_vault::{KeyBox, UserVaultID},
+    utils::time,
+};
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct User {
@@ -16,8 +21,10 @@ pub struct User {
     pub date_modified: u64,
     pub date_last_login: Option<u64>,
     pub user_vault_id: Option<UserVaultID>,
-    // New: Secrets are stored as UUIDs in the user
+    // New: Secrets, KeyBox and policies are stored in the user
     pub secrets: Vec<UUID>,
+    policies: Vec<UUID>,
+    key_box: KeyBox,
 }
 
 impl Storable for User {
@@ -53,6 +60,8 @@ impl From<AddUserArgs> for User {
             date_last_login: None,
             user_vault_id: None,
             secrets: Vec::new(),
+            policies: Vec::new(),
+            key_box: KeyBox::new(),
         }
     }
 }
@@ -77,6 +86,8 @@ impl User {
             date_last_login: Some(now),
             user_vault_id: None,
             secrets: Vec::new(),
+            policies: Vec::new(),
+            key_box: KeyBox::new(),
         }
     }
 
@@ -86,6 +97,16 @@ impl User {
 
     pub fn user_vault_id(&self) -> &Option<UserVaultID> {
         &self.user_vault_id
+    }
+
+    pub fn add_secret(
+        &mut self,
+        secret_id: UUID,
+        secret_decryption_material: SecretSymmetricCryptoMaterial,
+    ) {
+        self.secrets.push(secret_id);
+        self.key_box.insert(secret_id, secret_decryption_material);
+        self.date_modified = time::get_current_time();
     }
 
     pub fn set_user_vault(&mut self, user_vault_id: UserVaultID) {
