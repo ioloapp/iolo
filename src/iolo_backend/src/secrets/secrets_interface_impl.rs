@@ -52,11 +52,13 @@ pub async fn add_secret_impl(
 pub fn get_secret_impl(sid: UUID, principal: &Principal) -> Result<Secret, SmartVaultErr> {
     let _user_vault_id: UUID = get_vault_id_for(*principal)?;
 
-    SECRET_STORE.with(|x| {
+    let secret = SECRET_STORE.with(|x| {
         let secret_store = x.borrow();
-        // TODO: check if caller is allowed to retrieve the secret (it must be in the user vault)
         secret_store.get(&UUID::from(sid.clone()))
-    })
+    });
+
+    // TODO: CHECK IF SECRET HAS THE RIGHT OWNER (=PRINCIPAL)
+    secret
 }
 
 pub fn get_secret_list_impl(principal: &Principal) -> Result<Vec<SecretListEntry>, SmartVaultErr> {

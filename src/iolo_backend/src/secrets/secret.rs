@@ -130,6 +130,10 @@ impl Secret {
         self.name.clone()
     }
 
+    pub fn owner(&self) -> Principal {
+        self.owner
+    }
+
     pub fn set_name(&mut self, name: String) {
         self.name = Some(name);
         self.date_modified = time::get_current_time();
