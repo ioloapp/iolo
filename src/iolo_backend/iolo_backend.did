@@ -128,6 +128,7 @@ type User = record {
   user_type : opt UserType;
   date_created : nat64;
   name : opt text;
+  secrets : vec nat;
   date_last_login : opt nat64;
   email : opt text;
   user_vault_id : opt nat;

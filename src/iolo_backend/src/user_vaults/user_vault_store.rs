@@ -8,7 +8,7 @@ use crate::policies::policy::{AddPolicyArgs, Policy, PolicyID};
 use crate::policies::policy_registry::{
     PolicyRegistryForBeneficiaries, PolicyRegistryForValidators,
 };
-use crate::secrets::secret::{AddSecretArgs, Secret, SecretSymmetricCryptoMaterial};
+use crate::secrets::secret::SecretSymmetricCryptoMaterial;
 use crate::smart_vaults::smart_vault::{
     POLICY_REGISTRY_FOR_BENEFICIARIES, POLICY_REGISTRY_FOR_VALIDATORS,
 };
@@ -177,19 +177,6 @@ impl UserVaultStore {
 
         Ok(user_vault.policies_mut().values_mut().collect())
     }
-
-    // pub fn update_user_secret(
-    //     &mut self,
-    //     vault_id: &UUID,
-    //     s: Secret,
-    // ) -> Result<Secret, SmartVaultErr> {
-    //     if !self.user_vaults.contains_key(vault_id) {
-    //         return Err(SmartVaultErr::UserVaultDoesNotExist(vault_id.to_string()));
-    //     }
-
-    //     let user_vault = self.user_vaults.get_mut(vault_id).unwrap();
-    //     user_vault.update_secret(s)
-    // }
 
     // Remove a secret
     pub fn remove_user_secret(

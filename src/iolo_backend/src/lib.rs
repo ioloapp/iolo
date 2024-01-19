@@ -27,11 +27,7 @@ pub mod users;
 pub mod utils;
 
 #[ic_cdk_macros::init]
-fn init() {
-
-    // initialize the timers for triggering the login date condition
-    //login_date_condition::init_condition();
-}
+fn init() {}
 
 // Generate did files
 export_candid!();

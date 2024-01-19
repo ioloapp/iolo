@@ -4,7 +4,7 @@ use candid::{CandidType, Decode, Encode, Principal};
 use ic_stable_structures::{storable::Bound, Storable};
 use serde::{Deserialize, Serialize};
 
-use crate::{user_vaults::user_vault::UserVaultID, utils::time};
+use crate::{common::uuid::UUID, user_vaults::user_vault::UserVaultID, utils::time};
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct User {
@@ -16,6 +16,8 @@ pub struct User {
     pub date_modified: u64,
     pub date_last_login: Option<u64>,
     pub user_vault_id: Option<UserVaultID>,
+    // New: Secrets are stored as UUIDs in the user
+    pub secrets: Vec<UUID>,
 }
 
 impl Storable for User {
@@ -50,6 +52,7 @@ impl From<AddUserArgs> for User {
             date_modified: now,
             date_last_login: None,
             user_vault_id: None,
+            secrets: Vec::new(),
         }
     }
 }
@@ -73,6 +76,7 @@ impl User {
             date_modified: now,
             date_last_login: Some(now),
             user_vault_id: None,
+            secrets: Vec::new(),
         }
     }
 
