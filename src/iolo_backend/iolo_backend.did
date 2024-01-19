@@ -4,7 +4,7 @@ type AddPolicyArgs = record {
   name : opt text;
   secrets : vec text;
   beneficiaries : vec principal;
-  key_box : vec record { text; SecretSymmetricCryptoMaterial };
+  key_box : vec record { nat; SecretSymmetricCryptoMaterial };
   conditions : vec Condition;
 };
 type AddSecretArgs = record {
@@ -36,7 +36,7 @@ type Policy = record {
   secrets : vec text;
   conditions_status : bool;
   beneficiaries : vec principal;
-  key_box : vec record { text; SecretSymmetricCryptoMaterial };
+  key_box : vec record { nat; SecretSymmetricCryptoMaterial };
   conditions : vec Condition;
   date_modified : nat64;
 };
@@ -59,7 +59,7 @@ type PolicyResponse = record {
   secrets : vec SecretListEntry;
   conditions_status : bool;
   beneficiaries : vec principal;
-  key_box : vec record { text; SecretSymmetricCryptoMaterial };
+  key_box : vec record { nat; SecretSymmetricCryptoMaterial };
   conditions : vec Condition;
   date_modified : nat64;
 };
@@ -96,10 +96,7 @@ type SecretListEntry = record {
 };
 type SecretSymmetricCryptoMaterial = record {
   iv : vec nat8;
-  password_decryption_nonce : opt vec nat8;
-  notes_decryption_nonce : opt vec nat8;
   encrypted_symmetric_key : vec nat8;
-  username_decryption_nonce : opt vec nat8;
 };
 type SmartVaultErr = variant {
   UserAlreadyExists : text;
@@ -132,7 +129,9 @@ type User = record {
   date_last_login : opt nat64;
   email : opt text;
   user_vault_id : opt nat;
+  key_box : vec record { nat; SecretSymmetricCryptoMaterial };
   date_modified : nat64;
+  policies : vec nat;
 };
 type UserType = variant { Company; Person };
 type Validator = record { id : principal; status : bool };
@@ -165,8 +164,8 @@ service : () -> {
   get_secret : (nat) -> (Result_2) query;
   get_secret_as_beneficiary : (text, text) -> (Result_2) query;
   get_secret_list : () -> (Result_8) query;
-  get_secret_symmetric_crypto_material : (text) -> (Result_9) query;
-  get_secret_symmetric_crypto_material_as_beneficiary : (text, text) -> (
+  get_secret_symmetric_crypto_material : (nat) -> (Result_9) query;
+  get_secret_symmetric_crypto_material_as_beneficiary : (nat, text) -> (
       Result_9,
     ) query;
   ibe_encryption_key : () -> (text);
