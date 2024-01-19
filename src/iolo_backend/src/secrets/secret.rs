@@ -67,9 +67,8 @@ impl From<Secret> for SecretListEntry {
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone, Default)]
 pub struct SecretSymmetricCryptoMaterial {
     /// the "decryption key" (encrypted using the users vetkd) required to decrypt username, password and notes
+    /// the first bytes are resesrved for the initialization vector (iv/nonce) to decrypt the encrypted_decryption_key
     pub encrypted_symmetric_key: Vec<u8>,
-    /// the initialization vector (iv/nonce) to decrypt the encrypted_decryption_key
-    pub iv: Vec<u8>,
 }
 
 impl Secret {
@@ -216,7 +215,6 @@ mod tests {
             notes: Some(vec![7, 8, 9]),
             symmetric_crypto_material: SecretSymmetricCryptoMaterial {
                 encrypted_symmetric_key: vec![1, 2, 3],
-                iv: vec![1, 2, 3],
             },
         };
 

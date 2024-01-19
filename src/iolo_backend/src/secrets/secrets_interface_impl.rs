@@ -156,7 +156,6 @@ mod tests {
         // Create Mock Secret
         let sscm: SecretSymmetricCryptoMaterial = SecretSymmetricCryptoMaterial {
             encrypted_symmetric_key: vec![1, 2, 3],
-            iv: vec![1, 2, 3],
         };
         let mut asa: AddSecretArgs = AddSecretArgs {
             category: None,
