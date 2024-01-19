@@ -5,8 +5,7 @@ use candid::Principal;
 use crate::{
     common::{error::SmartVaultErr, uuid::UUID},
     secrets::secret::SecretSymmetricCryptoMaterial,
-    smart_vaults::smart_vault::{get_vault_id_for, SECRET_STORE, USER_STORE, USER_VAULT_STORE},
-    user_vaults::user_vault_store::UserVaultStore,
+    smart_vaults::smart_vault::{get_vault_id_for, SECRET_STORE, USER_STORE},
 };
 
 use super::{
@@ -102,6 +101,23 @@ pub fn remove_secret_impl(secret_id: String, principal: &Principal) -> Result<()
     )
 }
 
+pub fn get_secret_symmetric_crypto_material_impl(
+    sid: UUID,
+    principal: &Principal,
+) -> Result<SecretSymmetricCryptoMaterial, SmartVaultErr> {
+    // get symmetric decryption material from user's keybox in the user store
+    USER_STORE.with(
+        |us| -> Result<SecretSymmetricCryptoMaterial, SmartVaultErr> {
+            let user_store = us.borrow();
+            let user = user_store.get_user(&principal)?;
+            user.key_box()
+                .get(&sid)
+                .cloned()
+                .ok_or_else(|| SmartVaultErr::SecretDecryptionMaterialDoesNotExist(sid.to_string()))
+        },
+    )
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -112,12 +128,12 @@ mod tests {
         secrets::{
             secret::{AddSecretArgs, SecretSymmetricCryptoMaterial},
             secrets_interface_impl::{
-                add_secret_impl, get_secret_impl, get_secret_list_impl, remove_secret_impl,
-                update_secret_impl,
+                add_secret_impl, get_secret_impl, get_secret_list_impl,
+                get_secret_symmetric_crypto_material_impl, remove_secret_impl, update_secret_impl,
             },
         },
-        smart_vaults::smart_vault::{get_vault_id_for, SECRET_STORE},
-        smart_vaults::smart_vault::{USER_STORE, USER_VAULT_STORE},
+        smart_vaults::smart_vault::SECRET_STORE,
+        smart_vaults::smart_vault::USER_STORE,
         users::{user::AddUserArgs, users_interface_impl::create_user_impl},
     };
 
@@ -185,6 +201,11 @@ mod tests {
         assert_eq!(added_secret.name(), fetched_secret.name());
         assert_eq!(added_secret.username(), fetched_secret.username());
         assert_eq!(added_secret.password(), fetched_secret.password());
+
+        // get secret decryption material
+        let sscm = get_secret_symmetric_crypto_material_impl(added_secret.id(), &principal);
+        assert!(sscm.is_ok());
+        assert_eq!(sscm.unwrap().encrypted_symmetric_key, vec![1, 2, 3]);
 
         // check get secret list
         let secrets_list = get_secret_list_impl(&principal).unwrap();

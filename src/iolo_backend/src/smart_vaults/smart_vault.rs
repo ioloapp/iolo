@@ -7,7 +7,8 @@ use crate::common::uuid::UUID;
 use crate::policies::policy::PolicyResponse;
 
 use crate::secrets::secrets_interface_impl::{
-    add_secret_impl, get_secret_impl, get_secret_list_impl, remove_secret_impl, update_secret_impl,
+    add_secret_impl, get_secret_impl, get_secret_list_impl,
+    get_secret_symmetric_crypto_material_impl, remove_secret_impl, update_secret_impl,
 };
 use crate::user_vaults::user_vault::UserVaultID;
 use crate::user_vaults::user_vault_store::UserVaultStore;
@@ -164,15 +165,7 @@ pub fn get_secret_list() -> Result<Vec<SecretListEntry>, SmartVaultErr> {
 pub fn get_secret_symmetric_crypto_material(
     sid: UUID,
 ) -> Result<SecretSymmetricCryptoMaterial, SmartVaultErr> {
-    let principal = get_caller();
-    let user_vault_id: UUID = get_vault_id_for(principal)?;
-
-    USER_VAULT_STORE.with(|mv: &RefCell<UserVaultStore>| {
-        let mv: &UserVaultStore = &mv.borrow();
-        let uv = mv.get_user_vault(&user_vault_id)?;
-        let sdm: &SecretSymmetricCryptoMaterial = uv.key_box().get(&sid).unwrap();
-        Ok(sdm.clone())
-    })
+    get_secret_symmetric_crypto_material_impl(sid, &get_caller())
 }
 
 #[ic_cdk_macros::query]

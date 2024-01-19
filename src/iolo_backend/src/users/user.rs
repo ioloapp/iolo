@@ -99,6 +99,10 @@ impl User {
         &self.user_vault_id
     }
 
+    pub fn key_box(&self) -> &KeyBox {
+        &self.key_box
+    }
+
     pub fn add_secret(
         &mut self,
         secret_id: UUID,

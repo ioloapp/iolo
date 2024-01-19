@@ -11,6 +11,7 @@ pub enum SmartVaultErr {
     UserVaultCreationFailed(String),
     UserVaultDoesNotExist(String),
     SecretDoesNotExist(String),
+    SecretDecryptionMaterialDoesNotExist(String),
     SecretHasNoId,
     SecretAlreadyExists(String),
     PolicyAlreadyExists(String),
@@ -55,6 +56,9 @@ impl Display for SmartVaultErr {
             SmartVaultErr::SecretDoesNotExist(id) => {
                 write!(f, "Failed to read secret with the following id: {}", id)
             }
+            SmartVaultErr::SecretDecryptionMaterialDoesNotExist(id) => {
+                write!(f, "Failed to read secret decryption material for secret with the following id: {}", id)
+            }
             SmartVaultErr::SecretHasNoId => {
                 write!(f, "Secret has no id")
             }
@@ -62,11 +66,7 @@ impl Display for SmartVaultErr {
                 write!(f, "Failed to create secret with the following id: {}", id)
             }
             SmartVaultErr::PolicyAlreadyExists(id) => {
-                write!(
-                    f,
-                    "Failed to create policy with the following id: {}",
-                    id
-                )
+                write!(f, "Failed to create policy with the following id: {}", id)
             }
             SmartVaultErr::PolicyDoesNotExist(id) => {
                 write!(f, "Failed to read policy with the following id: {}", id)
