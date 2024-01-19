@@ -6,6 +6,7 @@ use crate::common::error::SmartVaultErr;
 use crate::common::uuid::UUID;
 use crate::policies::policy::PolicyResponse;
 
+use crate::policies::policy_store::PolicyStore;
 use crate::secrets::secrets_interface_impl::{
     add_secret_impl, get_secret_impl, get_secret_list_impl,
     get_secret_symmetric_crypto_material_impl, remove_secret_impl, update_secret_impl,
@@ -35,6 +36,9 @@ thread_local! {
 
     // Secret Store
     pub static SECRET_STORE: RefCell<SecretStore> = RefCell::new(SecretStore::new());
+
+    // Policy (fka Testament) Store
+    pub static POLICY_STORE: RefCell<PolicyStore> = RefCell::new(PolicyStore::new());
 
     // policy Registry for beneficiaries
     pub static POLICY_REGISTRY_FOR_BENEFICIARIES: RefCell<PolicyRegistryForBeneficiaries> = RefCell::new(PolicyRegistryForBeneficiaries::new());

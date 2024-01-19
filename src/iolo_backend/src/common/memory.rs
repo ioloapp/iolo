@@ -9,6 +9,7 @@ const UPGRADES: MemoryId = MemoryId::new(0);
 // every additional stable structure.
 const STABLE_BTREE_USERS: MemoryId = MemoryId::new(1);
 const STABLE_BTREE_SECRETS: MemoryId = MemoryId::new(2);
+const STABLE_BTREE_POLICIES: MemoryId = MemoryId::new(3);
 
 pub type Memory = VirtualMemory<DefaultMemoryImpl>;
 
@@ -29,4 +30,8 @@ pub fn get_stable_btree_memory_for_users() -> Memory {
 
 pub fn get_stable_btree_memory_for_secrets() -> Memory {
     MEMORY_MANAGER.with(|m| m.borrow().get(STABLE_BTREE_SECRETS))
+}
+
+pub fn get_stable_btree_memory_for_policies() -> Memory {
+    MEMORY_MANAGER.with(|m| m.borrow().get(STABLE_BTREE_POLICIES))
 }

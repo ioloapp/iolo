@@ -1,6 +1,9 @@
+use std::borrow::Cow;
 use std::collections::{BTreeMap, HashSet};
 
-use candid::{CandidType, Principal};
+use candid::{CandidType, Decode, Encode, Principal};
+use ic_stable_structures::storable::Bound;
+use ic_stable_structures::Storable;
 use serde::{Deserialize, Serialize};
 
 use crate::policies::conditions::{Condition, Validator};
@@ -30,6 +33,18 @@ pub struct Policy {
     conditions_status: bool,
     conditions_logical_operator: LogicalOperator,
     conditions: Vec<Condition>,
+}
+
+impl Storable for Policy {
+    fn to_bytes(&self) -> std::borrow::Cow<[u8]> {
+        Cow::Owned(Encode!(self).unwrap())
+    }
+
+    fn from_bytes(bytes: std::borrow::Cow<[u8]>) -> Self {
+        Decode!(bytes.as_ref(), Self).unwrap()
+    }
+
+    const BOUND: Bound = Bound::Unbounded;
 }
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
