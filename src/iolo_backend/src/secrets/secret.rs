@@ -4,7 +4,7 @@ use candid::{CandidType, Decode, Deserialize, Encode, Principal};
 use ic_stable_structures::{storable::Bound, Storable};
 use serde::Serialize;
 
-use crate::utils::time;
+use crate::{common::uuid::UUID, utils::time};
 
 pub type SecretID = String;
 
@@ -17,7 +17,7 @@ pub enum SecretCategory {
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone, PartialEq)]
 pub struct Secret {
-    pub id: String,
+    pub id: UUID,
     owner: Principal,
     date_created: u64,
     date_modified: u64,
@@ -44,7 +44,7 @@ pub struct AddSecretArgs {
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone, PartialEq, Eq, Hash)]
 pub struct SecretListEntry {
-    pub id: SecretID,
+    pub id: UUID,
     pub category: Option<SecretCategory>,
     pub name: Option<String>,
 }
@@ -82,7 +82,7 @@ impl Secret {
     pub fn new_test_instance() -> Self {
         let now: u64 = time::get_current_time();
         Self {
-            id: now.to_string(),
+            id: UUID::new(),
             owner: Principal::anonymous(),
             date_created: now,
             date_modified: now,
@@ -97,7 +97,7 @@ impl Secret {
 
     pub fn create_from_add_secret_args(
         owner: Principal,
-        secret_id: String,
+        secret_id: UUID,
         asa: AddSecretArgs,
     ) -> Self {
         let now: u64 = time::get_current_time();
@@ -116,8 +116,8 @@ impl Secret {
         }
     }
 
-    pub fn id(&self) -> &SecretID {
-        &self.id
+    pub fn id(&self) -> UUID {
+        self.id
     }
 
     pub fn date_created(&self) -> &u64 {
@@ -198,7 +198,6 @@ mod tests {
     fn test_new_test_instance() {
         let secret = Secret::new_test_instance();
 
-        assert_eq!(secret.id(), &secret.date_created().to_string());
         assert_eq!(secret.date_created(), secret.date_modified());
         assert!(secret.category().is_none());
         assert!(secret.name().is_none());
@@ -229,13 +228,9 @@ mod tests {
         };
 
         // let secret: Secret = args.into();
-        let secret: Secret = Secret::create_from_add_secret_args(
-            Principal::anonymous(),
-            "test_id".to_string(),
-            args,
-        );
+        let secret: Secret =
+            Secret::create_from_add_secret_args(Principal::anonymous(), UUID::new(), args);
 
-        assert_eq!(secret.id(), "test_id");
         assert_eq!(secret.category(), Some(SecretCategory::Password));
         assert_eq!(secret.name(), Some("test_name".to_string()));
         assert_eq!(secret.username(), Some(&vec![1, 2, 3]));

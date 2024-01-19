@@ -102,7 +102,7 @@ pub fn update_secret(s: Secret) -> Result<Secret, SmartVaultErr> {
 }
 
 #[ic_cdk_macros::query]
-pub fn get_secret(sid: SecretID) -> Result<Secret, SmartVaultErr> {
+pub fn get_secret(sid: UUID) -> Result<Secret, SmartVaultErr> {
     get_secret_impl(sid, &get_caller())
 }
 

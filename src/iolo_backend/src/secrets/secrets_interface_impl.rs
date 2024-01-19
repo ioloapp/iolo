@@ -33,8 +33,7 @@ pub async fn add_secret_impl(
     let new_secret_id: UUID = UUID::new_random().await.into();
 
     // we generate the secret and produce the decryption material
-    let secret: Secret =
-        Secret::create_from_add_secret_args(*caller, new_secret_id.to_string(), args.clone());
+    let secret: Secret = Secret::create_from_add_secret_args(*caller, new_secret_id, args.clone());
     let decryption_material: SecretSymmetricCryptoMaterial = args.symmetric_crypto_material.clone();
 
     // Add the secret to the secret store (secrets: StableBTreeMap<UUID, Secret, Memory>,)
@@ -59,7 +58,7 @@ pub async fn add_secret_impl(
     Ok(secret)
 }
 
-pub fn get_secret_impl(sid: SecretID, principal: &Principal) -> Result<Secret, SmartVaultErr> {
+pub fn get_secret_impl(sid: UUID, principal: &Principal) -> Result<Secret, SmartVaultErr> {
     let _user_vault_id: UUID = get_vault_id_for(*principal)?;
 
     SECRET_STORE.with(|x| {

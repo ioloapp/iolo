@@ -178,18 +178,18 @@ impl UserVaultStore {
         Ok(user_vault.policies_mut().values_mut().collect())
     }
 
-    pub fn update_user_secret(
-        &mut self,
-        vault_id: &UUID,
-        s: Secret,
-    ) -> Result<Secret, SmartVaultErr> {
-        if !self.user_vaults.contains_key(vault_id) {
-            return Err(SmartVaultErr::UserVaultDoesNotExist(vault_id.to_string()));
-        }
+    // pub fn update_user_secret(
+    //     &mut self,
+    //     vault_id: &UUID,
+    //     s: Secret,
+    // ) -> Result<Secret, SmartVaultErr> {
+    //     if !self.user_vaults.contains_key(vault_id) {
+    //         return Err(SmartVaultErr::UserVaultDoesNotExist(vault_id.to_string()));
+    //     }
 
-        let user_vault = self.user_vaults.get_mut(vault_id).unwrap();
-        user_vault.update_secret(s)
-    }
+    //     let user_vault = self.user_vaults.get_mut(vault_id).unwrap();
+    //     user_vault.update_secret(s)
+    // }
 
     // Remove a secret
     pub fn remove_user_secret(
