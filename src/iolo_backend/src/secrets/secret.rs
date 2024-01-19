@@ -1,6 +1,6 @@
 use std::borrow::Cow;
 
-use candid::{CandidType, Decode, Deserialize, Encode};
+use candid::{CandidType, Decode, Deserialize, Encode, Principal};
 use ic_stable_structures::{storable::Bound, Storable};
 use serde::Serialize;
 
@@ -18,6 +18,7 @@ pub enum SecretCategory {
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone, PartialEq)]
 pub struct Secret {
     pub id: String,
+    owner: Principal,
     date_created: u64,
     date_modified: u64,
     category: Option<SecretCategory>,
@@ -30,7 +31,6 @@ pub struct Secret {
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct AddSecretArgs {
-    pub id: String,
     pub category: Option<SecretCategory>,
     pub name: Option<String>,
     pub username: Option<Vec<u8>>,
@@ -40,23 +40,6 @@ pub struct AddSecretArgs {
     // All the information required to decrypt the secret.
     // This material will be stored in the uservault's key box
     pub symmetric_crypto_material: SecretSymmetricCryptoMaterial,
-}
-
-impl From<AddSecretArgs> for Secret {
-    fn from(value: AddSecretArgs) -> Self {
-        let now = time::get_current_time();
-        Secret {
-            id: value.id,
-            date_created: now,
-            date_modified: now,
-            category: value.category,
-            name: value.name,
-            username: value.username,
-            password: value.password,
-            url: value.url,
-            notes: value.notes,
-        }
-    }
 }
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone, PartialEq, Eq, Hash)]
@@ -100,6 +83,7 @@ impl Secret {
         let now: u64 = time::get_current_time();
         Self {
             id: now.to_string(),
+            owner: Principal::anonymous(),
             date_created: now,
             date_modified: now,
             category: None,
@@ -108,6 +92,27 @@ impl Secret {
             password: Option::None,
             url: Option::None,
             notes: Option::None,
+        }
+    }
+
+    pub fn create_from_add_secret_args(
+        owner: Principal,
+        secret_id: String,
+        asa: AddSecretArgs,
+    ) -> Self {
+        let now: u64 = time::get_current_time();
+
+        Self {
+            id: secret_id,
+            owner: owner,
+            date_created: now,
+            date_modified: now,
+            category: asa.category,
+            name: asa.name,
+            username: asa.username,
+            password: asa.password,
+            url: asa.url,
+            notes: asa.notes,
         }
     }
 
@@ -206,7 +211,6 @@ mod tests {
     #[test]
     fn test_from_add_secret_args() {
         let args = AddSecretArgs {
-            id: "test_id".to_string(),
             category: Some(SecretCategory::Password),
             name: Some("test_name".to_string()),
             username: Some(vec![1, 2, 3]),
@@ -224,7 +228,12 @@ mod tests {
             },
         };
 
-        let secret: Secret = args.into();
+        // let secret: Secret = args.into();
+        let secret: Secret = Secret::create_from_add_secret_args(
+            Principal::anonymous(),
+            "test_id".to_string(),
+            args,
+        );
 
         assert_eq!(secret.id(), "test_id");
         assert_eq!(secret.category(), Some(SecretCategory::Password));

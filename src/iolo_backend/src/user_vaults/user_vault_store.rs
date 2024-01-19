@@ -67,30 +67,7 @@ impl UserVaultStore {
         self.user_vaults.remove(id);
     }
 
-    // TODO: this is old. remove the function and rename the new one below to add_user_secret()
     pub fn add_user_secret(
-        &mut self,
-        vault_id: &UUID,
-        asa: AddSecretArgs,
-    ) -> Result<Secret, SmartVaultErr> {
-        if !self.user_vaults.contains_key(vault_id) {
-            return Err(SmartVaultErr::UserVaultDoesNotExist(vault_id.to_string()));
-        }
-
-        let user_vault = self.user_vaults.get_mut(vault_id).unwrap();
-        let secret: Secret = asa.clone().into();
-        let added_secret = user_vault.add_secret(secret)?;
-
-        let decryption_material = asa.symmetric_crypto_material.clone();
-        user_vault
-            .key_box_mut()
-            .insert(added_secret.id().clone(), decryption_material);
-
-        Ok(added_secret)
-    }
-
-    // TODO: rename this to add_user_secret
-    pub fn add_user_secret_by_id(
         &mut self,
         vault_id: &UUID,
         secret_id: &UUID,

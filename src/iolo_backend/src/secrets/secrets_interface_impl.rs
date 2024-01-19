@@ -24,16 +24,17 @@ use super::{
  * 4. Add the secret id to the user vault's secret id list
  */
 pub async fn add_secret_impl(
-    mut args: AddSecretArgs,
+    args: AddSecretArgs,
     caller: &Principal,
 ) -> Result<Secret, SmartVaultErr> {
     let user_vault_id: UUID = get_vault_id_for(*caller)?;
 
-    // new: we generate a new UUID for the secret and overwrite it
-    args.id = UUID::new_random().await.into();
+    // generate a new UUID for the secret
+    let new_secret_id: UUID = UUID::new_random().await.into();
 
     // we generate the secret and produce the decryption material
-    let secret: Secret = args.clone().into();
+    let secret: Secret =
+        Secret::create_from_add_secret_args(*caller, new_secret_id.to_string(), args.clone());
     let decryption_material: SecretSymmetricCryptoMaterial = args.symmetric_crypto_material.clone();
 
     // Add the secret to the secret store (secrets: StableBTreeMap<UUID, Secret, Memory>,)
@@ -48,7 +49,7 @@ pub async fn add_secret_impl(
     USER_VAULT_STORE.with(
         |ms: &RefCell<UserVaultStore>| -> Result<UUID, SmartVaultErr> {
             let mut user_vault_store = ms.borrow_mut();
-            user_vault_store.add_user_secret_by_id(
+            user_vault_store.add_user_secret(
                 &user_vault_id,
                 &secret.id().clone().into(),
                 decryption_material,
@@ -160,7 +161,6 @@ mod tests {
             notes_decryption_nonce: Some(vec![1, 2, 3]),
         };
         let mut asa: AddSecretArgs = AddSecretArgs {
-            id: "".to_string(),
             category: None,
             name: Some("Google".to_string()),
             username: Some(vec![1, 2, 3]),
