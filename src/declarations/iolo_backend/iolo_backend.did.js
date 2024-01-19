@@ -6,15 +6,22 @@ export const idlFactory = ({ IDL }) => {
     'name' : IDL.Opt(IDL.Text),
     'email' : IDL.Opt(IDL.Text),
   });
+  const SecretSymmetricCryptoMaterial = IDL.Record({
+    'iv' : IDL.Vec(IDL.Nat8),
+    'encrypted_symmetric_key' : IDL.Vec(IDL.Nat8),
+  });
   const User = IDL.Record({
     'id' : IDL.Principal,
     'user_type' : IDL.Opt(UserType),
     'date_created' : IDL.Nat64,
     'name' : IDL.Opt(IDL.Text),
+    'secrets' : IDL.Vec(IDL.Nat),
     'date_last_login' : IDL.Opt(IDL.Nat64),
     'email' : IDL.Opt(IDL.Text),
     'user_vault_id' : IDL.Opt(IDL.Nat),
+    'key_box' : IDL.Vec(IDL.Tuple(IDL.Nat, SecretSymmetricCryptoMaterial)),
     'date_modified' : IDL.Nat64,
+    'policies' : IDL.Vec(IDL.Nat),
   });
   const SmartVaultErr = IDL.Variant({
     'UserAlreadyExists' : IDL.Text,
@@ -22,6 +29,7 @@ export const idlFactory = ({ IDL }) => {
     'UserDeletionFailed' : IDL.Text,
     'SecretDoesNotExist' : IDL.Text,
     'NoPolicyForBeneficiary' : IDL.Text,
+    'SecretDecryptionMaterialDoesNotExist' : IDL.Text,
     'Unauthorized' : IDL.Null,
     'UserUpdateFailed' : IDL.Text,
     'PolicyAlreadyExists' : IDL.Text,
@@ -35,13 +43,6 @@ export const idlFactory = ({ IDL }) => {
   });
   const Result = IDL.Variant({ 'Ok' : User, 'Err' : SmartVaultErr });
   const LogicalOperator = IDL.Variant({ 'Or' : IDL.Null, 'And' : IDL.Null });
-  const SecretSymmetricCryptoMaterial = IDL.Record({
-    'iv' : IDL.Vec(IDL.Nat8),
-    'password_decryption_nonce' : IDL.Opt(IDL.Vec(IDL.Nat8)),
-    'notes_decryption_nonce' : IDL.Opt(IDL.Vec(IDL.Nat8)),
-    'encrypted_symmetric_key' : IDL.Vec(IDL.Nat8),
-    'username_decryption_nonce' : IDL.Opt(IDL.Vec(IDL.Nat8)),
-  });
   const TimeBasedCondition = IDL.Record({
     'id' : IDL.Text,
     'condition_status' : IDL.Bool,
@@ -64,7 +65,7 @@ export const idlFactory = ({ IDL }) => {
     'name' : IDL.Opt(IDL.Text),
     'secrets' : IDL.Vec(IDL.Text),
     'beneficiaries' : IDL.Vec(IDL.Principal),
-    'key_box' : IDL.Vec(IDL.Tuple(IDL.Text, SecretSymmetricCryptoMaterial)),
+    'key_box' : IDL.Vec(IDL.Tuple(IDL.Nat, SecretSymmetricCryptoMaterial)),
     'conditions' : IDL.Vec(Condition),
   });
   const Policy = IDL.Record({
@@ -76,7 +77,7 @@ export const idlFactory = ({ IDL }) => {
     'secrets' : IDL.Vec(IDL.Text),
     'conditions_status' : IDL.Bool,
     'beneficiaries' : IDL.Vec(IDL.Principal),
-    'key_box' : IDL.Vec(IDL.Tuple(IDL.Text, SecretSymmetricCryptoMaterial)),
+    'key_box' : IDL.Vec(IDL.Tuple(IDL.Nat, SecretSymmetricCryptoMaterial)),
     'conditions' : IDL.Vec(Condition),
     'date_modified' : IDL.Nat64,
   });
@@ -87,7 +88,6 @@ export const idlFactory = ({ IDL }) => {
     'Document' : IDL.Null,
   });
   const AddSecretArgs = IDL.Record({
-    'id' : IDL.Text,
     'url' : IDL.Opt(IDL.Text),
     'username' : IDL.Opt(IDL.Vec(IDL.Nat8)),
     'password' : IDL.Opt(IDL.Vec(IDL.Nat8)),
@@ -97,10 +97,11 @@ export const idlFactory = ({ IDL }) => {
     'category' : IDL.Opt(SecretCategory),
   });
   const Secret = IDL.Record({
-    'id' : IDL.Text,
+    'id' : IDL.Nat,
     'url' : IDL.Opt(IDL.Text),
     'username' : IDL.Opt(IDL.Vec(IDL.Nat8)),
     'date_created' : IDL.Nat64,
+    'owner' : IDL.Principal,
     'password' : IDL.Opt(IDL.Vec(IDL.Nat8)),
     'name' : IDL.Opt(IDL.Text),
     'notes' : IDL.Opt(IDL.Vec(IDL.Nat8)),
@@ -116,7 +117,7 @@ export const idlFactory = ({ IDL }) => {
   const Result_4 = IDL.Variant({ 'Ok' : IDL.Text, 'Err' : SmartVaultErr });
   const Result_5 = IDL.Variant({ 'Ok' : IDL.Vec(User), 'Err' : SmartVaultErr });
   const SecretListEntry = IDL.Record({
-    'id' : IDL.Text,
+    'id' : IDL.Nat,
     'name' : IDL.Opt(IDL.Text),
     'category' : IDL.Opt(SecretCategory),
   });
@@ -129,7 +130,7 @@ export const idlFactory = ({ IDL }) => {
     'secrets' : IDL.Vec(SecretListEntry),
     'conditions_status' : IDL.Bool,
     'beneficiaries' : IDL.Vec(IDL.Principal),
-    'key_box' : IDL.Vec(IDL.Tuple(IDL.Text, SecretSymmetricCryptoMaterial)),
+    'key_box' : IDL.Vec(IDL.Tuple(IDL.Nat, SecretSymmetricCryptoMaterial)),
     'conditions' : IDL.Vec(Condition),
     'date_modified' : IDL.Nat64,
   });
@@ -193,7 +194,7 @@ export const idlFactory = ({ IDL }) => {
     'get_policy_list_as_beneficiary' : IDL.Func([], [Result_7], ['query']),
     'get_policy_list_as_owner' : IDL.Func([], [Result_7], ['query']),
     'get_policy_list_as_validator' : IDL.Func([], [Result_7], ['query']),
-    'get_secret' : IDL.Func([IDL.Text], [Result_2], ['query']),
+    'get_secret' : IDL.Func([IDL.Nat], [Result_2], ['query']),
     'get_secret_as_beneficiary' : IDL.Func(
         [IDL.Text, IDL.Text],
         [Result_2],
@@ -201,12 +202,12 @@ export const idlFactory = ({ IDL }) => {
       ),
     'get_secret_list' : IDL.Func([], [Result_8], ['query']),
     'get_secret_symmetric_crypto_material' : IDL.Func(
-        [IDL.Text],
+        [IDL.Nat],
         [Result_9],
         ['query'],
       ),
     'get_secret_symmetric_crypto_material_as_beneficiary' : IDL.Func(
-        [IDL.Text, IDL.Text],
+        [IDL.Nat, IDL.Text],
         [Result_9],
         ['query'],
       ),
@@ -221,8 +222,6 @@ export const idlFactory = ({ IDL }) => {
     'update_secret' : IDL.Func([Secret], [Result_2], []),
     'update_user' : IDL.Func([User], [Result], []),
     'update_user_login_date' : IDL.Func([], [Result], []),
-    'what_time_is_it' : IDL.Func([], [IDL.Nat64], ['query']),
-    'who_am_i' : IDL.Func([], [IDL.Text], ['query']),
   });
 };
 export const init = ({ IDL }) => { return []; };

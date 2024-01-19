@@ -104,6 +104,7 @@ type SmartVaultErr = variant {
   UserDeletionFailed : text;
   SecretDoesNotExist : text;
   NoPolicyForBeneficiary : text;
+  SecretDecryptionMaterialDoesNotExist : text;
   Unauthorized;
   UserUpdateFailed : text;
   PolicyAlreadyExists : text;

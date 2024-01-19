@@ -162,7 +162,7 @@ class IoloService {
         if (result['Ok']) {
             return result['Ok'].map((secretListEntry: SecretListEntry): UiSecretListEntry => {
                 return {
-                    id: secretListEntry.id,
+                    id: secretListEntry.id.toString(),
                     name: secretListEntry.name.length > 0 ? secretListEntry.name[0] : undefined,
                     category: secretListEntry.category.length > 0 ? this.mapSecretCategoryToUiSecretCategory(secretListEntry.category[0]) : undefined,
                 };
@@ -173,8 +173,8 @@ class IoloService {
 
     public async getSecret(secretId: string): Promise<UiSecret> {
         console.debug('start getting secret...')
-        const result1 = (await this.getActor()).get_secret(secretId);
-        const result2 = (await this.getActor()).get_secret_symmetric_crypto_material(secretId);
+        const result1 = (await this.getActor()).get_secret(BigInt(secretId));
+        const result2 = (await this.getActor()).get_secret_symmetric_crypto_material(BigInt(secretId));
 
         // Wait for both promises to complete
         const [value1, value2] = await Promise.all([result1, result2]);
@@ -190,8 +190,8 @@ class IoloService {
 
     public async getSecretAsBeneficiary(secretId: string, policyId: string): Promise<UiSecret> {
         console.debug('start getting secret for heir...')
-        const result1 = (await this.getActor()).get_secret_as_beneficiary(secretId, policyId);
-        const result2 = (await this.getActor()).get_secret_symmetric_crypto_material_as_beneficiary(secretId, policyId);
+        const result1 = (await this.getActor()).get_secret_as_beneficiary(secretId.toString(), policyId);
+        const result2 = (await this.getActor()).get_secret_symmetric_crypto_material_as_beneficiary(BigInt(secretId), policyId);
 
         // Wait for both promises to complete
         const [value1, value2] = await Promise.all([result1, result2]);
@@ -216,7 +216,7 @@ class IoloService {
 
     public async updateSecret(uiSecret: UiSecret): Promise<UiSecret> {
         console.debug('start updating secret...')
-        const resultSymmetricCryptoMaterial: Result_9 = await (await this.getActor()).get_secret_symmetric_crypto_material(uiSecret.id);
+        const resultSymmetricCryptoMaterial: Result_9 = await (await this.getActor()).get_secret_symmetric_crypto_material(BigInt(uiSecret.id));
 
         let symmetricCryptoMaterial: SecretSymmetricCryptoMaterial;
         if (resultSymmetricCryptoMaterial['Ok']) {
@@ -226,7 +226,7 @@ class IoloService {
         }
 
         // Get secret with encrypted attributes incl. ivs
-        const resultSecret: Result_2 = await (await this.getActor()).get_secret(uiSecret.id);
+        const resultSecret: Result_2 = await (await this.getActor()).get_secret(BigInt(uiSecret.id));
         let existingSecret: Secret;
         if (resultSecret['Ok']) {
             existingSecret = resultSecret['Ok'];
@@ -440,6 +440,9 @@ class IoloService {
 
     private mapUiUserToUser(uiUser: UiUser): User {
         return {
+            key_box: undefined,
+            policies: undefined,
+            secrets: undefined,
             id: Principal.fromText(uiUser.id),
             user_type: uiUser.type ? [this.mapUiUserTypeToUserType(uiUser.type)] : [],
             date_created: uiUser.dateCreated ? this.dateToNanosecondsInBigint(uiUser.dateCreated) : 0n,
@@ -447,7 +450,7 @@ class IoloService {
             date_last_login: uiUser.dateLastLogin? [this.dateToNanosecondsInBigint(uiUser.dateLastLogin)] : [],
             email: uiUser.email ? [uiUser.email] : [],
             user_vault_id: uiUser.userVaultId ? [uiUser.userVaultId] : [],
-            date_modified: uiUser.dateCreated ? this.dateToNanosecondsInBigint(uiUser.dateModified) : 0n,
+            date_modified: uiUser.dateCreated ? this.dateToNanosecondsInBigint(uiUser.dateModified) : 0n
         };
     }
 
@@ -477,7 +480,7 @@ class IoloService {
     private async mapSecretToUiSecret(secret: Secret, username: string, password: string, notes: string): Promise<UiSecret> {
 
        let uiSecret: UiSecret = {
-            id: secret.id,
+            id: secret.id.toString(),
             name: secret.name.length > 0 ? secret.name[0] : undefined,
             url: secret.url.length > 0 ? secret.url[0]: undefined,
             username: username,
@@ -542,14 +545,10 @@ class IoloService {
 
             let symmetricCryptoMaterial: SecretSymmetricCryptoMaterial = {
                 encrypted_symmetric_key: encryptedSymmetricKey,
-                iv: [],
-                username_decryption_nonce: [],
-                password_decryption_nonce: [],
-                notes_decryption_nonce: [],
+                iv: []
             };
 
             return {
-                id: uuidv4(),
                 url: uiSecret.url ? [uiSecret.url] : [],
                 name: [uiSecret.name],
                 category: [this.mapUiSecretCategoryToSecretCategory(uiSecret.category)],
@@ -610,7 +609,8 @@ class IoloService {
             }
 
             return {
-                id: uiSecret.id,
+                owner: undefined,
+                id: BigInt(uiSecret.id),
                 url: uiSecret.url ? [uiSecret.url] : [],
                 name: [uiSecret.name],
                 category: [this.mapUiSecretCategoryToSecretCategory(uiSecret.category)],
@@ -658,9 +658,9 @@ class IoloService {
         const policyVetKey = await get_aes_256_gcm_key_for_policy(uiPolicy.id, (await this.getActor()));
 
         // Create key_box by encrypting symmetric secrets key with policy vetKey
-        let keyBox = new Array<[string, SecretSymmetricCryptoMaterial]>;
+        let keyBox = new Array<[bigint, SecretSymmetricCryptoMaterial]>;
         for (const item of uiPolicy.secrets) {
-            const result: Result_9 = await (await this.getActor()).get_secret_symmetric_crypto_material(item);
+            const result: Result_9 = await (await this.getActor()).get_secret_symmetric_crypto_material(BigInt(item));
             if (result['Ok']) {
                 // Decrypt symmetric key with uservault vetKey
                 const decryptedSymmetricKey = await aes_gcm_decrypt(result['Ok'].encrypted_symmetric_key as Uint8Array, uservaultVetKey, this.ivLength);
@@ -669,12 +669,9 @@ class IoloService {
                 const ivSymmetricKey = window.crypto.getRandomValues(new Uint8Array(12)); // 96-bits; unique per message
                 const encryptedSymmetricKey = await aes_gcm_encrypt(decryptedSymmetricKey, policyVetKey, ivSymmetricKey);
 
-                keyBox.push([item, {
+                keyBox.push([BigInt(item), {
                     iv: ivSymmetricKey,
                     encrypted_symmetric_key: encryptedSymmetricKey,
-                    username_decryption_nonce: result['Ok'].username_decryption_nonce,
-                    password_decryption_nonce: result['Ok'].password_decryption_nonce,
-                    notes_decryption_nonce: result['Ok'].notes_decryption_nonce,
                 }]);
             } else throw mapError(result['Err']);
         }
@@ -684,7 +681,7 @@ class IoloService {
             beneficiaries: beneficiaries,
             name: [uiPolicy.name],
             owner: Principal.fromText(uiPolicy.owner.id),
-            secrets: uiPolicy.secrets,
+            secrets: uiPolicy.secrets.map((item) => item.toString()),
             key_box: keyBox,
             conditions_logical_operator: uiPolicy.conditionsLogicalOperator == LogicalOperator.And ? { 'And' : null } : { 'Or' : null },
             conditions_status: uiPolicy.conditionsStatus,
@@ -783,7 +780,7 @@ class IoloService {
                 }
             }
             return {
-                id: item.id,
+                id: item.id.toString(),
                 name: item.name.length > 0 ? item.name[0] : undefined,
                 category: category,
             }

@@ -7,11 +7,10 @@ export interface AddPolicyArgs {
   'name' : [] | [string],
   'secrets' : Array<string>,
   'beneficiaries' : Array<Principal>,
-  'key_box' : Array<[string, SecretSymmetricCryptoMaterial]>,
+  'key_box' : Array<[bigint, SecretSymmetricCryptoMaterial]>,
   'conditions' : Array<Condition>,
 }
 export interface AddSecretArgs {
-  'id' : string,
   'url' : [] | [string],
   'username' : [] | [Uint8Array | number[]],
   'password' : [] | [Uint8Array | number[]],
@@ -39,7 +38,7 @@ export interface Policy {
   'secrets' : Array<string>,
   'conditions_status' : boolean,
   'beneficiaries' : Array<Principal>,
-  'key_box' : Array<[string, SecretSymmetricCryptoMaterial]>,
+  'key_box' : Array<[bigint, SecretSymmetricCryptoMaterial]>,
   'conditions' : Array<Condition>,
   'date_modified' : bigint,
 }
@@ -62,7 +61,7 @@ export interface PolicyResponse {
   'secrets' : Array<SecretListEntry>,
   'conditions_status' : boolean,
   'beneficiaries' : Array<Principal>,
-  'key_box' : Array<[string, SecretSymmetricCryptoMaterial]>,
+  'key_box' : Array<[bigint, SecretSymmetricCryptoMaterial]>,
   'conditions' : Array<Condition>,
   'date_modified' : bigint,
 }
@@ -87,10 +86,11 @@ export type Result_8 = { 'Ok' : Array<SecretListEntry> } |
 export type Result_9 = { 'Ok' : SecretSymmetricCryptoMaterial } |
   { 'Err' : SmartVaultErr };
 export interface Secret {
-  'id' : string,
+  'id' : bigint,
   'url' : [] | [string],
   'username' : [] | [Uint8Array | number[]],
   'date_created' : bigint,
+  'owner' : Principal,
   'password' : [] | [Uint8Array | number[]],
   'name' : [] | [string],
   'notes' : [] | [Uint8Array | number[]],
@@ -101,22 +101,20 @@ export type SecretCategory = { 'Password' : null } |
   { 'Note' : null } |
   { 'Document' : null };
 export interface SecretListEntry {
-  'id' : string,
+  'id' : bigint,
   'name' : [] | [string],
   'category' : [] | [SecretCategory],
 }
 export interface SecretSymmetricCryptoMaterial {
   'iv' : Uint8Array | number[],
-  'password_decryption_nonce' : [] | [Uint8Array | number[]],
-  'notes_decryption_nonce' : [] | [Uint8Array | number[]],
   'encrypted_symmetric_key' : Uint8Array | number[],
-  'username_decryption_nonce' : [] | [Uint8Array | number[]],
 }
 export type SmartVaultErr = { 'UserAlreadyExists' : string } |
   { 'SecretHasNoId' : null } |
   { 'UserDeletionFailed' : string } |
   { 'SecretDoesNotExist' : string } |
   { 'NoPolicyForBeneficiary' : string } |
+  { 'SecretDecryptionMaterialDoesNotExist' : string } |
   { 'Unauthorized' : null } |
   { 'UserUpdateFailed' : string } |
   { 'PolicyAlreadyExists' : string } |
@@ -137,10 +135,13 @@ export interface User {
   'user_type' : [] | [UserType],
   'date_created' : bigint,
   'name' : [] | [string],
+  'secrets' : Array<bigint>,
   'date_last_login' : [] | [bigint],
   'email' : [] | [string],
   'user_vault_id' : [] | [bigint],
+  'key_box' : Array<[bigint, SecretSymmetricCryptoMaterial]>,
   'date_modified' : bigint,
+  'policies' : Array<bigint>,
 }
 export type UserType = { 'Company' : null } |
   { 'Person' : null };
@@ -184,12 +185,12 @@ export interface _SERVICE {
   'get_policy_list_as_beneficiary' : ActorMethod<[], Result_7>,
   'get_policy_list_as_owner' : ActorMethod<[], Result_7>,
   'get_policy_list_as_validator' : ActorMethod<[], Result_7>,
-  'get_secret' : ActorMethod<[string], Result_2>,
+  'get_secret' : ActorMethod<[bigint], Result_2>,
   'get_secret_as_beneficiary' : ActorMethod<[string, string], Result_2>,
   'get_secret_list' : ActorMethod<[], Result_8>,
-  'get_secret_symmetric_crypto_material' : ActorMethod<[string], Result_9>,
+  'get_secret_symmetric_crypto_material' : ActorMethod<[bigint], Result_9>,
   'get_secret_symmetric_crypto_material_as_beneficiary' : ActorMethod<
-    [string, string],
+    [bigint, string],
     Result_9
   >,
   'ibe_encryption_key' : ActorMethod<[], string>,
@@ -203,6 +204,4 @@ export interface _SERVICE {
   'update_secret' : ActorMethod<[Secret], Result_2>,
   'update_user' : ActorMethod<[User], Result>,
   'update_user_login_date' : ActorMethod<[], Result>,
-  'what_time_is_it' : ActorMethod<[], bigint>,
-  'who_am_i' : ActorMethod<[], string>,
 }
