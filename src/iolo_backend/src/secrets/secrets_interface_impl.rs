@@ -5,7 +5,7 @@ use candid::Principal;
 use crate::{
     common::{error::SmartVaultErr, uuid::UUID},
     secrets::secret::SecretSymmetricCryptoMaterial,
-    smart_vaults::smart_vault::{get_vault_id_for, SECRET_STORE, USER_STORE},
+    smart_vaults::smart_vault::{SECRET_STORE, USER_STORE},
 };
 
 use super::{
@@ -49,9 +49,7 @@ pub async fn add_secret_impl(
     Ok(secret)
 }
 
-pub fn get_secret_impl(sid: UUID, principal: &Principal) -> Result<Secret, SmartVaultErr> {
-    let _user_vault_id: UUID = get_vault_id_for(*principal)?;
-
+pub fn get_secret_impl(sid: UUID, _principal: &Principal) -> Result<Secret, SmartVaultErr> {
     let secret = SECRET_STORE.with(|x| {
         let secret_store = x.borrow();
         secret_store.get(&UUID::from(sid.clone()))
@@ -82,9 +80,7 @@ pub fn get_secret_list_impl(principal: &Principal) -> Result<Vec<SecretListEntry
     Ok(secrets.into_iter().map(SecretListEntry::from).collect())
 }
 
-pub fn update_secret_impl(s: Secret, principal: &Principal) -> Result<Secret, SmartVaultErr> {
-    let _user_vault_id: UUID = get_vault_id_for(*principal)?;
-
+pub fn update_secret_impl(s: Secret, _principal: &Principal) -> Result<Secret, SmartVaultErr> {
     SECRET_STORE.with(|x| {
         let mut secret_store = x.borrow_mut();
         // TODO: check if the secret is in the user vault
@@ -92,13 +88,11 @@ pub fn update_secret_impl(s: Secret, principal: &Principal) -> Result<Secret, Sm
     })
 }
 
-pub fn remove_secret_impl(secret_id: String, principal: &Principal) -> Result<(), SmartVaultErr> {
-    let user_vault_id: UUID = get_vault_id_for(*principal)?;
-
+pub fn remove_secret_impl(secret_id: String, _principal: &Principal) -> Result<(), SmartVaultErr> {
     SECRET_STORE.with(
         |secret_store_rc: &RefCell<SecretStore>| -> Result<(), SmartVaultErr> {
             let mut secret_store = secret_store_rc.borrow_mut();
-            secret_store.remove_secret(&user_vault_id, &secret_id)
+            secret_store.remove_secret(&secret_id)
         },
     )
 }
@@ -137,6 +131,7 @@ mod tests {
         smart_vaults::smart_vault::SECRET_STORE,
         smart_vaults::smart_vault::USER_STORE,
         users::{user::AddUserArgs, users_interface_impl::create_user_impl},
+        utils::dumper::dump_secret_store,
     };
 
     #[tokio::test]

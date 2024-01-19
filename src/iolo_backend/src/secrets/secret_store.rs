@@ -76,11 +76,7 @@ impl SecretStore {
         Ok(self.secrets.get(&sid).unwrap().clone())
     }
 
-    pub fn remove_secret(
-        &mut self,
-        _user_vault_id: &UUID,
-        secret_id: &str,
-    ) -> Result<(), SmartVaultErr> {
+    pub fn remove_secret(&mut self, secret_id: &str) -> Result<(), SmartVaultErr> {
         let sid = UUID::from(secret_id);
         if !self.secrets.contains_key(&sid) {
             return Err(SmartVaultErr::SecretDoesNotExist(secret_id.to_string()));

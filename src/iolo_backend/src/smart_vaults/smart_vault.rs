@@ -51,6 +51,9 @@ thread_local! {
     // counter for the UUIDs
     pub static UUID_COUNTER: RefCell<u128>  = RefCell::new(1);
 }
+/**
+ * User CRUD
+ */
 
 #[ic_cdk_macros::update]
 pub async fn create_user(args: AddUserArgs) -> Result<User, SmartVaultErr> {
@@ -82,14 +85,31 @@ pub async fn add_secret(args: AddSecretArgs) -> Result<Secret, SmartVaultErr> {
     add_secret_impl(args, &get_caller()).await
 }
 
+#[ic_cdk_macros::query]
+pub fn get_secret(sid: UUID) -> Result<Secret, SmartVaultErr> {
+    get_secret_impl(sid, &get_caller())
+}
+
 #[ic_cdk_macros::update]
 pub fn update_secret(s: Secret) -> Result<Secret, SmartVaultErr> {
     update_secret_impl(s, &get_caller())
 }
 
+#[ic_cdk_macros::update]
+pub fn remove_secret(secret_id: String) -> Result<(), SmartVaultErr> {
+    remove_secret_impl(secret_id, &get_caller())
+}
+
 #[ic_cdk_macros::query]
-pub fn get_secret(sid: UUID) -> Result<Secret, SmartVaultErr> {
-    get_secret_impl(sid, &get_caller())
+pub fn get_secret_list() -> Result<Vec<SecretListEntry>, SmartVaultErr> {
+    get_secret_list_impl(&get_caller())
+}
+
+#[ic_cdk_macros::query]
+pub fn get_secret_symmetric_crypto_material(
+    sid: UUID,
+) -> Result<SecretSymmetricCryptoMaterial, SmartVaultErr> {
+    get_secret_symmetric_crypto_material_impl(sid, &get_caller())
 }
 
 #[ic_cdk_macros::query]
@@ -136,23 +156,6 @@ pub fn get_secret_as_beneficiary(
     }
 }
 
-#[ic_cdk_macros::update]
-pub fn remove_secret(secret_id: String) -> Result<(), SmartVaultErr> {
-    remove_secret_impl(secret_id, &get_caller())
-}
-
-#[ic_cdk_macros::query]
-pub fn get_secret_list() -> Result<Vec<SecretListEntry>, SmartVaultErr> {
-    get_secret_list_impl(&get_caller())
-}
-
-#[ic_cdk_macros::query]
-pub fn get_secret_symmetric_crypto_material(
-    sid: UUID,
-) -> Result<SecretSymmetricCryptoMaterial, SmartVaultErr> {
-    get_secret_symmetric_crypto_material_impl(sid, &get_caller())
-}
-
 #[ic_cdk_macros::query]
 pub fn get_secret_symmetric_crypto_material_as_beneficiary(
     secret_id: UUID,
@@ -190,6 +193,10 @@ pub fn get_secret_symmetric_crypto_material_as_beneficiary(
         Err(SmartVaultErr::InvalidPolicyCondition)
     }
 }
+
+/**
+ * Policy CRUD
+ */
 
 #[ic_cdk_macros::update]
 pub fn add_policy(args: AddPolicyArgs) -> Result<Policy, SmartVaultErr> {
