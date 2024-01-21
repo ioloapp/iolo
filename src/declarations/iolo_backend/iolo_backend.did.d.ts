@@ -106,7 +106,6 @@ export interface SecretListEntry {
   'category' : [] | [SecretCategory],
 }
 export interface SecretSymmetricCryptoMaterial {
-  'iv' : Uint8Array | number[],
   'encrypted_symmetric_key' : Uint8Array | number[],
 }
 export type SmartVaultErr = { 'UserAlreadyExists' : string } |

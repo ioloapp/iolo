@@ -7,7 +7,6 @@ export const idlFactory = ({ IDL }) => {
     'email' : IDL.Opt(IDL.Text),
   });
   const SecretSymmetricCryptoMaterial = IDL.Record({
-    'iv' : IDL.Vec(IDL.Nat8),
     'encrypted_symmetric_key' : IDL.Vec(IDL.Nat8),
   });
   const User = IDL.Record({

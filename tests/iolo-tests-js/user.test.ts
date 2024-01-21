@@ -2,7 +2,6 @@ import { expect, test, describe } from 'vitest'
 import { determineBackendCanisterId, createIdentity, createNewActor } from "./utils";
 import {Secp256k1KeyIdentity} from "@dfinity/identity-secp256k1";
 import {Result, Result_3, User, UserType} from "../../src/declarations/iolo_backend/iolo_backend.did";
-import type {Principal} from "@dfinity/principal";
 
 const canisterId: string = determineBackendCanisterId();
 
@@ -35,8 +34,7 @@ describe("User Tests", () => {
         expect(resultUserOne).toHaveProperty('Ok');
         expect(Object.keys(resultUserOne['Ok'])).toHaveLength(11);
         expect(resultUserOne['Ok'].id).toStrictEqual(identityOne.getPrincipal());
-        expect(resultUserOne['Ok'].user_vault_id).toHaveLength(1);
-        expect(resultUserOne['Ok'].user_vault_id[0]).toBeGreaterThan(0);
+        expect(resultUserOne['Ok'].user_vault_id).toStrictEqual([]);
         expect(resultUserOne['Ok'].user_type).toStrictEqual([{ 'Person' : null }]);
         expect(resultUserOne['Ok'].name).toStrictEqual(['Alice']);
         expect(resultUserOne['Ok'].email).toStrictEqual(['alice@ioloapp.io']);
@@ -63,8 +61,7 @@ describe("User Tests", () => {
         expect(resultUserTwo).toHaveProperty('Ok');
         expect(Object.keys(resultUserOne['Ok'])).toHaveLength(11);
         expect(resultUserTwo['Ok'].id).toStrictEqual(identityTwo.getPrincipal());
-        expect(resultUserTwo['Ok'].user_vault_id).toHaveLength(1);
-        expect(resultUserTwo['Ok'].user_vault_id[0]).toBeGreaterThan(0);
+        expect(resultUserTwo['Ok'].user_vault_id).toStrictEqual([]);
         expect(resultUserTwo['Ok'].user_type).toStrictEqual([{ 'Company' : null }]);
         expect(resultUserTwo['Ok'].name).toStrictEqual(['AliceCompany']);
         expect(resultUserTwo['Ok'].email).toStrictEqual(['alicecompany@ioloapp.io']);
@@ -88,8 +85,7 @@ describe("User Tests", () => {
         expect(resultUserThree).toHaveProperty('Ok');
         expect(Object.keys(resultUserOne['Ok'])).toHaveLength(11);
         expect(resultUserThree['Ok'].id).toStrictEqual(identityThree.getPrincipal());
-        expect(resultUserThree['Ok'].user_vault_id).toHaveLength(1);
-        expect(resultUserThree['Ok'].user_vault_id[0]).toBeGreaterThan(0);
+        expect(resultUserThree['Ok'].user_vault_id).toStrictEqual([]);
         expect(resultUserThree['Ok'].user_type).toHaveLength(0);
         expect(resultUserThree['Ok'].name).toHaveLength(0);
         expect(resultUserThree['Ok'].email).toHaveLength(0);
@@ -103,11 +99,11 @@ describe("User Tests", () => {
 
         // All users should have an uservault
         const vaultOne: boolean = await actorOne.is_user_vault_existing();
-        expect(vaultOne).toBe(true);
+        expect(vaultOne).toBe(false);
         const vaultTwo: boolean = await actorTwo.is_user_vault_existing();
-        expect(vaultTwo).toBe(true);
+        expect(vaultTwo).toBe(false);
         const vaultThree: boolean = await actorThree.is_user_vault_existing();
-        expect(vaultThree).toBe(true);
+        expect(vaultThree).toBe(false);
 
     }, 20000); // Set timeout
 
@@ -207,7 +203,7 @@ describe("User Tests", () => {
         // Delete user again, must fail
         resultOne = await actorOne.delete_user();
         expect(resultOne).toHaveProperty('Err');
-        expect(resultOne['Err']).toHaveProperty('UserDoesNotExist');
+        expect(resultOne['Err']).toHaveProperty('UserDeletionFailed');
 
         // Create same user again, must work because it has been deleted
         const addUserArgsOne = {

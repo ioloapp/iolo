@@ -95,7 +95,6 @@ type SecretListEntry = record {
   category : opt SecretCategory;
 };
 type SecretSymmetricCryptoMaterial = record {
-  iv : vec nat8;
   encrypted_symmetric_key : vec nat8;
 };
 type SmartVaultErr = variant {

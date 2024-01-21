@@ -545,7 +545,6 @@ class IoloService {
 
             let symmetricCryptoMaterial: SecretSymmetricCryptoMaterial = {
                 encrypted_symmetric_key: encryptedSymmetricKey,
-                iv: []
             };
 
             return {
@@ -670,7 +669,6 @@ class IoloService {
                 const encryptedSymmetricKey = await aes_gcm_encrypt(decryptedSymmetricKey, policyVetKey, ivSymmetricKey);
 
                 keyBox.push([BigInt(item), {
-                    iv: ivSymmetricKey,
                     encrypted_symmetric_key: encryptedSymmetricKey,
                 }]);
             } else throw mapError(result['Err']);
