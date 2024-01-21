@@ -1,13 +1,15 @@
 import {ActorSubclass, HttpAgent, Identity} from "@dfinity/agent";
 import {
     _SERVICE,
-    AddSecretArgs,
     AddPolicyArgs,
+    AddSecretArgs,
     AddUserArgs,
     Condition,
     Policy,
+    PolicyListEntry,
+    PolicyResponse,
     Result,
-    Result_1,
+    Result_2,
     Result_3,
     Result_5,
     Result_6,
@@ -18,12 +20,10 @@ import {
     SecretCategory,
     SecretListEntry,
     SecretSymmetricCryptoMaterial,
-    PolicyListEntry,
-    PolicyResponse,
     TimeBasedCondition,
     User,
     UserType,
-    XOutOfYCondition, Result_2
+    XOutOfYCondition
 } from "../../../declarations/iolo_backend/iolo_backend.did";
 import {AuthClient} from "@dfinity/auth-client";
 import {createActor} from "../../../declarations/iolo_backend";
@@ -106,7 +106,8 @@ class IoloService {
                     resolve();  // Resolve the promise
                 },
                 onError: async () => {
-                    reject(new IoloError());  // Reject the promise
+                    console.error('login failed');
+                    reject(new IoloError('login failed'));  // Reject the promise
                 },
                 identityProvider: process.env.II_URL,
                 maxTimeToLive: BigInt(expiry * 1000000)
@@ -127,6 +128,7 @@ class IoloService {
             user_type: uiUser.type ? (uiUser.type === UiUserType.Person ? [{ 'Person' : null }] : [{ 'Company' : null }]) : []
         }
         const result: Result = await (await this.getActor()).create_user(args);
+        console.log('r', result);
         if (result['Ok']) {
             return this.mapUserToUiUser(result['Ok']);
         }

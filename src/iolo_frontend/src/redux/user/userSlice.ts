@@ -4,6 +4,7 @@ import IoloService from "../../services/IoloService";
 import {RootState} from "../store";
 import {UiUser} from "../../services/IoloTypesForUi";
 import {REHYDRATE} from "redux-persist/es/constants";
+import {LoginFailedException} from "../../error/Errors";
 
 const ioloService = new IoloService();
 
@@ -12,50 +13,32 @@ export interface UserLogin {
     userVaultExisting: boolean
 }
 
-export const loginUserThunk = createAsyncThunk<UserLogin, void, { state: RootState }>(
+export const loginUserThunk = createAsyncThunk<UiUser, void, { state: RootState }>(
     'user/login',
-    async (_, {rejectWithValue}): Promise<UserLogin> => {
+    async (_): Promise<UiUser> => {
         const principal = await ioloService.login();
         if (principal) {
-            const userVaultExisting = await ioloService.isUserVaultExisting();
-            if (userVaultExisting) {
-                const user = await ioloService.updateUserLoginDate();
-            }
-            return {
-                principal: principal.toText(),
-                userVaultExisting
-            }
+            return ioloService.getCurrentUser();
         }
+        throw new LoginFailedException();
     });
 
 export const getCurrentUserThunk = createAsyncThunk<UiUser, void, { state: RootState }>(
     'user/get-current',
-    async (_, {rejectWithValue}): Promise<UiUser> => {
-        try {
+    async (_): Promise<UiUser> => {
             return await ioloService.getCurrentUser();
-        } catch (e) {
-            rejectWithValue(e.message);
-        }
     });
 
 export const createUserThunk = createAsyncThunk<UiUser, UiUser, { state: RootState }>(
     'user/create',
-    async (uiUser: UiUser, {rejectWithValue}): Promise<UiUser> => {
-        try {
-            return await ioloService.createUser(uiUser);
-        } catch (e) {
-            rejectWithValue(e.message);
-        }
+    async (uiUser: UiUser): Promise<UiUser> => {
+        return await ioloService.createUser(uiUser);
     });
 
 export const updateUserThunk = createAsyncThunk<UiUser, UiUser, { state: RootState }>(
     'user/update',
-    async (uiUser: UiUser, {rejectWithValue}): Promise<UiUser> => {
-        try {
+    async (uiUser: UiUser): Promise<UiUser> => {
             return await ioloService.updateUser(uiUser);
-        } catch (e) {
-            rejectWithValue(e.message);
-        }
     });
 
 // Define a type for the slice state
@@ -86,12 +69,12 @@ export const userSlice = createSlice({
             })
             .addCase(loginUserThunk.fulfilled, (state, action) => {
                 state.loginStatus = 'succeeded';
-                state.principal = action.payload.principal;
+                state.principal = action.payload.id;
                 state.user = {
                     ...initialState.user,
-                    id: action.payload.principal
+                    ...action.payload
                 }
-                state.userVaultExisting = action.payload.userVaultExisting;
+                state.userVaultExisting = action.payload.dateCreated !== undefined;
             })
             .addCase(loginUserThunk.rejected, (state, action) => {
                 state.loginStatus = 'failed';
@@ -102,7 +85,7 @@ export const userSlice = createSlice({
             })
             .addCase(createUserThunk.fulfilled, (state, action) => {
                 state.loginStatus = 'succeeded';
-                state.userVaultExisting = action.payload?.userVaultId != undefined;
+                state.userVaultExisting = action.payload?.dateCreated != undefined;
                 state.user = action.payload;
             })
             .addCase(createUserThunk.rejected, (state, action) => {
