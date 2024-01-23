@@ -94,11 +94,11 @@ pub fn update_secret_impl(s: Secret, principal: &Principal) -> Result<Secret, Sm
     })
 }
 
-pub fn remove_secret_impl(secret_id: String, _principal: &Principal) -> Result<(), SmartVaultErr> {
+pub fn remove_secret_impl(secret_id: String, principal: &Principal) -> Result<(), SmartVaultErr> {
     SECRET_STORE.with(
         |secret_store_rc: &RefCell<SecretStore>| -> Result<(), SmartVaultErr> {
             let mut secret_store = secret_store_rc.borrow_mut();
-            secret_store.remove_secret(&secret_id)
+            secret_store.remove_secret(principal, &secret_id)
         },
     )
 }

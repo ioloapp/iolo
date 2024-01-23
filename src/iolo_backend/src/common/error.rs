@@ -12,6 +12,7 @@ pub enum SmartVaultErr {
     UserVaultDoesNotExist(String),
     SecretDoesNotExist(String),
     OnlyOwnerCanUpdateSecret(String),
+    OnlyOwnerCanDeleteSecret(String),
     OwnerCannotBeChanged(String),
     SecretDecryptionMaterialDoesNotExist(String),
     SecretHasNoId,
@@ -62,6 +63,13 @@ impl Display for SmartVaultErr {
                 write!(
                     f,
                     "Only the owner of the secret can update a secret. Secret ID: {}",
+                    id
+                )
+            }
+            SmartVaultErr::OnlyOwnerCanDeleteSecret(id) => {
+                write!(
+                    f,
+                    "Only the owner of the secret can delete a secret. Secret ID: {}",
                     id
                 )
             }
