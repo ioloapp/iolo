@@ -5,13 +5,10 @@ import {
     determineBackendCanisterId,
 } from "./utils";
 import {Secp256k1KeyIdentity} from "@dfinity/identity-secp256k1";
-import {AddSecretArgs, Result} from "../../src/declarations/iolo_backend/iolo_backend.did";
-import {
-    Result_1,
+import {AddSecretArgs, Result, Result_1,
     Secret,
     SecretSymmetricCryptoMaterial,
-    SecretCategory, Result_7,
-} from "../../.dfx/local/canisters/iolo_backend/service.did";
+    SecretCategory, Result_7, Result_2} from "../../src/declarations/iolo_backend/iolo_backend.did";
 import {v4 as uuidv4} from 'uuid';
 import {UiSecret, UiSecretCategory} from "../../src/iolo_frontend/src/services/IoloTypesForUi";
 import {
@@ -22,6 +19,13 @@ import {
 } from "./crypto";
 import * as crypto from "crypto";
 
+
+/*
+ NOTE: This testsuite is not a real interface test since encryption and decryption only occurs in frontend and only the
+       ByteArray is sent via the interfaces.
+       Nevertheless, it's a crucial functionality which must be tested, including vetKey retrieval from the backend.
+       TODO: Import crypto.ts from the frontend once the real npm from dfinity is exposed
+ */
 const canisterId: string = determineBackendCanisterId();
 
 // Use random identities to not interfere with other tests which are running in parallel
@@ -40,65 +44,46 @@ const secretOne: UiSecret = {
     password: 'pwOne',
     notes: 'notesOne',
 };
-const secretTwo: UiSecret = {
-    id: uuidv4(),
-    name: 'secretB',
-    url: 'https://urlTwo',
-    category: UiSecretCategory.Note,
-    notes: 'notesTwo',
-};
-const secretThree: UiSecret = {
-    id: uuidv4(),
-    name: 'secretC',
-    category: UiSecretCategory.Document,
-    notes: 'notesThree',
-};
-const secretFour: UiSecret = {
-    id: uuidv4(),
-};
 
 let vetKeyOne: Uint8Array;
 let vetKeyTwo: Uint8Array;
 beforeAll(async () => {
     vetKeyOne = await get_aes_256_gcm_key_for_uservault(identityOne.getPrincipal(), actorOne);
     vetKeyTwo = await get_aes_256_gcm_key_for_uservault(identityTwo.getPrincipal(), actorTwo);
-});
+
+    const addUserOneArgs = {
+        id: createIdentity().getPrincipal(),
+        name: ['Alice'],
+        email: ['alice@ioloapp.io'],
+        user_type: [{ 'Person' : null }],
+    };
+    const resultCreateUserOne: Result = await actorOne.create_user(addUserOneArgs);
+    expect(resultCreateUserOne).toHaveProperty('Ok');
+
+    const addUserTwoArgs = {
+        id: createIdentity().getPrincipal(),
+        name: ['Bob'],
+        email: ['bob@ioloapp.io'],
+        user_type: [{ 'Person' : null }],
+    };
+    const resultCreateUserTwo: Result = await actorTwo.create_user(addUserTwoArgs);
+    expect(resultCreateUserTwo).toHaveProperty('Ok');
+}, 30000);
 
 
 describe("Encryption and Decryption Tests", () => {
-
-    test("it should create a uservault", async () => {
-        const addUserOneArgs = {
-            id: createIdentity().getPrincipal(),
-            name: ['Alice'],
-            email: ['alice@ioloapp.io'],
-            user_type: [{ 'Person' : null }],
-        };
-        const resultCreateUserOne: Result = await actorOne.create_user(addUserOneArgs);
-        expect(resultCreateUserOne).toHaveProperty('Ok');
-
-        const addUserTwoArgs = {
-            id: createIdentity().getPrincipal(),
-            name: ['Bob'],
-            email: ['bob@ioloapp.io'],
-            user_type: [{ 'Person' : null }],
-        };
-        const resultCreateUserTwo: Result = await actorTwo.create_user(addUserTwoArgs);
-        expect(resultCreateUserTwo).toHaveProperty('Ok');
-
-    }, 10000); // Set timeout
 
     test("it should create encrypted secrets properly", async () => {
 
         // Add secrets
         const addSecretArgsOne: AddSecretArgs = await encryptNewSecret(secretOne, vetKeyOne);
-        const resultAddSecretOne: Result_1 = await actorOne.add_secret(addSecretArgsOne);
+        const resultAddSecretOne: Result_2 = await actorOne.add_secret(addSecretArgsOne);
         expect(resultAddSecretOne).toHaveProperty('Ok');
         secretOne.id = resultAddSecretOne['Ok'].id;
 
     }, 60000); // Set timeout
 
-    test("it should decrypt secrets properly", async () => {
+    test("it should decrypt created secrets properly", async () => {
 
         // Get secret
         const resultSecretOne: Result_1 = await actorOne.get_secret(secretOne.id);
@@ -109,6 +94,24 @@ describe("Encryption and Decryption Tests", () => {
         expect(resultSymmetricCryptoMaterialOne).toHaveProperty('Ok');
 
         const decryptedSecretOne: UiSecret = await decryptSecret(resultSecretOne['Ok'], resultSymmetricCryptoMaterialOne['Ok'].encrypted_symmetric_key, vetKeyOne);
+        expect(decryptedSecretOne.username).toStrictEqual(secretOne.username);
+        expect(decryptedSecretOne.password).toStrictEqual(secretOne.password);
+        expect(decryptedSecretOne.notes).toStrictEqual(secretOne.notes);
+
+    }, 60000); // Set timeout
+
+    test("it must not be possible to decrypt secrets with a vetkey of a different user", async () => {
+
+        // Get secret
+        const resultSecretOne: Result_1 = await actorOne.get_secret(secretOne.id);
+        expect(resultSecretOne).toHaveProperty('Ok');
+
+        // Get crypto material for secret
+        const resultSymmetricCryptoMaterialOne: Result_7 = await actorOne.get_secret_symmetric_crypto_material(secretOne.id);
+        expect(resultSymmetricCryptoMaterialOne).toHaveProperty('Ok');
+
+        // Try with vetKeyTwo, must fail
+        await expect(decryptSecret(resultSecretOne['Ok'], resultSymmetricCryptoMaterialOne['Ok'].encrypted_symmetric_key, vetKeyTwo)).rejects.toThrow('The operation failed for an operation-specific reason');
 
     }, 60000); // Set timeout
 
@@ -143,14 +146,9 @@ async function encryptNewSecret(uiSecret: UiSecret, vetKey: Uint8Array): Promise
 
     let symmetricCryptoMaterial: SecretSymmetricCryptoMaterial = {
         encrypted_symmetric_key: encryptedSymmetricKey,
-        iv: [],
-        username_decryption_nonce: [],
-        password_decryption_nonce: [],
-        notes_decryption_nonce: [],
     };
 
     return {
-        id: uuidv4(),
         url: uiSecret.url ? [uiSecret.url] : [],
         name: [uiSecret.name],
         category: [mapUiSecretCategoryToSecretCategory(uiSecret.category)],
@@ -181,12 +179,11 @@ async function decryptSecret(secret: Secret, encryptedSymmetricKey: Uint8Array, 
     }
 
     let uiSecret: UiSecret = {
-        id: secret.id,
         name: secret.name.length > 0 ? secret.name[0] : undefined,
         url: secret.url.length > 0 ? secret.url[0]: undefined,
-        username: decryptedUsername,
-        password: decryptedPassword,
-        notes: decryptedNotes,
+        username: new TextDecoder().decode(decryptedUsername),
+        password: new TextDecoder().decode(decryptedPassword),
+        notes: new TextDecoder().decode(decryptedNotes),
         dateCreated: nanosecondsInBigintToIsoString(secret.date_modified),
         dateModified: nanosecondsInBigintToIsoString(secret.date_created),
     };

@@ -24,6 +24,7 @@ export const idlFactory = ({ IDL }) => {
   });
   const SmartVaultErr = IDL.Variant({
     'UserAlreadyExists' : IDL.Text,
+    'OnlyOwnerCanDeleteSecret' : IDL.Text,
     'SecretHasNoId' : IDL.Null,
     'UserDeletionFailed' : IDL.Text,
     'SecretDoesNotExist' : IDL.Text,
@@ -31,8 +32,10 @@ export const idlFactory = ({ IDL }) => {
     'SecretDecryptionMaterialDoesNotExist' : IDL.Text,
     'Unauthorized' : IDL.Null,
     'UserUpdateFailed' : IDL.Text,
+    'OnlyOwnerCanUpdateSecret' : IDL.Text,
     'PolicyAlreadyExists' : IDL.Text,
     'UserVaultCreationFailed' : IDL.Text,
+    'OwnerCannotBeChanged' : IDL.Text,
     'PolicyDoesNotExist' : IDL.Text,
     'UserDoesNotExist' : IDL.Text,
     'UserVaultDoesNotExist' : IDL.Text,

@@ -109,6 +109,7 @@ export interface SecretSymmetricCryptoMaterial {
   'encrypted_symmetric_key' : Uint8Array | number[],
 }
 export type SmartVaultErr = { 'UserAlreadyExists' : string } |
+  { 'OnlyOwnerCanDeleteSecret' : string } |
   { 'SecretHasNoId' : null } |
   { 'UserDeletionFailed' : string } |
   { 'SecretDoesNotExist' : string } |
@@ -116,8 +117,10 @@ export type SmartVaultErr = { 'UserAlreadyExists' : string } |
   { 'SecretDecryptionMaterialDoesNotExist' : string } |
   { 'Unauthorized' : null } |
   { 'UserUpdateFailed' : string } |
+  { 'OnlyOwnerCanUpdateSecret' : string } |
   { 'PolicyAlreadyExists' : string } |
   { 'UserVaultCreationFailed' : string } |
+  { 'OwnerCannotBeChanged' : string } |
   { 'PolicyDoesNotExist' : string } |
   { 'UserDoesNotExist' : string } |
   { 'UserVaultDoesNotExist' : string } |

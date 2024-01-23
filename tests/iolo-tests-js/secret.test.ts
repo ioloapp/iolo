@@ -11,7 +11,7 @@ import {
     SecretSymmetricCryptoMaterial,
     Secret,
     Result_3,
-    Result_9, Result_8, Result_7, Result_2
+    Result_9, Result_8, Result_2
 } from "../../src/declarations/iolo_backend/iolo_backend.did";
 
 const canisterId: string = determineBackendCanisterId();
@@ -234,6 +234,7 @@ describe("Secret Tests", () => {
     }, 30000); // Set timeout
 
     test("it should read the secret list properly", async () => {
+
         // Check created secret of identity one via getSecretList
         const resultSecretListOne: Result_8 = await actorOne.get_secret_list();
         expect(resultSecretListOne).toHaveProperty('Ok');
@@ -280,7 +281,6 @@ describe("Secret Tests", () => {
         secretOne.username = [new TextEncoder().encode('myUpdatedUsernameOne')];
         secretOne.password = [new TextEncoder().encode('myUpdatedPasswordOne')];
         secretOne.notes = [new TextEncoder().encode('myUpdatedNotesOne')];
-        secretOne.owner = identityTwo.getPrincipal(); // Must not work
         secretOne.date_created = BigInt(123); // Must not work
         secretOne.date_modified = BigInt(456); // Must not work
 
@@ -330,6 +330,12 @@ describe("Secret Tests", () => {
         const resultSecretSymmetricCryptoMaterialOne: Result_9 = await actorOne.get_secret_symmetric_crypto_material(secretOne.id);
         expect(resultSecretSymmetricCryptoMaterialOne).toHaveProperty('Ok');
         expect(resultSecretSymmetricCryptoMaterialOne['Ok'].encrypted_symmetric_key).toStrictEqual(symmetricCryptoMaterial.encrypted_symmetric_key);
+    }, 15000); // Set timeout
+
+    test("it must not be possible to read the secret symmetric crypto material from a different user", async () => {
+        const resultSecretSymmetricCryptoMaterialOne: Result_9 = await actorTwo.get_secret_symmetric_crypto_material(secretOne.id);
+        expect(resultSecretSymmetricCryptoMaterialOne).toHaveProperty('Err');
+        expect(resultSecretSymmetricCryptoMaterialOne['Err']).toHaveProperty('SecretDecryptionMaterialDoesNotExist');
     }, 15000); // Set timeout
 
     test("it should delete secrets properly", async () => {

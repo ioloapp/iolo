@@ -99,6 +99,7 @@ type SecretSymmetricCryptoMaterial = record {
 };
 type SmartVaultErr = variant {
   UserAlreadyExists : text;
+  OnlyOwnerCanDeleteSecret : text;
   SecretHasNoId;
   UserDeletionFailed : text;
   SecretDoesNotExist : text;
@@ -106,8 +107,10 @@ type SmartVaultErr = variant {
   SecretDecryptionMaterialDoesNotExist : text;
   Unauthorized;
   UserUpdateFailed : text;
+  OnlyOwnerCanUpdateSecret : text;
   PolicyAlreadyExists : text;
   UserVaultCreationFailed : text;
+  OwnerCannotBeChanged : text;
   PolicyDoesNotExist : text;
   UserDoesNotExist : text;
   UserVaultDoesNotExist : text;
