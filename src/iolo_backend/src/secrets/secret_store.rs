@@ -1,3 +1,4 @@
+use candid::Principal;
 use ic_stable_structures::StableBTreeMap;
 use serde::{Deserialize, Serialize};
 
@@ -8,6 +9,7 @@ use crate::{
         uuid::UUID,
     },
     secrets::secret::Secret,
+    utils::time,
 };
 
 #[derive(Serialize, Deserialize)]
@@ -65,14 +67,35 @@ impl SecretStore {
         }
     }
 
-    pub fn update_secret(&mut self, secret: Secret) -> Result<Secret, SmartVaultErr> {
-        let sid = UUID::from(secret.id().clone());
-        if !self.secrets.contains_key(&sid) {
-            return Err(SmartVaultErr::SecretDoesNotExist(secret.id().to_string()));
+    pub fn update_secret(
+        &mut self,
+        caller: &Principal,
+        secret: Secret,
+    ) -> Result<Secret, SmartVaultErr> {
+        let sid = UUID::from(secret.id());
+
+        // Check if the secret exists
+        let existing_secret = match self.secrets.get(&sid) {
+            Some(s) => s,
+            None => return Err(SmartVaultErr::SecretDoesNotExist(secret.id().to_string())),
+        };
+
+        // Security check 1: Ensure the caller is the owner of the secret
+        if &existing_secret.owner() != caller {
+            return Err(SmartVaultErr::OnlyOwnerCanUpdateSecret(
+                secret.id().to_string(),
+            ));
         }
 
+        // Security check 2: Prevent changing the owner of the secret
+        if secret.owner() != existing_secret.owner() {
+            return Err(SmartVaultErr::OwnerCannotBeChanged(secret.id().to_string()));
+        }
+
+        // Update the secret
         self.secrets.insert(sid, secret);
-        // self.date_modified = time::get_current_time();
+
+        // Return the updated secret
         Ok(self.secrets.get(&sid).unwrap().clone())
     }
 

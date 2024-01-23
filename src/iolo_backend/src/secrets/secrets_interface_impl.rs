@@ -83,11 +83,14 @@ pub fn get_secret_list_impl(principal: &Principal) -> Result<Vec<SecretListEntry
     Ok(secrets.into_iter().map(SecretListEntry::from).collect())
 }
 
-pub fn update_secret_impl(s: Secret, _principal: &Principal) -> Result<Secret, SmartVaultErr> {
+pub fn update_secret_impl(s: Secret, principal: &Principal) -> Result<Secret, SmartVaultErr> {
+    if &s.owner() != principal {
+        return Err(SmartVaultErr::OnlyOwnerCanUpdateSecret(s.id().to_string()));
+    }
     SECRET_STORE.with(|x| {
         let mut secret_store = x.borrow_mut();
         // TODO: check if the secret is in the user vault
-        secret_store.update_secret(s)
+        secret_store.update_secret(principal, s)
     })
 }
 

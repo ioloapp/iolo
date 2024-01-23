@@ -11,6 +11,8 @@ pub enum SmartVaultErr {
     UserVaultCreationFailed(String),
     UserVaultDoesNotExist(String),
     SecretDoesNotExist(String),
+    OnlyOwnerCanUpdateSecret(String),
+    OwnerCannotBeChanged(String),
     SecretDecryptionMaterialDoesNotExist(String),
     SecretHasNoId,
     SecretAlreadyExists(String),
@@ -55,6 +57,16 @@ impl Display for SmartVaultErr {
             }
             SmartVaultErr::SecretDoesNotExist(id) => {
                 write!(f, "Failed to read secret with the following id: {}", id)
+            }
+            SmartVaultErr::OnlyOwnerCanUpdateSecret(id) => {
+                write!(
+                    f,
+                    "Only the owner of the secret can update a secret. Secret ID: {}",
+                    id
+                )
+            }
+            SmartVaultErr::OwnerCannotBeChanged(id) => {
+                write!(f, "Owner of a secret cannot be changed. Secret ID: {}", id)
             }
             SmartVaultErr::SecretDecryptionMaterialDoesNotExist(id) => {
                 write!(f, "Failed to read secret decryption material for secret with the following id: {}", id)
