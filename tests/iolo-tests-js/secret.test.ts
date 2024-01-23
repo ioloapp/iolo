@@ -344,6 +344,12 @@ describe("Secret Tests", () => {
         expect(resultRemoveSecretOne).toHaveProperty('Ok');
         expect(resultRemoveSecretOne['Ok']).toBeNull();
 
+        // Only one secret must exist in the backend now
+        const resultSecretListOne: Result_8 = await actorOne.get_secret_list();
+        expect(resultSecretListOne).toHaveProperty('Ok');
+        expect(Array.isArray(resultSecretListOne['Ok'])).toBe(true);
+        expect(resultSecretListOne['Ok']).toHaveLength(1);
+
     }, 15000); // Set timeout
 
     test("it must not delete secrets of a different user", async () => {
