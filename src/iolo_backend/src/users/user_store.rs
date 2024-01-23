@@ -1,4 +1,4 @@
-use candid::{types::principal, Principal};
+use candid::{Principal};
 use ic_stable_structures::StableBTreeMap;
 use serde::{Deserialize, Serialize};
 

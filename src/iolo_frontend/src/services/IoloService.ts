@@ -20,7 +20,7 @@ import {
     SecretCategory,
     SecretListEntry,
     SecretSymmetricCryptoMaterial,
-    TimeBasedCondition,
+    TimeBasedCondition, UpdateSecretArgs,
     User,
     UserType,
     XOutOfYCondition
@@ -242,11 +242,11 @@ class IoloService {
         // Decrypt symmetric key
         const decryptedSymmetricKey = await aes_gcm_decrypt(symmetricCryptoMaterial.encrypted_symmetric_key as Uint8Array, uservaultVetKey, this.ivLength);
 
-        // Encrypt updated secret
-        const encryptedSecret: Secret = await this.encryptExistingSecret(uiSecret, decryptedSymmetricKey, existingSecret);
+        // Encrypt updated secret args
+        const encryptedUpdateSecretArgs: UpdateSecretArgs = await this.encryptExistingSecret(uiSecret, decryptedSymmetricKey, existingSecret);
 
         // Update encrypted secret
-        const resultUpdate: Result_2 = await (await this.getActor()).update_secret(encryptedSecret);
+        const resultUpdate: Result_2 = await (await this.getActor()).update_secret(encryptedUpdateSecretArgs);
 
         if (resultUpdate['Ok']) {
             return this.mapSecretToUiSecret(resultUpdate['Ok'], uiSecret.username, uiSecret.password, uiSecret.notes);
@@ -341,7 +341,7 @@ class IoloService {
         throw mapError(result['Err']);
     }
 
-    public async getPolicyAsBeneficary(id: string): Promise<UiPolicyResponse> {
+    public async getPolicyAsBeneficiary(id: string): Promise<UiPolicyResponse> {
         const result: Result_6 = await (await this.getActor()).get_policy_as_beneficiary(id);
         if (result['Ok']) {
             return this.mapPolicyResponseToUiPolicyResponse(result['Ok'], UiPolicyListEntryRole.Heir);
@@ -563,7 +563,7 @@ class IoloService {
         }
     }
 
-    private async encryptExistingSecret(uiSecret: UiSecret, symmetricKey:  Uint8Array, existingSecret: Secret): Promise<Secret> {
+    private async encryptExistingSecret(uiSecret: UiSecret, symmetricKey:  Uint8Array, existingSecret: Secret): Promise<UpdateSecretArgs> {
         // When updating existing secrets the existing encryption key and the existing ivs must be used
         try {
             // Encrypt optional secret attributes
@@ -610,7 +610,6 @@ class IoloService {
             }
 
             return {
-                owner: undefined,
                 id: BigInt(uiSecret.id),
                 url: uiSecret.url ? [uiSecret.url] : [],
                 name: [uiSecret.name],
@@ -618,8 +617,6 @@ class IoloService {
                 username: encryptedUsername.length > 0 ? [encryptedUsername] : [],
                 password: encryptedPassword.length > 0 ? [encryptedPassword] : [],
                 notes: encryptedNotes.length > 0 ? [encryptedNotes] : [],
-                date_created: 0n, // will be ignored by update_secret function in backend
-                date_modified: 0n // will be ignored by update_secret function in backend
             }
         } catch (e) {
             throw mapError(e)

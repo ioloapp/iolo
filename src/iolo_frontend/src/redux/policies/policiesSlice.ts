@@ -31,7 +31,7 @@ export const viewPolicyThunk = createAsyncThunk<UiPolicyResponse, UiPolicy, { st
             if (policy.role === UiPolicyListEntryRole.Testator) {
                 return ioloService.getPolicyAsOwner(policy.id);
             } else {
-                return ioloService.getPolicyAsBeneficary(policy.id);
+                return ioloService.getPolicyAsBeneficiary(policy.id);
             }
 
         } catch (e) {
@@ -47,7 +47,7 @@ export const editPolicyThunk = createAsyncThunk<UiPolicyResponse, UiPolicy, { st
             if (policy.role === UiPolicyListEntryRole.Testator) {
                 return ioloService.getPolicyAsOwner(policy.id);
             } else {
-                return ioloService.getPolicyAsBeneficary(policy.id);
+                return ioloService.getPolicyAsBeneficiary(policy.id);
             }
 
         } catch (e) {

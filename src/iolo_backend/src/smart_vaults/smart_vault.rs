@@ -24,9 +24,7 @@ use crate::policies::policy::{AddPolicyArgs, Policy, PolicyID, PolicyListEntry};
 use crate::policies::policy_registry::{
     PolicyRegistryForBeneficiaries, PolicyRegistryForValidators,
 };
-use crate::secrets::secret::{
-    AddSecretArgs, Secret, SecretID, SecretListEntry, SecretSymmetricCryptoMaterial,
-};
+use crate::secrets::secret::{AddSecretArgs, Secret, SecretID, SecretListEntry, SecretSymmetricCryptoMaterial, UpdateSecretArgs};
 use crate::secrets::secret_store::SecretStore;
 
 thread_local! {
@@ -91,8 +89,8 @@ pub fn get_secret(sid: UUID) -> Result<Secret, SmartVaultErr> {
 }
 
 #[ic_cdk_macros::update]
-pub fn update_secret(s: Secret) -> Result<Secret, SmartVaultErr> {
-    update_secret_impl(s, &get_caller())
+pub fn update_secret(usa: UpdateSecretArgs) -> Result<Secret, SmartVaultErr> {
+    update_secret_impl(usa, &get_caller())
 }
 
 #[ic_cdk_macros::update]

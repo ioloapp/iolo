@@ -117,10 +117,8 @@ export type SmartVaultErr = { 'UserAlreadyExists' : string } |
   { 'SecretDecryptionMaterialDoesNotExist' : string } |
   { 'Unauthorized' : null } |
   { 'UserUpdateFailed' : string } |
-  { 'OnlyOwnerCanUpdateSecret' : string } |
   { 'PolicyAlreadyExists' : string } |
   { 'UserVaultCreationFailed' : string } |
-  { 'OwnerCannotBeChanged' : string } |
   { 'PolicyDoesNotExist' : string } |
   { 'UserDoesNotExist' : string } |
   { 'UserVaultDoesNotExist' : string } |
@@ -131,6 +129,15 @@ export interface TimeBasedCondition {
   'id' : string,
   'condition_status' : boolean,
   'number_of_days_since_last_login' : bigint,
+}
+export interface UpdateSecretArgs {
+  'id' : bigint,
+  'url' : [] | [string],
+  'username' : [] | [Uint8Array | number[]],
+  'password' : [] | [Uint8Array | number[]],
+  'name' : [] | [string],
+  'notes' : [] | [Uint8Array | number[]],
+  'category' : [] | [SecretCategory],
 }
 export interface User {
   'id' : Principal,
@@ -203,7 +210,7 @@ export interface _SERVICE {
   'symmetric_key_verification_key' : ActorMethod<[], string>,
   'update_beneficiary' : ActorMethod<[User], Result>,
   'update_policy' : ActorMethod<[Policy], Result_1>,
-  'update_secret' : ActorMethod<[Secret], Result_2>,
+  'update_secret' : ActorMethod<[UpdateSecretArgs], Result_2>,
   'update_user' : ActorMethod<[User], Result>,
   'update_user_login_date' : ActorMethod<[], Result>,
 }

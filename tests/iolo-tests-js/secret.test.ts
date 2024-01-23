@@ -13,6 +13,7 @@ import {
     Result_3,
     Result_9, Result_8, Result_2
 } from "../../src/declarations/iolo_backend/iolo_backend.did";
+import {UpdateSecretArgs} from "../../.dfx/local/canisters/iolo_backend/service.did";
 
 const canisterId: string = determineBackendCanisterId();
 
@@ -274,46 +275,61 @@ describe("Secret Tests", () => {
     test("it should update secrets properly", async () => {
         let secretOneDateCreatedBeforeUpdate: bigint = secretOne.date_created;
         let secretOneDateModifiedBeforeUpdate: bigint = secretOne.date_modified;
-        // Update all possible attributes of a secret
-        secretOne.name = ['myUpdatedSecretOne'];
-        secretOne.url = ['https://myUpdatedUrlOne'];
-        secretOne.category = [{'Note': null}];
-        secretOne.username = [new TextEncoder().encode('myUpdatedUsernameOne')];
-        secretOne.password = [new TextEncoder().encode('myUpdatedPasswordOne')];
-        secretOne.notes = [new TextEncoder().encode('myUpdatedNotesOne')];
-        secretOne.date_created = BigInt(123); // Must not work
-        secretOne.date_modified = BigInt(456); // Must not work
 
-        const resultUpdateSecretOne: Result_2 = await actorOne.update_secret(secretOne);
+        // Update all possible attributes of a secret
+        let updateSecretArgsOne: UpdateSecretArgs = {
+            category: [{'Note': null}],
+            id: secretOne.id,
+            name: ['myUpdatedSecretOne'],
+            notes: [new TextEncoder().encode('myUpdatedNotesOne')],
+            password: [new TextEncoder().encode('myUpdatedPasswordOne')],
+            url: ['https://myUpdatedUrlOne'],
+            username: [new TextEncoder().encode('myUpdatedUsernameOne')]
+        };
+
+        const resultUpdateSecretOne: Result_2 = await actorOne.update_secret(updateSecretArgsOne);
         expect(resultUpdateSecretOne).toHaveProperty('Ok');
-        expect(resultUpdateSecretOne['Ok'].id).toStrictEqual(secretOne.id); // Must not have changed
-        expect(resultUpdateSecretOne['Ok'].name).toStrictEqual(secretOne.name);
-        expect(resultUpdateSecretOne['Ok'].url).toStrictEqual(secretOne.url);
-        expect(resultUpdateSecretOne['Ok'].username).toStrictEqual(secretOne.username);
-        expect(resultUpdateSecretOne['Ok'].password).toStrictEqual(secretOne.password);
-        expect(resultUpdateSecretOne['Ok'].notes).toStrictEqual(secretOne.notes);
-        expect(resultUpdateSecretOne['Ok'].category).toStrictEqual(secretOne.category);
+        expect(resultUpdateSecretOne['Ok'].id).toStrictEqual(secretOne.id);
+        expect(resultUpdateSecretOne['Ok'].name).toStrictEqual(updateSecretArgsOne.name);
+        expect(resultUpdateSecretOne['Ok'].url).toStrictEqual(updateSecretArgsOne.url);
+        expect(resultUpdateSecretOne['Ok'].username).toStrictEqual(updateSecretArgsOne.username);
+        expect(resultUpdateSecretOne['Ok'].password).toStrictEqual(updateSecretArgsOne.password);
+        expect(resultUpdateSecretOne['Ok'].notes).toStrictEqual(updateSecretArgsOne.notes);
+        expect(resultUpdateSecretOne['Ok'].category).toStrictEqual(updateSecretArgsOne.category);
         expect(resultUpdateSecretOne['Ok'].owner).toStrictEqual(identityOne.getPrincipal()); // Must not have changed
         expect(resultUpdateSecretOne['Ok'].date_modified).toBeGreaterThan(secretOneDateModifiedBeforeUpdate);
         expect(resultUpdateSecretOne['Ok'].date_created).toStrictEqual(secretOneDateCreatedBeforeUpdate); // Must not have changed
 
         // Remove attributes that have been existing before and add attributes that have not been existing before
-        secretTwo.url = []; // remove url
-        secretTwo.notes = []; // remove notes
-        secretTwo.password = [new TextEncoder().encode('myUpdatedPasswordTwo')]; // add password
-        secretTwo.username = [new TextEncoder().encode('myUpdatedUsernameTwo')]; // add username
+        let updateSecretArgsTwo: UpdateSecretArgs = {
+            category: secretTwo.category,
+            id: secretTwo.id,
+            name: secretTwo.name,
+            notes: [], // remove notes
+            url: [], // remove url
+            password: [new TextEncoder().encode('myUpdatedPasswordTwo')], // add password
+            username: [new TextEncoder().encode('myUpdatedUsernameTwo')] // add username
+        };
 
-        const resultUpdateSecretTwo: Result_2 = await actorOne.update_secret(secretTwo);
+        const resultUpdateSecretTwo: Result_2 = await actorOne.update_secret(updateSecretArgsTwo);
         expect(resultUpdateSecretTwo).toHaveProperty('Ok');
         // Only validate updated attributes
         expect(resultUpdateSecretTwo['Ok'].url).toStrictEqual([]);
-        expect(resultUpdateSecretTwo['Ok'].username).toStrictEqual(secretTwo.username);
-        expect(resultUpdateSecretTwo['Ok'].password).toStrictEqual(secretTwo.password);
+        expect(resultUpdateSecretTwo['Ok'].username).toStrictEqual(updateSecretArgsTwo.username);
+        expect(resultUpdateSecretTwo['Ok'].password).toStrictEqual(updateSecretArgsTwo.password);
         expect(resultUpdateSecretTwo['Ok'].notes).toStrictEqual([]);
 
         // Unknown secret id
-        secretThree.id = BigInt(123456789);
-        const resultUpdateSecretThree: Result_2 = await actorTwo.update_secret(secretThree);
+        let updateSecretArgsThree: UpdateSecretArgs = {
+            category: secretThree.category,
+            id: BigInt(123456789),
+            name: secretThree.name,
+            notes: secretThree.notes,
+            url: secretThree.url,
+            password: secretThree.password,
+            username: secretThree.username,
+        };
+        const resultUpdateSecretThree: Result_2 = await actorTwo.update_secret(updateSecretArgsThree);
         expect(resultUpdateSecretThree).toHaveProperty('Err');
         expect(resultUpdateSecretThree['Err']).toHaveProperty('SecretDoesNotExist');
 

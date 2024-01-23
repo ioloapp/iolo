@@ -32,10 +32,8 @@ export const idlFactory = ({ IDL }) => {
     'SecretDecryptionMaterialDoesNotExist' : IDL.Text,
     'Unauthorized' : IDL.Null,
     'UserUpdateFailed' : IDL.Text,
-    'OnlyOwnerCanUpdateSecret' : IDL.Text,
     'PolicyAlreadyExists' : IDL.Text,
     'UserVaultCreationFailed' : IDL.Text,
-    'OwnerCannotBeChanged' : IDL.Text,
     'PolicyDoesNotExist' : IDL.Text,
     'UserDoesNotExist' : IDL.Text,
     'UserVaultDoesNotExist' : IDL.Text,
@@ -158,6 +156,15 @@ export const idlFactory = ({ IDL }) => {
     'Ok' : SecretSymmetricCryptoMaterial,
     'Err' : SmartVaultErr,
   });
+  const UpdateSecretArgs = IDL.Record({
+    'id' : IDL.Nat,
+    'url' : IDL.Opt(IDL.Text),
+    'username' : IDL.Opt(IDL.Vec(IDL.Nat8)),
+    'password' : IDL.Opt(IDL.Vec(IDL.Nat8)),
+    'name' : IDL.Opt(IDL.Text),
+    'notes' : IDL.Opt(IDL.Vec(IDL.Nat8)),
+    'category' : IDL.Opt(SecretCategory),
+  });
   return IDL.Service({
     'add_beneficiary' : IDL.Func([AddUserArgs], [Result], []),
     'add_policy' : IDL.Func([AddPolicyArgs], [Result_1], []),
@@ -221,7 +228,7 @@ export const idlFactory = ({ IDL }) => {
     'symmetric_key_verification_key' : IDL.Func([], [IDL.Text], []),
     'update_beneficiary' : IDL.Func([User], [Result], []),
     'update_policy' : IDL.Func([Policy], [Result_1], []),
-    'update_secret' : IDL.Func([Secret], [Result_2], []),
+    'update_secret' : IDL.Func([UpdateSecretArgs], [Result_2], []),
     'update_user' : IDL.Func([User], [Result], []),
     'update_user_login_date' : IDL.Func([], [Result], []),
   });

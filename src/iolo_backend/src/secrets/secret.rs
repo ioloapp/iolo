@@ -42,6 +42,17 @@ pub struct AddSecretArgs {
     pub symmetric_crypto_material: SecretSymmetricCryptoMaterial,
 }
 
+#[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
+pub struct UpdateSecretArgs {
+    pub id: UUID,
+    pub category: Option<SecretCategory>,
+    pub name: Option<String>,
+    pub username: Option<Vec<u8>>,
+    pub password: Option<Vec<u8>>,
+    pub url: Option<String>,
+    pub notes: Option<Vec<u8>>,
+}
+
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone, PartialEq, Eq, Hash)]
 pub struct SecretListEntry {
     pub id: UUID,
@@ -96,7 +107,7 @@ impl Secret {
 
         Self {
             id: secret_id,
-            owner: owner,
+            owner,
             date_created: now,
             date_modified: now,
             category: asa.category,
@@ -105,6 +116,27 @@ impl Secret {
             password: asa.password,
             url: asa.url,
             notes: asa.notes,
+        }
+    }
+
+    pub fn create_from_update_secret_args(
+        owner: Principal,
+        date_created: u64,
+        usa: UpdateSecretArgs,
+    ) -> Self {
+        let now: u64 = time::get_current_time();
+
+        Self {
+            id: usa.id,
+            owner,
+            date_created,
+            date_modified: now,
+            category: usa.category,
+            name: usa.name,
+            username: usa.username,
+            password: usa.password,
+            url: usa.url,
+            notes: usa.notes,
         }
     }
 

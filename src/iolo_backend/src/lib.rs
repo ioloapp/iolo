@@ -16,7 +16,7 @@ use crate::users::user::AddUserArgs;
 use crate::users::user::User;
 use candid::Principal;
 
-use crate::secrets::secret::{AddSecretArgs, Secret};
+use crate::secrets::secret::{AddSecretArgs, UpdateSecretArgs, Secret};
 
 pub mod common;
 pub mod policies;

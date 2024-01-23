@@ -7,6 +7,7 @@ use crate::{
     secrets::secret::SecretSymmetricCryptoMaterial,
     smart_vaults::smart_vault::{SECRET_STORE, USER_STORE},
 };
+use crate::secrets::secret::UpdateSecretArgs;
 
 use super::{
     secret::{AddSecretArgs, Secret, SecretListEntry},
@@ -83,14 +84,13 @@ pub fn get_secret_list_impl(principal: &Principal) -> Result<Vec<SecretListEntry
     Ok(secrets.into_iter().map(SecretListEntry::from).collect())
 }
 
-pub fn update_secret_impl(s: Secret, principal: &Principal) -> Result<Secret, SmartVaultErr> {
-    if &s.owner() != principal {
-        return Err(SmartVaultErr::OnlyOwnerCanUpdateSecret(s.id().to_string()));
-    }
+pub fn update_secret_impl(usa: UpdateSecretArgs, principal: &Principal) -> Result<Secret, SmartVaultErr> {
+
+
     SECRET_STORE.with(|x| {
         let mut secret_store = x.borrow_mut();
         // TODO: check if the secret is in the user vault
-        secret_store.update_secret(principal, s)
+        secret_store.update_secret(principal, usa)
     })
 }
 

@@ -11,13 +11,10 @@ pub enum SmartVaultErr {
     UserVaultCreationFailed(String),
     UserVaultDoesNotExist(String),
     SecretDoesNotExist(String),
-    OnlyOwnerCanUpdateSecret(String),
     OnlyOwnerCanDeleteSecret(String),
-    OwnerCannotBeChanged(String),
     SecretDecryptionMaterialDoesNotExist(String),
     SecretHasNoId,
     SecretAlreadyExists(String),
-
     PolicyAlreadyExists(String),
     PolicyDoesNotExist(String),
     InvalidPolicyCondition,
@@ -49,23 +46,18 @@ impl Display for SmartVaultErr {
                     user
                 )
             }
-            SmartVaultErr::UserVaultCreationFailed(user) => write!(
-                f,
-                "Failed creating a vault for the following user: {}",
-                user
-            ),
+            SmartVaultErr::UserVaultCreationFailed(user) => {
+                write!(
+                    f,
+                    "Failed creating a vault for the following user: {}",
+                    user
+                )
+            }
             SmartVaultErr::UserVaultDoesNotExist(id) => {
                 write!(f, "Failed to read vault with the following id: {}", id)
             }
             SmartVaultErr::SecretDoesNotExist(id) => {
                 write!(f, "Failed to read secret with the following id: {}", id)
-            }
-            SmartVaultErr::OnlyOwnerCanUpdateSecret(id) => {
-                write!(
-                    f,
-                    "Only the owner of the secret can update a secret. Secret ID: {}",
-                    id
-                )
             }
             SmartVaultErr::OnlyOwnerCanDeleteSecret(id) => {
                 write!(
@@ -73,9 +65,6 @@ impl Display for SmartVaultErr {
                     "Only the owner of the secret can delete a secret. Secret ID: {}",
                     id
                 )
-            }
-            SmartVaultErr::OwnerCannotBeChanged(id) => {
-                write!(f, "Owner of a secret cannot be changed. Secret ID: {}", id)
             }
             SmartVaultErr::SecretDecryptionMaterialDoesNotExist(id) => {
                 write!(f, "Failed to read secret decryption material for secret with the following id: {}", id)

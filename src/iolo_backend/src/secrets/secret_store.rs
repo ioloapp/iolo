@@ -10,6 +10,7 @@ use crate::{
     },
     secrets::secret::Secret,
 };
+use crate::secrets::secret::UpdateSecretArgs;
 
 #[derive(Serialize, Deserialize)]
 pub struct SecretStore {
@@ -69,30 +70,28 @@ impl SecretStore {
     pub fn update_secret(
         &mut self,
         caller: &Principal,
-        secret: Secret,
+        usa: UpdateSecretArgs,
     ) -> Result<Secret, SmartVaultErr> {
-        let sid = UUID::from(secret.id());
+        let sid = UUID::from(usa.id);
 
         // Check if the secret exists
         let existing_secret = match self.secrets.get(&sid) {
             Some(s) => s,
-            None => return Err(SmartVaultErr::SecretDoesNotExist(secret.id().to_string())),
+            None => return Err(SmartVaultErr::SecretDoesNotExist(usa.id.to_string())),
         };
 
         // Security check 1: Ensure the caller is the owner of the secret
         if &existing_secret.owner() != caller {
-            return Err(SmartVaultErr::OnlyOwnerCanUpdateSecret(
-                secret.id().to_string(),
-            ));
-        }
-
-        // Security check 2: Prevent changing the owner of the secret
-        if secret.owner() != existing_secret.owner() {
-            return Err(SmartVaultErr::OwnerCannotBeChanged(secret.id().to_string()));
+            return Err(SmartVaultErr::SecretDoesNotExist(usa.id.to_string()));
         }
 
         // Update the secret
-        self.secrets.insert(sid, secret);
+        let updated_secret = Secret::create_from_update_secret_args(
+            existing_secret.owner(),
+            existing_secret.date_created().clone(),
+            usa,
+        );
+        self.secrets.insert(sid, updated_secret);
 
         // Return the updated secret
         Ok(self.secrets.get(&sid).unwrap().clone())
@@ -113,7 +112,7 @@ impl SecretStore {
 
         // Check if the caller is the owner of the secret
         if &secret.owner() != caller {
-            return Err(SmartVaultErr::OnlyOwnerCanDeleteSecret(
+            return Err(SmartVaultErr::SecretDoesNotExist(
                 secret_id.to_string(),
             ));
         }

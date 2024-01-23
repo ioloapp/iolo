@@ -107,10 +107,8 @@ type SmartVaultErr = variant {
   SecretDecryptionMaterialDoesNotExist : text;
   Unauthorized;
   UserUpdateFailed : text;
-  OnlyOwnerCanUpdateSecret : text;
   PolicyAlreadyExists : text;
   UserVaultCreationFailed : text;
-  OwnerCannotBeChanged : text;
   PolicyDoesNotExist : text;
   UserDoesNotExist : text;
   UserVaultDoesNotExist : text;
@@ -122,6 +120,15 @@ type TimeBasedCondition = record {
   id : text;
   condition_status : bool;
   number_of_days_since_last_login : nat64;
+};
+type UpdateSecretArgs = record {
+  id : nat;
+  url : opt text;
+  username : opt vec nat8;
+  password : opt vec nat8;
+  name : opt text;
+  notes : opt vec nat8;
+  category : opt SecretCategory;
 };
 type User = record {
   id : principal;
@@ -179,7 +186,7 @@ service : () -> {
   symmetric_key_verification_key : () -> (text);
   update_beneficiary : (User) -> (Result);
   update_policy : (Policy) -> (Result_1);
-  update_secret : (Secret) -> (Result_2);
+  update_secret : (UpdateSecretArgs) -> (Result_2);
   update_user : (User) -> (Result);
   update_user_login_date : () -> (Result);
 }
