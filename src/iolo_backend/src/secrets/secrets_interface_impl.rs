@@ -55,8 +55,11 @@ pub fn get_secret_impl(sid: UUID, _principal: &Principal) -> Result<Secret, Smar
         secret_store.get(&UUID::from(sid.clone()))
     });
 
-    // TODO: CHECK IF SECRET HAS THE RIGHT OWNER (=PRINCIPAL)
-    secret
+    match secret {
+        Ok(s) if &s.owner() == _principal => Ok(s),
+        Ok(s) => Err(SmartVaultErr::SecretDoesNotExist(s.id().to_string())),
+        Err(e) => Err(e),
+    }
 }
 
 pub fn get_secret_list_impl(principal: &Principal) -> Result<Vec<SecretListEntry>, SmartVaultErr> {
@@ -131,7 +134,6 @@ mod tests {
         smart_vaults::smart_vault::SECRET_STORE,
         smart_vaults::smart_vault::USER_STORE,
         users::{user::AddUserArgs, users_interface_impl::create_user_impl},
-        utils::dumper::dump_secret_store,
     };
 
     #[tokio::test]
@@ -207,13 +209,14 @@ mod tests {
         let secrets_list = get_secret_list_impl(&principal).unwrap();
         assert_eq!(secrets_list.len(), 1, "secrets list is not length 1");
 
-        // add secret again
+        // add another again
         asa.name = Some("iolo".to_string());
         add_secret_impl(asa.clone(), &principal).await.unwrap();
 
         // check get secret list
         let secrets_list = get_secret_list_impl(&principal).unwrap();
         assert_eq!(secrets_list.len(), 2);
+        dbg!(secrets_list);
 
         // update secret
         fetched_secret.set_name("iolo".to_string());
