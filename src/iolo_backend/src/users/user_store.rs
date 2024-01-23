@@ -1,4 +1,4 @@
-use candid::Principal;
+use candid::{types::principal, Principal};
 use ic_stable_structures::StableBTreeMap;
 use serde::{Deserialize, Serialize};
 
@@ -68,6 +68,24 @@ impl UserStore {
         }
     }
 
+    pub fn update_user_secrets(
+        &mut self,
+        user: User,
+        caller: &Principal,
+    ) -> Result<User, SmartVaultErr> {
+        let principal_storable = PrincipalStorable::from(*caller);
+
+        // Only secret list and keybox can be changed
+        if let Some(mut existing_user) = self.users.remove(&principal_storable) {
+            existing_user.secrets = user.secrets.clone();
+            existing_user.key_box = user.key_box.clone();
+            self.users.insert(principal_storable, existing_user);
+            self.get_user(caller)
+        } else {
+            Err(SmartVaultErr::UserDoesNotExist(caller.to_string()))
+        }
+    }
+
     pub fn update_user_login_date(&mut self, caller: &Principal) -> Result<User, SmartVaultErr> {
         let principal_storable = PrincipalStorable::from(*caller);
 
@@ -98,6 +116,27 @@ impl UserStore {
 
         self.users.insert(principal_storable, user);
         Ok(())
+    }
+
+    pub fn remove_secret_from_user(
+        &mut self,
+        caller: &Principal,
+        secret_id_str: &str,
+    ) -> Result<(), SmartVaultErr> {
+        let secret_id: UUID = secret_id_str.into();
+        let principal_storable = PrincipalStorable::from(*caller);
+        let mut user = self
+            .users
+            .get(&principal_storable)
+            .ok_or_else(|| SmartVaultErr::UserDoesNotExist(caller.to_string()))?;
+
+        user.remove_secret(secret_id)?;
+        match self.update_user_secrets(user, caller) {
+            Ok(_) => {
+                return Ok(());
+            }
+            Err(e) => Err(e),
+        }
     }
 
     pub fn get_user(&self, user_id: &Principal) -> Result<User, SmartVaultErr> {

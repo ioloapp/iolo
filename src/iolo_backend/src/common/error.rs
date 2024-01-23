@@ -17,6 +17,7 @@ pub enum SmartVaultErr {
     SecretDecryptionMaterialDoesNotExist(String),
     SecretHasNoId,
     SecretAlreadyExists(String),
+
     PolicyAlreadyExists(String),
     PolicyDoesNotExist(String),
     InvalidPolicyCondition,

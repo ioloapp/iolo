@@ -95,12 +95,19 @@ pub fn update_secret_impl(s: Secret, principal: &Principal) -> Result<Secret, Sm
 }
 
 pub fn remove_secret_impl(secret_id: String, principal: &Principal) -> Result<(), SmartVaultErr> {
+    // delete secret from secret store
     SECRET_STORE.with(
         |secret_store_rc: &RefCell<SecretStore>| -> Result<(), SmartVaultErr> {
             let mut secret_store = secret_store_rc.borrow_mut();
             secret_store.remove_secret(principal, &secret_id)
         },
-    )
+    )?;
+
+    // delete secret from users secret list
+    USER_STORE.with(|us| -> Result<(), SmartVaultErr> {
+        let mut user_store = us.borrow_mut();
+        user_store.remove_secret_from_user(principal, &secret_id)
+    })
 }
 
 pub fn get_secret_symmetric_crypto_material_impl(
@@ -219,7 +226,6 @@ mod tests {
         // check get secret list
         let secrets_list = get_secret_list_impl(&principal).unwrap();
         assert_eq!(secrets_list.len(), 2);
-        dbg!(secrets_list);
 
         // update secret
         fetched_secret.set_name("iolo".to_string());
@@ -235,6 +241,10 @@ mod tests {
             test_fetch.unwrap_err(),
             SmartVaultErr::SecretDoesNotExist(updated_secret.id().to_string())
         );
+
+        // check get secret list
+        let secrets_list = get_secret_list_impl(&principal).unwrap();
+        assert_eq!(secrets_list.len(), 1);
     }
 
     fn create_principal() -> Principal {

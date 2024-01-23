@@ -5,7 +5,7 @@ use ic_stable_structures::{storable::Bound, Storable};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    common::uuid::UUID,
+    common::{error::SmartVaultErr, uuid::UUID},
     secrets::secret::SecretSymmetricCryptoMaterial,
     user_vaults::user_vault::{KeyBox, UserVaultID},
     utils::time,
@@ -24,7 +24,7 @@ pub struct User {
     // New: Secrets, KeyBox and policies are stored in the user
     pub secrets: Vec<UUID>,
     policies: Vec<UUID>,
-    key_box: KeyBox,
+    pub key_box: KeyBox,
 }
 
 impl Storable for User {
@@ -115,6 +115,26 @@ impl User {
         self.secrets.push(secret_id);
         self.key_box.insert(secret_id, secret_decryption_material);
         self.date_modified = time::get_current_time();
+    }
+
+    pub fn remove_secret(&mut self, secret_id: UUID) -> Result<(), SmartVaultErr> {
+        // Check if the secret exists in either `secrets` or `key_box`
+        let exists_in_secrets = self.secrets.iter().any(|s| s == &secret_id);
+        let exists_in_key_box = self.key_box.contains_key(&secret_id);
+
+        if exists_in_secrets || exists_in_key_box {
+            // Remove the secret from both collections if it exists
+            self.secrets.retain(|s| s != &secret_id);
+            self.key_box.remove(&secret_id);
+
+            // Update the date_modified
+            self.date_modified = time::get_current_time();
+
+            Ok(())
+        } else {
+            // Return an error if the secret does not exist in both collections
+            Err(SmartVaultErr::SecretDoesNotExist(secret_id.to_string()))
+        }
     }
 
     pub fn set_user_vault(&mut self, user_vault_id: UserVaultID) {
