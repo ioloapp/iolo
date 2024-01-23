@@ -68,7 +68,7 @@ impl UserStore {
         }
     }
 
-    pub fn update_user_secrets(
+    fn update_user_secrets(
         &mut self,
         user: User,
         caller: &Principal,
