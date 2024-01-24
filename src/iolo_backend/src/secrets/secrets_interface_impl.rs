@@ -2,12 +2,12 @@ use std::cell::RefCell;
 
 use candid::Principal;
 
+use crate::secrets::secret::UpdateSecretArgs;
 use crate::{
     common::{error::SmartVaultErr, uuid::UUID},
     secrets::secret::SecretSymmetricCryptoMaterial,
     smart_vaults::smart_vault::{SECRET_STORE, USER_STORE},
 };
-use crate::secrets::secret::UpdateSecretArgs;
 
 use super::{
     secret::{AddSecretArgs, Secret, SecretListEntry},
@@ -84,9 +84,10 @@ pub fn get_secret_list_impl(principal: &Principal) -> Result<Vec<SecretListEntry
     Ok(secrets.into_iter().map(SecretListEntry::from).collect())
 }
 
-pub fn update_secret_impl(usa: UpdateSecretArgs, principal: &Principal) -> Result<Secret, SmartVaultErr> {
-
-
+pub fn update_secret_impl(
+    usa: UpdateSecretArgs,
+    principal: &Principal,
+) -> Result<Secret, SmartVaultErr> {
     SECRET_STORE.with(|x| {
         let mut secret_store = x.borrow_mut();
         // TODO: check if the secret is in the user vault
@@ -135,7 +136,7 @@ mod tests {
     use crate::{
         common::{error::SmartVaultErr, uuid::UUID},
         secrets::{
-            secret::{AddSecretArgs, SecretSymmetricCryptoMaterial},
+            secret::{AddSecretArgs, SecretSymmetricCryptoMaterial, UpdateSecretArgs},
             secrets_interface_impl::{
                 add_secret_impl, get_secret_impl, get_secret_list_impl,
                 get_secret_symmetric_crypto_material_impl, remove_secret_impl, update_secret_impl,
@@ -228,9 +229,17 @@ mod tests {
         assert_eq!(secrets_list.len(), 2);
 
         // update secret
-        fetched_secret.set_name("iolo".to_string());
-        let updated_secret = update_secret_impl(fetched_secret, &principal).unwrap();
-        assert_eq!(updated_secret.name(), Some("iolo".to_string()));
+        let updated_secret: UpdateSecretArgs = UpdateSecretArgs {
+            id: fetched_secret.id(),
+            category: None,
+            name: Some("iolo2024".to_string()),
+            username: None,
+            password: None,
+            url: None,
+            notes: None,
+        };
+        let updated_secret = update_secret_impl(updated_secret, &principal).unwrap();
+        assert_eq!(updated_secret.name(), Some("iolo2024".to_string()));
 
         // delete secret
         let deleted_secret = remove_secret_impl(updated_secret.id().to_string(), &principal);
