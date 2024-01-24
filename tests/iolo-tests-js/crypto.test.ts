@@ -8,7 +8,7 @@ import {Secp256k1KeyIdentity} from "@dfinity/identity-secp256k1";
 import {AddSecretArgs, Result, Result_1,
     Secret,
     SecretSymmetricCryptoMaterial,
-    SecretCategory, Result_7, Result_2} from "../../src/declarations/iolo_backend/iolo_backend.did";
+    SecretCategory, Result_7, Result_2, Result_9} from "../../src/declarations/iolo_backend/iolo_backend.did";
 import {v4 as uuidv4} from 'uuid';
 import {UiSecret, UiSecretCategory} from "../../src/iolo_frontend/src/services/IoloTypesForUi";
 import {
@@ -86,11 +86,11 @@ describe("Encryption and Decryption Tests", () => {
     test("it should decrypt created secrets properly", async () => {
 
         // Get secret
-        const resultSecretOne: Result_1 = await actorOne.get_secret(secretOne.id);
+        const resultSecretOne: Result_2 = await actorOne.get_secret(secretOne.id);
         expect(resultSecretOne).toHaveProperty('Ok');
 
         // Get crypto material for secret
-        const resultSymmetricCryptoMaterialOne: Result_7 = await actorOne.get_secret_symmetric_crypto_material(secretOne.id);
+        const resultSymmetricCryptoMaterialOne: Result_9 = await actorOne.get_secret_symmetric_crypto_material(secretOne.id);
         expect(resultSymmetricCryptoMaterialOne).toHaveProperty('Ok');
 
         const decryptedSecretOne: UiSecret = await decryptSecret(resultSecretOne['Ok'], resultSymmetricCryptoMaterialOne['Ok'].encrypted_symmetric_key, vetKeyOne);
@@ -103,11 +103,11 @@ describe("Encryption and Decryption Tests", () => {
     test("it must not be possible to decrypt secrets with a vetkey of a different user", async () => {
 
         // Get secret
-        const resultSecretOne: Result_1 = await actorOne.get_secret(secretOne.id);
+        const resultSecretOne: Result_2= await actorOne.get_secret(secretOne.id);
         expect(resultSecretOne).toHaveProperty('Ok');
 
         // Get crypto material for secret
-        const resultSymmetricCryptoMaterialOne: Result_7 = await actorOne.get_secret_symmetric_crypto_material(secretOne.id);
+        const resultSymmetricCryptoMaterialOne: Result_9 = await actorOne.get_secret_symmetric_crypto_material(secretOne.id);
         expect(resultSymmetricCryptoMaterialOne).toHaveProperty('Ok');
 
         // Try with vetKeyTwo, must fail
