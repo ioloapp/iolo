@@ -18,7 +18,7 @@ export const loginUserThunk = createAsyncThunk<UiUser, void, { state: RootState 
     async (_): Promise<UiUser> => {
         const principal = await ioloService.login();
         if (principal) {
-            return ioloService.getCurrentUser();
+            return ioloService.getCurrentUser(principal);
         }
         throw new LoginFailedException();
     });
@@ -26,7 +26,7 @@ export const loginUserThunk = createAsyncThunk<UiUser, void, { state: RootState 
 export const getCurrentUserThunk = createAsyncThunk<UiUser, void, { state: RootState }>(
     'user/get-current',
     async (_): Promise<UiUser> => {
-            return await ioloService.getCurrentUser();
+        return await ioloService.getCurrentUser();
     });
 
 export const createUserThunk = createAsyncThunk<UiUser, UiUser, { state: RootState }>(
@@ -38,7 +38,7 @@ export const createUserThunk = createAsyncThunk<UiUser, UiUser, { state: RootSta
 export const updateUserThunk = createAsyncThunk<UiUser, UiUser, { state: RootState }>(
     'user/update',
     async (uiUser: UiUser): Promise<UiUser> => {
-            return await ioloService.updateUser(uiUser);
+        return await ioloService.updateUser(uiUser);
     });
 
 // Define a type for the slice state
@@ -48,7 +48,7 @@ export const userSlice = createSlice({
     reducers: {
         logOut: (state) => {
             state.principal = undefined;
-            state.userVaultExisting = undefined;
+            state.user = undefined;
         },
         updateUser: (state, action: PayloadAction<UiUser>) => {
             state.user = action.payload
@@ -74,7 +74,6 @@ export const userSlice = createSlice({
                     ...initialState.user,
                     ...action.payload
                 }
-                state.userVaultExisting = action.payload.dateCreated !== undefined;
             })
             .addCase(loginUserThunk.rejected, (state, action) => {
                 state.loginStatus = 'failed';
@@ -85,7 +84,6 @@ export const userSlice = createSlice({
             })
             .addCase(createUserThunk.fulfilled, (state, action) => {
                 state.loginStatus = 'succeeded';
-                state.userVaultExisting = action.payload?.dateCreated != undefined;
                 state.user = action.payload;
             })
             .addCase(createUserThunk.rejected, (state, action) => {

@@ -2,7 +2,7 @@ import {RootState} from "../store";
 
 export const selectPrincipal = (state: RootState) => state.user.principal;
 
-export const selectUserAccountExistingForCurrentUser = (state: RootState) => state.user.userVaultExisting;
+export const selectIsUserExisting = (state: RootState) => state.user.user?.dateCreated !== undefined;
 
 export const selectCurrentUser = (state: RootState) => state.user.user;
 

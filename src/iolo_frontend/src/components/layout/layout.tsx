@@ -7,7 +7,7 @@ import {Login} from '../../pages/login/login';
 import * as React from 'react';
 import {FC} from 'react';
 import {Onboarding} from '../../pages/onboarding/onboarding';
-import {selectPrincipal, selectUserAccountExistingForCurrentUser,} from "../../redux/user/userSelectors";
+import {selectIsUserExisting, selectPrincipal,} from "../../redux/user/userSelectors";
 import {useSelector} from "react-redux";
 import {Profile} from "../../pages/profile/profile";
 import {ShareId} from "../../pages/share/share";
@@ -19,7 +19,7 @@ import {ROUTE_CONTACTS, ROUTE_POLICIES, ROUTE_PROFILE, ROUTE_SECRETS, ROUTE_SHAR
 
 export const Layout: FC = () => {
     const isLoggedIn = useSelector(selectPrincipal);
-    const isAccountExisting = useSelector(selectUserAccountExistingForCurrentUser);
+    const isAccountExisting = useSelector(selectIsUserExisting);
     const {width} = useWindowResize();
 
     if (!isLoggedIn) {

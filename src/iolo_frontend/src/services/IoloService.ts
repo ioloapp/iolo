@@ -20,7 +20,8 @@ import {
     SecretCategory,
     SecretListEntry,
     SecretSymmetricCryptoMaterial,
-    TimeBasedCondition, UpdateSecretArgs,
+    TimeBasedCondition,
+    UpdateSecretArgs,
     User,
     UserType,
     XOutOfYCondition
@@ -28,7 +29,7 @@ import {
 import {AuthClient} from "@dfinity/auth-client";
 import {createActor} from "../../../declarations/iolo_backend";
 import {mapError} from "../utils/errorMapper";
-import {IoloError} from "../error/Errors";
+import {IoloError, UserDoesNotExist} from "../error/Errors";
 import {Principal} from "@dfinity/principal";
 import {
     aes_gcm_decrypt,
@@ -128,17 +129,22 @@ class IoloService {
             user_type: uiUser.type ? (uiUser.type === UiUserType.Person ? [{ 'Person' : null }] : [{ 'Company' : null }]) : []
         }
         const result: Result = await (await this.getActor()).create_user(args);
-        console.log('r', result);
         if (result['Ok']) {
             return this.mapUserToUiUser(result['Ok']);
         }
         throw mapError(result['Err']);
     }
 
-    public async getCurrentUser(): Promise<UiUser> {
+    public async getCurrentUser(principal?: Principal): Promise<UiUser> {
         const result: Result = await (await this.getActor()).get_current_user();
         if (result['Ok']) {
             return this.mapUserToUiUser(result['Ok']);
+        }
+        if(result['Err'].hasOwnProperty('UserDoesNotExist') && principal){
+            //onboarding
+            return {
+                id: principal.toString()
+            } as UiUser
         }
         throw mapError(result['Err']);
     }
@@ -421,7 +427,6 @@ class IoloService {
             id: user.id.toText(),
             name: user.name.length > 0 ? user.name[0] : undefined,
             email: user.email.length > 0 ? user.email[0] : undefined,
-            userVaultId: user.user_vault_id.length > 0 ? user.user_vault_id[0] : undefined,
             dateLastLogin: user.date_last_login.length > 0 ? this.nanosecondsInBigintToIsoString(user.date_last_login[0]) : undefined,
             dateCreated: this.nanosecondsInBigintToIsoString(user.date_created),
             dateModified: this.nanosecondsInBigintToIsoString(user.date_modified),
@@ -451,8 +456,8 @@ class IoloService {
             name: uiUser.name ? [uiUser.name] : [],
             date_last_login: uiUser.dateLastLogin? [this.dateToNanosecondsInBigint(uiUser.dateLastLogin)] : [],
             email: uiUser.email ? [uiUser.email] : [],
-            user_vault_id: uiUser.userVaultId ? [uiUser.userVaultId] : [],
-            date_modified: uiUser.dateCreated ? this.dateToNanosecondsInBigint(uiUser.dateModified) : 0n
+            date_modified: uiUser.dateCreated ? this.dateToNanosecondsInBigint(uiUser.dateModified) : 0n,
+            user_vault_id: null //TODO remove user_vault_id
         };
     }
 

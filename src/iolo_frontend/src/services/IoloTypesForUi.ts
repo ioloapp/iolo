@@ -105,7 +105,6 @@ export interface UiUser {
     name?: string,
     email?: string,
     language?: string,
-    userVaultId?: bigint,
     dateCreated?: string,
     dateModified?: string,
     dateLastLogin?: string,
