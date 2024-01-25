@@ -15,10 +15,10 @@ pub struct PolicyStore {
     // be serialized/deserialized in upgrades, so we tell serde to skip it.
     #[serde(skip, default = "init_stable_data")]
     // users: StableBTreeMap<u128, u128, Memory>,
-    pub policies: StableBTreeMap<UUID, Policy, Memory>,
+    pub policies: StableBTreeMap<String, Policy, Memory>,
 }
 
-fn init_stable_data() -> StableBTreeMap<UUID, Policy, Memory> {
+fn init_stable_data() -> StableBTreeMap<String, Policy, Memory> {
     StableBTreeMap::init(get_stable_btree_memory_for_policies())
 }
 
@@ -38,9 +38,9 @@ impl PolicyStore {
     }
 
     pub fn add_policy(&mut self, policy: Policy) -> Result<Policy, SmartVaultErr> {
-        let policy_id: UUID = policy.id().clone().into();
+        let policy_id: String = policy.id().clone();
         dbg!("hi from add_policy again");
-        let p = self.policies.insert(policy_id, policy.clone());
+        let p = self.policies.insert(policy_id.clone(), policy.clone());
         match p {
             Some(_) => return Err(SmartVaultErr::PolicyAlreadyExists(policy_id.to_string())),
             None => Ok(policy),
