@@ -4,14 +4,20 @@ use candid::Principal;
 
 use crate::{
     common::{error::SmartVaultErr, uuid::UUID},
-    smart_vaults::smart_vault::{
-        POLICY_REGISTRY_FOR_BENEFICIARIES, POLICY_REGISTRY_FOR_VALIDATORS, POLICY_STORE, USER_STORE,
+    secrets::{
+        secret::{Secret, SecretListEntry},
+        secrets_interface_impl::get_secret_impl,
     },
+    smart_vaults::smart_vault::{
+        POLICY_REGISTRY_FOR_BENEFICIARIES, POLICY_REGISTRY_FOR_VALIDATORS, POLICY_STORE,
+        USER_STORE, USER_VAULT_STORE,
+    },
+    user_vaults::user_vault_store::UserVaultStore,
 };
 
 use super::{
     conditions::Condition,
-    policy::{AddPolicyArgs, Policy},
+    policy::{self, AddPolicyArgs, Policy, PolicyID, PolicyResponse},
     policy_registry::{PolicyRegistryForBeneficiaries, PolicyRegistryForValidators},
     policy_store::PolicyStore,
 };
@@ -72,6 +78,30 @@ pub async fn add_policy_impl(
     Ok(policy)
 }
 
+pub fn get_policy_as_owner_impl(
+    policy_id: PolicyID,
+    caller: &Principal,
+) -> Result<PolicyResponse, SmartVaultErr> {
+    // get policy from policy store
+    let policy: Policy = POLICY_STORE.with(|ps| -> Result<Policy, SmartVaultErr> {
+        let policy_store = ps.borrow();
+        policy_store.get(&policy_id)
+    })?;
+
+    let mut policy_response = PolicyResponse::from(policy.clone());
+    for secret_id in policy.secrets() {
+        // get secret from secret store
+        let secret: Secret = get_secret_impl(UUID::from(secret_id.to_string()), caller)?;
+        let secret_list_entry = SecretListEntry {
+            id: secret.id(),
+            category: secret.category(),
+            name: secret.name(),
+        };
+        policy_response.secrets().insert(secret_list_entry);
+    }
+    Ok(policy_response)
+}
+
 #[cfg(test)]
 mod tests {
     use std::collections::HashSet;
@@ -80,7 +110,14 @@ mod tests {
 
     use crate::{
         policies::policies_interface_impl::add_policy_impl,
-        policies::policy::{AddPolicyArgs, LogicalOperator},
+        policies::{
+            policies_interface_impl::get_policy_as_owner_impl,
+            policy::{AddPolicyArgs, LogicalOperator, PolicyResponse},
+        },
+        secrets::{
+            secret::{AddSecretArgs, SecretSymmetricCryptoMaterial},
+            secrets_interface_impl::add_secret_impl,
+        },
         smart_vaults::smart_vault::{POLICY_STORE, USER_STORE},
         user_vaults::user_vault::KeyBox,
         users::{user::AddUserArgs, users_interface_impl::create_user_impl},
@@ -101,8 +138,25 @@ mod tests {
         };
         let _new_user = create_user_impl(aua, &principal).await.unwrap();
 
+        // Create a Secret
+        let sscm: SecretSymmetricCryptoMaterial = SecretSymmetricCryptoMaterial {
+            encrypted_symmetric_key: vec![1, 2, 3],
+        };
+        let asa: AddSecretArgs = AddSecretArgs {
+            category: None,
+            name: Some("Google".to_string()),
+            username: Some(vec![1, 2, 3]),
+            password: Some(vec![1, 2, 3]),
+            url: None,
+            notes: Some(vec![1, 2, 3]),
+            symmetric_crypto_material: sscm,
+        };
+
+        // Add Secret
+        let added_secret = add_secret_impl(asa.clone(), &principal).await.unwrap();
+
         // create a policy
-        let apa: AddPolicyArgs = AddPolicyArgs {
+        let mut apa: AddPolicyArgs = AddPolicyArgs {
             id: "Policy#1".to_string(),
             name: Some("Policy#1".to_string()),
             beneficiaries: HashSet::new(),
@@ -111,14 +165,23 @@ mod tests {
             condition_logical_operator: LogicalOperator::And,
             conditions: Vec::new(),
         };
+        apa.secrets.insert(added_secret.id().to_string());
         let added_policy = add_policy_impl(apa, &principal).await.unwrap();
 
-        // check if policy is in policy store
+        // check if policy is in policy store and check if it contains the secret
         POLICY_STORE.with(|ps| {
             let policy_store = ps.borrow();
             let policy_in_store = policy_store.get(added_policy.id()).unwrap();
             assert_eq!(policy_in_store.id(), added_policy.id());
             assert_eq!(policy_in_store.name(), added_policy.name());
+            assert_eq!(policy_in_store.secrets().len(), 1);
+            assert_eq!(
+                policy_in_store.secrets().iter().next().unwrap(),
+                &added_secret.id().to_string()
+            );
+            assert_eq!(policy_in_store.beneficiaries().len(), 0);
+
+            assert_eq!(policy_in_store.conditions().len(), 0)
         });
 
         // check if the secret is in the user object
@@ -128,6 +191,15 @@ mod tests {
             assert_eq!(user.policies.len(), 1, "user should hold 1 policy now");
             assert_eq!(&user.policies[0], added_policy.id());
         });
+
+        // get policy from proper interface implementation
+        let mut fetched_policy: PolicyResponse =
+            get_policy_as_owner_impl(added_policy.id().clone(), &principal).unwrap();
+        assert_eq!(fetched_policy.secrets().len(), 1);
+        assert_eq!(
+            fetched_policy.secrets().iter().next().unwrap().id,
+            added_secret.id()
+        );
 
         // dbg!(added_policy);
         dump_policy_store();

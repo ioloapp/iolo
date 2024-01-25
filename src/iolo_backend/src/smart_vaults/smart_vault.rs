@@ -4,7 +4,7 @@ use std::cell::RefCell;
 
 use crate::common::error::SmartVaultErr;
 use crate::common::uuid::UUID;
-use crate::policies::policies_interface_impl::add_policy_impl;
+use crate::policies::policies_interface_impl::{add_policy_impl, get_policy_as_owner_impl};
 use crate::policies::policy::PolicyResponse;
 
 use crate::policies::policy_store::PolicyStore;
@@ -220,36 +220,7 @@ pub fn update_policy(policy: Policy) -> Result<Policy, SmartVaultErr> {
 
 #[ic_cdk_macros::query]
 pub fn get_policy_as_owner(policy_id: PolicyID) -> Result<PolicyResponse, SmartVaultErr> {
-    let principal = get_caller();
-    let user_vault_id: UUID = get_vault_id_for(principal)?;
-
-    let policy = USER_VAULT_STORE.with(
-        |mv: &RefCell<UserVaultStore>| -> Result<Policy, SmartVaultErr> {
-            mv.borrow()
-                .get_user_vault(&user_vault_id)?
-                .get_policy(&policy_id)
-                .cloned()
-        },
-    )?;
-    let mut policy_response = PolicyResponse::from(policy.clone());
-    for secret_id in policy.secrets() {
-        // get secret from secret store
-        let secret = USER_VAULT_STORE.with(
-            |mv: &RefCell<UserVaultStore>| -> Result<Secret, SmartVaultErr> {
-                mv.borrow()
-                    .get_user_vault(&user_vault_id)?
-                    .get_secret(secret_id)
-                    .cloned()
-            },
-        )?;
-        let secret_list_entry = SecretListEntry {
-            id: secret.id(),
-            category: secret.category(),
-            name: secret.name(),
-        };
-        policy_response.secrets().insert(secret_list_entry);
-    }
-    Ok(policy_response)
+    get_policy_as_owner_impl(policy_id, &get_caller())
 }
 
 #[ic_cdk_macros::query]
