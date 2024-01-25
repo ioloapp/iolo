@@ -56,12 +56,12 @@ pub enum LogicalOperator {
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct AddPolicyArgs {
     pub id: String,
-    name: Option<String>,
-    beneficiaries: HashSet<Principal>,
-    secrets: HashSet<SecretID>,
-    key_box: KeyBox,
-    condition_logical_operator: LogicalOperator,
-    conditions: Vec<Condition>,
+    pub name: Option<String>,
+    pub beneficiaries: HashSet<Principal>,
+    pub secrets: HashSet<SecretID>,
+    pub key_box: KeyBox,
+    pub condition_logical_operator: LogicalOperator,
+    pub conditions: Vec<Condition>,
 }
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone, PartialEq)]

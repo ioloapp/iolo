@@ -137,6 +137,11 @@ impl User {
         }
     }
 
+    pub fn add_policy(&mut self, policy_id: UUID) {
+        self.policies.push(policy_id);
+        self.date_modified = time::get_current_time();
+    }
+
     pub fn set_user_vault(&mut self, user_vault_id: UserVaultID) {
         self.user_vault_id = Some(user_vault_id);
         self.date_modified = time::get_current_time();

@@ -4,6 +4,7 @@ use std::cell::RefCell;
 
 use crate::common::error::SmartVaultErr;
 use crate::common::uuid::UUID;
+use crate::policies::policies_interface_impl::add_policy_impl;
 use crate::policies::policy::PolicyResponse;
 
 use crate::policies::policy_store::PolicyStore;
@@ -24,7 +25,10 @@ use crate::policies::policy::{AddPolicyArgs, Policy, PolicyID, PolicyListEntry};
 use crate::policies::policy_registry::{
     PolicyRegistryForBeneficiaries, PolicyRegistryForValidators,
 };
-use crate::secrets::secret::{AddSecretArgs, Secret, SecretID, SecretListEntry, SecretSymmetricCryptoMaterial, UpdateSecretArgs};
+use crate::secrets::secret::{
+    AddSecretArgs, Secret, SecretID, SecretListEntry, SecretSymmetricCryptoMaterial,
+    UpdateSecretArgs,
+};
 use crate::secrets::secret_store::SecretStore;
 
 thread_local! {
@@ -198,15 +202,7 @@ pub fn get_secret_symmetric_crypto_material_as_beneficiary(
 
 #[ic_cdk_macros::update]
 pub fn add_policy(args: AddPolicyArgs) -> Result<Policy, SmartVaultErr> {
-    let principal = get_caller();
-    let user_vault_id: UUID = get_vault_id_for(principal)?;
-
-    USER_VAULT_STORE.with(
-        |ms: &RefCell<UserVaultStore>| -> Result<Policy, SmartVaultErr> {
-            let mut master_vault = ms.borrow_mut();
-            master_vault.add_user_policy(&user_vault_id, args)
-        },
-    )
+    add_policy_impl(args, &get_caller())
 }
 
 #[ic_cdk_macros::update]

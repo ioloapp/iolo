@@ -204,7 +204,7 @@ mod tests {
         // get secret from proper interface implementation
         let fetched_secret_res = get_secret_impl(added_secret.id().clone(), &principal);
         assert!(fetched_secret_res.is_ok());
-        let mut fetched_secret = fetched_secret_res.unwrap();
+        let fetched_secret = fetched_secret_res.unwrap();
 
         assert_eq!(added_secret.id(), fetched_secret.id());
         assert_eq!(added_secret.name(), fetched_secret.name());

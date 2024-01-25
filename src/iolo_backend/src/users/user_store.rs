@@ -1,4 +1,4 @@
-use candid::{Principal};
+use candid::Principal;
 use ic_stable_structures::StableBTreeMap;
 use serde::{Deserialize, Serialize};
 
@@ -137,6 +137,23 @@ impl UserStore {
             }
             Err(e) => Err(e),
         }
+    }
+
+    pub fn add_policy_to_user(
+        &mut self,
+        caller: &Principal,
+        policy_id: UUID,
+    ) -> Result<(), SmartVaultErr> {
+        // find user in users and add secret id to secrets
+        let principal_storable = PrincipalStorable::from(*caller);
+        let mut user = self
+            .users
+            .get(&principal_storable)
+            .ok_or_else(|| SmartVaultErr::UserDoesNotExist(caller.to_string()))?;
+        user.add_policy(policy_id);
+
+        self.users.insert(principal_storable, user);
+        Ok(())
     }
 
     pub fn get_user(&self, user_id: &Principal) -> Result<User, SmartVaultErr> {
