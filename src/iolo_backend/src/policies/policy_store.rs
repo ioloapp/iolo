@@ -37,6 +37,18 @@ impl PolicyStore {
         }
     }
 
+    pub fn get(&self, policy_id: &str) -> Result<Policy, SmartVaultErr> {
+        let p = self.policies.get(&policy_id.to_string());
+        match p {
+            Some(p) => {
+                return Ok(p.clone());
+            }
+            None => {
+                return Err(SmartVaultErr::PolicyDoesNotExist(policy_id.to_string()));
+            }
+        }
+    }
+
     pub fn add_policy(&mut self, policy: Policy) -> Result<Policy, SmartVaultErr> {
         let policy_id: String = policy.id().clone();
         dbg!("hi from add_policy again");

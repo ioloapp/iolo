@@ -23,7 +23,7 @@ pub struct User {
     pub user_vault_id: Option<UserVaultID>,
     // New: Secrets, KeyBox and policies are stored in the user
     pub secrets: Vec<UUID>,
-    policies: Vec<UUID>,
+    pub policies: Vec<String>,
     pub key_box: KeyBox,
 }
 
@@ -137,7 +137,7 @@ impl User {
         }
     }
 
-    pub fn add_policy(&mut self, policy_id: UUID) {
+    pub fn add_policy(&mut self, policy_id: String) {
         self.policies.push(policy_id);
         self.date_modified = time::get_current_time();
     }

@@ -16,7 +16,7 @@ pub type PolicyID = String;
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct Policy {
-    id: PolicyID,
+    pub id: PolicyID,
     name: Option<String>,
     date_created: u64,
     date_modified: u64,

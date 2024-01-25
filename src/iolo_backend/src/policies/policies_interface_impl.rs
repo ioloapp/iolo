@@ -3,7 +3,7 @@ use std::cell::RefCell;
 use candid::Principal;
 
 use crate::{
-    common::error::SmartVaultErr,
+    common::{error::SmartVaultErr, uuid::UUID},
     smart_vaults::smart_vault::{
         POLICY_REGISTRY_FOR_BENEFICIARIES, POLICY_REGISTRY_FOR_VALIDATORS, POLICY_STORE, USER_STORE,
     },
@@ -16,8 +16,15 @@ use super::{
     policy_store::PolicyStore,
 };
 
-pub fn add_policy_impl(apa: AddPolicyArgs, caller: &Principal) -> Result<Policy, SmartVaultErr> {
-    let policy: Policy = Policy::from(apa);
+pub async fn add_policy_impl(
+    apa: AddPolicyArgs,
+    caller: &Principal,
+) -> Result<Policy, SmartVaultErr> {
+    let mut policy: Policy = Policy::from(apa);
+
+    // we create the policy id in the backend
+    let new_policy_id: String = UUID::new_random().await.into();
+    policy.id = new_policy_id.clone();
 
     // Add policy to the policy store (policies: StableBTreeMap<UUID, Policy, Memory>,)
     POLICY_STORE.with(
@@ -26,8 +33,6 @@ pub fn add_policy_impl(apa: AddPolicyArgs, caller: &Principal) -> Result<Policy,
             policy_store.add_policy(policy.clone())
         },
     )?;
-
-    dbg!("add_policy_impl: policy: {:?}", &policy);
 
     // add the policy id to the user in the USER_STORE
     USER_STORE.with(|us| {
@@ -76,8 +81,10 @@ mod tests {
     use crate::{
         policies::policies_interface_impl::add_policy_impl,
         policies::policy::{AddPolicyArgs, LogicalOperator},
+        smart_vaults::smart_vault::{POLICY_STORE, USER_STORE},
         user_vaults::user_vault::KeyBox,
         users::{user::AddUserArgs, users_interface_impl::create_user_impl},
+        utils::dumper::dump_policy_store,
     };
 
     #[tokio::test]
@@ -104,8 +111,26 @@ mod tests {
             condition_logical_operator: LogicalOperator::And,
             conditions: Vec::new(),
         };
-        let added_policy = add_policy_impl(apa, &principal).unwrap();
-        dbg!(added_policy);
+        let added_policy = add_policy_impl(apa, &principal).await.unwrap();
+
+        // check if policy is in policy store
+        POLICY_STORE.with(|ps| {
+            let policy_store = ps.borrow();
+            let policy_in_store = policy_store.get(&added_policy.id()).unwrap();
+            assert_eq!(policy_in_store.id(), added_policy.id());
+            assert_eq!(policy_in_store.name(), added_policy.name());
+        });
+
+        // check if the secret is in the user object
+        USER_STORE.with(|us| {
+            let user_store = us.borrow();
+            let user = user_store.get_user(&principal).unwrap();
+            assert_eq!(user.policies.len(), 1, "user should hold 1 policy now");
+            assert_eq!(&user.policies[0], added_policy.id());
+        });
+
+        // dbg!(added_policy);
+        dump_policy_store();
     }
 
     fn create_principal() -> Principal {

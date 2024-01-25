@@ -1,4 +1,4 @@
-use crate::smart_vaults::smart_vault::{SECRET_STORE, USER_STORE};
+use crate::smart_vaults::smart_vault::{POLICY_STORE, SECRET_STORE, USER_STORE};
 
 pub fn dump_secret_store() {
     SECRET_STORE.with(|ss| {
@@ -25,5 +25,19 @@ pub fn dump_user_store() {
             println!("{:?}\n", v);
         }
         println!("------- DUMPING USER STORE  END -------\n\n");
+    });
+}
+
+pub fn dump_policy_store() {
+    POLICY_STORE.with(|ps| {
+        let policy_store = ps.borrow();
+        // loop throush secrets
+        println!("\n\n------- DUMPING POLICY STORE -------");
+        for (k, v) in policy_store.policies.iter() {
+            println!("{}", k);
+            println!("-----------------");
+            println!("{:?}\n", v);
+        }
+        println!("------- DUMPING POLICY STORE  END -------\n\n");
     });
 }

@@ -201,8 +201,8 @@ pub fn get_secret_symmetric_crypto_material_as_beneficiary(
  */
 
 #[ic_cdk_macros::update]
-pub fn add_policy(args: AddPolicyArgs) -> Result<Policy, SmartVaultErr> {
-    add_policy_impl(args, &get_caller())
+pub async fn add_policy(args: AddPolicyArgs) -> Result<Policy, SmartVaultErr> {
+    add_policy_impl(args, &get_caller()).await
 }
 
 #[ic_cdk_macros::update]

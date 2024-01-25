@@ -142,7 +142,7 @@ impl UserStore {
     pub fn add_policy_to_user(
         &mut self,
         caller: &Principal,
-        policy_id: UUID,
+        policy_id: String,
     ) -> Result<(), SmartVaultErr> {
         // find user in users and add secret id to secrets
         let principal_storable = PrincipalStorable::from(*caller);
