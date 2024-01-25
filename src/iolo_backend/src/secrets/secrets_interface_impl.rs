@@ -184,9 +184,7 @@ mod tests {
         // Check if the right secret is in secret store
         SECRET_STORE.with(|ss| {
             let secret_store = ss.borrow();
-            let secret = secret_store
-                .get(&UUID::from(added_secret.id().clone()))
-                .unwrap();
+            let secret = secret_store.get(&UUID::from(added_secret.id())).unwrap();
             assert_eq!(secret.id(), added_secret.id());
             assert_eq!(secret.name(), added_secret.name());
             assert_eq!(secret.username().cloned(), added_secret.username().cloned());
@@ -198,11 +196,11 @@ mod tests {
             let user_store = us.borrow();
             let user = user_store.get_user(&principal).unwrap();
             assert_eq!(user.secrets.len(), 1, "suer should hold 1 secret now");
-            assert_eq!(user.secrets[0], added_secret.id().clone().into());
+            assert_eq!(user.secrets[0], added_secret.id().into());
         });
 
         // get secret from proper interface implementation
-        let fetched_secret_res = get_secret_impl(added_secret.id().clone(), &principal);
+        let fetched_secret_res = get_secret_impl(added_secret.id(), &principal);
         assert!(fetched_secret_res.is_ok());
         let fetched_secret = fetched_secret_res.unwrap();
 

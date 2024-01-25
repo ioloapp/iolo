@@ -77,7 +77,7 @@ impl From<Policy> for PolicyListEntry {
         PolicyListEntry {
             id: t.id().into(),
             name: t.name,
-            owner: t.owner.clone(),
+            owner: t.owner,
             condition_status: t.conditions_status,
         }
     }

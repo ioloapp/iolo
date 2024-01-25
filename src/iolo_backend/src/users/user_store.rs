@@ -132,9 +132,7 @@ impl UserStore {
 
         user.remove_secret(secret_id)?;
         match self.update_user_secrets(user, caller) {
-            Ok(_) => {
-                return Ok(());
-            }
+            Ok(_) => Ok(()),
             Err(e) => Err(e),
         }
     }

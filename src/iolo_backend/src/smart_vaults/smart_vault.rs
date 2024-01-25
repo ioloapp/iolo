@@ -223,7 +223,7 @@ pub fn get_policy_as_owner(policy_id: PolicyID) -> Result<PolicyResponse, SmartV
     let principal = get_caller();
     let user_vault_id: UUID = get_vault_id_for(principal)?;
 
-    let result = USER_VAULT_STORE.with(
+    let policy = USER_VAULT_STORE.with(
         |mv: &RefCell<UserVaultStore>| -> Result<Policy, SmartVaultErr> {
             mv.borrow()
                 .get_user_vault(&user_vault_id)?
@@ -231,24 +231,25 @@ pub fn get_policy_as_owner(policy_id: PolicyID) -> Result<PolicyResponse, SmartV
                 .cloned()
         },
     )?;
-    let mut policy_for_owner = PolicyResponse::from(result.clone());
-    for secret in result.secrets() {
-        let result_mv_2 = USER_VAULT_STORE.with(
+    let mut policy_response = PolicyResponse::from(policy.clone());
+    for secret_id in policy.secrets() {
+        // get secret from secret store
+        let secret = USER_VAULT_STORE.with(
             |mv: &RefCell<UserVaultStore>| -> Result<Secret, SmartVaultErr> {
                 mv.borrow()
                     .get_user_vault(&user_vault_id)?
-                    .get_secret(secret)
+                    .get_secret(secret_id)
                     .cloned()
             },
         )?;
         let secret_list_entry = SecretListEntry {
-            id: result_mv_2.id().clone(),
-            category: result_mv_2.category(),
-            name: result_mv_2.name(),
+            id: secret.id(),
+            category: secret.category(),
+            name: secret.name(),
         };
-        policy_for_owner.secrets().insert(secret_list_entry);
+        policy_response.secrets().insert(secret_list_entry);
     }
-    Ok(policy_for_owner)
+    Ok(policy_response)
 }
 
 #[ic_cdk_macros::query]
@@ -289,7 +290,7 @@ pub fn get_policy_as_beneficiary(policy_id: PolicyID) -> Result<PolicyResponse, 
                 },
             )?;
             let secret_list_entry = SecretListEntry {
-                id: result_mv_2.id().clone(),
+                id: result_mv_2.id(),
                 category: result_mv_2.category(),
                 name: result_mv_2.name(),
             };

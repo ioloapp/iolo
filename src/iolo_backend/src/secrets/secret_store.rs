@@ -44,12 +44,9 @@ impl SecretStore {
         let s = self.secrets.get(secret_id);
 
         match s {
-            Some(s) => {
-                return Ok(s.clone());
-            }
-            None => {
-                return Err(SmartVaultErr::SecretDoesNotExist(secret_id.to_string()));
-            }
+            Some(s) => Ok(s.clone()),
+
+            None => Err(SmartVaultErr::SecretDoesNotExist(secret_id.to_string())),
         }
     }
 

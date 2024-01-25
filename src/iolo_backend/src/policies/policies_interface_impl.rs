@@ -37,7 +37,7 @@ pub async fn add_policy_impl(
     // add the policy id to the user in the USER_STORE
     USER_STORE.with(|us| {
         let mut user_store = us.borrow_mut();
-        user_store.add_policy_to_user(&caller, policy.id().clone().into())
+        user_store.add_policy_to_user(caller, policy.id().clone())
     })?;
 
     // Add entry to policy registry for beneficiaries (reverse index)
@@ -116,7 +116,7 @@ mod tests {
         // check if policy is in policy store
         POLICY_STORE.with(|ps| {
             let policy_store = ps.borrow();
-            let policy_in_store = policy_store.get(&added_policy.id()).unwrap();
+            let policy_in_store = policy_store.get(added_policy.id()).unwrap();
             assert_eq!(policy_in_store.id(), added_policy.id());
             assert_eq!(policy_in_store.name(), added_policy.name());
         });

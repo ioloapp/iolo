@@ -63,7 +63,7 @@ pub struct SecretListEntry {
 impl From<Secret> for SecretListEntry {
     fn from(s: Secret) -> Self {
         SecretListEntry {
-            id: s.id().into(),
+            id: s.id(),
             category: s.category(),
             name: s.name(),
         }
