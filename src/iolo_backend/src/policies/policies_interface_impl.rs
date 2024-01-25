@@ -9,15 +9,13 @@ use crate::{
         secrets_interface_impl::get_secret_impl,
     },
     smart_vaults::smart_vault::{
-        POLICY_REGISTRY_FOR_BENEFICIARIES, POLICY_REGISTRY_FOR_VALIDATORS, POLICY_STORE,
-        USER_STORE, USER_VAULT_STORE,
+        POLICY_REGISTRY_FOR_BENEFICIARIES, POLICY_REGISTRY_FOR_VALIDATORS, POLICY_STORE, USER_STORE,
     },
-    user_vaults::user_vault_store::UserVaultStore,
 };
 
 use super::{
     conditions::Condition,
-    policy::{self, AddPolicyArgs, Policy, PolicyID, PolicyResponse},
+    policy::{AddPolicyArgs, Policy, PolicyID, PolicyResponse},
     policy_registry::{PolicyRegistryForBeneficiaries, PolicyRegistryForValidators},
     policy_store::PolicyStore,
 };
