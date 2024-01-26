@@ -9,14 +9,15 @@ use crate::{
         secrets_interface_impl::get_secret_impl,
     },
     smart_vaults::smart_vault::{
-        POLICY_REGISTRY_FOR_BENEFICIARIES, POLICY_REGISTRY_FOR_VALIDATORS, POLICY_STORE, USER_STORE,
+        POLICY_REGISTRIES, POLICY_REGISTRY_FOR_BENEFICIARIES, POLICY_REGISTRY_FOR_VALIDATORS,
+        POLICY_STORE, USER_STORE,
     },
 };
 
 use super::{
     conditions::Condition,
     policy::{AddPolicyArgs, Policy, PolicyID, PolicyResponse},
-    policy_registries::{PolicyRegistryForBeneficiaries, PolicyRegistryForValidators},
+    policy_registries::PolicyRegistryForValidators,
     policy_store::PolicyStore,
 };
 
@@ -45,33 +46,54 @@ pub async fn add_policy_impl(
     })?;
 
     // Add entry to policy registry for beneficiaries (reverse index)
-    POLICY_REGISTRY_FOR_BENEFICIARIES.with(
-        |tr: &RefCell<PolicyRegistryForBeneficiaries>| -> Result<(), SmartVaultErr> {
-            let mut policy_registry = tr.borrow_mut();
-            policy_registry.add_policy_to_registry(&policy);
-            Ok(())
-        },
-    )?;
+    POLICY_REGISTRIES.with(|pr| -> Result<(), SmartVaultErr> {
+        let mut policy_registries = pr.borrow_mut();
+        policy_registries.add_policy_to_beneficiary(&policy);
+        Ok(())
+    })?;
 
     // Add entry to policy registry for validators (reverse index) if there is a XOutOfYCondition
     for condition in policy.conditions().iter() {
         match condition {
             Condition::XOutOfYCondition(xoutofy) => {
-                POLICY_REGISTRY_FOR_VALIDATORS.with(
-                    |pr: &RefCell<PolicyRegistryForValidators>| -> Result<(), SmartVaultErr> {
-                        let mut policy_registry = pr.borrow_mut();
-                        policy_registry.add_policy_to_registry(
-                            &xoutofy.validators,
-                            &policy.id(),
-                            &policy.owner(),
-                        );
-                        Ok(())
-                    },
-                )?;
+                POLICY_REGISTRIES.with(|x| {
+                    let mut policy_registries = x.borrow_mut();
+                    policy_registries.add_policy_to_validators(&xoutofy.validators, &policy.id());
+                });
             }
             _ => {}
         }
     }
+
+    // the old way (before storable)
+    // Add entry to policy registry for beneficiaries (reverse index)
+    // POLICY_REGISTRY_FOR_BENEFICIARIES.with(
+    //     |tr: &RefCell<PolicyRegistryForBeneficiaries>| -> Result<(), SmartVaultErr> {
+    //         let mut policy_registry = tr.borrow_mut();
+    //         policy_registry.add_policy_to_registry(&policy);
+    //         Ok(())
+    //     },
+    // )?;
+
+    // Add entry to policy registry for validators (reverse index) if there is a XOutOfYCondition
+    // for condition in policy.conditions().iter() {
+    //     match condition {
+    //         Condition::XOutOfYCondition(xoutofy) => {
+    //             POLICY_REGISTRY_FOR_VALIDATORS.with(
+    //                 |pr: &RefCell<PolicyRegistryForValidators>| -> Result<(), SmartVaultErr> {
+    //                     let mut policy_registry = pr.borrow_mut();
+    //                     policy_registry.add_policy_to_registry(
+    //                         &xoutofy.validators,
+    //                         &policy.id(),
+    //                         &policy.owner(),
+    //                     );
+    //                     Ok(())
+    //                 },
+    //             )?;
+    //         }
+    //         _ => {}
+    //     }
+    // }
 
     Ok(policy)
 }
@@ -109,6 +131,7 @@ mod tests {
     use crate::{
         policies::policies_interface_impl::add_policy_impl,
         policies::{
+            conditions::{Condition, TimeBasedCondition},
             policies_interface_impl::get_policy_as_owner_impl,
             policy::{AddPolicyArgs, LogicalOperator, PolicyResponse},
         },
@@ -126,6 +149,7 @@ mod tests {
     async fn itest_policy_lifecycle() {
         // Create empty user_vault
         let principal = create_principal();
+        let beneficiary = create_principal();
 
         // Create User and store it
         let aua: AddUserArgs = AddUserArgs {
@@ -153,15 +177,20 @@ mod tests {
         // Add Secret
         let added_secret = add_secret_impl(asa.clone(), &principal).await.unwrap();
 
-        // create a policy
+        // create a policy with a time based condition
+        let condition: Condition = Condition::TimeBasedCondition(TimeBasedCondition {
+            id: "1".to_string(),
+            number_of_days_since_last_login: 0,
+            condition_status: false,
+        });
         let mut apa: AddPolicyArgs = AddPolicyArgs {
             id: "Policy#1".to_string(),
             name: Some("Policy#1".to_string()),
-            beneficiaries: HashSet::new(),
+            beneficiaries: [beneficiary].iter().cloned().collect(),
             secrets: HashSet::new(),
             key_box: KeyBox::new(),
             condition_logical_operator: LogicalOperator::And,
-            conditions: Vec::new(),
+            conditions: vec![condition],
         };
         apa.secrets.insert(added_secret.id().to_string());
         let added_policy = add_policy_impl(apa, &principal).await.unwrap();
@@ -177,9 +206,9 @@ mod tests {
                 policy_in_store.secrets().iter().next().unwrap(),
                 &added_secret.id().to_string()
             );
-            assert_eq!(policy_in_store.beneficiaries().len(), 0);
+            assert_eq!(policy_in_store.beneficiaries().len(), 1);
 
-            assert_eq!(policy_in_store.conditions().len(), 0)
+            assert_eq!(policy_in_store.conditions().len(), 1)
         });
 
         // check if the secret is in the user object

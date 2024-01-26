@@ -17,10 +17,10 @@ pub type PolicyID = String;
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct Policy {
     pub id: PolicyID,
+    owner: Principal,
     name: Option<String>,
     date_created: u64,
     date_modified: u64,
-    owner: Principal,
     beneficiaries: HashSet<Principal>,
     // References to the secrets contained in this policy
     // Path to secret: owner -> owner uservault -> secret

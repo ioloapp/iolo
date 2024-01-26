@@ -23,7 +23,7 @@ use crate::utils::caller::get_caller;
 
 use crate::policies::policy::{AddPolicyArgs, Policy, PolicyID, PolicyListEntry};
 use crate::policies::policy_registries::{
-    PolicyRegistryForBeneficiaries, PolicyRegistryForValidators,
+    PolicyRegistries, PolicyRegistryForBeneficiaries, PolicyRegistryForValidators,
 };
 use crate::secrets::secret::{
     AddSecretArgs, Secret, SecretID, SecretListEntry, SecretSymmetricCryptoMaterial,
@@ -43,6 +43,9 @@ thread_local! {
 
     // Policy (fka Testament) Store
     pub static POLICY_STORE: RefCell<PolicyStore> = RefCell::new(PolicyStore::new());
+
+    // Policy Registry for beneficiaries and validators
+    pub static POLICY_REGISTRIES: RefCell<PolicyRegistries> = RefCell::new(PolicyRegistries::new());
 
     // policy Registry for beneficiaries
     pub static POLICY_REGISTRY_FOR_BENEFICIARIES: RefCell<PolicyRegistryForBeneficiaries> = RefCell::new(PolicyRegistryForBeneficiaries::new());

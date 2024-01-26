@@ -1,18 +1,138 @@
+use std::borrow::Cow;
 use std::collections::{BTreeMap, HashSet};
 
-use candid::{CandidType, Principal};
-use serde::Deserialize;
+use candid::{CandidType, Decode, Encode, Principal};
+
+use ic_stable_structures::storable::Bound;
+use ic_stable_structures::{StableBTreeMap, Storable};
+use serde::{Deserialize, Serialize};
 
 use crate::common::error::SmartVaultErr;
+use crate::common::memory::{
+    get_stable_btree_memory_for_policies_b2p, get_stable_btree_memory_for_policies_v2p, Memory,
+};
+use crate::common::principal_storable::PrincipalStorable;
 use crate::policies::conditions::{Condition, Validator};
 use crate::policies::policy::{Policy, PolicyID};
 
+/** New: combining the two below */
+#[derive(Serialize, Deserialize)]
+pub struct PolicyRegistries {
+    /// Maps a beneficiary (principal) to a set of policies.
+    #[serde(skip, default = "init_stable_data_b2p")]
+    pub beneficiaries_to_policies: StableBTreeMap<PrincipalStorable, PolicyHashSetStorable, Memory>,
+
+    /// Maps a principal to a set of policies the principal is a validator for.
+    #[serde(skip, default = "init_stable_data_v2p")]
+    pub validator_to_policies: StableBTreeMap<PrincipalStorable, PolicyHashSetStorable, Memory>,
+}
+
+#[derive(Debug, CandidType, Deserialize, Serialize, Clone, PartialEq)]
+pub struct PolicyHashSetStorable(HashSet<PolicyID>);
+impl Storable for PolicyHashSetStorable {
+    fn to_bytes(&self) -> std::borrow::Cow<[u8]> {
+        Cow::Owned(Encode!(self).unwrap())
+    }
+
+    fn from_bytes(bytes: std::borrow::Cow<[u8]>) -> Self {
+        Decode!(bytes.as_ref(), Self).unwrap()
+    }
+
+    const BOUND: Bound = Bound::Unbounded;
+}
+
+fn init_stable_data_b2p() -> StableBTreeMap<PrincipalStorable, PolicyHashSetStorable, Memory> {
+    StableBTreeMap::init(get_stable_btree_memory_for_policies_b2p())
+}
+
+fn init_stable_data_v2p() -> StableBTreeMap<PrincipalStorable, PolicyHashSetStorable, Memory> {
+    StableBTreeMap::init(get_stable_btree_memory_for_policies_v2p())
+}
+
+impl Default for PolicyRegistries {
+    fn default() -> Self {
+        Self {
+            beneficiaries_to_policies: init_stable_data_b2p(),
+            validator_to_policies: init_stable_data_v2p(),
+        }
+    }
+}
+
+impl PolicyRegistries {
+    pub fn new() -> Self {
+        Self {
+            beneficiaries_to_policies: init_stable_data_b2p(),
+            validator_to_policies: init_stable_data_v2p(),
+        }
+    }
+
+    pub fn add_policy_to_beneficiary(&mut self, policy: &Policy) {
+        for beneficiary in policy.beneficiaries() {
+            match self
+                .beneficiaries_to_policies
+                .get(&PrincipalStorable::from(beneficiary.clone()))
+            {
+                Some(mut sphs) => {
+                    // entry for beneficiary already exists
+                    sphs.0.insert(policy.id().clone());
+                }
+                None => {
+                    // no entry for beneficiary yet
+                    let mut hs: HashSet<PolicyID> = HashSet::new();
+                    hs.insert(policy.id().clone());
+
+                    self.beneficiaries_to_policies.insert(
+                        PrincipalStorable::from(beneficiary.clone()),
+                        PolicyHashSetStorable(hs),
+                    );
+                }
+            };
+        }
+    }
+
+    pub fn add_policy_to_validators(&mut self, validators: &Vec<Validator>, policy_id: &PolicyID) {
+        for validator in validators {
+            match self
+                .validator_to_policies
+                .get(&PrincipalStorable::from(validator.id.clone()))
+            {
+                Some(mut sphs) => {
+                    // entry for beneficiary already exists
+                    sphs.0.insert(policy_id.clone());
+                }
+                None => {
+                    // no entry for beneficiary yet
+                    let mut hs: HashSet<PolicyID> = HashSet::new();
+                    hs.insert(policy_id.clone());
+
+                    self.beneficiaries_to_policies.insert(
+                        PrincipalStorable::from(validator.id.clone()),
+                        PolicyHashSetStorable(hs),
+                    );
+                }
+            };
+        }
+    }
+}
+
+/************************************************************************************
+ * THE OLD WAY
+ ************************************************************************************/
+
+/**
+ * PolicyRegistryForBeneficiaries is a registry that maps a beneficiary (principal)
+ * to a set of policies.
+ */
 #[derive(Debug, CandidType, Deserialize)]
 pub struct PolicyRegistryForBeneficiaries {
     beneficiaries_to_policies: BTreeMap<Principal, HashSet<PolicyID>>,
     policy_to_owner: BTreeMap<PolicyID, Principal>,
 }
 
+/**
+ * PolicyRegistryForValidators is a registry that maps a principal
+ * to a set of policies the principal is a validator for.
+ */
 #[derive(Debug, CandidType, Deserialize)]
 pub struct PolicyRegistryForValidators {
     validator_to_policies: BTreeMap<Principal, HashSet<PolicyID>>,
@@ -27,18 +147,6 @@ impl PolicyRegistryForBeneficiaries {
         }
     }
 
-    pub fn remove_policy_from_registry(&mut self, policy: &Policy) {
-        for beneficiary in policy.beneficiaries() {
-            if let Some(policy_ids) = self.beneficiaries_to_policies.get_mut(beneficiary) {
-                policy_ids.remove(policy.id());
-                if policy_ids.is_empty() {
-                    self.beneficiaries_to_policies.remove(beneficiary);
-                }
-            }
-        }
-        self.policy_to_owner.remove(policy.id());
-    }
-
     pub fn add_policy_to_registry(&mut self, policy: &Policy) {
         for beneficiary in policy.beneficiaries() {
             self.beneficiaries_to_policies
@@ -48,22 +156,6 @@ impl PolicyRegistryForBeneficiaries {
         }
         self.policy_to_owner
             .insert(policy.id().clone(), policy.owner().clone());
-    }
-
-    pub fn update_policy_in_registry(&mut self, policy_new: &Policy, policy_old: &Policy) {
-        // Delete all existing entries for old policy
-        for beneficiary in policy_old.beneficiaries() {
-            if let Some(policy) = self.beneficiaries_to_policies.get_mut(beneficiary) {
-                policy.remove(policy_old.id());
-                if policy.is_empty() {
-                    self.beneficiaries_to_policies.remove(beneficiary);
-                }
-            }
-        }
-        self.policy_to_owner.remove(policy_old.id());
-
-        // Add new policy
-        self.add_policy_to_registry(policy_new);
     }
 
     pub fn get_policy_id_as_beneficiary(
@@ -110,6 +202,34 @@ impl PolicyRegistryForBeneficiaries {
 
     pub fn get_owner_of_policy(&self, policy_id: PolicyID) -> Option<Principal> {
         self.policy_to_owner.get(&policy_id).copied()
+    }
+
+    pub fn remove_policy_from_registry(&mut self, policy: &Policy) {
+        for beneficiary in policy.beneficiaries() {
+            if let Some(policy_ids) = self.beneficiaries_to_policies.get_mut(beneficiary) {
+                policy_ids.remove(policy.id());
+                if policy_ids.is_empty() {
+                    self.beneficiaries_to_policies.remove(beneficiary);
+                }
+            }
+        }
+        self.policy_to_owner.remove(policy.id());
+    }
+
+    pub fn update_policy_in_registry(&mut self, policy_new: &Policy, policy_old: &Policy) {
+        // Delete all existing entries for old policy
+        for beneficiary in policy_old.beneficiaries() {
+            if let Some(policy) = self.beneficiaries_to_policies.get_mut(beneficiary) {
+                policy.remove(policy_old.id());
+                if policy.is_empty() {
+                    self.beneficiaries_to_policies.remove(beneficiary);
+                }
+            }
+        }
+        self.policy_to_owner.remove(policy_old.id());
+
+        // Add new policy
+        self.add_policy_to_registry(policy_new);
     }
 }
 
