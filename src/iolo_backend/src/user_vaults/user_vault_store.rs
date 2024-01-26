@@ -5,7 +5,7 @@ use candid::{CandidType, Deserialize, Principal};
 use crate::common::{error::SmartVaultErr, uuid::UUID};
 use crate::policies::conditions::Condition;
 use crate::policies::policy::{AddPolicyArgs, Policy, PolicyID};
-use crate::policies::policy_registry::{
+use crate::policies::policy_registries::{
     PolicyRegistryForBeneficiaries, PolicyRegistryForValidators,
 };
 use crate::secrets::secret::SecretSymmetricCryptoMaterial;

@@ -13,6 +13,12 @@ pub struct PolicyRegistryForBeneficiaries {
     policy_to_owner: BTreeMap<PolicyID, Principal>,
 }
 
+#[derive(Debug, CandidType, Deserialize)]
+pub struct PolicyRegistryForValidators {
+    validator_to_policies: BTreeMap<Principal, HashSet<PolicyID>>,
+    policy_to_owner: BTreeMap<PolicyID, Principal>,
+}
+
 impl PolicyRegistryForBeneficiaries {
     pub fn new() -> Self {
         Self {
@@ -105,12 +111,6 @@ impl PolicyRegistryForBeneficiaries {
     pub fn get_owner_of_policy(&self, policy_id: PolicyID) -> Option<Principal> {
         self.policy_to_owner.get(&policy_id).copied()
     }
-}
-
-#[derive(Debug, CandidType, Deserialize)]
-pub struct PolicyRegistryForValidators {
-    validator_to_policies: BTreeMap<Principal, HashSet<PolicyID>>,
-    policy_to_owner: BTreeMap<PolicyID, Principal>,
 }
 
 impl PolicyRegistryForValidators {

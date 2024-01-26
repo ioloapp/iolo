@@ -4,7 +4,7 @@ use std::{str::FromStr, vec};
 use crate::common::error::SmartVaultErr;
 use crate::common::uuid::UUID;
 use crate::policies::policy::{Policy, PolicyID};
-use crate::policies::policy_registry::PolicyRegistryForBeneficiaries;
+use crate::policies::policy_registries::PolicyRegistryForBeneficiaries;
 use crate::smart_vaults::smart_vault::{
     POLICY_REGISTRY_FOR_BENEFICIARIES, USER_STORE, USER_VAULT_STORE,
 };

@@ -16,7 +16,7 @@ use crate::{
 use super::{
     conditions::Condition,
     policy::{AddPolicyArgs, Policy, PolicyID, PolicyResponse},
-    policy_registry::{PolicyRegistryForBeneficiaries, PolicyRegistryForValidators},
+    policy_registries::{PolicyRegistryForBeneficiaries, PolicyRegistryForValidators},
     policy_store::PolicyStore,
 };
 
