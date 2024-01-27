@@ -56,6 +56,7 @@ thread_local! {
     // counter for the UUIDs
     pub static UUID_COUNTER: RefCell<u128>  = RefCell::new(1);
 }
+
 /**
  * User CRUD
  */
@@ -208,19 +209,6 @@ pub async fn add_policy(args: AddPolicyArgs) -> Result<Policy, SmartVaultErr> {
     add_policy_impl(args, &get_caller()).await
 }
 
-#[ic_cdk_macros::update]
-pub fn update_policy(policy: Policy) -> Result<Policy, SmartVaultErr> {
-    let principal = get_caller();
-    let user_vault_id: UUID = get_vault_id_for(principal)?;
-
-    USER_VAULT_STORE.with(
-        |ms: &RefCell<UserVaultStore>| -> Result<Policy, SmartVaultErr> {
-            let mut master_vault = ms.borrow_mut();
-            master_vault.update_user_policy(&user_vault_id, policy)
-        },
-    )
-}
-
 #[ic_cdk_macros::query]
 pub fn get_policy_as_owner(policy_id: PolicyID) -> Result<PolicyResponse, SmartVaultErr> {
     get_policy_as_owner_impl(policy_id, &get_caller())
@@ -240,7 +228,7 @@ pub fn get_policy_as_beneficiary(policy_id: PolicyID) -> Result<PolicyResponse, 
     let user_vault_id: UUID = get_vault_id_for(result_pr.1)?;
 
     // Read policy
-    let result_mv = USER_VAULT_STORE.with(
+    let policy: Policy = USER_VAULT_STORE.with(
         |mv: &RefCell<UserVaultStore>| -> Result<Policy, SmartVaultErr> {
             mv.borrow()
                 .get_user_vault(&user_vault_id)?
@@ -250,11 +238,11 @@ pub fn get_policy_as_beneficiary(policy_id: PolicyID) -> Result<PolicyResponse, 
     )?;
 
     // Check that beneficiary is allowed to read policy
-    if *result_mv.conditions_status() {
+    if *policy.conditions_status() {
         // Get more secret data for beneficiary...
-        let owner_vault_id = get_vault_id_for(*result_mv.owner())?;
-        let mut policy_for_beneficiary = PolicyResponse::from(result_mv.clone());
-        for secret in result_mv.secrets() {
+        let owner_vault_id = get_vault_id_for(*policy.owner())?;
+        let mut policy_for_beneficiary = PolicyResponse::from(policy.clone());
+        for secret in policy.secrets() {
             let result_mv_2 = USER_VAULT_STORE.with(
                 |mv: &RefCell<UserVaultStore>| -> Result<Secret, SmartVaultErr> {
                     mv.borrow()
@@ -343,6 +331,19 @@ pub fn get_policy_list_as_owner() -> Result<Vec<PolicyListEntry>, SmartVaultErr>
             .collect();
         Ok(policies.into_iter().map(PolicyListEntry::from).collect())
     })
+}
+
+#[ic_cdk_macros::update]
+pub fn update_policy(policy: Policy) -> Result<Policy, SmartVaultErr> {
+    let principal = get_caller();
+    let user_vault_id: UUID = get_vault_id_for(principal)?;
+
+    USER_VAULT_STORE.with(
+        |ms: &RefCell<UserVaultStore>| -> Result<Policy, SmartVaultErr> {
+            let mut master_vault = ms.borrow_mut();
+            master_vault.update_user_policy(&user_vault_id, policy)
+        },
+    )
 }
 
 #[ic_cdk_macros::update]

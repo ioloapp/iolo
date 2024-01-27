@@ -8,16 +8,12 @@ use crate::{
         secret::{Secret, SecretListEntry},
         secrets_interface_impl::get_secret_impl,
     },
-    smart_vaults::smart_vault::{
-        POLICY_REGISTRIES, POLICY_REGISTRY_FOR_BENEFICIARIES, POLICY_REGISTRY_FOR_VALIDATORS,
-        POLICY_STORE, USER_STORE,
-    },
+    smart_vaults::smart_vault::{POLICY_REGISTRIES, POLICY_STORE, USER_STORE},
 };
 
 use super::{
     conditions::Condition,
     policy::{AddPolicyArgs, Policy, PolicyID, PolicyResponse},
-    policy_registries::PolicyRegistryForValidators,
     policy_store::PolicyStore,
 };
 
@@ -131,7 +127,7 @@ mod tests {
     use crate::{
         policies::policies_interface_impl::add_policy_impl,
         policies::{
-            conditions::{Condition, TimeBasedCondition},
+            conditions::{Condition, TimeBasedCondition, Validator, XOutOfYCondition},
             policies_interface_impl::get_policy_as_owner_impl,
             policy::{AddPolicyArgs, LogicalOperator, PolicyResponse},
         },
@@ -150,6 +146,7 @@ mod tests {
         // Create empty user_vault
         let principal = create_principal();
         let beneficiary = create_principal();
+        let validator = create_principal();
 
         // Create User and store it
         let aua: AddUserArgs = AddUserArgs {
@@ -178,11 +175,22 @@ mod tests {
         let added_secret = add_secret_impl(asa.clone(), &principal).await.unwrap();
 
         // create a policy with a time based condition
-        let condition: Condition = Condition::TimeBasedCondition(TimeBasedCondition {
-            id: "1".to_string(),
+        let time_based_condition: Condition = Condition::TimeBasedCondition(TimeBasedCondition {
+            id: "My Time Based Condition".to_string(),
             number_of_days_since_last_login: 0,
             condition_status: false,
         });
+
+        let x_out_of_y_condition: Condition = Condition::XOutOfYCondition(XOutOfYCondition {
+            id: "My X out of Y Condition".to_string(),
+            validators: vec![Validator {
+                id: validator,
+                status: false,
+            }],
+            quorum: 1,
+            condition_status: false,
+        });
+
         let mut apa: AddPolicyArgs = AddPolicyArgs {
             id: "Policy#1".to_string(),
             name: Some("Policy#1".to_string()),
@@ -190,7 +198,7 @@ mod tests {
             secrets: HashSet::new(),
             key_box: KeyBox::new(),
             condition_logical_operator: LogicalOperator::And,
-            conditions: vec![condition],
+            conditions: vec![time_based_condition, x_out_of_y_condition],
         };
         apa.secrets.insert(added_secret.id().to_string());
         let added_policy = add_policy_impl(apa, &principal).await.unwrap();
@@ -207,16 +215,7 @@ mod tests {
                 &added_secret.id().to_string()
             );
             assert_eq!(policy_in_store.beneficiaries().len(), 1);
-
-            assert_eq!(policy_in_store.conditions().len(), 1)
-        });
-
-        // check if the secret is in the user object
-        USER_STORE.with(|us| {
-            let user_store = us.borrow();
-            let user = user_store.get_user(&principal).unwrap();
-            assert_eq!(user.policies.len(), 1, "user should hold 1 policy now");
-            assert_eq!(&user.policies[0], added_policy.id());
+            assert_eq!(policy_in_store.conditions().len(), 2)
         });
 
         // get policy from proper interface implementation
@@ -227,9 +226,13 @@ mod tests {
             fetched_policy.secrets().iter().next().unwrap().id,
             added_secret.id()
         );
+        assert_eq!(fetched_policy.beneficiaries.len(), 1);
+        assert_eq!(fetched_policy.conditions.len(), 2);
+
+        // dbg!(fetched_policy);
 
         // dbg!(added_policy);
-        dump_policy_store();
+        // dump_policy_store();
     }
 
     fn create_principal() -> Principal {

@@ -215,12 +215,12 @@ pub struct PolicyResponse {
     date_created: u64,
     date_modified: u64,
     owner: Principal,
-    beneficiaries: HashSet<Principal>,
+    pub beneficiaries: HashSet<Principal>,
     secrets: HashSet<SecretListEntry>,
     key_box: KeyBox,
     conditions_status: bool,
     conditions_logical_operator: LogicalOperator,
-    conditions: Vec<Condition>,
+    pub conditions: Vec<Condition>,
 }
 
 impl PolicyResponse {
