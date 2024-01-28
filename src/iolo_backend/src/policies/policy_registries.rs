@@ -70,7 +70,7 @@ impl PolicyRegistries {
         for beneficiary in policy.beneficiaries() {
             match self
                 .beneficiaries_to_policies
-                .get(&PrincipalStorable::from(beneficiary.clone()))
+                .get(&PrincipalStorable::from(*beneficiary))
             {
                 Some(mut sphs) => {
                     // entry for beneficiary already exists
@@ -82,7 +82,7 @@ impl PolicyRegistries {
                     hs.insert(policy.id().clone());
 
                     self.beneficiaries_to_policies.insert(
-                        PrincipalStorable::from(beneficiary.clone()),
+                        PrincipalStorable::from(*beneficiary),
                         PolicyHashSetStorable(hs),
                     );
                 }
@@ -94,7 +94,7 @@ impl PolicyRegistries {
         for validator in validators {
             match self
                 .validator_to_policies
-                .get(&PrincipalStorable::from(validator.id.clone()))
+                .get(&PrincipalStorable::from(validator.id))
             {
                 Some(mut sphs) => {
                     // entry for beneficiary already exists
@@ -106,7 +106,7 @@ impl PolicyRegistries {
                     hs.insert(policy_id.clone());
 
                     self.beneficiaries_to_policies.insert(
-                        PrincipalStorable::from(validator.id.clone()),
+                        PrincipalStorable::from(validator.id),
                         PolicyHashSetStorable(hs),
                     );
                 }
@@ -155,7 +155,7 @@ impl PolicyRegistryForBeneficiaries {
                 .insert(policy.id().clone());
         }
         self.policy_to_owner
-            .insert(policy.id().clone(), policy.owner().clone());
+            .insert(policy.id().clone(), *policy.owner());
     }
 
     pub fn get_policy_id_as_beneficiary(
@@ -168,7 +168,7 @@ impl PolicyRegistryForBeneficiaries {
             return if policy_ids.contains(&policy_id) {
                 // If policy_id is found for the beneficiary, retrieve the associated owner
                 if let Some(owner) = self.policy_to_owner.get(&policy_id) {
-                    Ok((policy_id, owner.clone()))
+                    Ok((policy_id, *owner))
                 } else {
                     // Return an error if policy_id doesn't have a corresponding owner
                     Err(SmartVaultErr::PolicyDoesNotExist(policy_id)) // Replace with appropriate error variant
@@ -193,7 +193,7 @@ impl PolicyRegistryForBeneficiaries {
             // For each policy_id, get the corresponding owner
             for policy_id in beneficiary_ids {
                 if let Some(owner) = self.policy_to_owner.get(policy_id) {
-                    result.push((policy_id.clone(), owner.clone()));
+                    result.push((policy_id.clone(), *owner));
                 }
             }
         }
@@ -264,12 +264,11 @@ impl PolicyRegistryForValidators {
     ) {
         for validator in validators {
             self.validator_to_policies
-                .entry(validator.id.clone())
+                .entry(validator.id)
                 .or_insert_with(HashSet::new)
                 .insert(policy_id.clone());
         }
-        self.policy_to_owner
-            .insert(policy_id.clone(), owner.clone());
+        self.policy_to_owner.insert(policy_id.clone(), *owner);
     }
 
     pub fn update_policy_in_registry(&mut self, policy_new: &Policy, policy_old: &Policy) {

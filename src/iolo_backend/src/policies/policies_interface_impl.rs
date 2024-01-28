@@ -8,16 +8,12 @@ use crate::{
         secret::{Secret, SecretListEntry},
         secrets_interface_impl::get_secret_impl,
     },
-    smart_vaults::smart_vault::{
-        POLICY_REGISTRIES, POLICY_REGISTRY_FOR_BENEFICIARIES, POLICY_STORE, SECRET_STORE,
-        USER_STORE,
-    },
+    smart_vaults::smart_vault::{POLICY_REGISTRIES, POLICY_STORE, SECRET_STORE, USER_STORE},
 };
 
 use super::{
     conditions::Condition,
     policy::{AddPolicyArgs, Policy, PolicyID, PolicyResponse},
-    policy_registries::PolicyRegistryForBeneficiaries,
     policy_store::PolicyStore,
 };
 
@@ -54,46 +50,13 @@ pub async fn add_policy_impl(
 
     // Add entry to policy registry for validators (reverse index) if there is a XOutOfYCondition
     for condition in policy.conditions().iter() {
-        match condition {
-            Condition::XOutOfYCondition(xoutofy) => {
-                POLICY_REGISTRIES.with(|x| {
-                    let mut policy_registries = x.borrow_mut();
-                    policy_registries.add_policy_to_validators(&xoutofy.validators, &policy.id());
-                });
-            }
-            _ => {}
+        if let Condition::XOutOfYCondition(xoutofy) = condition {
+            POLICY_REGISTRIES.with(|x| {
+                let mut policy_registries = x.borrow_mut();
+                policy_registries.add_policy_to_validators(&xoutofy.validators, policy.id());
+            });
         }
     }
-
-    // the old way (before storable)
-    // Add entry to policy registry for beneficiaries (reverse index)
-    // POLICY_REGISTRY_FOR_BENEFICIARIES.with(
-    //     |tr: &RefCell<PolicyRegistryForBeneficiaries>| -> Result<(), SmartVaultErr> {
-    //         let mut policy_registry = tr.borrow_mut();
-    //         policy_registry.add_policy_to_registry(&policy);
-    //         Ok(())
-    //     },
-    // )?;
-
-    // Add entry to policy registry for validators (reverse index) if there is a XOutOfYCondition
-    // for condition in policy.conditions().iter() {
-    //     match condition {
-    //         Condition::XOutOfYCondition(xoutofy) => {
-    //             POLICY_REGISTRY_FOR_VALIDATORS.with(
-    //                 |pr: &RefCell<PolicyRegistryForValidators>| -> Result<(), SmartVaultErr> {
-    //                     let mut policy_registry = pr.borrow_mut();
-    //                     policy_registry.add_policy_to_registry(
-    //                         &xoutofy.validators,
-    //                         &policy.id(),
-    //                         &policy.owner(),
-    //                     );
-    //                     Ok(())
-    //                 },
-    //             )?;
-    //         }
-    //         _ => {}
-    //     }
-    // }
 
     Ok(policy)
 }
@@ -177,7 +140,7 @@ mod tests {
         policies::{
             conditions::{Condition, TimeBasedCondition, Validator, XOutOfYCondition},
             policies_interface_impl::{get_policy_as_beneficiary_impl, get_policy_as_owner_impl},
-            policy::{self, AddPolicyArgs, LogicalOperator, PolicyResponse},
+            policy::{AddPolicyArgs, LogicalOperator, PolicyResponse},
         },
         secrets::{
             secret::{AddSecretArgs, SecretSymmetricCryptoMaterial},
@@ -186,7 +149,6 @@ mod tests {
         smart_vaults::smart_vault::POLICY_STORE,
         user_vaults::user_vault::KeyBox,
         users::{user::AddUserArgs, users_interface_impl::create_user_impl},
-        utils::dumper::dump_policy_store,
     };
 
     #[tokio::test]
