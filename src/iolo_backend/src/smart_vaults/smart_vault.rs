@@ -4,7 +4,9 @@ use std::cell::RefCell;
 
 use crate::common::error::SmartVaultErr;
 use crate::common::uuid::UUID;
-use crate::policies::policies_interface_impl::{add_policy_impl, get_policy_as_owner_impl};
+use crate::policies::policies_interface_impl::{
+    add_policy_impl, get_policy_as_beneficiary_impl, get_policy_as_owner_impl,
+};
 use crate::policies::policy::PolicyResponse;
 
 use crate::policies::policy_store::PolicyStore;
@@ -216,52 +218,7 @@ pub fn get_policy_as_owner(policy_id: PolicyID) -> Result<PolicyResponse, SmartV
 
 #[ic_cdk_macros::query]
 pub fn get_policy_as_beneficiary(policy_id: PolicyID) -> Result<PolicyResponse, SmartVaultErr> {
-    // Verify that beneficiary belongs to policy
-    let result_pr = POLICY_REGISTRY_FOR_BENEFICIARIES.with(
-        |pr: &RefCell<PolicyRegistryForBeneficiaries>| -> Result<(PolicyID, Principal), SmartVaultErr> {
-            let policy_registry = pr.borrow();
-            policy_registry.get_policy_id_as_beneficiary(get_caller(), policy_id.clone())
-        },
-    )?;
-
-    // Get user vault of owner
-    let user_vault_id: UUID = get_vault_id_for(result_pr.1)?;
-
-    // Read policy
-    let policy: Policy = USER_VAULT_STORE.with(
-        |mv: &RefCell<UserVaultStore>| -> Result<Policy, SmartVaultErr> {
-            mv.borrow()
-                .get_user_vault(&user_vault_id)?
-                .get_policy(&policy_id)
-                .cloned()
-        },
-    )?;
-
-    // Check that beneficiary is allowed to read policy
-    if *policy.conditions_status() {
-        // Get more secret data for beneficiary...
-        let owner_vault_id = get_vault_id_for(*policy.owner())?;
-        let mut policy_for_beneficiary = PolicyResponse::from(policy.clone());
-        for secret in policy.secrets() {
-            let result_mv_2 = USER_VAULT_STORE.with(
-                |mv: &RefCell<UserVaultStore>| -> Result<Secret, SmartVaultErr> {
-                    mv.borrow()
-                        .get_user_vault(&owner_vault_id)?
-                        .get_secret(secret)
-                        .cloned()
-                },
-            )?;
-            let secret_list_entry = SecretListEntry {
-                id: result_mv_2.id(),
-                category: result_mv_2.category(),
-                name: result_mv_2.name(),
-            };
-            policy_for_beneficiary.secrets().insert(secret_list_entry);
-        }
-        Ok(policy_for_beneficiary)
-    } else {
-        Err(SmartVaultErr::InvalidPolicyCondition)
-    }
+    get_policy_as_beneficiary_impl(policy_id, &get_caller())
 }
 
 #[ic_cdk_macros::query]

@@ -8,12 +8,16 @@ use crate::{
         secret::{Secret, SecretListEntry},
         secrets_interface_impl::get_secret_impl,
     },
-    smart_vaults::smart_vault::{POLICY_REGISTRIES, POLICY_STORE, USER_STORE},
+    smart_vaults::smart_vault::{
+        POLICY_REGISTRIES, POLICY_REGISTRY_FOR_BENEFICIARIES, POLICY_STORE, SECRET_STORE,
+        USER_STORE,
+    },
 };
 
 use super::{
     conditions::Condition,
     policy::{AddPolicyArgs, Policy, PolicyID, PolicyResponse},
+    policy_registries::PolicyRegistryForBeneficiaries,
     policy_store::PolicyStore,
 };
 
@@ -104,6 +108,8 @@ pub fn get_policy_as_owner_impl(
         policy_store.get(&policy_id)
     })?;
 
+    // TODO: check if caller is owner of policy
+
     let mut policy_response = PolicyResponse::from(policy.clone());
     for secret_id in policy.secrets() {
         // get secret from secret store
@@ -118,24 +124,66 @@ pub fn get_policy_as_owner_impl(
     Ok(policy_response)
 }
 
+pub fn get_policy_as_beneficiary_impl(
+    policy_id: PolicyID,
+    beneficiary: &Principal,
+) -> Result<PolicyResponse, SmartVaultErr> {
+    // get policy from policy store
+    let policy: Policy = POLICY_STORE.with(|ps| -> Result<Policy, SmartVaultErr> {
+        let policy_store = ps.borrow();
+        policy_store.get(&policy_id)
+    })?;
+
+    // Ensure beneficiary is in policy.beneficiaries
+    if !policy.beneficiaries().contains(beneficiary) {
+        return Err(SmartVaultErr::NoPolicyForBeneficiary(format!(
+            "Beneficiary {:?} is not beneficient of policy {:?}",
+            beneficiary, policy_id
+        )));
+    };
+
+    // Check that beneficiary is allowed to read the policy
+    if *policy.conditions_status() {
+        // Get secrets from defined in policy
+        let mut policy_for_beneficiary = PolicyResponse::from(policy.clone());
+        for secret_ref in policy.secrets() {
+            let secret = SECRET_STORE.with(|ss| {
+                let secret_store = ss.borrow();
+                secret_store.get(&UUID::from(secret_ref.to_string()))
+            })?;
+            let secret_list_entry = SecretListEntry {
+                id: secret.id(),
+                category: secret.category(),
+                name: secret.name(),
+            };
+            policy_for_beneficiary.secrets().insert(secret_list_entry);
+        }
+        Ok(policy_for_beneficiary)
+    } else {
+        Err(SmartVaultErr::InvalidPolicyCondition)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use std::collections::HashSet;
 
     use candid::Principal;
+    use rand::Rng;
 
     use crate::{
+        common::error::SmartVaultErr,
         policies::policies_interface_impl::add_policy_impl,
         policies::{
             conditions::{Condition, TimeBasedCondition, Validator, XOutOfYCondition},
-            policies_interface_impl::get_policy_as_owner_impl,
-            policy::{AddPolicyArgs, LogicalOperator, PolicyResponse},
+            policies_interface_impl::{get_policy_as_beneficiary_impl, get_policy_as_owner_impl},
+            policy::{self, AddPolicyArgs, LogicalOperator, PolicyResponse},
         },
         secrets::{
             secret::{AddSecretArgs, SecretSymmetricCryptoMaterial},
             secrets_interface_impl::add_secret_impl,
         },
-        smart_vaults::smart_vault::{POLICY_STORE, USER_STORE},
+        smart_vaults::smart_vault::POLICY_STORE,
         user_vaults::user_vault::KeyBox,
         users::{user::AddUserArgs, users_interface_impl::create_user_impl},
         utils::dumper::dump_policy_store,
@@ -229,6 +277,21 @@ mod tests {
         assert_eq!(fetched_policy.beneficiaries.len(), 1);
         assert_eq!(fetched_policy.conditions.len(), 2);
 
+        // get policy as beneficiary: this should fail, because policy has not yet been activated
+        let policy_reponse =
+            get_policy_as_beneficiary_impl(added_policy.id().clone(), &beneficiary);
+        assert!(policy_reponse.is_err_and(|e| match e {
+            SmartVaultErr::InvalidPolicyCondition => true,
+            _ => false,
+        }));
+
+        // get policy as validator: this souhld fail, because validator is not a beneficiary
+        let policy_reponse = get_policy_as_beneficiary_impl(added_policy.id().clone(), &validator);
+        assert!(policy_reponse.is_err_and(|e| match e {
+            SmartVaultErr::NoPolicyForBeneficiary(_) => true,
+            _ => false,
+        }));
+
         // dbg!(fetched_policy);
 
         // dbg!(added_policy);
@@ -236,8 +299,12 @@ mod tests {
     }
 
     fn create_principal() -> Principal {
-        Principal::from_slice(&[
-            1, 2, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        ])
+        // create random u8
+        let mut rng = rand::thread_rng();
+
+        // create random u8 array
+        let mut random_u8_array: [u8; 29] = [0; 29];
+        rng.fill(&mut random_u8_array[..]);
+        Principal::from_slice(&random_u8_array)
     }
 }
