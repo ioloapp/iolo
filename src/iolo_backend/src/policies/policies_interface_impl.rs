@@ -1,6 +1,7 @@
 use std::cell::RefCell;
 
 use candid::Principal;
+use ic_stable_structures::vec;
 
 use crate::{
     common::{error::SmartVaultErr, uuid::UUID},
@@ -13,7 +14,7 @@ use crate::{
 
 use super::{
     conditions::Condition,
-    policy::{AddPolicyArgs, Policy, PolicyID, PolicyResponse},
+    policy::{AddPolicyArgs, Policy, PolicyID, PolicyListEntry, PolicyResponse},
     policy_store::PolicyStore,
 };
 
@@ -87,6 +88,29 @@ pub fn get_policy_as_owner_impl(
     Ok(policy_response)
 }
 
+pub fn get_policy_list_as_owner_impl(
+    caller: &Principal,
+) -> Result<Vec<PolicyListEntry>, SmartVaultErr> {
+    // get policy ids from user in user store
+    let policy_ids: Vec<PolicyID> = USER_STORE.with(|us| {
+        let user_store = us.borrow();
+        let user = user_store.get_user(&caller).unwrap();
+        user.policies().clone()
+    });
+
+    // get all the corresponding policies
+    let policies: Vec<Policy> = POLICY_STORE.with(|ps| {
+        let policy_store = ps.borrow();
+        let policies: Vec<Policy> = policy_ids
+            .iter()
+            .map(|pid| policy_store.get(pid).unwrap())
+            .collect();
+        policies
+    });
+
+    Ok(policies.into_iter().map(PolicyListEntry::from).collect())
+}
+
 pub fn get_policy_as_beneficiary_impl(
     policy_id: PolicyID,
     beneficiary: &Principal,
@@ -136,7 +160,7 @@ mod tests {
 
     use crate::{
         common::error::SmartVaultErr,
-        policies::policies_interface_impl::add_policy_impl,
+        policies::policies_interface_impl::{add_policy_impl, get_policy_list_as_owner_impl},
         policies::{
             conditions::{Condition, TimeBasedCondition, Validator, XOutOfYCondition},
             policies_interface_impl::{get_policy_as_beneficiary_impl, get_policy_as_owner_impl},
@@ -227,6 +251,11 @@ mod tests {
             assert_eq!(policy_in_store.beneficiaries().len(), 1);
             assert_eq!(policy_in_store.conditions().len(), 2)
         });
+
+        // get policy list and check if policy is in there
+        let policy_list = get_policy_list_as_owner_impl(&principal).unwrap();
+        assert_eq!(policy_list.len(), 1);
+        assert_eq!(&policy_list[0].id, added_policy.id());
 
         // get policy from proper interface implementation
         let mut fetched_policy: PolicyResponse =

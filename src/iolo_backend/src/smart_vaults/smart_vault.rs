@@ -6,6 +6,7 @@ use crate::common::error::SmartVaultErr;
 use crate::common::uuid::UUID;
 use crate::policies::policies_interface_impl::{
     add_policy_impl, get_policy_as_beneficiary_impl, get_policy_as_owner_impl,
+    get_policy_list_as_owner_impl,
 };
 use crate::policies::policy::PolicyResponse;
 
@@ -217,6 +218,11 @@ pub fn get_policy_as_owner(policy_id: PolicyID) -> Result<PolicyResponse, SmartV
 }
 
 #[ic_cdk_macros::query]
+pub fn get_policy_list_as_owner() -> Result<Vec<PolicyListEntry>, SmartVaultErr> {
+    get_policy_list_as_owner_impl(&get_caller())
+}
+
+#[ic_cdk_macros::query]
 pub fn get_policy_as_beneficiary(policy_id: PolicyID) -> Result<PolicyResponse, SmartVaultErr> {
     get_policy_as_beneficiary_impl(policy_id, &get_caller())
 }
@@ -271,23 +277,6 @@ pub fn get_policy_list_as_validator() -> Result<Vec<PolicyListEntry>, SmartVault
         response.push(entry)
     }
     Ok(response)
-}
-
-#[ic_cdk_macros::query]
-pub fn get_policy_list_as_owner() -> Result<Vec<PolicyListEntry>, SmartVaultErr> {
-    let principal = get_caller();
-    let user_vault_id: UUID = get_vault_id_for(principal)?;
-
-    USER_VAULT_STORE.with(|mv: &RefCell<UserVaultStore>| {
-        let policies: Vec<Policy> = mv
-            .borrow()
-            .get_user_vault(&user_vault_id)?
-            .policies()
-            .clone()
-            .into_values()
-            .collect();
-        Ok(policies.into_iter().map(PolicyListEntry::from).collect())
-    })
 }
 
 #[ic_cdk_macros::update]

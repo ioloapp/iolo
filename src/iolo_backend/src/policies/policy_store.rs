@@ -4,7 +4,6 @@ use serde::{Deserialize, Serialize};
 use crate::common::{
     error::SmartVaultErr,
     memory::{get_stable_btree_memory_for_policies, Memory},
-    uuid::UUID,
 };
 
 use super::policy::Policy;

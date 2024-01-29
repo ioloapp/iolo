@@ -103,6 +103,10 @@ impl User {
         &self.key_box
     }
 
+    pub fn policies(&self) -> &Vec<String> {
+        &self.policies
+    }
+
     pub fn date_last_login(&self) -> &Option<u64> {
         &self.date_last_login
     }
