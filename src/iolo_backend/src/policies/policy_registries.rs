@@ -14,6 +14,9 @@ use crate::common::memory::{
 use crate::common::principal_storable::PrincipalStorable;
 use crate::policies::conditions::{Condition, Validator};
 use crate::policies::policy::{Policy, PolicyID};
+use crate::smart_vaults::smart_vault::POLICY_STORE;
+
+use super::policy::PolicyListEntry;
 
 /** New: combining the two below */
 #[derive(Serialize, Deserialize)]
@@ -112,6 +115,34 @@ impl PolicyRegistries {
                 }
             };
         }
+    }
+
+    pub fn get_policy_ids_as_beneficiary(
+        &self,
+        beneficiary: &Principal,
+    ) -> Result<Vec<PolicyListEntry>, SmartVaultErr> {
+        // pub beneficiaries_to_policies: StableBTreeMap<PrincipalStorable, PolicyHashSetStorable, Memory>,
+        let beneficiary_storable = PrincipalStorable::from(*beneficiary);
+
+        let policy_ids = match self.beneficiaries_to_policies.get(&beneficiary_storable) {
+            Some(sphs) => sphs.0.clone(),
+            None => {
+                return Err(SmartVaultErr::NoPolicyForBeneficiary(
+                    beneficiary.to_string(),
+                ))
+            }
+        };
+
+        // get the policies form the policy store
+        POLICY_STORE.with(|ps| -> Result<Vec<PolicyListEntry>, SmartVaultErr> {
+            let policy_store = ps.borrow();
+            let policy_list_entries: Vec<PolicyListEntry> = policy_ids
+                .iter()
+                .map(|policy_id| policy_store.get(policy_id).unwrap())
+                .map(PolicyListEntry::from)
+                .collect();
+            Ok(policy_list_entries)
+        })
     }
 }
 

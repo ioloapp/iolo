@@ -151,6 +151,16 @@ pub fn get_policy_as_beneficiary_impl(
     }
 }
 
+pub fn get_policy_list_as_beneficiary_impl(
+    caller: &Principal,
+) -> Result<Vec<PolicyListEntry>, SmartVaultErr> {
+    // get all policy ids for caller by checking the policy registry index for beneficiaries
+    POLICY_REGISTRIES.with(|pr| {
+        let policy_registries = pr.borrow();
+        policy_registries.get_policy_ids_as_beneficiary(caller)
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use std::collections::HashSet;
@@ -160,7 +170,9 @@ mod tests {
 
     use crate::{
         common::error::SmartVaultErr,
-        policies::policies_interface_impl::{add_policy_impl, get_policy_list_as_owner_impl},
+        policies::policies_interface_impl::{
+            add_policy_impl, get_policy_list_as_beneficiary_impl, get_policy_list_as_owner_impl,
+        },
         policies::{
             conditions::{Condition, TimeBasedCondition, Validator, XOutOfYCondition},
             policies_interface_impl::{get_policy_as_beneficiary_impl, get_policy_as_owner_impl},
@@ -257,7 +269,7 @@ mod tests {
         assert_eq!(policy_list.len(), 1);
         assert_eq!(&policy_list[0].id, added_policy.id());
 
-        // get policy from proper interface implementation
+        // get specific policy from proper interface implementation
         let mut fetched_policy: PolicyResponse =
             get_policy_as_owner_impl(added_policy.id().clone(), &principal).unwrap();
         assert_eq!(fetched_policy.secrets().len(), 1);
@@ -268,7 +280,12 @@ mod tests {
         assert_eq!(fetched_policy.beneficiaries.len(), 1);
         assert_eq!(fetched_policy.conditions.len(), 2);
 
-        // get policy as beneficiary: this should fail, because policy has not yet been activated
+        // get list of policies as beneficiary
+        let policy_list_as_beneficiary = get_policy_list_as_beneficiary_impl(&beneficiary).unwrap();
+        assert_eq!(policy_list_as_beneficiary.len(), 1);
+        assert_eq!(&policy_list_as_beneficiary[0].id, added_policy.id());
+
+        // get specific policy as beneficiary: this should fail, because policy has not yet been activated
         let policy_reponse =
             get_policy_as_beneficiary_impl(added_policy.id().clone(), &beneficiary);
         assert!(policy_reponse.is_err_and(|e| match e {
