@@ -23,7 +23,7 @@ use super::policy::PolicyListEntry;
 pub struct PolicyRegistries {
     /// Maps a beneficiary (principal) to a set of policies.
     #[serde(skip, default = "init_stable_data_b2p")]
-    pub beneficiaries_to_policies: StableBTreeMap<PrincipalStorable, PolicyHashSetStorable, Memory>,
+    pub beneficiary_to_policies: StableBTreeMap<PrincipalStorable, PolicyHashSetStorable, Memory>,
 
     /// Maps a principal to a set of policies the principal is a validator for.
     #[serde(skip, default = "init_stable_data_v2p")]
@@ -55,7 +55,7 @@ fn init_stable_data_v2p() -> StableBTreeMap<PrincipalStorable, PolicyHashSetStor
 impl Default for PolicyRegistries {
     fn default() -> Self {
         Self {
-            beneficiaries_to_policies: init_stable_data_b2p(),
+            beneficiary_to_policies: init_stable_data_b2p(),
             validator_to_policies: init_stable_data_v2p(),
         }
     }
@@ -64,7 +64,7 @@ impl Default for PolicyRegistries {
 impl PolicyRegistries {
     pub fn new() -> Self {
         Self {
-            beneficiaries_to_policies: init_stable_data_b2p(),
+            beneficiary_to_policies: init_stable_data_b2p(),
             validator_to_policies: init_stable_data_v2p(),
         }
     }
@@ -72,7 +72,7 @@ impl PolicyRegistries {
     pub fn add_policy_to_beneficiary(&mut self, policy: &Policy) {
         for beneficiary in policy.beneficiaries() {
             match self
-                .beneficiaries_to_policies
+                .beneficiary_to_policies
                 .get(&PrincipalStorable::from(*beneficiary))
             {
                 Some(mut sphs) => {
@@ -84,7 +84,7 @@ impl PolicyRegistries {
                     let mut hs: HashSet<PolicyID> = HashSet::new();
                     hs.insert(policy.id().clone());
 
-                    self.beneficiaries_to_policies.insert(
+                    self.beneficiary_to_policies.insert(
                         PrincipalStorable::from(*beneficiary),
                         PolicyHashSetStorable(hs),
                     );
@@ -100,15 +100,15 @@ impl PolicyRegistries {
                 .get(&PrincipalStorable::from(validator.id))
             {
                 Some(mut sphs) => {
-                    // entry for beneficiary already exists
+                    // entry for validator already exists
                     sphs.0.insert(policy_id.clone());
                 }
                 None => {
-                    // no entry for beneficiary yet
+                    // no entry for validator yet
                     let mut hs: HashSet<PolicyID> = HashSet::new();
                     hs.insert(policy_id.clone());
 
-                    self.beneficiaries_to_policies.insert(
+                    self.validator_to_policies.insert(
                         PrincipalStorable::from(validator.id),
                         PolicyHashSetStorable(hs),
                     );
@@ -124,13 +124,37 @@ impl PolicyRegistries {
         // pub beneficiaries_to_policies: StableBTreeMap<PrincipalStorable, PolicyHashSetStorable, Memory>,
         let beneficiary_storable = PrincipalStorable::from(*beneficiary);
 
-        let policy_ids = match self.beneficiaries_to_policies.get(&beneficiary_storable) {
+        let policy_ids = match self.beneficiary_to_policies.get(&beneficiary_storable) {
             Some(sphs) => sphs.0.clone(),
             None => {
                 return Err(SmartVaultErr::NoPolicyForBeneficiary(
                     beneficiary.to_string(),
                 ))
             }
+        };
+
+        // get the policies form the policy store
+        POLICY_STORE.with(|ps| -> Result<Vec<PolicyListEntry>, SmartVaultErr> {
+            let policy_store = ps.borrow();
+            let policy_list_entries: Vec<PolicyListEntry> = policy_ids
+                .iter()
+                .map(|policy_id| policy_store.get(policy_id).unwrap())
+                .map(PolicyListEntry::from)
+                .collect();
+            Ok(policy_list_entries)
+        })
+    }
+
+    pub fn get_policy_ids_as_validator(
+        &self,
+        validator: &Principal,
+    ) -> Result<Vec<PolicyListEntry>, SmartVaultErr> {
+        // pub beneficiaries_to_policies: StableBTreeMap<PrincipalStorable, PolicyHashSetStorable, Memory>,
+        let beneficiary_storable = PrincipalStorable::from(*validator);
+
+        let policy_ids = match self.validator_to_policies.get(&beneficiary_storable) {
+            Some(sphs) => sphs.0.clone(),
+            None => return Err(SmartVaultErr::NoPolicyForValidator(validator.to_string())),
         };
 
         // get the policies form the policy store

@@ -161,6 +161,16 @@ pub fn get_policy_list_as_beneficiary_impl(
     })
 }
 
+pub fn get_policy_list_as_validator_impl(
+    validator: &Principal,
+) -> Result<Vec<PolicyListEntry>, SmartVaultErr> {
+    // get all policy ids for caller by checking the policy registry index for validators
+    POLICY_REGISTRIES.with(|pr| -> Result<Vec<PolicyListEntry>, SmartVaultErr> {
+        let policy_registries = pr.borrow();
+        policy_registries.get_policy_ids_as_validator(validator)
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use std::collections::HashSet;
@@ -172,6 +182,7 @@ mod tests {
         common::error::SmartVaultErr,
         policies::policies_interface_impl::{
             add_policy_impl, get_policy_list_as_beneficiary_impl, get_policy_list_as_owner_impl,
+            get_policy_list_as_validator_impl,
         },
         policies::{
             conditions::{Condition, TimeBasedCondition, Validator, XOutOfYCondition},
@@ -293,17 +304,21 @@ mod tests {
             _ => false,
         }));
 
+        // get policy list as validator
+        let get_policy_list_as_validator = get_policy_list_as_validator_impl(&validator).unwrap();
+        assert_eq!(get_policy_list_as_validator.len(), 1);
+        assert_eq!(&get_policy_list_as_validator[0].id, added_policy.id());
+
+        // get policy list as beneficiary: this should fail, because validator is not a beneficiary
+        let get_policy_list_as_validator = get_policy_list_as_validator_impl(&beneficiary);
+        assert!(get_policy_list_as_validator.is_err());
+
         // get policy as validator: this souhld fail, because validator is not a beneficiary
         let policy_reponse = get_policy_as_beneficiary_impl(added_policy.id().clone(), &validator);
         assert!(policy_reponse.is_err_and(|e| match e {
             SmartVaultErr::NoPolicyForBeneficiary(_) => true,
             _ => false,
         }));
-
-        // dbg!(fetched_policy);
-
-        // dbg!(added_policy);
-        // dump_policy_store();
     }
 
     fn create_principal() -> Principal {

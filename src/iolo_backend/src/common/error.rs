@@ -19,6 +19,7 @@ pub enum SmartVaultErr {
     PolicyDoesNotExist(String),
     InvalidPolicyCondition,
     NoPolicyForBeneficiary(String),
+    NoPolicyForValidator(String),
     KeyGenerationNotAllowed,
     Unauthorized,
 }
@@ -83,6 +84,9 @@ impl Display for SmartVaultErr {
             }
             SmartVaultErr::NoPolicyForBeneficiary(id) => {
                 write!(f, "Failed to read policy for beneficiary: {}", id)
+            }
+            SmartVaultErr::NoPolicyForValidator(id) => {
+                write!(f, "Failed to read policy for validator: {}", id)
             }
             SmartVaultErr::InvalidPolicyCondition => {
                 write!(

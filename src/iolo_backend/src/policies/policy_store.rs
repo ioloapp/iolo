@@ -50,7 +50,6 @@ impl PolicyStore {
 
     pub fn add_policy(&mut self, policy: Policy) -> Result<Policy, SmartVaultErr> {
         let policy_id: String = policy.id().clone();
-        dbg!("hi from add_policy again");
         let p = self.policies.insert(policy_id.clone(), policy.clone());
         match p {
             Some(_) => return Err(SmartVaultErr::PolicyAlreadyExists(policy_id.to_string())),
