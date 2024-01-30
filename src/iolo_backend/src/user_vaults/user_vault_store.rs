@@ -97,7 +97,8 @@ impl UserVaultStore {
             return Err(SmartVaultErr::UserVaultDoesNotExist(vault_id.to_string()));
         }
 
-        let policy: Policy = Policy::from(ata);
+        // TODO: complete user vautl store will be deleted
+        let policy: Policy = Policy::from_add_policy_args("not needed anymore", ata);
         let user_vault = self.user_vaults.get_mut(vault_id).unwrap();
         user_vault.add_policy(policy.clone())?;
 

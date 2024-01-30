@@ -55,7 +55,6 @@ pub enum LogicalOperator {
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct AddPolicyArgs {
-    pub id: String,
     pub name: Option<String>,
     pub beneficiaries: HashSet<Principal>,
     pub secrets: HashSet<SecretID>,
@@ -99,6 +98,18 @@ impl Policy {
             conditions_logical_operator: LogicalOperator::And,
             conditions: Vec::new(),
         }
+    }
+
+    pub fn from_add_policy_args(policy_id: &str, ata: AddPolicyArgs) -> Self {
+        let mut new_policy = Policy::new(policy_id.to_string());
+        new_policy.name = ata.name;
+        new_policy.beneficiaries = ata.beneficiaries;
+        new_policy.secrets = ata.secrets;
+        new_policy.key_box = ata.key_box;
+        new_policy.conditions = ata.conditions;
+        new_policy.conditions_logical_operator = ata.condition_logical_operator;
+        new_policy.conditions_status = false;
+        new_policy
     }
 
     pub fn id(&self) -> &PolicyID {
@@ -191,20 +202,6 @@ impl Policy {
         }
         // If no matching confirmer is found, return None
         None
-    }
-}
-
-impl From<AddPolicyArgs> for Policy {
-    fn from(ata: AddPolicyArgs) -> Self {
-        let mut new_policy = Policy::new(ata.id);
-        new_policy.name = ata.name;
-        new_policy.beneficiaries = ata.beneficiaries;
-        new_policy.secrets = ata.secrets;
-        new_policy.key_box = ata.key_box;
-        new_policy.conditions = ata.conditions;
-        new_policy.conditions_logical_operator = ata.condition_logical_operator;
-        new_policy.conditions_status = false;
-        new_policy
     }
 }
 

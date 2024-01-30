@@ -22,11 +22,12 @@ pub async fn add_policy_impl(
     apa: AddPolicyArgs,
     caller: &Principal,
 ) -> Result<Policy, SmartVaultErr> {
-    let mut policy: Policy = Policy::from(apa);
-
     // we create the policy id in the backend
     let new_policy_id: String = UUID::new_random().await.into();
-    policy.id = new_policy_id.clone();
+
+    // create policy from AddPolicyArgs
+    let policy: Policy = Policy::from_add_policy_args(&new_policy_id, apa);
+    // policy.id = new_policy_id.clone();
 
     // Add policy to the policy store (policies: StableBTreeMap<UUID, Policy, Memory>,)
     POLICY_STORE.with(
@@ -249,7 +250,6 @@ mod tests {
         });
 
         let mut apa: AddPolicyArgs = AddPolicyArgs {
-            id: "Policy#1".to_string(),
             name: Some("Policy#1".to_string()),
             beneficiaries: [beneficiary].iter().cloned().collect(),
             secrets: HashSet::new(),
