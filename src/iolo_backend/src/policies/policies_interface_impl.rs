@@ -1,7 +1,6 @@
 use std::cell::RefCell;
 
 use candid::Principal;
-use ic_stable_structures::vec;
 
 use crate::{
     common::{error::SmartVaultErr, uuid::UUID},
@@ -22,12 +21,19 @@ pub async fn add_policy_impl(
     apa: AddPolicyArgs,
     caller: &Principal,
 ) -> Result<Policy, SmartVaultErr> {
+    // check if secrets in apa exist in secret store
+    for secret_id in apa.secrets.iter() {
+        SECRET_STORE.with(|ss| {
+            let secret_store = ss.borrow();
+            secret_store.get(&UUID::from(secret_id.to_string()))
+        })?;
+    }
+
     // we create the policy id in the backend
     let new_policy_id: String = UUID::new_random().await.into();
 
     // create policy from AddPolicyArgs
     let policy: Policy = Policy::from_add_policy_args(&new_policy_id, apa);
-    // policy.id = new_policy_id.clone();
 
     // Add policy to the policy store (policies: StableBTreeMap<UUID, Policy, Memory>,)
     POLICY_STORE.with(
