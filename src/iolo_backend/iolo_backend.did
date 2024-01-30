@@ -1,5 +1,4 @@
 type AddPolicyArgs = record {
-  id : text;
   condition_logical_operator : LogicalOperator;
   name : opt text;
   secrets : vec text;
@@ -107,6 +106,7 @@ type SmartVaultErr = variant {
   SecretDecryptionMaterialDoesNotExist : text;
   Unauthorized;
   UserUpdateFailed : text;
+  NoPolicyForValidator : text;
   PolicyAlreadyExists : text;
   UserVaultCreationFailed : text;
   PolicyDoesNotExist : text;
@@ -141,7 +141,7 @@ type User = record {
   user_vault_id : opt nat;
   key_box : vec record { nat; SecretSymmetricCryptoMaterial };
   date_modified : nat64;
-  policies : vec nat;
+  policies : vec text;
 };
 type UserType = variant { Company; Person };
 type Validator = record { id : principal; status : bool };
