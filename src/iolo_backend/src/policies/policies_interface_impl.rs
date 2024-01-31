@@ -178,6 +178,48 @@ pub fn get_policy_list_as_validator_impl(
     })
 }
 
+pub fn update_policy_impl(policy: Policy, caller: &Principal) -> Result<Policy, SmartVaultErr> {
+    // check if policy exists
+    POLICY_STORE.with(|ps| {
+        let policy_store = ps.borrow();
+        policy_store.get(policy.id())
+    })?;
+
+    // check if caller is owner of policy
+    if policy.owner() != caller {
+        return Err(SmartVaultErr::OnlyOwnerCanUpdatePolicy(format!(
+            "Caller {:?} is not owner of policy {:?}",
+            caller,
+            policy.id()
+        )));
+    }
+
+    // update policy in policy store
+    POLICY_STORE.with(|ps| {
+        let mut policy_store = ps.borrow_mut();
+        policy_store.update_policy(policy.clone())
+    })?;
+
+    // Update registry for beneficiaries (reverse index)
+    POLICY_REGISTRIES.with(|pr| -> Result<(), SmartVaultErr> {
+        let mut policy_registries = pr.borrow_mut();
+        policy_registries.update_policy_to_beneficiary(&policy)?;
+        Ok(())
+    })?;
+
+    // Update policy registry for validators (reverse index) if there is a XOutOfYCondition
+    for condition in policy.conditions().iter() {
+        if let Condition::XOutOfYCondition(xoutofy) = condition {
+            POLICY_REGISTRIES.with(|x| {
+                let mut policy_registries = x.borrow_mut();
+                policy_registries.update_policy_to_validators(&xoutofy.validators, policy.id());
+            });
+        }
+    }
+
+    Ok(policy)
+}
+
 #[cfg(test)]
 mod tests {
     use std::collections::HashSet;
@@ -189,7 +231,7 @@ mod tests {
         common::error::SmartVaultErr,
         policies::policies_interface_impl::{
             add_policy_impl, get_policy_list_as_beneficiary_impl, get_policy_list_as_owner_impl,
-            get_policy_list_as_validator_impl,
+            get_policy_list_as_validator_impl, update_policy_impl,
         },
         policies::{
             conditions::{Condition, TimeBasedCondition, Validator, XOutOfYCondition},
@@ -208,6 +250,7 @@ mod tests {
     #[tokio::test]
     async fn itest_policy_lifecycle() {
         // Create empty user_vault
+        let _ = create_principal();
         let principal = create_principal();
         let beneficiary = create_principal();
         let validator = create_principal();
@@ -264,12 +307,16 @@ mod tests {
             conditions: vec![time_based_condition, x_out_of_y_condition],
         };
         apa.secrets.insert(added_secret.id().to_string());
-        let added_policy = add_policy_impl(apa, &principal).await.unwrap();
+        dbg!(&principal.clone());
+        let mut added_policy = add_policy_impl(apa.clone(), &principal).await.unwrap();
+
+        dbg!(added_policy.clone());
 
         // check if policy is in policy store and check if it contains the secret
         POLICY_STORE.with(|ps| {
             let policy_store = ps.borrow();
             let policy_in_store = policy_store.get(added_policy.id()).unwrap();
+            dbg!(policy_in_store.clone());
             assert_eq!(policy_in_store.id(), added_policy.id());
             assert_eq!(policy_in_store.name(), added_policy.name());
             assert_eq!(policy_in_store.secrets().len(), 1);
@@ -325,6 +372,29 @@ mod tests {
             SmartVaultErr::NoPolicyForBeneficiary(_) => true,
             _ => false,
         }));
+
+        // UPDATE POLICY
+        added_policy.name = Some("new policy updates".to_string());
+        // dbg!(&principal.clone());
+        // dbg!(added_policy.clone());
+        let updated_policy = update_policy_impl(added_policy.clone(), &principal);
+        dbg!(&updated_policy);
+        // assert_eq!(updated_policy.name(), added_policy.name());
+
+        // // get policy as beneficiary: this should fail, because policy has not yet been activated
+        // let policy_reponse =
+        //     get_policy_as_beneficiary_impl(added_policy.id().clone(), &beneficiary);
+        // assert!(policy_reponse.is_err_and(|e| match e {
+        //     SmartVaultErr::InvalidPolicyCondition => true,
+        //     _ => false,
+        // }));
+
+        // // get policy as validator: this souhld fail, because validator is not a beneficiary
+        // let policy_reponse = get_policy_as_beneficiary_impl(added_policy.id().clone(), &validator);
+        // assert!(policy_reponse.is_err_and(|e| match e {
+        //     SmartVaultErr::NoPolicyForBeneficiary(_) => true,
+        //     _ => false,
+        // }));
     }
 
     fn create_principal() -> Principal {

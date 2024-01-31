@@ -18,6 +18,7 @@ pub enum SmartVaultErr {
     PolicyAlreadyExists(String),
     PolicyDoesNotExist(String),
     InvalidPolicyCondition,
+    OnlyOwnerCanUpdatePolicy(String),
     NoPolicyForBeneficiary(String),
     NoPolicyForValidator(String),
     KeyGenerationNotAllowed,
@@ -84,6 +85,9 @@ impl Display for SmartVaultErr {
             }
             SmartVaultErr::NoPolicyForBeneficiary(id) => {
                 write!(f, "Failed to read policy for beneficiary: {}", id)
+            }
+            SmartVaultErr::OnlyOwnerCanUpdatePolicy(id) => {
+                write!(f, "Only owner can update policy. {}", id)
             }
             SmartVaultErr::NoPolicyForValidator(id) => {
                 write!(f, "Failed to read policy for validator: {}", id)

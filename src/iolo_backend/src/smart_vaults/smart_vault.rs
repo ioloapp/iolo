@@ -7,7 +7,7 @@ use crate::common::uuid::UUID;
 use crate::policies::policies_interface_impl::{
     add_policy_impl, get_policy_as_beneficiary_impl, get_policy_as_owner_impl,
     get_policy_list_as_beneficiary_impl, get_policy_list_as_owner_impl,
-    get_policy_list_as_validator_impl,
+    get_policy_list_as_validator_impl, update_policy_impl,
 };
 use crate::policies::policy::PolicyResponse;
 
@@ -240,15 +240,7 @@ pub fn get_policy_list_as_validator() -> Result<Vec<PolicyListEntry>, SmartVault
 
 #[ic_cdk_macros::update]
 pub fn update_policy(policy: Policy) -> Result<Policy, SmartVaultErr> {
-    let principal = get_caller();
-    let user_vault_id: UUID = get_vault_id_for(principal)?;
-
-    USER_VAULT_STORE.with(
-        |ms: &RefCell<UserVaultStore>| -> Result<Policy, SmartVaultErr> {
-            let mut master_vault = ms.borrow_mut();
-            master_vault.update_user_policy(&user_vault_id, policy)
-        },
-    )
+    update_policy_impl(policy, &get_caller())
 }
 
 #[ic_cdk_macros::update]

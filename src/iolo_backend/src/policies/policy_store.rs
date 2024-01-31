@@ -56,4 +56,21 @@ impl PolicyStore {
             None => Ok(policy),
         }
     }
+
+    pub fn update_policy(&mut self, policy: Policy) -> Result<Policy, SmartVaultErr> {
+        let policy_id: String = policy.id().clone();
+        let p = self.policies.insert(policy_id.clone(), policy.clone());
+        match p {
+            Some(_) => Ok(policy),
+            None => return Err(SmartVaultErr::PolicyDoesNotExist(policy_id.to_string())),
+        }
+    }
+
+    pub fn delete_policy(&mut self, policy_id: &str) -> Result<(), SmartVaultErr> {
+        let p = self.policies.remove(&policy_id.to_string());
+        match p {
+            Some(_) => Ok(()),
+            None => Err(SmartVaultErr::PolicyDoesNotExist(policy_id.to_string())),
+        }
+    }
 }

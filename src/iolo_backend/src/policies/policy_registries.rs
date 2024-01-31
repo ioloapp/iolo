@@ -93,6 +93,17 @@ impl PolicyRegistries {
         }
     }
 
+    pub fn remove_policy_from_beneficiary(&mut self, policy: &Policy) {
+        for beneficiary in policy.beneficiaries() {
+            if let Some(mut sphs) = self
+                .beneficiary_to_policies
+                .get(&PrincipalStorable::from(*beneficiary))
+            {
+                sphs.0.remove(policy.id());
+            }
+        }
+    }
+
     pub fn add_policy_to_validators(&mut self, validators: &Vec<Validator>, policy_id: &PolicyID) {
         for validator in validators {
             match self
@@ -114,6 +125,21 @@ impl PolicyRegistries {
                     );
                 }
             };
+        }
+    }
+
+    pub fn remove_policy_from_validators(
+        &mut self,
+        validators: &Vec<Validator>,
+        policy_id: &PolicyID,
+    ) {
+        for validator in validators {
+            if let Some(mut sphs) = self
+                .validator_to_policies
+                .get(&PrincipalStorable::from(validator.id))
+            {
+                sphs.0.remove(policy_id);
+            }
         }
     }
 
@@ -167,6 +193,31 @@ impl PolicyRegistries {
                 .collect();
             Ok(policy_list_entries)
         })
+    }
+
+    pub fn update_policy_to_beneficiary(
+        &mut self,
+        policy: &Policy,
+    ) -> Result<Policy, SmartVaultErr> {
+        // clean the index
+        self.remove_policy_from_beneficiary(policy);
+
+        // re-insert
+        self.add_policy_to_beneficiary(policy);
+
+        Ok(policy.clone())
+    }
+
+    pub fn update_policy_to_validators(
+        &mut self,
+        validators: &Vec<Validator>,
+        policy_id: &PolicyID,
+    ) {
+        // clean the index
+        self.remove_policy_from_validators(validators, policy_id);
+
+        // re-insert
+        self.add_policy_to_validators(validators, policy_id);
     }
 }
 

@@ -18,13 +18,13 @@ pub type PolicyID = String;
 pub struct Policy {
     pub id: PolicyID,
     owner: Principal,
-    name: Option<String>,
+    pub name: Option<String>,
     date_created: u64,
     date_modified: u64,
-    beneficiaries: HashSet<Principal>,
+    pub beneficiaries: HashSet<Principal>,
     // References to the secrets contained in this policy
     // Path to secret: owner -> owner uservault -> secret
-    secrets: HashSet<SecretID>,
+    pub secrets: HashSet<SecretID>,
     /// Contains all the keys required to decrypt the secrets:
     /// Every secret is encrypted by using dedicated key.
     /// This key is itself encrypted using the policy decryption key,
@@ -32,7 +32,7 @@ pub struct Policy {
     key_box: KeyBox,
     conditions_status: bool,
     conditions_logical_operator: LogicalOperator,
-    conditions: Vec<Condition>,
+    pub conditions: Vec<Condition>,
 }
 
 impl Storable for Policy {
