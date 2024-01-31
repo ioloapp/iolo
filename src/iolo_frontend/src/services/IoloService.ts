@@ -274,16 +274,14 @@ class IoloService {
 
     public async addPolicy(uiPolicy: UiPolicy): Promise<UiPolicy> {
         console.debug('start adding policy...');
-        uiPolicy.id = uuidv4();
         const policy: Policy = await this.mapUiPolicyToPolicy(uiPolicy);
         const addPolicyArgs: AddPolicyArgs = {
             beneficiaries: policy.beneficiaries,
-            id: policy.id,
             key_box: policy.key_box,
             name: policy.name,
             secrets: policy.secrets,
             conditions: policy.conditions,
-            condition_logical_operator: policy.conditions_logical_operator,
+            conditions_logical_operator: policy.conditions_logical_operator,
         }
 
         // Add policy

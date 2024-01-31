@@ -59,7 +59,7 @@ pub struct AddPolicyArgs {
     pub beneficiaries: HashSet<Principal>,
     pub secrets: HashSet<SecretID>,
     pub key_box: KeyBox,
-    pub condition_logical_operator: LogicalOperator,
+    pub conditions_logical_operator: LogicalOperator,
     pub conditions: Vec<Condition>,
 }
 
@@ -107,7 +107,7 @@ impl Policy {
         new_policy.secrets = ata.secrets;
         new_policy.key_box = ata.key_box;
         new_policy.conditions = ata.conditions;
-        new_policy.conditions_logical_operator = ata.condition_logical_operator;
+        new_policy.conditions_logical_operator = ata.conditions_logical_operator;
         new_policy.conditions_status = false;
         new_policy
     }

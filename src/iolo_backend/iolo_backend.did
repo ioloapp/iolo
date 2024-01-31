@@ -1,6 +1,6 @@
 type AddPolicyArgs = record {
-  condition_logical_operator : LogicalOperator;
   name : opt text;
+  conditions_logical_operator : LogicalOperator;
   secrets : vec text;
   beneficiaries : vec principal;
   key_box : vec record { nat; SecretSymmetricCryptoMaterial };

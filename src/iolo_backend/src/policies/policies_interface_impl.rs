@@ -260,7 +260,7 @@ mod tests {
             beneficiaries: [beneficiary].iter().cloned().collect(),
             secrets: HashSet::new(),
             key_box: KeyBox::new(),
-            condition_logical_operator: LogicalOperator::And,
+            conditions_logical_operator: LogicalOperator::And,
             conditions: vec![time_based_condition, x_out_of_y_condition],
         };
         apa.secrets.insert(added_secret.id().to_string());

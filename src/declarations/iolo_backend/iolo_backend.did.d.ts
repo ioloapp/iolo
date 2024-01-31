@@ -2,9 +2,8 @@ import type { Principal } from '@dfinity/principal';
 import type { ActorMethod } from '@dfinity/agent';
 
 export interface AddPolicyArgs {
-  'id' : string,
-  'condition_logical_operator' : LogicalOperator,
   'name' : [] | [string],
+  'conditions_logical_operator' : LogicalOperator,
   'secrets' : Array<string>,
   'beneficiaries' : Array<Principal>,
   'key_box' : Array<[bigint, SecretSymmetricCryptoMaterial]>,
@@ -117,6 +116,7 @@ export type SmartVaultErr = { 'UserAlreadyExists' : string } |
   { 'SecretDecryptionMaterialDoesNotExist' : string } |
   { 'Unauthorized' : null } |
   { 'UserUpdateFailed' : string } |
+  { 'NoPolicyForValidator' : string } |
   { 'PolicyAlreadyExists' : string } |
   { 'UserVaultCreationFailed' : string } |
   { 'PolicyDoesNotExist' : string } |
@@ -150,7 +150,7 @@ export interface User {
   'user_vault_id' : [] | [bigint],
   'key_box' : Array<[bigint, SecretSymmetricCryptoMaterial]>,
   'date_modified' : bigint,
-  'policies' : Array<bigint>,
+  'policies' : Array<string>,
 }
 export type UserType = { 'Company' : null } |
   { 'Person' : null };

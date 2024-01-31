@@ -20,7 +20,7 @@ export const idlFactory = ({ IDL }) => {
     'user_vault_id' : IDL.Opt(IDL.Nat),
     'key_box' : IDL.Vec(IDL.Tuple(IDL.Nat, SecretSymmetricCryptoMaterial)),
     'date_modified' : IDL.Nat64,
-    'policies' : IDL.Vec(IDL.Nat),
+    'policies' : IDL.Vec(IDL.Text),
   });
   const SmartVaultErr = IDL.Variant({
     'UserAlreadyExists' : IDL.Text,
@@ -32,6 +32,7 @@ export const idlFactory = ({ IDL }) => {
     'SecretDecryptionMaterialDoesNotExist' : IDL.Text,
     'Unauthorized' : IDL.Null,
     'UserUpdateFailed' : IDL.Text,
+    'NoPolicyForValidator' : IDL.Text,
     'PolicyAlreadyExists' : IDL.Text,
     'UserVaultCreationFailed' : IDL.Text,
     'PolicyDoesNotExist' : IDL.Text,
@@ -60,9 +61,8 @@ export const idlFactory = ({ IDL }) => {
     'XOutOfYCondition' : XOutOfYCondition,
   });
   const AddPolicyArgs = IDL.Record({
-    'id' : IDL.Text,
-    'condition_logical_operator' : LogicalOperator,
     'name' : IDL.Opt(IDL.Text),
+    'conditions_logical_operator' : LogicalOperator,
     'secrets' : IDL.Vec(IDL.Text),
     'beneficiaries' : IDL.Vec(IDL.Principal),
     'key_box' : IDL.Vec(IDL.Tuple(IDL.Nat, SecretSymmetricCryptoMaterial)),
