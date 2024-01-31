@@ -34,6 +34,13 @@ export const getBaseTheme = (mode: PaletteMode) => ({
             })
     },
     components: {
+        MuiTextField: {
+            styleOverrides: {
+                root: {
+                    marginBottom: "20px"
+                }
+            },
+        },
         MuiAppBar: {
             styleOverrides: {
                 root: {

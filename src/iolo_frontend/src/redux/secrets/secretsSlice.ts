@@ -240,9 +240,10 @@ const updateSecretInGroupedSecretList = (group: GroupedSecretList, uiSecret: UiS
     } else if (uiSecret.category === UiSecretCategory.Note) {
         newGroupedSecretList.notesList = newGroupedSecretList.notesList.filter(s => s.id != uiSecret.id);
         newGroupedSecretList.notesList.push(uiSecret);
-    } else if (uiSecret.category === UiSecretCategory.Document) {
-        newGroupedSecretList.documentsList = newGroupedSecretList.documentsList.filter(s => s.id != uiSecret.id);
-        newGroupedSecretList.documentsList.push(uiSecret);
+        //TODO reactivate
+    // } else if (uiSecret.category === UiSecretCategory.Document) {
+    //     newGroupedSecretList.documentsList = newGroupedSecretList.documentsList.filter(s => s.id != uiSecret.id);
+    //     newGroupedSecretList.documentsList.push(uiSecret);
     } else {
         newGroupedSecretList.othersList = newGroupedSecretList.othersList.filter(s => s.id != uiSecret.id);
         newGroupedSecretList.othersList.push(uiSecret);
@@ -270,8 +271,9 @@ const addSecretToGroupedSecretList = (group: GroupedSecretList, uiSecret: UiSecr
         newGroupedSecretList.passwordList.push(uiSecret)
     } else if (uiSecret.category === UiSecretCategory.Note) {
         newGroupedSecretList.notesList.push(uiSecret);
-    } else if (uiSecret.category === UiSecretCategory.Document) {
-        newGroupedSecretList.documentsList.push(uiSecret);
+        //TODO reactivate
+    // } else if (uiSecret.category === UiSecretCategory.Document) {
+    //     newGroupedSecretList.documentsList.push(uiSecret);
     } else {
         newGroupedSecretList.othersList.push(uiSecret);
     }
@@ -290,8 +292,9 @@ const splitSecretListByCategory = (uiSecretList: UiSecretListEntry[]): GroupedSe
                 passwordList.push(uiSecretListEntry)
             } else if (uiSecretListEntry.category === UiSecretCategory.Note) {
                 notesList.push(uiSecretListEntry);
-            } else if (uiSecretListEntry.category === UiSecretCategory.Document) {
-                documentsList.push(uiSecretListEntry);
+                //TODO reactivate
+            // } else if (uiSecretListEntry.category === UiSecretCategory.Document) {
+            //     documentsList.push(uiSecretListEntry);
             } else {
                 othersList.push(uiSecretListEntry);
             }

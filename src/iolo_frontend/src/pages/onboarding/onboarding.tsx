@@ -1,21 +1,6 @@
 // IC
 import {useAppDispatch} from "../../redux/hooks";
-import {
-    Backdrop,
-    Box,
-    Button,
-    CircularProgress,
-    Container,
-    Divider,
-    Drawer,
-    List,
-    ListItem,
-    ListItemIcon,
-    ListItemText,
-    MenuItem,
-    Select,
-    Typography
-} from "@mui/material";
+import {Backdrop, Box, Button, CircularProgress, Container, MenuItem, Select, Typography} from "@mui/material";
 import * as React from "react";
 import {createUserThunk, userActions} from "../../redux/user/userSlice";
 import {PageLayout} from "../../components/layout/page-layout";
@@ -26,12 +11,7 @@ import {selectCurrentUser} from "../../redux/user/userSelectors";
 import {useTranslation} from "react-i18next";
 import {supportedLanguage} from "../../locales/i18n";
 import i18n from "i18next";
-import {IoloLogo} from "../../resources/logo";
-import {mobileWidth, sidebarWith} from "../../App";
-import LogoutIcon from "@mui/icons-material/Logout";
 import useWindowResize from "../../utils/useWindowResize";
-import {StyledAppBar} from "../../components/layout/search-bar";
-import IconButton from "@mui/material/IconButton";
 
 
 export const Onboarding = () => {
@@ -78,29 +58,30 @@ export const Onboarding = () => {
                         sx={{
                             flexGrow: 1,
                             display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            flexDirection: 'column'
+                            flexDirection: 'column',
+                            width: '100%'
                         }}
                     >
-                        <Typography variant="body2">{t('user.type')}</Typography>
-                        <Select
-                            id="usertype-select"
-                            value={currentUser?.type}
-                            label={t('user.type')}
-                            onChange={e => updateCurrentUser({
-                                ...currentUser,
-                                type: UiUserType[e.target.value as keyof typeof UiUserType]
-                            })}
-                            sx={{width: '100%'}}
-                        >
-                            {Object.keys(UiUserType)
-                                .map(key => {
-                                    return <MenuItem key={key} value={key}>{key}</MenuItem>
-                                })
+                        <div className="input-field">
+                            <Typography variant="body2">{t('user.type')}</Typography>
+                            <Select
+                                id="usertype-select"
+                                value={currentUser?.type}
+                                label={t('user.type')}
+                                onChange={e => updateCurrentUser({
+                                    ...currentUser,
+                                    type: UiUserType[e.target.value as keyof typeof UiUserType]
+                                })}
+                                sx={{width: '100%'}}
+                            >
+                                {Object.keys(UiUserType)
+                                    .map(key => {
+                                        return <MenuItem key={key} value={key}>{key}</MenuItem>
+                                    })
 
-                            }
-                        </Select>
+                                }
+                            </Select>
+                        </div>
                         <TextField
                             autoFocus
                             margin="dense"
@@ -129,16 +110,7 @@ export const Onboarding = () => {
                                 email: e.target.value
                             })}
                         />
-                        <Box
-                            sx={{
-                                flexGrow: 1,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                flexDirection: 'column',
-                                width: '100%'
-                            }}
-                        >
+                        <div className="input-field">
                             <Typography variant="body2">{t('user.language')}</Typography>
                             <Select
                                 id="language-select"
@@ -156,7 +128,7 @@ export const Onboarding = () => {
 
                                 }
                             </Select>
-                        </Box>
+                        </div>
                         <Button variant="contained" sx={{m: '20px auto 0px auto'}} onClick={createUser}>
                             {t('user.button.create')}
                         </Button>

@@ -54,7 +54,6 @@ import {
     UiUserType,
     UiXOutOfYCondition
 } from "./IoloTypesForUi";
-import {v4 as uuidv4} from 'uuid';
 
 class IoloService {
     static instance: IoloService;
@@ -499,8 +498,9 @@ class IoloService {
             uiSecret.category = undefined;
         } else if (secret.category[0].hasOwnProperty(UiSecretCategory.Password)) {
             uiSecret.category = UiSecretCategory.Password;
-        } else if (secret.category[0].hasOwnProperty(UiSecretCategory.Document)) {
-            uiSecret.category = UiSecretCategory.Document;
+            //TODO reactivate
+        // } else if (secret.category[0].hasOwnProperty(UiSecretCategory.Document)) {
+        //     uiSecret.category = UiSecretCategory.Document;
         } else if (secret.category[0].hasOwnProperty(UiSecretCategory.Note)) {
             uiSecret.category = UiSecretCategory.Note;
         } else {
@@ -632,8 +632,9 @@ class IoloService {
                 return {'Password': null}
             case UiSecretCategory.Note:
                 return {'Note': null}
-            case UiSecretCategory.Document:
-                return {'Document': null}
+            //TODO reactivate
+            // case UiSecretCategory.Document:
+            //     return {'Document': null}
         }
     }
 
@@ -642,8 +643,9 @@ class IoloService {
             return UiSecretCategory.Password;
         } else if (category.hasOwnProperty('Note')) {
             return  UiSecretCategory.Note;
-        } else if (category.hasOwnProperty('Document')) {
-            return  UiSecretCategory.Document;
+            //TODO reactivate
+        // } else if (category.hasOwnProperty('Document')) {
+        //     return  UiSecretCategory.Document;
         }
     }
 
@@ -775,8 +777,9 @@ class IoloService {
                     category = UiSecretCategory.Password;
                 } else if (item.category[0].hasOwnProperty('Note')) {
                     category = UiSecretCategory.Note;
-                } if (item.category[0].hasOwnProperty('Document')) {
-                    category = UiSecretCategory.Document;
+                    //TODO reactivate
+                // } else if (item.category[0].hasOwnProperty('Document')) {
+                //     category = UiSecretCategory.Document;
                 }
             }
             return {
