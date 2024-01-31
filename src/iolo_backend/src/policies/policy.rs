@@ -83,14 +83,14 @@ impl From<Policy> for PolicyListEntry {
 }
 
 impl Policy {
-    pub fn new(id: String) -> Self {
+    pub fn new(id: String, owner: &Principal) -> Self {
         let now: u64 = time::get_current_time();
         Self {
             id,
             name: None,
             date_created: now,
             date_modified: now,
-            owner: get_caller(),
+            owner: owner.clone(),
             beneficiaries: HashSet::new(),
             secrets: HashSet::new(),
             key_box: BTreeMap::new(),
@@ -100,8 +100,9 @@ impl Policy {
         }
     }
 
-    pub fn from_add_policy_args(policy_id: &str, ata: AddPolicyArgs) -> Self {
-        let mut new_policy = Policy::new(policy_id.to_string());
+    pub fn from_add_policy_args(policy_id: &str, owner: &Principal, ata: AddPolicyArgs) -> Self {
+        let mut new_policy = Policy::new(policy_id.to_string(), owner);
+        new_policy.owner = owner.clone();
         new_policy.name = ata.name;
         new_policy.beneficiaries = ata.beneficiaries;
         new_policy.secrets = ata.secrets;

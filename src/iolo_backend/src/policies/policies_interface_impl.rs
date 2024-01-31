@@ -19,7 +19,7 @@ use super::{
 
 pub async fn add_policy_impl(
     apa: AddPolicyArgs,
-    caller: &Principal,
+    policy_owner: &Principal,
 ) -> Result<Policy, SmartVaultErr> {
     // check if secrets in apa exist in secret store
     for secret_id in apa.secrets.iter() {
@@ -33,7 +33,7 @@ pub async fn add_policy_impl(
     let new_policy_id: String = UUID::new_random().await.into();
 
     // create policy from AddPolicyArgs
-    let policy: Policy = Policy::from_add_policy_args(&new_policy_id, apa);
+    let policy: Policy = Policy::from_add_policy_args(&new_policy_id, policy_owner, apa);
 
     // Add policy to the policy store (policies: StableBTreeMap<UUID, Policy, Memory>,)
     POLICY_STORE.with(
@@ -46,7 +46,7 @@ pub async fn add_policy_impl(
     // add the policy id to the user in the USER_STORE
     USER_STORE.with(|us| {
         let mut user_store = us.borrow_mut();
-        user_store.add_policy_to_user(caller, policy.id().clone())
+        user_store.add_policy_to_user(policy_owner, policy.id().clone())
     })?;
 
     // Add entry to policy registry for beneficiaries (reverse index)
@@ -195,7 +195,7 @@ pub fn update_policy_impl(policy: Policy, caller: &Principal) -> Result<Policy, 
     }
 
     // update policy in policy store
-    POLICY_STORE.with(|ps| {
+    let updated_policy = POLICY_STORE.with(|ps| {
         let mut policy_store = ps.borrow_mut();
         policy_store.update_policy(policy.clone())
     })?;
@@ -217,7 +217,7 @@ pub fn update_policy_impl(policy: Policy, caller: &Principal) -> Result<Policy, 
         }
     }
 
-    Ok(policy)
+    Ok(updated_policy)
 }
 
 #[cfg(test)]
@@ -254,6 +254,7 @@ mod tests {
         let principal = create_principal();
         let beneficiary = create_principal();
         let validator = create_principal();
+        let validator2 = create_principal();
 
         // Create User and store it
         let aua: AddUserArgs = AddUserArgs {
@@ -304,19 +305,15 @@ mod tests {
             secrets: HashSet::new(),
             key_box: KeyBox::new(),
             conditions_logical_operator: LogicalOperator::And,
-            conditions: vec![time_based_condition, x_out_of_y_condition],
+            conditions: vec![time_based_condition.clone(), x_out_of_y_condition.clone()],
         };
         apa.secrets.insert(added_secret.id().to_string());
-        dbg!(&principal.clone());
         let mut added_policy = add_policy_impl(apa.clone(), &principal).await.unwrap();
-
-        dbg!(added_policy.clone());
 
         // check if policy is in policy store and check if it contains the secret
         POLICY_STORE.with(|ps| {
             let policy_store = ps.borrow();
             let policy_in_store = policy_store.get(added_policy.id()).unwrap();
-            dbg!(policy_in_store.clone());
             assert_eq!(policy_in_store.id(), added_policy.id());
             assert_eq!(policy_in_store.name(), added_policy.name());
             assert_eq!(policy_in_store.secrets().len(), 1);
@@ -373,28 +370,40 @@ mod tests {
             _ => false,
         }));
 
-        // UPDATE POLICY
+        // UPDATE POLICY NAME and BENEFICIARIES
         added_policy.name = Some("new policy updates".to_string());
-        // dbg!(&principal.clone());
-        // dbg!(added_policy.clone());
+        added_policy.beneficiaries.insert(validator);
         let updated_policy = update_policy_impl(added_policy.clone(), &principal);
-        dbg!(&updated_policy);
-        // assert_eq!(updated_policy.name(), added_policy.name());
+        assert!(updated_policy.is_ok());
+        let mut updated_policy = updated_policy.unwrap();
+        assert_eq!(updated_policy.name(), added_policy.name());
+        assert!(updated_policy.beneficiaries().contains(&validator));
+        assert!(updated_policy.beneficiaries().contains(&beneficiary));
 
-        // // get policy as beneficiary: this should fail, because policy has not yet been activated
-        // let policy_reponse =
-        //     get_policy_as_beneficiary_impl(added_policy.id().clone(), &beneficiary);
-        // assert!(policy_reponse.is_err_and(|e| match e {
-        //     SmartVaultErr::InvalidPolicyCondition => true,
-        //     _ => false,
-        // }));
+        // UPDATE POLICY CONDITIONS
+        let time_based_condition: Condition = Condition::TimeBasedCondition(TimeBasedCondition {
+            id: "My Time Based Condition number two".to_string(),
+            number_of_days_since_last_login: 100,
+            condition_status: false,
+        });
 
-        // // get policy as validator: this souhld fail, because validator is not a beneficiary
-        // let policy_reponse = get_policy_as_beneficiary_impl(added_policy.id().clone(), &validator);
-        // assert!(policy_reponse.is_err_and(|e| match e {
-        //     SmartVaultErr::NoPolicyForBeneficiary(_) => true,
-        //     _ => false,
-        // }));
+        let x_out_of_y_condition: Condition = Condition::XOutOfYCondition(XOutOfYCondition {
+            id: "My X out of Y Condition".to_string(),
+            validators: vec![Validator {
+                id: validator2,
+                status: false,
+            }],
+            quorum: 1,
+            condition_status: false,
+        });
+        updated_policy.conditions = vec![time_based_condition, x_out_of_y_condition];
+        let updated_policy = update_policy_impl(updated_policy.clone(), &principal);
+        assert!(updated_policy.is_ok());
+        // let updated_policy = updated_policy.unwrap();
+        let policy_list_as_old_validator = get_policy_list_as_validator_impl(&validator);
+        let policy_list_as_new_validator = get_policy_list_as_validator_impl(&validator2);
+        assert_eq!(policy_list_as_old_validator.unwrap().len(), 0);
+        assert_eq!(policy_list_as_new_validator.unwrap().len(), 1);
     }
 
     fn create_principal() -> Principal {

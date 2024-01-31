@@ -98,7 +98,10 @@ impl UserVaultStore {
         }
 
         // TODO: complete user vautl store will be deleted
-        let policy: Policy = Policy::from_add_policy_args("not needed anymore", ata);
+
+        let p = Principal::from_slice(&[0; 29]);
+
+        let policy: Policy = Policy::from_add_policy_args("not needed anymore", &p, ata);
         let user_vault = self.user_vaults.get_mut(vault_id).unwrap();
         user_vault.add_policy(policy.clone())?;
 

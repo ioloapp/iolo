@@ -95,11 +95,15 @@ impl PolicyRegistries {
 
     pub fn remove_policy_from_beneficiary(&mut self, policy: &Policy) {
         for beneficiary in policy.beneficiaries() {
-            if let Some(mut sphs) = self
+            if let Some(mut policy_hash_set) = self
                 .beneficiary_to_policies
                 .get(&PrincipalStorable::from(*beneficiary))
             {
-                sphs.0.remove(policy.id());
+                policy_hash_set.0.remove(policy.id());
+
+                // re-insert the updated policy_hash_set
+                self.beneficiary_to_policies
+                    .insert(PrincipalStorable::from(*beneficiary), policy_hash_set);
             }
         }
     }
@@ -130,15 +134,19 @@ impl PolicyRegistries {
 
     pub fn remove_policy_from_validators(
         &mut self,
-        validators: &Vec<Validator>,
+        validator: &Vec<Validator>,
         policy_id: &PolicyID,
     ) {
-        for validator in validators {
-            if let Some(mut sphs) = self
+        for validator in validator {
+            if let Some(mut policy_hash_set) = self
                 .validator_to_policies
                 .get(&PrincipalStorable::from(validator.id))
             {
-                sphs.0.remove(policy_id);
+                policy_hash_set.0.remove(policy_id);
+
+                // re-insert the policy_hash_set
+                self.validator_to_policies
+                    .insert(PrincipalStorable::from(validator.id), policy_hash_set);
             }
         }
     }
