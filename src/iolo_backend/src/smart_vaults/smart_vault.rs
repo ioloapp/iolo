@@ -357,7 +357,7 @@ pub fn get_vault_id_for(principal: Principal) -> Result<UserVaultID, SmartVaultE
         let user_store = ur.borrow();
         let user = user_store.get_user(&principal)?;
 
-        user.user_vault_id
+        user.user_vault_id_DO_NOT_USE_ANYMORE
             .ok_or_else(|| SmartVaultErr::UserVaultDoesNotExist("".to_string()))
     })
 }

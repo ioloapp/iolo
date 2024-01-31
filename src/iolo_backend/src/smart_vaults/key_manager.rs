@@ -96,7 +96,7 @@ async fn encrypted_symmetric_key_for_policies(
                 USER_STORE.with(|ur: &RefCell<UserStore>| -> Result<UUID, SmartVaultErr> {
                     let user_store = ur.borrow();
                     let user = user_store.get_user(&result_2.1)?;
-                    user.user_vault_id
+                    user.user_vault_id_DO_NOT_USE_ANYMORE
                         .ok_or_else(|| SmartVaultErr::UserVaultDoesNotExist("".to_string()))
                 })?;
             let result_4 = USER_VAULT_STORE_DO_NOT_USE_ANYMORE.with(

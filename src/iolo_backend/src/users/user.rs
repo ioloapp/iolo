@@ -20,7 +20,7 @@ pub struct User {
     pub date_created: u64,
     pub date_modified: u64,
     pub date_last_login: Option<u64>,
-    pub user_vault_id: Option<UserVaultID>,
+    pub user_vault_id_DO_NOT_USE_ANYMORE: Option<UserVaultID>,
     // New: Secrets, KeyBox and policies are stored in the user
     pub secrets: Vec<UUID>,
     pub policies: Vec<String>,
@@ -58,7 +58,7 @@ impl From<AddUserArgs> for User {
             date_created: now,
             date_modified: now,
             date_last_login: None,
-            user_vault_id: None,
+            user_vault_id_DO_NOT_USE_ANYMORE: None,
             secrets: Vec::new(),
             policies: Vec::new(),
             key_box: KeyBox::new(),
@@ -84,7 +84,7 @@ impl User {
             date_created: now,
             date_modified: now,
             date_last_login: Some(now),
-            user_vault_id: None,
+            user_vault_id_DO_NOT_USE_ANYMORE: None,
             secrets: Vec::new(),
             policies: Vec::new(),
             key_box: KeyBox::new(),
@@ -96,7 +96,7 @@ impl User {
     }
 
     pub fn user_vault_id(&self) -> &Option<UserVaultID> {
-        &self.user_vault_id
+        &self.user_vault_id_DO_NOT_USE_ANYMORE
     }
 
     pub fn key_box(&self) -> &KeyBox {
@@ -147,7 +147,7 @@ impl User {
     }
 
     pub fn set_user_vault(&mut self, user_vault_id: UserVaultID) {
-        self.user_vault_id = Some(user_vault_id);
+        self.user_vault_id_DO_NOT_USE_ANYMORE = Some(user_vault_id);
         self.date_modified = time::get_current_time();
     }
 
