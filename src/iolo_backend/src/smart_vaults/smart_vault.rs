@@ -17,7 +17,7 @@ use crate::secrets::secrets_interface_impl::{
     get_secret_symmetric_crypto_material_impl, remove_secret_impl, update_secret_impl,
 };
 use crate::user_vaults::user_vault::UserVaultID;
-use crate::user_vaults::user_vault_store::UserVaultStore;
+use crate::user_vaults::user_vault_store_DO_NOT_USE_ANYMORE::UserVaultStore_DO_NOT_USE_ANYMORE;
 use crate::users::user::{AddUserArgs, User};
 use crate::users::user_store::UserStore;
 use crate::users::users_interface_impl::{
@@ -27,7 +27,8 @@ use crate::utils::caller::get_caller;
 
 use crate::policies::policy::{AddPolicyArgs, Policy, PolicyID, PolicyListEntry};
 use crate::policies::policy_registries::{
-    PolicyRegistries, PolicyRegistryForBeneficiaries, PolicyRegistryForValidators,
+    PolicyRegistries, PolicyRegistryForBeneficiaries_DO_NOT_USE_ANYMORE,
+    PolicyRegistryForValidators_DO_NOT_USE_ANYMORE,
 };
 use crate::secrets::secret::{
     AddSecretArgs, Secret, SecretID, SecretListEntry, SecretSymmetricCryptoMaterial,
@@ -37,7 +38,7 @@ use crate::secrets::secret_store::SecretStore;
 
 thread_local! {
     // User vault store holding all the user vaults
-    pub static USER_VAULT_STORE: RefCell<UserVaultStore> = RefCell::new(UserVaultStore::new());
+    pub static USER_VAULT_STORE_DO_NOT_USE_ANYMORE: RefCell<UserVaultStore_DO_NOT_USE_ANYMORE> = RefCell::new(UserVaultStore_DO_NOT_USE_ANYMORE::new());
 
     // User Store
     pub static USER_STORE: RefCell<UserStore> = RefCell::new(UserStore::new());
@@ -52,10 +53,10 @@ thread_local! {
     pub static POLICY_REGISTRIES: RefCell<PolicyRegistries> = RefCell::new(PolicyRegistries::new());
 
     // policy Registry for beneficiaries
-    pub static POLICY_REGISTRY_FOR_BENEFICIARIES: RefCell<PolicyRegistryForBeneficiaries> = RefCell::new(PolicyRegistryForBeneficiaries::new());
+    pub static POLICY_REGISTRY_FOR_BENEFICIARIES_DO_NOT_USE_ANYMORE: RefCell<PolicyRegistryForBeneficiaries_DO_NOT_USE_ANYMORE> = RefCell::new(PolicyRegistryForBeneficiaries_DO_NOT_USE_ANYMORE::new());
 
     // policy Registry for validators
-    pub static POLICY_REGISTRY_FOR_VALIDATORS: RefCell<PolicyRegistryForValidators> = RefCell::new(PolicyRegistryForValidators::new());
+    pub static POLICY_REGISTRY_FOR_VALIDATORS_DO_NOT_USE_ANYMORE: RefCell<PolicyRegistryForValidators_DO_NOT_USE_ANYMORE> = RefCell::new(PolicyRegistryForValidators_DO_NOT_USE_ANYMORE::new());
 
     // counter for the UUIDs
     pub static UUID_COUNTER: RefCell<u128>  = RefCell::new(1);
@@ -130,8 +131,8 @@ pub fn get_secret_as_beneficiary(
     let principal = get_caller();
 
     // Verify that beneficiary belongs to policy
-    let result_pr = POLICY_REGISTRY_FOR_BENEFICIARIES.with(
-        |pr: &RefCell<PolicyRegistryForBeneficiaries>| -> Result<(PolicyID, Principal), SmartVaultErr> {
+    let result_pr = POLICY_REGISTRY_FOR_BENEFICIARIES_DO_NOT_USE_ANYMORE.with(
+        |pr: &RefCell<PolicyRegistryForBeneficiaries_DO_NOT_USE_ANYMORE>| -> Result<(PolicyID, Principal), SmartVaultErr> {
             let policy_registry = pr.borrow();
             policy_registry.get_policy_id_as_beneficiary(principal, policy_id.clone())
         },
@@ -141,8 +142,8 @@ pub fn get_secret_as_beneficiary(
     let user_vault_id: UUID = get_vault_id_for(result_pr.1)?;
 
     // Read policy
-    let result_mv = USER_VAULT_STORE.with(
-        |mv: &RefCell<UserVaultStore>| -> Result<Policy, SmartVaultErr> {
+    let result_mv = USER_VAULT_STORE_DO_NOT_USE_ANYMORE.with(
+        |mv: &RefCell<UserVaultStore_DO_NOT_USE_ANYMORE>| -> Result<Policy, SmartVaultErr> {
             mv.borrow()
                 .get_user_vault(&user_vault_id)?
                 .get_policy(&policy_id)
@@ -153,8 +154,8 @@ pub fn get_secret_as_beneficiary(
     // Check that beneficiary is allowed to read policy
     if *result_mv.conditions_status() {
         // Read secret in owner user vault
-        USER_VAULT_STORE.with(
-            |mv: &RefCell<UserVaultStore>| -> Result<Secret, SmartVaultErr> {
+        USER_VAULT_STORE_DO_NOT_USE_ANYMORE.with(
+            |mv: &RefCell<UserVaultStore_DO_NOT_USE_ANYMORE>| -> Result<Secret, SmartVaultErr> {
                 mv.borrow()
                     .get_user_vault(&user_vault_id)?
                     .get_secret(&sid)
@@ -174,8 +175,8 @@ pub fn get_secret_symmetric_crypto_material_as_beneficiary(
     let principal = get_caller();
 
     // Verify that beneficiary belongs to policy
-    let result_tr = POLICY_REGISTRY_FOR_BENEFICIARIES.with(
-        |tr: &RefCell<PolicyRegistryForBeneficiaries>| -> Result<(PolicyID, Principal), SmartVaultErr> {
+    let result_tr = POLICY_REGISTRY_FOR_BENEFICIARIES_DO_NOT_USE_ANYMORE.with(
+        |tr: &RefCell<PolicyRegistryForBeneficiaries_DO_NOT_USE_ANYMORE>| -> Result<(PolicyID, Principal), SmartVaultErr> {
             let policy_registry = tr.borrow();
             policy_registry.get_policy_id_as_beneficiary(principal, policy_id.clone())
         },
@@ -185,8 +186,8 @@ pub fn get_secret_symmetric_crypto_material_as_beneficiary(
     let user_vault_id: UUID = get_vault_id_for(result_tr.1)?;
 
     // Read policy
-    let result_mv = USER_VAULT_STORE.with(
-        |mv: &RefCell<UserVaultStore>| -> Result<Policy, SmartVaultErr> {
+    let result_mv = USER_VAULT_STORE_DO_NOT_USE_ANYMORE.with(
+        |mv: &RefCell<UserVaultStore_DO_NOT_USE_ANYMORE>| -> Result<Policy, SmartVaultErr> {
             mv.borrow()
                 .get_user_vault(&user_vault_id)?
                 .get_policy(&policy_id)
@@ -253,8 +254,8 @@ pub fn confirm_x_out_of_y_condition(
     let user_vault_id: UUID = get_vault_id_for(owner)?;
 
     // Read policy
-    let mut result_mv = USER_VAULT_STORE.with(
-        |mv: &RefCell<UserVaultStore>| -> Result<Policy, SmartVaultErr> {
+    let mut result_mv = USER_VAULT_STORE_DO_NOT_USE_ANYMORE.with(
+        |mv: &RefCell<UserVaultStore_DO_NOT_USE_ANYMORE>| -> Result<Policy, SmartVaultErr> {
             mv.borrow()
                 .get_user_vault(&user_vault_id)?
                 .get_policy(&policy_id)
@@ -278,8 +279,8 @@ pub fn remove_policy(policy_id: String) -> Result<(), SmartVaultErr> {
     let principal = get_caller();
     let user_vault_id: UUID = get_vault_id_for(principal)?;
 
-    USER_VAULT_STORE.with(
-        |ms: &RefCell<UserVaultStore>| -> Result<(), SmartVaultErr> {
+    USER_VAULT_STORE_DO_NOT_USE_ANYMORE.with(
+        |ms: &RefCell<UserVaultStore_DO_NOT_USE_ANYMORE>| -> Result<(), SmartVaultErr> {
             let mut master_vault = ms.borrow_mut();
             master_vault.remove_user_policies(&user_vault_id, &policy_id)
         },
@@ -291,8 +292,8 @@ pub fn add_beneficiary(args: AddUserArgs) -> Result<User, SmartVaultErr> {
     let principal = get_caller();
     let user_vault_id: UUID = get_vault_id_for(principal)?;
 
-    USER_VAULT_STORE.with(
-        |ms: &RefCell<UserVaultStore>| -> Result<User, SmartVaultErr> {
+    USER_VAULT_STORE_DO_NOT_USE_ANYMORE.with(
+        |ms: &RefCell<UserVaultStore_DO_NOT_USE_ANYMORE>| -> Result<User, SmartVaultErr> {
             let mut master_vault = ms.borrow_mut();
             master_vault.add_beneficiary(&user_vault_id, args)
         },
@@ -304,7 +305,7 @@ pub fn get_beneficiary_list() -> Result<Vec<User>, SmartVaultErr> {
     let principal = get_caller();
     let user_vault_id: UUID = get_vault_id_for(principal)?;
 
-    USER_VAULT_STORE.with(|mv: &RefCell<UserVaultStore>| {
+    USER_VAULT_STORE_DO_NOT_USE_ANYMORE.with(|mv: &RefCell<UserVaultStore_DO_NOT_USE_ANYMORE>| {
         let beneficiaries: Vec<User> = mv
             .borrow()
             .get_user_vault(&user_vault_id)?
@@ -321,8 +322,8 @@ pub fn update_beneficiary(u: User) -> Result<User, SmartVaultErr> {
     let principal = get_caller();
     let user_vault_id: UUID = get_vault_id_for(principal)?;
 
-    USER_VAULT_STORE.with(
-        |ms: &RefCell<UserVaultStore>| -> Result<User, SmartVaultErr> {
+    USER_VAULT_STORE_DO_NOT_USE_ANYMORE.with(
+        |ms: &RefCell<UserVaultStore_DO_NOT_USE_ANYMORE>| -> Result<User, SmartVaultErr> {
             let mut master_vault = ms.borrow_mut();
             master_vault.update_user_beneficiary(&user_vault_id, u)
         },
@@ -334,8 +335,8 @@ pub fn remove_beneficiary(user_id: Principal) -> Result<(), SmartVaultErr> {
     let principal = get_caller();
     let user_vault_id: UUID = get_vault_id_for(principal)?;
 
-    USER_VAULT_STORE.with(
-        |ms: &RefCell<UserVaultStore>| -> Result<(), SmartVaultErr> {
+    USER_VAULT_STORE_DO_NOT_USE_ANYMORE.with(
+        |ms: &RefCell<UserVaultStore_DO_NOT_USE_ANYMORE>| -> Result<(), SmartVaultErr> {
             let mut master_vault = ms.borrow_mut();
             master_vault.remove_user_beneficiary(&user_vault_id, &user_id)
         },
@@ -363,23 +364,26 @@ pub fn get_vault_id_for(principal: Principal) -> Result<UserVaultID, SmartVaultE
 
 #[pre_upgrade]
 fn pre_upgrade() {
-    USER_VAULT_STORE.with(|ms| storage::stable_save((ms,)).unwrap());
+    USER_VAULT_STORE_DO_NOT_USE_ANYMORE.with(|ms| storage::stable_save((ms,)).unwrap());
     // USER_STORE.with(|ur| storage::stable_save((ur,)).unwrap());
-    POLICY_REGISTRY_FOR_BENEFICIARIES.with(|tr| storage::stable_save((tr,)).unwrap());
-    POLICY_REGISTRY_FOR_VALIDATORS.with(|tr| storage::stable_save((tr,)).unwrap());
+    POLICY_REGISTRY_FOR_BENEFICIARIES_DO_NOT_USE_ANYMORE
+        .with(|tr| storage::stable_save((tr,)).unwrap());
+    POLICY_REGISTRY_FOR_VALIDATORS_DO_NOT_USE_ANYMORE
+        .with(|tr| storage::stable_save((tr,)).unwrap());
     UUID_COUNTER.with(|c| storage::stable_save((c,)).unwrap());
 }
 
 #[post_upgrade]
 fn post_upgrade() {
-    let (old_ms,): (UserVaultStore,) = storage::stable_restore().unwrap();
-    USER_VAULT_STORE.with(|ms| *ms.borrow_mut() = old_ms);
+    let (old_ms,): (UserVaultStore_DO_NOT_USE_ANYMORE,) = storage::stable_restore().unwrap();
+    USER_VAULT_STORE_DO_NOT_USE_ANYMORE.with(|ms| *ms.borrow_mut() = old_ms);
 
     // let (old_ur,): (UserStore,) = storage::stable_restore().unwrap();
     // USER_STORE.with(|ur| *ur.borrow_mut() = old_ur);
 
-    let (old_tr,): (PolicyRegistryForBeneficiaries,) = storage::stable_restore().unwrap();
-    POLICY_REGISTRY_FOR_BENEFICIARIES.with(|tr| *tr.borrow_mut() = old_tr);
+    let (old_tr,): (PolicyRegistryForBeneficiaries_DO_NOT_USE_ANYMORE,) =
+        storage::stable_restore().unwrap();
+    POLICY_REGISTRY_FOR_BENEFICIARIES_DO_NOT_USE_ANYMORE.with(|tr| *tr.borrow_mut() = old_tr);
 
     let (old_c,): (u128,) = storage::stable_restore().unwrap();
     UUID_COUNTER.with(|c| *c.borrow_mut() = old_c);

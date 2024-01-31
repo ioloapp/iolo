@@ -238,7 +238,7 @@ impl PolicyRegistries {
  * to a set of policies.
  */
 #[derive(Debug, CandidType, Deserialize)]
-pub struct PolicyRegistryForBeneficiaries {
+pub struct PolicyRegistryForBeneficiaries_DO_NOT_USE_ANYMORE {
     beneficiaries_to_policies: BTreeMap<Principal, HashSet<PolicyID>>,
     policy_to_owner: BTreeMap<PolicyID, Principal>,
 }
@@ -248,12 +248,12 @@ pub struct PolicyRegistryForBeneficiaries {
  * to a set of policies the principal is a validator for.
  */
 #[derive(Debug, CandidType, Deserialize)]
-pub struct PolicyRegistryForValidators {
+pub struct PolicyRegistryForValidators_DO_NOT_USE_ANYMORE {
     validator_to_policies: BTreeMap<Principal, HashSet<PolicyID>>,
     policy_to_owner: BTreeMap<PolicyID, Principal>,
 }
 
-impl PolicyRegistryForBeneficiaries {
+impl PolicyRegistryForBeneficiaries_DO_NOT_USE_ANYMORE {
     pub fn new() -> Self {
         Self {
             beneficiaries_to_policies: BTreeMap::new(),
@@ -347,7 +347,7 @@ impl PolicyRegistryForBeneficiaries {
     }
 }
 
-impl PolicyRegistryForValidators {
+impl PolicyRegistryForValidators_DO_NOT_USE_ANYMORE {
     pub fn new() -> Self {
         Self {
             validator_to_policies: BTreeMap::new(),

@@ -4,11 +4,12 @@ use std::{str::FromStr, vec};
 use crate::common::error::SmartVaultErr;
 use crate::common::uuid::UUID;
 use crate::policies::policy::{Policy, PolicyID};
-use crate::policies::policy_registries::PolicyRegistryForBeneficiaries;
+use crate::policies::policy_registries::PolicyRegistryForBeneficiaries_DO_NOT_USE_ANYMORE;
 use crate::smart_vaults::smart_vault::{
-    POLICY_REGISTRY_FOR_BENEFICIARIES, USER_STORE, USER_VAULT_STORE,
+    POLICY_REGISTRY_FOR_BENEFICIARIES_DO_NOT_USE_ANYMORE, USER_STORE,
+    USER_VAULT_STORE_DO_NOT_USE_ANYMORE,
 };
-use crate::user_vaults::user_vault_store::UserVaultStore;
+use crate::user_vaults::user_vault_store_DO_NOT_USE_ANYMORE::UserVaultStore_DO_NOT_USE_ANYMORE;
 use crate::users::user_store::UserStore;
 use candid::{CandidType, Principal};
 use serde::{Deserialize, Serialize};
@@ -66,8 +67,8 @@ async fn encrypted_symmetric_key_for_policies(
     let mut key_can_be_generated = false;
 
     // Let's see if the policy is existing
-    let result_1 = POLICY_REGISTRY_FOR_BENEFICIARIES.with(
-        |tr: &RefCell<PolicyRegistryForBeneficiaries>| -> Option<Principal> {
+    let result_1 = POLICY_REGISTRY_FOR_BENEFICIARIES_DO_NOT_USE_ANYMORE.with(
+        |tr: &RefCell<PolicyRegistryForBeneficiaries_DO_NOT_USE_ANYMORE>| -> Option<Principal> {
             let policy_registry = tr.borrow();
             policy_registry.get_owner_of_policy(args.policy_id.clone())
         },
@@ -83,8 +84,8 @@ async fn encrypted_symmetric_key_for_policies(
             key_can_be_generated = true;
         } else {
             // Let's see if caller is beneficiary
-            let result_2 = POLICY_REGISTRY_FOR_BENEFICIARIES.with(
-                |tr: &RefCell<PolicyRegistryForBeneficiaries>| -> Result<(PolicyID, Principal), SmartVaultErr> {
+            let result_2 = POLICY_REGISTRY_FOR_BENEFICIARIES_DO_NOT_USE_ANYMORE.with(
+                |tr: &RefCell<PolicyRegistryForBeneficiaries_DO_NOT_USE_ANYMORE>| -> Result<(PolicyID, Principal), SmartVaultErr> {
                     let policy_registry = tr.borrow();
                     policy_registry.get_policy_id_as_beneficiary(caller, args.policy_id.clone())
                 },
@@ -98,8 +99,8 @@ async fn encrypted_symmetric_key_for_policies(
                     user.user_vault_id
                         .ok_or_else(|| SmartVaultErr::UserVaultDoesNotExist("".to_string()))
                 })?;
-            let result_4 = USER_VAULT_STORE.with(
-                |mv: &RefCell<UserVaultStore>| -> Result<Policy, SmartVaultErr> {
+            let result_4 = USER_VAULT_STORE_DO_NOT_USE_ANYMORE.with(
+                |mv: &RefCell<UserVaultStore_DO_NOT_USE_ANYMORE>| -> Result<Policy, SmartVaultErr> {
                     mv.borrow()
                         .get_user_vault(&result_3)?
                         .get_policy(&args.policy_id)
