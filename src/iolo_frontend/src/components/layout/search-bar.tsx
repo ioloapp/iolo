@@ -89,13 +89,14 @@ export const StyledAppBar = styled(AppBar)(() => ({
 export const SearchField = styled(TextField)`
   width: 100%;
   box-shadow: none;
-  margin-left: 20px;
+  margin: 2px 0 0 20px;
   
   .MuiOutlinedInput-notchedOutline {
     border-color: #FFFFFF !important;
   }
   .MuiInputBase-input{
     color: #FFFFFF !important;
+    padding: 10px;
   }
 `;
 

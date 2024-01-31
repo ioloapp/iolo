@@ -13,7 +13,10 @@ function AppBottomNavigation() {
     const {t} = useTranslation();
 
     return (
-        <BottomNavigation showLabels value={location.pathname} sx={{position: 'fixed', bottom: 0, width: 1.0}}>
+        <BottomNavigation showLabels value={location.pathname} sx={{position: 'fixed', bottom: 0, width: 1.0,
+            "& .Mui-selected, .Mui-selected > svg": {
+                color: "#F5B542"
+            }}}>
             <BottomNavigationAction label={t('secrets.title')} icon={<LockOpenOutlinedIcon/>} component={Link}
                                     to={ROUTE_SECRETS} value={ROUTE_SECRETS}/>
             <BottomNavigationAction label={t('policies.title')} icon={<HistoryEduOutlinedIcon/>} component={Link}
