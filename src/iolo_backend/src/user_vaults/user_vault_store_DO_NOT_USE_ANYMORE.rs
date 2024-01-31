@@ -6,27 +6,29 @@ use crate::common::{error::SmartVaultErr, uuid::UUID};
 use crate::policies::conditions::Condition;
 use crate::policies::policy::{AddPolicyArgs, Policy, PolicyID};
 use crate::policies::policy_registries::{
-    PolicyRegistryForBeneficiaries, PolicyRegistryForValidators,
+    PolicyRegistryForBeneficiaries_DO_NOT_USE_ANYMORE,
+    PolicyRegistryForValidators_DO_NOT_USE_ANYMORE,
 };
 use crate::secrets::secret::SecretSymmetricCryptoMaterial;
 use crate::smart_vaults::smart_vault::{
-    POLICY_REGISTRY_FOR_BENEFICIARIES, POLICY_REGISTRY_FOR_VALIDATORS,
+    POLICY_REGISTRY_FOR_BENEFICIARIES_DO_NOT_USE_ANYMORE,
+    POLICY_REGISTRY_FOR_VALIDATORS_DO_NOT_USE_ANYMORE,
 };
 use crate::user_vaults::user_vault::UserVault;
 use crate::users::user::{AddUserArgs, User};
 
 #[derive(CandidType, Deserialize, Clone, Debug)]
-pub struct UserVaultStore {
+pub struct UserVaultStore_DO_NOT_USE_ANYMORE {
     pub user_vaults: BTreeMap<UUID, UserVault>,
 }
 
-impl Default for UserVaultStore {
+impl Default for UserVaultStore_DO_NOT_USE_ANYMORE {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl UserVaultStore {
+impl UserVaultStore_DO_NOT_USE_ANYMORE {
     pub fn new() -> Self {
         Self {
             user_vaults: BTreeMap::new(),
@@ -106,8 +108,8 @@ impl UserVaultStore {
         user_vault.add_policy(policy.clone())?;
 
         // Add entry to policy registry for beneficiaries (reverse index)
-        POLICY_REGISTRY_FOR_BENEFICIARIES.with(
-            |tr: &RefCell<PolicyRegistryForBeneficiaries>| -> Result<(), SmartVaultErr> {
+        POLICY_REGISTRY_FOR_BENEFICIARIES_DO_NOT_USE_ANYMORE.with(
+            |tr: &RefCell<PolicyRegistryForBeneficiaries_DO_NOT_USE_ANYMORE>| -> Result<(), SmartVaultErr> {
                 let mut policy_registry = tr.borrow_mut();
                 policy_registry.add_policy_to_registry(&policy);
                 Ok(())
@@ -118,8 +120,8 @@ impl UserVaultStore {
         for condition in policy.conditions().iter() {
             match condition {
                 Condition::XOutOfYCondition(xoutofy) => {
-                    POLICY_REGISTRY_FOR_VALIDATORS.with(
-                        |pr: &RefCell<PolicyRegistryForValidators>| -> Result<(), SmartVaultErr> {
+                    POLICY_REGISTRY_FOR_VALIDATORS_DO_NOT_USE_ANYMORE.with(
+                        |pr: &RefCell<PolicyRegistryForValidators_DO_NOT_USE_ANYMORE>| -> Result<(), SmartVaultErr> {
                             let mut policy_registry = pr.borrow_mut();
                             policy_registry.add_policy_to_registry(
                                 &xoutofy.validators,
@@ -149,8 +151,8 @@ impl UserVaultStore {
 
         // Update policy registry for beneficiaries
         let t_old = user_vault.get_policy(t.id())?;
-        POLICY_REGISTRY_FOR_BENEFICIARIES.with(
-            |tr: &RefCell<PolicyRegistryForBeneficiaries>| -> Result<(), SmartVaultErr> {
+        POLICY_REGISTRY_FOR_BENEFICIARIES_DO_NOT_USE_ANYMORE.with(
+            |tr: &RefCell<PolicyRegistryForBeneficiaries_DO_NOT_USE_ANYMORE>| -> Result<(), SmartVaultErr> {
                 let mut policy_registry = tr.borrow_mut();
                 policy_registry.update_policy_in_registry(&t, t_old);
                 Ok(())
@@ -158,8 +160,8 @@ impl UserVaultStore {
         )?;
 
         // Update policy registry for beneficiaries
-        POLICY_REGISTRY_FOR_VALIDATORS.with(
-            |tr: &RefCell<PolicyRegistryForValidators>| -> Result<(), SmartVaultErr> {
+        POLICY_REGISTRY_FOR_VALIDATORS_DO_NOT_USE_ANYMORE.with(
+            |tr: &RefCell<PolicyRegistryForValidators_DO_NOT_USE_ANYMORE>| -> Result<(), SmartVaultErr> {
                 let mut policy_registry = tr.borrow_mut();
                 policy_registry.update_policy_in_registry(&t, t_old);
                 Ok(())
@@ -208,8 +210,8 @@ impl UserVaultStore {
 
         let user_vault = self.user_vaults.get_mut(vault_id).unwrap();
         let policy = user_vault.get_policy(policy_id)?;
-        POLICY_REGISTRY_FOR_BENEFICIARIES.with(
-            |pr: &RefCell<PolicyRegistryForBeneficiaries>| -> Result<(), SmartVaultErr> {
+        POLICY_REGISTRY_FOR_BENEFICIARIES_DO_NOT_USE_ANYMORE.with(
+            |pr: &RefCell<PolicyRegistryForBeneficiaries_DO_NOT_USE_ANYMORE>| -> Result<(), SmartVaultErr> {
                 let mut policy_registry = pr.borrow_mut();
                 policy_registry.remove_policy_from_registry(policy);
                 Ok(())
@@ -268,7 +270,7 @@ mod tests {
 
     #[tokio::test]
     async fn utest_new_user_vault_store() {
-        let user_vault_store = UserVaultStore::new();
+        let user_vault_store = UserVaultStore_DO_NOT_USE_ANYMORE::new();
 
         assert_eq!(
             user_vault_store.user_vaults.len(),
@@ -280,7 +282,7 @@ mod tests {
 
     #[tokio::test]
     async fn utest_create_user_vault() {
-        let mut user_vault_store = UserVaultStore::new();
+        let mut user_vault_store = UserVaultStore_DO_NOT_USE_ANYMORE::new();
 
         // no user vault yet
         assert_eq!(user_vault_store.user_vaults().len(), 0);
@@ -307,7 +309,7 @@ mod tests {
 
     #[tokio::test]
     async fn utest_get_user_vault() {
-        let mut user_vault_store = UserVaultStore::new();
+        let mut user_vault_store = UserVaultStore_DO_NOT_USE_ANYMORE::new();
 
         // Create a new empty user_vault
         let new_uv_id = user_vault_store.create_and_add_user_vault().await;
@@ -321,7 +323,7 @@ mod tests {
 
     #[tokio::test]
     async fn utest_remove_user_vault() {
-        let mut user_vault_store = UserVaultStore::new();
+        let mut user_vault_store = UserVaultStore_DO_NOT_USE_ANYMORE::new();
 
         // no user vault yet
         assert_eq!(user_vault_store.user_vaults().len(), 0);
@@ -346,7 +348,7 @@ mod tests {
 
     #[tokio::test]
     async fn utest_user_vault_store() {
-        let mut user_vault_store = UserVaultStore::new();
+        let mut user_vault_store = UserVaultStore_DO_NOT_USE_ANYMORE::new();
         let new_uv_id = user_vault_store.create_and_add_user_vault().await;
 
         // user vault must be empty
