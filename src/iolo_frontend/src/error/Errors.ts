@@ -97,10 +97,10 @@ export class Unauthorized extends IoloError {
     }
 }
 
-export class NoTestamentsForHeir extends IoloError {
+export class NoTestamentsForBeneficiary extends IoloError {
     constructor(message) {
         super(message);
-        this.name = "NoTestamentsForHeir";
+        this.name = "NoTestamentsForBeneficiary";
     }
 }
 

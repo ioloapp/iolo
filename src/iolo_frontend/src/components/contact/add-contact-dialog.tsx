@@ -17,10 +17,10 @@ import {useTranslation} from "react-i18next";
 export default function AddContactDialog() {
     const dispatch = useAppDispatch();
     const { t } = useTranslation();
-    const showAddHeirDialog = useSelector(selectShowAddContactsDialog);
+    const showAddContactDialog = useSelector(selectShowAddContactsDialog);
     const dialogItem = useSelector(selectContactsDialogItem);
     const dialogItemState = useSelector(selectContactsDialogItemState);
-    const heirError = useSelector(selectContactsError);
+    const contactError = useSelector(selectContactsError);
 
     const handleClickOpen = () => {
         dispatch(contactsActions.openAddDialog());
@@ -34,11 +34,11 @@ export default function AddContactDialog() {
         dispatch(contactsActions.cancelAddContact())
     }
 
-    const createHeir = async () => {
+    const createContact = async () => {
         dispatch(addContactThunk(dialogItem));
     }
 
-    const updateHeir = async () => {
+    const updateContact = async () => {
         dispatch(updateContactThunk(dialogItem));
     }
 
@@ -53,12 +53,12 @@ export default function AddContactDialog() {
             </Fab>
             <BasicDialog  title={t('contacts.dialog.add.title')}
             leadText={t('contacts.dialog.add.text')}
-            isOpen={showAddHeirDialog}
+            isOpen={showAddContactDialog}
             handleClose={handleClose}
             cancelAction={cancelAddContact}
-            okAction={createHeir}
+            okAction={createContact}
             okButtonText={t('contacts.dialog.add.button')}
-            error={heirError}
+            error={contactError}
             dialogItemState={dialogItemState}>
                 <ContactDialogContent />
             </BasicDialog>

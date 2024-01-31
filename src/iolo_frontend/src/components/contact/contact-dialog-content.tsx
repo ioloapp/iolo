@@ -11,8 +11,8 @@ export default function ContactDialogContent() {
     const dispatch = useAppDispatch();
     const dialogItem = useSelector(selectContactsDialogItem);
 
-    const updateContactToAdd = (heir: UiUser) => {
-        dispatch(contactsActions.updateContactToAdd(heir))
+    const updateContactToAdd = (contact: UiUser) => {
+        dispatch(contactsActions.updateContactToAdd(contact))
     }
 
     return (

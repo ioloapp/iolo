@@ -11,7 +11,7 @@ export function ShareId() {
     const currentUser = useSelector(selectCurrentUser);
     const { t } = useTranslation();
     const hostname = process.env.NODE_ENV === 'production' ? 'https://' + process.env.IOLO_FRONTEND_CANISTER_ID + '.icp0.io' : 'http://localhost:8080';
-    let url = hostname + ROUTE_POLICIES + '?action=addHeirWithDeepLink&principalType=' + currentUser.type + '&principalId=' + currentUser.id;
+    let url = hostname + ROUTE_POLICIES + '?action=addContactWithDeepLink&principalType=' + currentUser.type + '&principalId=' + currentUser.id;
     if (currentUser.name) {
         url += '&name=' + currentUser.name;
     }
@@ -33,7 +33,7 @@ export function ShareId() {
                 >
                     <div>
                         <Typography paragraph>
-                            {t('share.info')}Sharing this QR code allows a person to register you as an heir.
+                            {t('share.info')}
                         </Typography>
                     </div>
                     <div>

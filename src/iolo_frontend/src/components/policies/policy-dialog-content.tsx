@@ -40,8 +40,8 @@ export const PolicyDialogContent: FC<PolicyDialogContentProps> = ({readonly, vie
             setSelectedContacts(dialogItem.beneficiaries);
         } else {
             const contactsSelection = contacts.map(h => {
-                const heir = dialogItem.beneficiaries.find(dh => dh.id === h.id);
-                return heir ? {...h, selected: true} : {...h, selected: false};
+                const beneficiary = dialogItem.beneficiaries.find(dh => dh.id === h.id);
+                return beneficiary ? {...h, selected: true} : {...h, selected: false};
             })
             setSelectedContacts(contactsSelection)
             const selectedSecrets = [...groupedSecretList.passwordList, ...groupedSecretList.notesList, ...groupedSecretList.documentsList, ...groupedSecretList.othersList].map(s => {
@@ -75,17 +75,17 @@ export const PolicyDialogContent: FC<PolicyDialogContentProps> = ({readonly, vie
         } as UiPolicyResponse))
     };
 
-    const handleBeneficiaryChange = (heir: SelectedBeneficiary) => {
-        const oldState = dialogItem.beneficiaries.find(s => s.id === heir.id);
+    const handleBeneficiaryChange = (beneficiary: SelectedBeneficiary) => {
+        const oldState = dialogItem.beneficiaries.find(s => s.id === beneficiary.id);
         let beneficiaries: UiUser[];
         if (oldState) {
             //not selected
-            beneficiaries = dialogItem.beneficiaries.filter(s => s.id !== heir.id)
-            setSelectedContacts(selectedContacts.map(s => s.id !== heir.id ? s : {...s, selected: false}));
+            beneficiaries = dialogItem.beneficiaries.filter(s => s.id !== beneficiary.id)
+            setSelectedContacts(selectedContacts.map(s => s.id !== beneficiary.id ? s : {...s, selected: false}));
         }else{
             //selected
-            beneficiaries = [...dialogItem.beneficiaries, heir]
-            setSelectedContacts(selectedContacts.map(s => s.id !== heir.id ? s : {...s, selected: true}));
+            beneficiaries = [...dialogItem.beneficiaries, beneficiary]
+            setSelectedContacts(selectedContacts.map(s => s.id !== beneficiary.id ? s : {...s, selected: true}));
         }
         //Add
         dispatch(policiesActions.updateDialogItem({

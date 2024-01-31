@@ -14,10 +14,10 @@ import {Trans, useTranslation} from "react-i18next";
 export default function DeleteContactDialog() {
     const dispatch = useAppDispatch();
     const { t } = useTranslation();
-    const showDeleteHeirDialog: boolean = useSelector(selectShowDeleteContactsDialog);
-    const heirToAdd = useSelector(selectContactsDialogItem);
-    const heirError = useSelector(selectContactsError);
-    const heirToAddState = useSelector(selectContactsDialogItemState);
+    const showDeleteContactDialog: boolean = useSelector(selectShowDeleteContactsDialog);
+    const contactToAdd = useSelector(selectContactsDialogItem);
+    const contactError = useSelector(selectContactsError);
+    const contactToAddState = useSelector(selectContactsDialogItemState);
 
     const handleClose = () => {
         dispatch(contactsActions.closeDeleteDialog());
@@ -27,20 +27,20 @@ export default function DeleteContactDialog() {
         dispatch(contactsActions.cancelDeleteContact())
     }
 
-    const deleteHeir = async () => {
-        dispatch(deleteContactThunk(heirToAdd));
+    const deleteContact = async () => {
+        dispatch(deleteContactThunk(contactToAdd));
     }
 
     return (
         <BasicDialog  title={t('contacts.dialog.delete.title')}
-                      leadText={<Trans i18nKey='contacts.dialog.delete.text' values={{contact: heirToAdd.name}} />}
-                      isOpen={showDeleteHeirDialog}
+                      leadText={<Trans i18nKey='contacts.dialog.delete.text' values={{contact: contactToAdd.name}} />}
+                      isOpen={showDeleteContactDialog}
                       handleClose={handleClose}
                       cancelAction={cancelDeleteContact}
-                      okAction={deleteHeir}
+                      okAction={deleteContact}
                       okButtonText={t('contacts.dialog.delete.button')}
-                      error={heirError}
-                      dialogItemState={heirToAddState}>
+                      error={contactError}
+                      dialogItemState={contactToAddState}>
         </BasicDialog>
     );
 }

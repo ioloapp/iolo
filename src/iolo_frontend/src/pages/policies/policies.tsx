@@ -90,7 +90,7 @@ export function Policies() {
                                     <ListItem key={policy.id} secondaryAction={
                                         <>
                                             {
-                                                policy.role === UiPolicyListEntryRole.Testator &&
+                                                policy.role === UiPolicyListEntryRole.Owner &&
                                                 <>
                                                     <IconButton edge="end" aria-label="view"
                                                                 onClick={() => viewPolicy(policy)}>
@@ -107,11 +107,11 @@ export function Policies() {
                                                 </>
                                             }
                                             {
-                                                policy.role === UiPolicyListEntryRole.Heir && !policy.conditionsStatus &&
+                                                policy.role === UiPolicyListEntryRole.Beneficiary && !policy.conditionsStatus &&
                                                 <LockOutlinedIcon/>
                                             }
                                             {
-                                                policy.role === UiPolicyListEntryRole.Heir && policy.conditionsStatus &&
+                                                policy.role === UiPolicyListEntryRole.Beneficiary && policy.conditionsStatus &&
                                                 <IconButton edge="end" aria-label="view"
                                                             onClick={() => viewPolicy(policy)}>
                                                     <VisibilityOutlinedIcon/>
@@ -126,7 +126,7 @@ export function Policies() {
                                         </ListItemAvatar>
                                         <ListItemText
                                             primary={policy.name}
-                                            secondary={policy.role === UiPolicyListEntryRole.Heir ? `${t('policies.beneficiary')}: ${policy.owner?.id}` : ''}
+                                            secondary={policy.role === UiPolicyListEntryRole.Beneficiary ? `${t('policies.beneficiary')}: ${policy.owner?.id}` : ''}
                                         />
                                     </ListItem>,
                                 )}

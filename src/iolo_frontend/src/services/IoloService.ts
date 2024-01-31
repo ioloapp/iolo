@@ -196,7 +196,7 @@ class IoloService {
     }
 
     public async getSecretAsBeneficiary(secretId: string, policyId: string): Promise<UiSecret> {
-        console.debug('start getting secret for heir...')
+        console.debug('start getting secret for beneficiary...')
         const result1 = (await this.getActor()).get_secret_as_beneficiary(secretId.toString(), policyId);
         const result2 = (await this.getActor()).get_secret_symmetric_crypto_material_as_beneficiary(BigInt(secretId), policyId);
 
@@ -286,7 +286,7 @@ class IoloService {
         // Add policy
         const result = await (await this.getActor()).add_policy(addPolicyArgs);
         if (result['Ok']) {
-            return this.mapPolicyToUiPolicy(result['Ok'], UiPolicyListEntryRole.Testator);
+            return this.mapPolicyToUiPolicy(result['Ok'], UiPolicyListEntryRole.Owner);
         } else throw mapError(result['Err']);
 
     }
@@ -298,7 +298,7 @@ class IoloService {
         // Update policy
         const result = await (await this.getActor()).update_policy(policy);
         if (result['Ok']) {
-            return this.mapPolicyToUiPolicy(result['Ok'], UiPolicyListEntryRole.Testator);
+            return this.mapPolicyToUiPolicy(result['Ok'], UiPolicyListEntryRole.Owner);
         } else throw mapError(result['Err']);
     }
 
@@ -311,11 +311,13 @@ class IoloService {
                     id: item.id,
                     name: item.name?.length > 0 ? item.name[0] : undefined,
                     owner: { id: item.owner?.toString()},
-                    role: UiPolicyListEntryRole.Testator,
+                    role: UiPolicyListEntryRole.Owner,
                     conditionStatus: item.condition_status,
                 }
             });
-        } else throw mapError(resultAsTestator['Err']);
+        } else {
+            throw mapError(resultAsTestator['Err']);
+        }
 
         const resultAsBeneficiary: Result_7 = await (await this.getActor()).get_policy_list_as_beneficiary();
         let policiesAsBeneficiary: UiPolicyListEntry[] =  [];
@@ -325,12 +327,12 @@ class IoloService {
                     id: item.id,
                     name: item.name?.length > 0 ? item.name[0] : undefined,
                     owner: { id: item.owner?.toString()},
-                    role: UiPolicyListEntryRole.Heir,
+                    role: UiPolicyListEntryRole.Beneficiary,
                     conditionStatus: item.condition_status,
                 }
             });
         } else if (resultAsBeneficiary['Err']) {
-            throw mapError(resultAsTestator['Err']);
+            throw mapError(resultAsBeneficiary['Err']);
         }
         return policiesAsTestator.concat(policiesAsBeneficiary);
     }
@@ -339,7 +341,7 @@ class IoloService {
         const result: Result_6 = await (await this.getActor()).get_policy_as_owner(id);
         console.debug('start get policies as owner', result);
         if (result['Ok']) {
-            return this.mapPolicyResponseToUiPolicyResponse(result['Ok'], UiPolicyListEntryRole.Testator);
+            return this.mapPolicyResponseToUiPolicyResponse(result['Ok'], UiPolicyListEntryRole.Owner);
         }
         throw mapError(result['Err']);
     }
@@ -347,7 +349,7 @@ class IoloService {
     public async getPolicyAsBeneficiary(id: string): Promise<UiPolicyResponse> {
         const result: Result_6 = await (await this.getActor()).get_policy_as_beneficiary(id);
         if (result['Ok']) {
-            return this.mapPolicyResponseToUiPolicyResponse(result['Ok'], UiPolicyListEntryRole.Heir);
+            return this.mapPolicyResponseToUiPolicyResponse(result['Ok'], UiPolicyListEntryRole.Beneficiary);
         }
         throw mapError(result['Err']);
     }
@@ -368,17 +370,17 @@ class IoloService {
         throw mapError(result['Err']);
     }
 
-    public async addContact(heir: UiUser): Promise<UiUser> {
-        console.debug('start adding heir: ', heir);
+    public async addContact(contact: UiUser): Promise<UiUser> {
+        console.debug('start adding contact: ', contact);
 
         // Check if it's a valid principal
         try {
-            Principal.fromText(heir.id);
+            Principal.fromText(contact.id);
         } catch (e) {
             throw mapError(new Error('PrincipalCreationFailed'));
         }
 
-        const user = this.mapUiUserToUser(heir);
+        const user = this.mapUiUserToUser(contact);
         let addUserArgs: AddUserArgs = {
             email: user.email,
             id: user.id,
@@ -401,8 +403,8 @@ class IoloService {
         throw mapError(result['Err']);
     }
 
-    public async updateContact(heir: UiUser): Promise<UiUser> {
-        const user = this.mapUiUserToUser(heir);
+    public async updateContact(contact: UiUser): Promise<UiUser> {
+        const user = this.mapUiUserToUser(contact);
         const result: Result = await (await this.getActor()).update_beneficiary(user);
 
         if (result['Ok']) {

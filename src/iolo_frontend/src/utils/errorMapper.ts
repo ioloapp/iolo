@@ -2,7 +2,7 @@ import {
     InvalidTestamentCondition,
     IoloError,
     KeyGenerationNotAllowed,
-    NoTestamentsForHeir,
+    NoTestamentsForBeneficiary,
     PrincipalCreationFailed,
     SecretAlreadyExists,
     SecretDoesNotExist,
@@ -45,7 +45,7 @@ export function mapError(input: Error): IoloError{
         }  else if (input.hasOwnProperty('Unauthorized')) {
             throw new Unauthorized(input['Unauthorized'])
         } else if (input.hasOwnProperty('NoTestamentsForHeir')) {
-            throw new NoTestamentsForHeir(input['NoTestamentsForHeir'])
+            throw new NoTestamentsForBeneficiary(input['NoTestamentsForHeir'])
         }  else if (input.name ===  'KeyGenerationNotAllowed') {
             throw new KeyGenerationNotAllowed(input.message);
         } else if (input.name === 'PrincipalCreationFailed') {

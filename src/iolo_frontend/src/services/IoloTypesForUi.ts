@@ -89,8 +89,8 @@ export interface UiValidator {
 }
 
 export enum UiPolicyListEntryRole {
-    Testator = "Testator",
-    Heir = "Heir",
+    Owner = "Owner",
+    Beneficiary = "Beneficiary",
     Validator = "Validator",
 }
 

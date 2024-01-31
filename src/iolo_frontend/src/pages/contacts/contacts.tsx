@@ -27,7 +27,7 @@ export function Contacts() {
     const queryParams = new URLSearchParams(useLocation().search);
     const { t } = useTranslation();
 
-    if (queryParams.get('action') === 'addHeirWithDeepLink' && queryParams.get('principalId') && queryParams.get('principalType')) {
+    if (queryParams.get('action') === 'addContactWithDeepLink' && queryParams.get('principalId') && queryParams.get('principalType')) {
         dispatch(contactsActions.updateContactToAdd({
             type: queryParams.get('principalType'),
             email: queryParams.get('email') ? queryParams.get('email') : '',
@@ -47,13 +47,13 @@ export function Contacts() {
 
 
     const [filteredContacts, setFilteredContacts] = useState(contacts)
-    const deleteHeir = (heir: UiUser) => {
-        dispatch(contactsActions.updateContactToAdd(heir));
+    const deleteContact = (contact: UiUser) => {
+        dispatch(contactsActions.updateContactToAdd(contact));
         dispatch(contactsActions.openDeleteDialog());
     }
 
-    const editHeir = (heir: UiUser) => {
-        dispatch(contactsActions.updateContactToAdd(heir));
+    const editContact = (contact: UiUser) => {
+        dispatch(contactsActions.updateContactToAdd(contact));
         dispatch(contactsActions.openEditDialog());
     }
 
@@ -80,18 +80,18 @@ export function Contacts() {
                     {!hasError() && filteredContacts &&
                         <Box>
                             <List dense={false}>
-                                {filteredContacts.map((heir: UiUser) =>
-                                    <ListItem key={heir.id} secondaryAction={
+                                {filteredContacts.map((contact: UiUser) =>
+                                    <ListItem key={contact.id} secondaryAction={
                                         <>
-                                            <IconButton edge="end" aria-label="delete" onClick={() => editHeir(heir)}>
+                                            <IconButton edge="end" aria-label="delete" onClick={() => editContact(contact)}>
                                                 <EditOutlinedIcon/>
                                             </IconButton>
-                                            <IconButton edge="end" aria-label="delete" onClick={() => deleteHeir(heir)}>
+                                            <IconButton edge="end" aria-label="delete" onClick={() => deleteContact(contact)}>
                                                 <DeleteIcon/>
                                             </IconButton>
                                         </>
                                     }>
-                                        {heir.type === UiUserType.Person &&
+                                        {contact.type === UiUserType.Person &&
                                             <>
                                                 <ListItemAvatar>
                                                     <Avatar>
@@ -100,12 +100,12 @@ export function Contacts() {
                                                 </ListItemAvatar>
 
                                                 <ListItemText
-                                                    primary={`${heir.name}`}
-                                                    secondary={heir.email}
+                                                    primary={`${contact.name}`}
+                                                    secondary={contact.email}
                                                 />
                                             </>
                                         }
-                                        {heir.type === UiUserType.Company &&
+                                        {contact.type === UiUserType.Company &&
                                             <>
                                                 <ListItemAvatar>
                                                     <Avatar>
@@ -114,8 +114,8 @@ export function Contacts() {
                                                 </ListItemAvatar>
 
                                                 <ListItemText
-                                                    primary={heir.name}
-                                                    secondary={heir.email}
+                                                    primary={contact.name}
+                                                    secondary={contact.email}
                                                 />
                                             </>
                                         }

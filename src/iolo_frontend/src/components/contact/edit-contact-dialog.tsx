@@ -15,10 +15,10 @@ import {useTranslation} from "react-i18next";
 export default function EditContactDialog() {
     const dispatch = useAppDispatch();
     const { t } = useTranslation();
-    const showEditHeirDialog = useSelector(selectShowEditContactsDialog);
-    const heirToAdd = useSelector(selectContactsDialogItem);
-    const heirToAddState = useSelector(selectContactsDialogItemState);
-    const heirError = useSelector(selectContactsError);
+    const showEditContactDialog = useSelector(selectShowEditContactsDialog);
+    const contactToAdd = useSelector(selectContactsDialogItem);
+    const contactToAddState = useSelector(selectContactsDialogItemState);
+    const contactError = useSelector(selectContactsError);
 
     const handleClose = () => {
         dispatch(contactsActions.closeAddDialog());
@@ -28,20 +28,20 @@ export default function EditContactDialog() {
         dispatch(contactsActions.cancelEditContact())
     }
 
-    const updateHeir = async () => {
-        dispatch(updateContactThunk(heirToAdd));
+    const updateContact = async () => {
+        dispatch(updateContactThunk(contactToAdd));
     }
 
     return (
             <BasicDialog  title={t('contacts.dialog.edit.title')}
             leadText={t('contacts.dialog.edit.text')}
-            isOpen={showEditHeirDialog}
+            isOpen={showEditContactDialog}
             handleClose={handleClose}
             cancelAction={cancelEditContact}
-            okAction={updateHeir}
+            okAction={updateContact}
             okButtonText={t('contacts.dialog.edit.button')}
-            error={heirError}
-            dialogItemState={heirToAddState}>
+            error={contactError}
+            dialogItemState={contactToAddState}>
                 <ContactDialogContent />
             </BasicDialog>
     );
