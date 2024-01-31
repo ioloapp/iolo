@@ -25,17 +25,17 @@ export const SecretDialogContent : FC<SecretDialogContentProps> = ({readonly}) =
     return (
         <>
             <FormControl fullWidth>
-                <Typography variant="body2">Category</Typography>
-                <Select
-                    id="category-select"
-                    value={dialogItem.category}
-                    label={t('secrets.dialog.content.category')}
-                    disabled={readonly}
-                    onChange={e => updateSecretToAdd({
-                        ...dialogItem,
-                        category: UiSecretCategory[e.target.value as keyof typeof UiSecretCategory]
-                    })}
-                >
+                <div className="input-field">
+                    <Typography variant="body2">{t('secrets.dialog.content.category')}</Typography>
+                    <Select
+                        id="category-select"
+                        value={dialogItem.category}
+                        disabled={readonly}
+                        onChange={e => updateSecretToAdd({
+                            ...dialogItem,
+                            category: UiSecretCategory[e.target.value as keyof typeof UiSecretCategory]
+                        })}
+                    >
                     {Object.keys(UiSecretCategory)
                         .map(key => {
                             return <MenuItem key={key} value={key}>{key}</MenuItem>
@@ -43,6 +43,7 @@ export const SecretDialogContent : FC<SecretDialogContentProps> = ({readonly}) =
 
                     }
                 </Select>
+                </div>
                 <TextField
                     autoFocus
                     margin="dense"
