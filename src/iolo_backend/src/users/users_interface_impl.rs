@@ -91,6 +91,15 @@ pub fn get_contact_list_impl(caller: &Principal) -> Result<Vec<Contact>, SmartVa
     )
 }
 
+pub fn update_contact_impl(contact: Contact, caller: &Principal) -> Result<Contact, SmartVaultErr> {
+    USER_STORE.with(
+        |ur: &RefCell<UserStore>| -> Result<Contact, SmartVaultErr> {
+            let mut user_store = ur.borrow_mut();
+            user_store.update_contact(*caller, contact)
+        },
+    )
+}
+
 pub fn remove_contact_impl(contact: Contact, caller: &Principal) -> Result<(), SmartVaultErr> {
     USER_STORE.with(|ur: &RefCell<UserStore>| -> Result<(), SmartVaultErr> {
         let mut user_store = ur.borrow_mut();
@@ -116,7 +125,7 @@ mod tests {
             user_store::UserStore,
             users_interface_impl::{
                 add_contact_impl, create_user_impl, delete_user_impl, get_contact_list_impl,
-                get_current_user_impl, remove_contact_impl, update_user_impl,
+                get_current_user_impl, remove_contact_impl, update_contact_impl, update_user_impl,
                 update_user_login_date_impl,
             },
         },
@@ -154,19 +163,26 @@ mod tests {
         };
         let add_contact_result = add_contact_impl(aca, &principal);
         assert!(add_contact_result.is_ok());
-        let mut fetched_user = get_current_user_impl(&principal).unwrap();
+        let fetched_user = get_current_user_impl(&principal).unwrap();
         assert!(fetched_user.contacts.len() == 1);
         assert!(fetched_user.contacts[0].id == contact_principal);
         assert_eq!(
             fetched_user.contacts[0].name,
             Some("my contact".to_string())
         );
+        let mut contact = fetched_user.contacts[0].clone();
 
         // test get contact list
         let contact_list = get_contact_list_impl(&principal).unwrap();
         assert_eq!(contact_list.len(), 1);
 
         // update contact
+        contact.email = Some("hey_my_first_email@hi.com".to_string());
+        update_contact_impl(contact.clone(), &principal).unwrap();
+        let mut fetched_user = get_current_user_impl(&principal).unwrap();
+        assert!(fetched_user.contacts.len() == 1);
+        let contact = fetched_user.contacts[0].clone();
+        assert_eq!(contact.email, Some("hey_my_first_email@hi.com".to_string()));
 
         // update user
         fetched_user.email = Some("donald@ducktown.com".to_string());
@@ -183,7 +199,6 @@ mod tests {
         assert!(new_login_date > old_login_date);
 
         // remove contact
-        let contact = fetched_user.contacts[0].clone();
         remove_contact_impl(contact, &principal).unwrap();
         let contact_list = get_contact_list_impl(&principal).unwrap();
         assert_eq!(contact_list.len(), 0);

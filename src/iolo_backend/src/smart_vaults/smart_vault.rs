@@ -33,7 +33,8 @@ use crate::users::user::{AddUserArgs, User};
 use crate::users::user_store::UserStore;
 use crate::users::users_interface_impl::{
     add_contact_impl, create_user_impl, delete_user_impl, get_contact_list_impl,
-    get_current_user_impl, remove_contact_impl, update_user_impl, update_user_login_date_impl,
+    get_current_user_impl, remove_contact_impl, update_contact_impl, update_user_impl,
+    update_user_login_date_impl,
 };
 use crate::utils::caller::get_caller;
 
@@ -302,16 +303,8 @@ pub fn get_contact_list() -> Result<Vec<Contact>, SmartVaultErr> {
 }
 
 #[ic_cdk_macros::update]
-pub fn update_contact(u: User) -> Result<User, SmartVaultErr> {
-    let principal = get_caller();
-    let user_vault_id: UUID = get_vault_id_for(principal)?;
-
-    USER_VAULT_STORE_DO_NOT_USE_ANYMORE.with(
-        |ms: &RefCell<UserVaultStore_DO_NOT_USE_ANYMORE>| -> Result<User, SmartVaultErr> {
-            let mut master_vault = ms.borrow_mut();
-            master_vault.update_user_contact(&user_vault_id, u)
-        },
-    )
+pub fn update_contact(c: Contact) -> Result<Contact, SmartVaultErr> {
+    update_contact_impl(c, &get_caller())
 }
 
 #[ic_cdk_macros::update]
