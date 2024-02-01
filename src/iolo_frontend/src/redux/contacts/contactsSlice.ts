@@ -49,7 +49,7 @@ export const loadContactsThunk = createAsyncThunk<UiUser[], void, {
 >('contacts/load',
     async (_, {rejectWithValue}) => {
         try {
-            return await ioloService.getContactsList();
+            return ioloService.getContactsList();
         } catch (e) {
             rejectWithValue(e)
         }

@@ -386,10 +386,10 @@ class IoloService {
         }
 
         const result: Result = await (await this.getActor()).add_contact(addContactArgs);
-        if (result['Ok']) {
-            return this.mapUserToUiUser(result['Ok']);
+        if (result['Err']) {
+            throw mapError(result['Err']);
         }
-        throw mapError(result['Err']);
+        return contact;
     }
 
     public async getContactsList(): Promise<UiUser[]> {
@@ -429,12 +429,12 @@ class IoloService {
             id: user.id.toText(),
             name: user.name.length > 0 ? user.name[0] : undefined,
             email: user.email.length > 0 ? user.email[0] : undefined,
-            dateLastLogin: user.date_last_login.length > 0 ? this.nanosecondsInBigintToIsoString(user.date_last_login[0]) : undefined,
-            dateCreated: this.nanosecondsInBigintToIsoString(user.date_created),
-            dateModified: this.nanosecondsInBigintToIsoString(user.date_modified),
+            dateLastLogin: user.date_last_login?.length > 0 ? this.nanosecondsInBigintToIsoString(user.date_last_login[0]) : undefined,
+            dateCreated: user.date_created ? this.nanosecondsInBigintToIsoString(user.date_created) : undefined,
+            dateModified: user.date_modified ? this.nanosecondsInBigintToIsoString(user.date_modified) : undefined,
         }
 
-        if (user.user_type.length === 0) {
+        if (user.user_type === undefined || user.user_type.length === 0) {
             uiUser.type = undefined;
         } else if (user.user_type[0].hasOwnProperty('Person')) {
             uiUser.type = UiUserType.Person;
