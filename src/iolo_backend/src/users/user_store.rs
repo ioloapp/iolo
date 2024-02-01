@@ -232,19 +232,19 @@ impl UserStore {
     pub fn remove_contact(
         &mut self,
         user: Principal,
-        contact: Contact,
+        id: Principal,
     ) -> Result<(), SmartVaultErr> {
         let principal_storable = PrincipalStorable::from(user);
 
         // Only name, email and user_type can be updated
         if let Some(mut existing_user) = self.users.remove(&principal_storable) {
             // check if contact exist in user contacts. if yes, remove it. if not, throw error
-            if !existing_user.contacts.iter().any(|c| c.id == contact.id) {
-                return Err(SmartVaultErr::ContactDoesNotExist(contact.id.to_string()));
+            if !existing_user.contacts.iter().any(|c| c.id == id) {
+                return Err(SmartVaultErr::ContactDoesNotExist(id.to_string()));
             }
 
             // remove contact from user
-            existing_user.contacts.retain(|c| c.id != contact.id);
+            existing_user.contacts.retain(|c| c.id != id);
 
             // store user
             self.users.insert(principal_storable, existing_user);

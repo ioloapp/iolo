@@ -8,7 +8,7 @@ import {
     Policy,
     PolicyListEntry,
     PolicyResponse,
-    Result,
+    Result, Result_10,
     Result_2,
     Result_3,
     Result_5,
@@ -24,7 +24,9 @@ import {
     UpdateSecretArgs,
     User,
     UserType,
-    XOutOfYCondition
+    XOutOfYCondition,
+    Contact,
+    AddContactArgs
 } from "../../../declarations/iolo_backend/iolo_backend.did";
 import {AuthClient} from "@dfinity/auth-client";
 import {createActor} from "../../../declarations/iolo_backend";
@@ -127,7 +129,7 @@ class IoloService {
             name: uiUser.name ? [uiUser.name] : [],
             user_type: uiUser.type ? (uiUser.type === UiUserType.Person ? [{ 'Person' : null }] : [{ 'Company' : null }]) : []
         }
-        const result: Result = await (await this.getActor()).create_user(args);
+        const result: Result_3 = await (await this.getActor()).create_user(args);
         if (result['Ok']) {
             return this.mapUserToUiUser(result['Ok']);
         }
@@ -135,7 +137,7 @@ class IoloService {
     }
 
     public async getCurrentUser(principal?: Principal): Promise<UiUser> {
-        const result: Result = await (await this.getActor()).get_current_user();
+        const result: Result_3 = await (await this.getActor()).get_current_user();
         if (result['Ok']) {
             return this.mapUserToUiUser(result['Ok']);
         }
@@ -149,7 +151,7 @@ class IoloService {
     }
 
     public async updateUser(user: UiUser): Promise<UiUser> {
-        let result: Result = await (await this.getActor()).update_user(this.mapUiUserToUser(user));
+        let result: Result_3 = await (await this.getActor()).update_user(this.mapUiUserToUser(user));
         if (result['Ok']) {
             return this.mapUserToUiUser(result['Ok']);
         }
@@ -157,7 +159,7 @@ class IoloService {
     }
 
     public async updateUserLoginDate(): Promise<UiUser> {
-        let result: Result = await (await this.getActor()).update_user_login_date();
+        let result: Result_3 = await (await this.getActor()).update_user_login_date();
         if (result['Ok']) {
             return this.mapUserToUiUser(result['Ok']);
         }
@@ -265,10 +267,6 @@ class IoloService {
             return;
         }
         throw mapError(result['Err']);
-    }
-
-    public async isUserVaultExisting(): Promise<boolean> {
-        return await (await this.getActor()).is_user_vault_existing();
     }
 
     public async addPolicy(uiPolicy: UiPolicy): Promise<UiPolicy> {
@@ -380,15 +378,14 @@ class IoloService {
             throw mapError(new Error('PrincipalCreationFailed'));
         }
 
-        const user = this.mapUiUserToUser(contact);
-        let addUserArgs: AddUserArgs = {
-            email: user.email,
-            id: user.id,
-            name: user.name,
-            user_type: user.user_type,
+        let addContactArgs: AddContactArgs = {
+            email: contact.email ? [contact.email] : [],
+            id: Principal.fromText(contact.id),
+            name: contact.name ? [contact.name] : [],
+            user_type: contact.type ? [this.mapUiUserTypeToUserType(contact.type)] : [],
         }
 
-        const result: Result = await (await this.getActor()).add_contact(addUserArgs);
+        const result: Result = await (await this.getActor()).add_contact(addContactArgs);
         if (result['Ok']) {
             return this.mapUserToUiUser(result['Ok']);
         }
@@ -405,7 +402,7 @@ class IoloService {
 
     public async updateContact(contact: UiUser): Promise<UiUser> {
         const user = this.mapUiUserToUser(contact);
-        const result: Result = await (await this.getActor()).update_contact(user);
+        const result: Result_10 = await (await this.getActor()).update_contact(user);
 
         if (result['Ok']) {
             return this.mapUserToUiUser(result['Ok']);
@@ -414,7 +411,13 @@ class IoloService {
     }
 
     public async deleteContact(id: string) {
-        const result: Result_3 = await (await this.getActor()).remove_contact(Principal.fromText(id));
+        // Check if it's a valid principal
+        try {
+            Principal.fromText(id);
+        } catch (e) {
+            throw mapError(new Error('PrincipalCreationFailed'));
+        }
+        const result: Result = await (await this.getActor()).remove_contact(Principal.fromText(id));
         if (result['Ok'] === null) {
             return;
         }
@@ -456,7 +459,8 @@ class IoloService {
             date_last_login: uiUser.dateLastLogin? [this.dateToNanosecondsInBigint(uiUser.dateLastLogin)] : [],
             email: uiUser.email ? [uiUser.email] : [],
             date_modified: uiUser.dateCreated ? this.dateToNanosecondsInBigint(uiUser.dateModified) : 0n,
-            user_vault_id_DO_NOT_USE_ANYMORE: null //TODO remove user_vault_id
+            user_vault_id_DO_NOT_USE_ANYMORE: null, //TODO remove user_vault_id
+            contacts: [],
         };
     }
 

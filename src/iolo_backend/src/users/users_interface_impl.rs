@@ -100,10 +100,10 @@ pub fn update_contact_impl(contact: Contact, caller: &Principal) -> Result<Conta
     )
 }
 
-pub fn remove_contact_impl(contact: Contact, caller: &Principal) -> Result<(), SmartVaultErr> {
+pub fn remove_contact_impl(id: Principal, caller: &Principal) -> Result<(), SmartVaultErr> {
     USER_STORE.with(|ur: &RefCell<UserStore>| -> Result<(), SmartVaultErr> {
         let mut user_store = ur.borrow_mut();
-        user_store.remove_contact(*caller, contact)
+        user_store.remove_contact(*caller, id)
     })?;
 
     Ok(())

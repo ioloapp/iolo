@@ -1,6 +1,12 @@
 import type { Principal } from '@dfinity/principal';
 import type { ActorMethod } from '@dfinity/agent';
 
+export interface AddContactArgs {
+  'id' : Principal,
+  'user_type' : [] | [UserType],
+  'name' : [] | [string],
+  'email' : [] | [string],
+}
 export interface AddPolicyArgs {
   'name' : [] | [string],
   'conditions_logical_operator' : LogicalOperator,
@@ -26,6 +32,12 @@ export interface AddUserArgs {
 }
 export type Condition = { 'TimeBasedCondition' : TimeBasedCondition } |
   { 'XOutOfYCondition' : XOutOfYCondition };
+export interface Contact {
+  'id' : Principal,
+  'user_type' : [] | [UserType],
+  'name' : [] | [string],
+  'email' : [] | [string],
+}
 export type LogicalOperator = { 'Or' : null } |
   { 'And' : null };
 export interface Policy {
@@ -64,17 +76,19 @@ export interface PolicyResponse {
   'conditions' : Array<Condition>,
   'date_modified' : bigint,
 }
-export type Result = { 'Ok' : User } |
+export type Result = { 'Ok' : null } |
   { 'Err' : SmartVaultErr };
 export type Result_1 = { 'Ok' : Policy } |
   { 'Err' : SmartVaultErr };
+export type Result_10 = { 'Ok' : Contact } |
+  { 'Err' : SmartVaultErr };
 export type Result_2 = { 'Ok' : Secret } |
   { 'Err' : SmartVaultErr };
-export type Result_3 = { 'Ok' : null } |
+export type Result_3 = { 'Ok' : User } |
   { 'Err' : SmartVaultErr };
 export type Result_4 = { 'Ok' : string } |
   { 'Err' : SmartVaultErr };
-export type Result_5 = { 'Ok' : Array<User> } |
+export type Result_5 = { 'Ok' : Array<Contact> } |
   { 'Err' : SmartVaultErr };
 export type Result_6 = { 'Ok' : PolicyResponse } |
   { 'Err' : SmartVaultErr };
@@ -107,10 +121,12 @@ export interface SecretListEntry {
 export interface SecretSymmetricCryptoMaterial {
   'encrypted_symmetric_key' : Uint8Array | number[],
 }
-export type SmartVaultErr = { 'UserAlreadyExists' : string } |
+export type SmartVaultErr = { 'ContactDoesNotExist' : string } |
+  { 'UserAlreadyExists' : string } |
   { 'OnlyOwnerCanDeleteSecret' : string } |
   { 'SecretHasNoId' : null } |
   { 'UserDeletionFailed' : string } |
+  { 'ContactAlreadyExists' : string } |
   { 'OnlyOwnerCanUpdatePolicy' : string } |
   { 'SecretDoesNotExist' : string } |
   { 'NoPolicyForBeneficiary' : string } |
@@ -144,6 +160,7 @@ export interface User {
   'id' : Principal,
   'user_type' : [] | [UserType],
   'date_created' : bigint,
+  'contacts' : Array<Contact>,
   'name' : [] | [string],
   'secrets' : Array<bigint>,
   'date_last_login' : [] | [bigint],
@@ -163,15 +180,15 @@ export interface XOutOfYCondition {
   'validators' : Array<Validator>,
 }
 export interface _SERVICE {
-  'add_contact' : ActorMethod<[AddUserArgs], Result>,
+  'add_contact' : ActorMethod<[AddContactArgs], Result>,
   'add_policy' : ActorMethod<[AddPolicyArgs], Result_1>,
   'add_secret' : ActorMethod<[AddSecretArgs], Result_2>,
   'confirm_x_out_of_y_condition' : ActorMethod<
     [Principal, string, boolean],
-    Result_3
+    Result
   >,
-  'create_user' : ActorMethod<[AddUserArgs], Result>,
-  'delete_user' : ActorMethod<[], Result_3>,
+  'create_user' : ActorMethod<[AddUserArgs], Result_3>,
+  'delete_user' : ActorMethod<[], Result>,
   'encrypted_ibe_decryption_key_for_caller' : ActorMethod<
     [Uint8Array | number[]],
     string
@@ -189,7 +206,7 @@ export interface _SERVICE {
     string
   >,
   'get_contact_list' : ActorMethod<[], Result_5>,
-  'get_current_user' : ActorMethod<[], Result>,
+  'get_current_user' : ActorMethod<[], Result_3>,
   'get_policy_as_beneficiary' : ActorMethod<[string], Result_6>,
   'get_policy_as_owner' : ActorMethod<[string], Result_6>,
   'get_policy_list_as_beneficiary' : ActorMethod<[], Result_7>,
@@ -204,14 +221,13 @@ export interface _SERVICE {
     Result_9
   >,
   'ibe_encryption_key' : ActorMethod<[], string>,
-  'is_user_vault_existing' : ActorMethod<[], boolean>,
-  'remove_contact' : ActorMethod<[Principal], Result_3>,
-  'remove_policy' : ActorMethod<[string], Result_3>,
-  'remove_secret' : ActorMethod<[string], Result_3>,
+  'remove_contact' : ActorMethod<[Principal], Result>,
+  'remove_policy' : ActorMethod<[string], Result>,
+  'remove_secret' : ActorMethod<[string], Result>,
   'symmetric_key_verification_key' : ActorMethod<[], string>,
-  'update_contact' : ActorMethod<[User], Result>,
+  'update_contact' : ActorMethod<[Contact], Result_10>,
   'update_policy' : ActorMethod<[Policy], Result_1>,
   'update_secret' : ActorMethod<[UpdateSecretArgs], Result_2>,
-  'update_user' : ActorMethod<[User], Result>,
-  'update_user_login_date' : ActorMethod<[], Result>,
+  'update_user' : ActorMethod<[User], Result_3>,
+  'update_user_login_date' : ActorMethod<[], Result_3>,
 }
