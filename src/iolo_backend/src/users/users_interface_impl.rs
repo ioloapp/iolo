@@ -34,7 +34,7 @@ pub fn get_current_user_impl(user: &Principal) -> Result<User, SmartVaultErr> {
     // get current user
     USER_STORE.with(|ur: &RefCell<UserStore>| -> Result<User, SmartVaultErr> {
         let user_store = ur.borrow();
-        match user_store.get_user(&user) {
+        match user_store.get_user(user) {
             Ok(u) => Ok(u.clone()),
             Err(e) => Err(e),
         }
@@ -64,7 +64,7 @@ pub fn delete_user_impl(principal: &Principal) -> Result<(), SmartVaultErr> {
     // delete the user
     USER_STORE.with(|ur: &RefCell<UserStore>| -> Result<User, SmartVaultErr> {
         let mut user_store = ur.borrow_mut();
-        user_store.delete_user(&principal)
+        user_store.delete_user(principal)
     })?;
     Ok(())
 }
@@ -191,11 +191,11 @@ mod tests {
         assert_eq!(fetched_user.email, Some("donald@ducktown.com".to_string()));
 
         // update login date
-        let old_login_date = fetched_user.date_last_login().clone().unwrap();
+        let old_login_date = fetched_user.date_last_login().unwrap();
         std::thread::sleep(std::time::Duration::from_millis(1));
         update_user_login_date_impl(&principal).unwrap();
         let fetched_user = get_current_user_impl(&principal).unwrap();
-        let new_login_date = fetched_user.date_last_login().clone().unwrap();
+        let new_login_date = fetched_user.date_last_login().unwrap();
         assert!(new_login_date > old_login_date);
 
         // remove contact

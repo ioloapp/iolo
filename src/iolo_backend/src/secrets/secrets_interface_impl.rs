@@ -2,12 +2,12 @@ use std::cell::RefCell;
 
 use candid::Principal;
 
+use crate::secrets::secret::UpdateSecretArgs;
 use crate::{
     common::{error::SmartVaultErr, uuid::UUID},
     secrets::secret::SecretSymmetricCryptoMaterial,
     smart_vaults::smart_vault::{SECRET_STORE, USER_STORE},
 };
-use crate::secrets::secret::UpdateSecretArgs;
 
 use super::{
     secret::{AddSecretArgs, Secret, SecretListEntry},
@@ -28,7 +28,7 @@ pub async fn add_secret_impl(
     caller: &Principal,
 ) -> Result<Secret, SmartVaultErr> {
     // generate a new UUID for the secret
-    let new_secret_id: UUID = UUID::new_random().await.into();
+    let new_secret_id: UUID = UUID::new_random().await;
 
     // we generate the secret and produce the decryption material
     let secret: Secret = Secret::create_from_add_secret_args(*caller, new_secret_id, args.clone());
@@ -45,7 +45,7 @@ pub async fn add_secret_impl(
     // add the secret id to the user in the USER_STORE
     USER_STORE.with(|us| {
         let mut user_store = us.borrow_mut();
-        user_store.add_secret_to_user(&caller, new_secret_id, decryption_material)
+        user_store.add_secret_to_user(caller, new_secret_id, decryption_material)
     })?;
     Ok(secret)
 }
@@ -53,7 +53,7 @@ pub async fn add_secret_impl(
 pub fn get_secret_impl(sid: UUID, _principal: &Principal) -> Result<Secret, SmartVaultErr> {
     let secret = SECRET_STORE.with(|x| {
         let secret_store = x.borrow();
-        secret_store.get(&UUID::from(sid.clone()))
+        secret_store.get(&sid.clone())
     });
 
     match secret {
@@ -67,7 +67,7 @@ pub fn get_secret_list_impl(principal: &Principal) -> Result<Vec<SecretListEntry
     // get secret ids from user in user store
     let secret_ids: Vec<UUID> = USER_STORE.with(|us| {
         let user_store = us.borrow();
-        let user = user_store.get_user(&principal).unwrap();
+        let user = user_store.get_user(principal).unwrap();
         user.secrets.clone()
     });
 
@@ -119,7 +119,7 @@ pub fn get_secret_symmetric_crypto_material_impl(
     USER_STORE.with(
         |us| -> Result<SecretSymmetricCryptoMaterial, SmartVaultErr> {
             let user_store = us.borrow();
-            let user = user_store.get_user(&principal)?;
+            let user = user_store.get_user(principal)?;
             user.key_box()
                 .get(&sid)
                 .cloned()
@@ -133,7 +133,7 @@ mod tests {
     use candid::Principal;
 
     use crate::{
-        common::{error::SmartVaultErr, uuid::UUID},
+        common::error::SmartVaultErr,
         secrets::{
             secret::{AddSecretArgs, SecretSymmetricCryptoMaterial, UpdateSecretArgs},
             secrets_interface_impl::{
@@ -183,7 +183,7 @@ mod tests {
         // Check if the right secret is in secret store
         SECRET_STORE.with(|ss| {
             let secret_store = ss.borrow();
-            let secret = secret_store.get(&UUID::from(added_secret.id())).unwrap();
+            let secret = secret_store.get(&added_secret.id()).unwrap();
             assert_eq!(secret.id(), added_secret.id());
             assert_eq!(secret.name(), added_secret.name());
             assert_eq!(secret.username().cloned(), added_secret.username().cloned());
@@ -195,7 +195,7 @@ mod tests {
             let user_store = us.borrow();
             let user = user_store.get_user(&principal).unwrap();
             assert_eq!(user.secrets.len(), 1, "suer should hold 1 secret now");
-            assert_eq!(user.secrets[0], added_secret.id().into());
+            assert_eq!(user.secrets[0], added_secret.id());
         });
 
         // get secret from proper interface implementation
@@ -241,7 +241,7 @@ mod tests {
         // delete secret
         let deleted_secret = remove_secret_impl(updated_secret.id().to_string(), &principal);
         assert!(deleted_secret.is_ok());
-        let test_fetch = get_secret_impl(added_secret.id().clone(), &principal);
+        let test_fetch = get_secret_impl(added_secret.id(), &principal);
         assert!(test_fetch.is_err());
         assert_eq!(
             test_fetch.unwrap_err(),

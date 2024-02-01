@@ -2,6 +2,7 @@ use candid::Principal;
 use ic_stable_structures::StableBTreeMap;
 use serde::{Deserialize, Serialize};
 
+use crate::secrets::secret::UpdateSecretArgs;
 use crate::{
     common::{
         error::SmartVaultErr,
@@ -10,7 +11,6 @@ use crate::{
     },
     secrets::secret::Secret,
 };
-use crate::secrets::secret::UpdateSecretArgs;
 
 #[derive(Serialize, Deserialize)]
 pub struct SecretStore {
@@ -52,15 +52,11 @@ impl SecretStore {
 
     pub fn add_secret(&mut self, secret: Secret) -> Result<Secret, SmartVaultErr> {
         // TODO: DO WE REALLY WANT TO INSERT IF THE SECRET ALREADY EXISTS?
-        let secret_id: UUID = secret.id().clone();
+        let secret_id: UUID = secret.id();
         let s = self.secrets.insert(secret_id, secret.clone());
         match s {
-            Some(_) => {
-                return Err(SmartVaultErr::SecretAlreadyExists(secret_id.to_string()));
-            }
-            None => {
-                return Ok(secret);
-            }
+            Some(_) => Err(SmartVaultErr::SecretAlreadyExists(secret_id.to_string())),
+            None => Ok(secret),
         }
     }
 
@@ -69,7 +65,7 @@ impl SecretStore {
         caller: &Principal,
         usa: UpdateSecretArgs,
     ) -> Result<Secret, SmartVaultErr> {
-        let sid = UUID::from(usa.id);
+        let sid = usa.id;
 
         // Check if the secret exists
         let existing_secret = match self.secrets.get(&sid) {
@@ -85,7 +81,7 @@ impl SecretStore {
         // Update the secret
         let updated_secret = Secret::create_from_update_secret_args(
             existing_secret.owner(),
-            existing_secret.date_created().clone(),
+            *existing_secret.date_created(),
             usa,
         );
         self.secrets.insert(sid, updated_secret);

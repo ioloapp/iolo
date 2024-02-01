@@ -101,7 +101,7 @@ pub fn get_policy_list_as_owner_impl(
     // get policy ids from user in user store
     let policy_ids: Vec<PolicyID> = USER_STORE.with(|us| {
         let user_store = us.borrow();
-        let user = user_store.get_user(&caller).unwrap();
+        let user = user_store.get_user(caller).unwrap();
         user.policies().clone()
     });
 
@@ -229,14 +229,14 @@ mod tests {
 
     use crate::{
         common::error::SmartVaultErr,
+        policies::policies_interface_impl::{
+            add_policy_impl, get_policy_list_as_beneficiary_impl, get_policy_list_as_owner_impl,
+            get_policy_list_as_validator_impl, update_policy_impl,
+        },
         policies::{
             conditions::{Condition, TimeBasedCondition, Validator, XOutOfYCondition},
             policies_interface_impl::{get_policy_as_beneficiary_impl, get_policy_as_owner_impl},
             policy::{AddPolicyArgs, LogicalOperator, PolicyResponse},
-        },
-        policies::policies_interface_impl::{
-            add_policy_impl, get_policy_list_as_beneficiary_impl, get_policy_list_as_owner_impl,
-            get_policy_list_as_validator_impl, update_policy_impl,
         },
         secrets::{
             secret::{AddSecretArgs, SecretSymmetricCryptoMaterial},

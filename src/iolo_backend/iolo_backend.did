@@ -76,6 +76,7 @@ type PolicyResponse = record {
 };
 type Result = variant { Ok; Err : SmartVaultErr };
 type Result_1 = variant { Ok : Policy; Err : SmartVaultErr };
+type Result_10 = variant { Ok : Contact; Err : SmartVaultErr };
 type Result_2 = variant { Ok : Secret; Err : SmartVaultErr };
 type Result_3 = variant { Ok : User; Err : SmartVaultErr };
 type Result_4 = variant { Ok : text; Err : SmartVaultErr };
@@ -109,6 +110,7 @@ type SecretSymmetricCryptoMaterial = record {
   encrypted_symmetric_key : vec nat8;
 };
 type SmartVaultErr = variant {
+  ContactDoesNotExist : text;
   UserAlreadyExists : text;
   OnlyOwnerCanDeleteSecret : text;
   SecretHasNoId;
@@ -194,12 +196,11 @@ service : () -> {
       Result_9,
     ) query;
   ibe_encryption_key : () -> (text);
-  is_user_vault_existing : () -> (bool) query;
-  remove_contact : (principal) -> (Result);
+  remove_contact : (Contact) -> (Result);
   remove_policy : (text) -> (Result);
   remove_secret : (text) -> (Result);
   symmetric_key_verification_key : () -> (text);
-  update_contact : (User) -> (Result_3);
+  update_contact : (Contact) -> (Result_10);
   update_policy : (Policy) -> (Result_1);
   update_secret : (UpdateSecretArgs) -> (Result_2);
   update_user : (User) -> (Result_3);

@@ -39,12 +39,8 @@ impl PolicyStore {
     pub fn get(&self, policy_id: &str) -> Result<Policy, SmartVaultErr> {
         let p = self.policies.get(&policy_id.to_string());
         match p {
-            Some(p) => {
-                return Ok(p.clone());
-            }
-            None => {
-                return Err(SmartVaultErr::PolicyDoesNotExist(policy_id.to_string()));
-            }
+            Some(p) => Ok(p.clone()),
+            None => Err(SmartVaultErr::PolicyDoesNotExist(policy_id.to_string())),
         }
     }
 
@@ -52,7 +48,7 @@ impl PolicyStore {
         let policy_id: String = policy.id().clone();
         let p = self.policies.insert(policy_id.clone(), policy.clone());
         match p {
-            Some(_) => return Err(SmartVaultErr::PolicyAlreadyExists(policy_id.to_string())),
+            Some(_) => Err(SmartVaultErr::PolicyAlreadyExists(policy_id.to_string())),
             None => Ok(policy),
         }
     }
@@ -62,7 +58,7 @@ impl PolicyStore {
         let p = self.policies.insert(policy_id.clone(), policy.clone());
         match p {
             Some(_) => Ok(policy),
-            None => return Err(SmartVaultErr::PolicyDoesNotExist(policy_id.to_string())),
+            None => Err(SmartVaultErr::PolicyDoesNotExist(policy_id.to_string())),
         }
     }
 

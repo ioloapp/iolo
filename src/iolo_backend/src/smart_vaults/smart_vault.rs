@@ -141,7 +141,7 @@ pub fn get_secret_as_beneficiary(
     )?;
 
     // Get user vault of owner
-    let user_vault_id: UUID = get_vault_id_for(result_pr.1)?;
+    let user_vault_id: UUID = get_vault_id_for_DO_NOT_USE_ANYMORE(result_pr.1)?;
 
     // Read policy
     let result_mv = USER_VAULT_STORE_DO_NOT_USE_ANYMORE.with(
@@ -185,7 +185,7 @@ pub fn get_secret_symmetric_crypto_material_as_beneficiary(
     )?;
 
     // Get user vault of owner
-    let user_vault_id: UUID = get_vault_id_for(result_tr.1)?;
+    let user_vault_id: UUID = get_vault_id_for_DO_NOT_USE_ANYMORE(result_tr.1)?;
 
     // Read policy
     let result_mv = USER_VAULT_STORE_DO_NOT_USE_ANYMORE.with(
@@ -247,13 +247,26 @@ pub fn update_policy(policy: Policy) -> Result<Policy, SmartVaultErr> {
 }
 
 #[ic_cdk_macros::update]
+pub fn remove_policy(policy_id: String) -> Result<(), SmartVaultErr> {
+    let principal = get_caller();
+    let user_vault_id: UUID = get_vault_id_for_DO_NOT_USE_ANYMORE(principal)?;
+
+    USER_VAULT_STORE_DO_NOT_USE_ANYMORE.with(
+        |ms: &RefCell<UserVaultStore_DO_NOT_USE_ANYMORE>| -> Result<(), SmartVaultErr> {
+            let mut master_vault = ms.borrow_mut();
+            master_vault.remove_user_policies(&user_vault_id, &policy_id)
+        },
+    )
+}
+
+#[ic_cdk_macros::update]
 pub fn confirm_x_out_of_y_condition(
     owner: Principal,
     policy_id: PolicyID,
     status: bool,
 ) -> Result<(), SmartVaultErr> {
     // Get user vault of owner
-    let user_vault_id: UUID = get_vault_id_for(owner)?;
+    let user_vault_id: UUID = get_vault_id_for_DO_NOT_USE_ANYMORE(owner)?;
 
     // Read policy
     let mut result_mv = USER_VAULT_STORE_DO_NOT_USE_ANYMORE.with(
@@ -274,19 +287,6 @@ pub fn confirm_x_out_of_y_condition(
         }
         None => Err(SmartVaultErr::Unauthorized),
     }
-}
-
-#[ic_cdk_macros::update]
-pub fn remove_policy(policy_id: String) -> Result<(), SmartVaultErr> {
-    let principal = get_caller();
-    let user_vault_id: UUID = get_vault_id_for(principal)?;
-
-    USER_VAULT_STORE_DO_NOT_USE_ANYMORE.with(
-        |ms: &RefCell<UserVaultStore_DO_NOT_USE_ANYMORE>| -> Result<(), SmartVaultErr> {
-            let mut master_vault = ms.borrow_mut();
-            master_vault.remove_user_policies(&user_vault_id, &policy_id)
-        },
-    )
 }
 
 /**
@@ -312,16 +312,18 @@ pub fn remove_contact(contact: Contact) -> Result<(), SmartVaultErr> {
     remove_contact_impl(contact, &get_caller())
 }
 
-#[ic_cdk_macros::query]
-pub fn is_user_vault_existing() -> bool {
-    let principal = get_caller();
-    if get_vault_id_for(principal).is_ok() {
-        return true;
-    }
-    false
-}
+// #[ic_cdk_macros::query]
+// pub fn is_user_vault_existing() -> bool {
+//     let principal = get_caller();
+//     if get_vault_id_for(principal).is_ok() {
+//         return true;
+//     }
+//     false
+// }
 
-pub fn get_vault_id_for(principal: Principal) -> Result<UserVaultID, SmartVaultErr> {
+pub fn get_vault_id_for_DO_NOT_USE_ANYMORE(
+    principal: Principal,
+) -> Result<UserVaultID, SmartVaultErr> {
     USER_STORE.with(|ur: &RefCell<UserStore>| -> Result<UUID, SmartVaultErr> {
         let user_store = ur.borrow();
         let user = user_store.get_user(&principal)?;

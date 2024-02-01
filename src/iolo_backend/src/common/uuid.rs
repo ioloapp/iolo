@@ -1,7 +1,7 @@
 use std::{borrow::Cow, cell::RefCell, fmt};
 
 use candid::{CandidType, Decode, Deserialize, Encode};
-use ic_stable_structures::{Storable, storable::Bound};
+use ic_stable_structures::{storable::Bound, Storable};
 use serde::Serialize;
 
 use crate::{smart_vaults::smart_vault::UUID_COUNTER, utils::random::get_new_random};
@@ -64,9 +64,9 @@ impl From<&str> for UUID {
     }
 }
 
-impl Into<String> for UUID {
-    fn into(self) -> String {
-        self.0.to_string()
+impl From<UUID> for String {
+    fn from(uuid: UUID) -> Self {
+        uuid.0.to_string()
     }
 }
 
