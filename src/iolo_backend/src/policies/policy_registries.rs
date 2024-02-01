@@ -160,11 +160,7 @@ impl PolicyRegistries {
 
         let policy_ids = match self.beneficiary_to_policies.get(&beneficiary_storable) {
             Some(sphs) => sphs.0.clone(),
-            None => {
-                return Err(SmartVaultErr::NoPolicyForBeneficiary(
-                    beneficiary.to_string(),
-                ))
-            }
+            None => return Ok(vec![]),
         };
 
         // get the policies form the policy store
@@ -188,7 +184,7 @@ impl PolicyRegistries {
 
         let policy_ids = match self.validator_to_policies.get(&beneficiary_storable) {
             Some(sphs) => sphs.0.clone(),
-            None => return Err(SmartVaultErr::NoPolicyForValidator(validator.to_string())),
+            None => return Ok(vec![]),
         };
 
         // get the policies form the policy store
