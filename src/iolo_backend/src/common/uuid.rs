@@ -1,7 +1,7 @@
 use std::{borrow::Cow, cell::RefCell, fmt};
 
 use candid::{CandidType, Decode, Deserialize, Encode};
-use ic_stable_structures::{storable::Bound, Storable};
+use ic_stable_structures::{Storable, storable::Bound};
 use serde::Serialize;
 
 use crate::{smart_vaults::smart_vault::UUID_COUNTER, utils::random::get_new_random};

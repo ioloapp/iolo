@@ -15,9 +15,9 @@ cfg_if::cfg_if! {
 
 #[cfg(test)]
 mod tests {
+    use std::thread;
 
     use super::*;
-    use std::thread;
 
     #[test]
     fn utest_time() {

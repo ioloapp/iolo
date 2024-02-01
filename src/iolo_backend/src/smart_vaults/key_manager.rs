@@ -1,5 +1,8 @@
-use std::cell::RefCell;
 use std::{str::FromStr, vec};
+use std::cell::RefCell;
+
+use candid::{CandidType, Principal};
+use serde::{Deserialize, Serialize};
 
 use crate::common::error::SmartVaultErr;
 use crate::common::uuid::UUID;
@@ -11,8 +14,6 @@ use crate::smart_vaults::smart_vault::{
 };
 use crate::user_vaults::user_vault_store_DO_NOT_USE_ANYMORE::UserVaultStore_DO_NOT_USE_ANYMORE;
 use crate::users::user_store::UserStore;
-use candid::{CandidType, Principal};
-use serde::{Deserialize, Serialize};
 
 use super::vetkd_types::{
     CanisterId, VetKDCurve, VetKDEncryptedKeyReply, VetKDEncryptedKeyRequest, VetKDKeyId,

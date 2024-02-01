@@ -1,7 +1,7 @@
 use std::borrow::Cow;
 
 use candid::{CandidType, Decode, Deserialize, Encode, Principal};
-use ic_stable_structures::{storable::Bound, Storable};
+use ic_stable_structures::{Storable, storable::Bound};
 use serde::Serialize;
 
 use crate::{common::uuid::UUID, utils::time};

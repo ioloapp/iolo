@@ -2,9 +2,8 @@ use std::borrow::Cow;
 use std::collections::{BTreeMap, HashSet};
 
 use candid::{CandidType, Decode, Encode, Principal};
-
-use ic_stable_structures::storable::Bound;
 use ic_stable_structures::{StableBTreeMap, Storable};
+use ic_stable_structures::storable::Bound;
 use serde::{Deserialize, Serialize};
 
 use crate::common::error::SmartVaultErr;

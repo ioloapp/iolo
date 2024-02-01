@@ -1,7 +1,3 @@
-use candid::types::principal::{Principal, PrincipalError};
-
-use ic_stable_structures::{storable::Bound, Storable};
-use serde::{Deserialize, Serialize};
 use std::{
     borrow::Cow,
     convert::TryFrom,
@@ -9,6 +5,10 @@ use std::{
     fmt,
     hash::{Hash, Hasher},
 };
+
+use candid::types::principal::{Principal, PrincipalError};
+use ic_stable_structures::{Storable, storable::Bound};
+use serde::{Deserialize, Serialize};
 
 /// The type representing principals as described in the [interface
 /// spec](https://sdk.dfinity.org/docs/interface-spec/index.html#_principals).

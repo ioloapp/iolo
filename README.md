@@ -57,3 +57,13 @@ cargo candid
 Some valid test contact ids
 t2yxr-vurh4-6btze-5vuxc-rcupx-c3yey-ojec5-2x7gx-i6i5j-6nhtq-cae
 ujtxf-h4o2l-wdrut-uw3qo-whxm7-lbfdp-zcc26-bx7wq-rtzjt-fpujj-4qe
+
+
+## Kill processes
+```bash
+killall dfx
+killall icx-proxy
+
+lsof -i :4943
+kill -9 <PID>
+```

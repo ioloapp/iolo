@@ -1,5 +1,6 @@
+use std::cell::RefCell;
+
 use ic_cdk_timers::TimerId;
-use std::{cell::RefCell};
 
 thread_local! {
     // The global vector to keep multiple timer IDs.

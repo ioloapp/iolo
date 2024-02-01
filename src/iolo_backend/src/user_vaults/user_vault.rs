@@ -6,9 +6,9 @@ use serde::Serialize;
 use crate::common::uuid::UUID;
 use crate::policies::policy::{Policy, PolicyID};
 use crate::secrets::secret::{Secret, SecretID, SecretSymmetricCryptoMaterial};
+use crate::SmartVaultErr;
 use crate::users::user::User;
 use crate::utils::time;
-use crate::SmartVaultErr;
 
 pub type UserVaultID = UUID;
 pub type KeyBox = BTreeMap<UUID, SecretSymmetricCryptoMaterial>;

@@ -2,12 +2,12 @@ use std::cell::RefCell;
 
 use candid::Principal;
 
-use crate::secrets::secret::UpdateSecretArgs;
 use crate::{
     common::{error::SmartVaultErr, uuid::UUID},
     secrets::secret::SecretSymmetricCryptoMaterial,
     smart_vaults::smart_vault::{SECRET_STORE, USER_STORE},
 };
+use crate::secrets::secret::UpdateSecretArgs;
 
 use super::{
     secret::{AddSecretArgs, Secret, SecretListEntry},
@@ -130,7 +130,6 @@ pub fn get_secret_symmetric_crypto_material_impl(
 
 #[cfg(test)]
 mod tests {
-
     use candid::Principal;
 
     use crate::{

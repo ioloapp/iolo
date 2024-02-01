@@ -2,7 +2,6 @@ use candid::Principal;
 use ic_stable_structures::StableBTreeMap;
 use serde::{Deserialize, Serialize};
 
-use crate::secrets::secret::UpdateSecretArgs;
 use crate::{
     common::{
         error::SmartVaultErr,
@@ -11,6 +10,7 @@ use crate::{
     },
     secrets::secret::Secret,
 };
+use crate::secrets::secret::UpdateSecretArgs;
 
 #[derive(Serialize, Deserialize)]
 pub struct SecretStore {

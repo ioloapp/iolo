@@ -1,5 +1,4 @@
 use candid::{CandidType, Principal};
-
 use serde::Deserialize;
 
 pub type CanisterId = Principal;

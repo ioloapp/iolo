@@ -1,6 +1,7 @@
-use ic_stable_structures::memory_manager::{MemoryId, MemoryManager, VirtualMemory};
-use ic_stable_structures::DefaultMemoryImpl;
 use std::cell::RefCell;
+
+use ic_stable_structures::DefaultMemoryImpl;
+use ic_stable_structures::memory_manager::{MemoryId, MemoryManager, VirtualMemory};
 
 // A memory for upgrades, where data from the heap can be serialized/deserialized.
 const UPGRADES: MemoryId = MemoryId::new(0);

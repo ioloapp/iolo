@@ -1,6 +1,7 @@
+use std::cell::RefCell;
+
 use candid::Principal;
 use ic_cdk::{post_upgrade, pre_upgrade, storage};
-use std::cell::RefCell;
 
 use crate::common::error::SmartVaultErr;
 use crate::common::uuid::UUID;
@@ -9,9 +10,18 @@ use crate::policies::policies_interface_impl::{
     get_policy_list_as_beneficiary_impl, get_policy_list_as_owner_impl,
     get_policy_list_as_validator_impl, update_policy_impl,
 };
+use crate::policies::policy::{AddPolicyArgs, Policy, PolicyID, PolicyListEntry};
 use crate::policies::policy::PolicyResponse;
-
+use crate::policies::policy_registries::{
+    PolicyRegistries, PolicyRegistryForBeneficiaries_DO_NOT_USE_ANYMORE,
+    PolicyRegistryForValidators_DO_NOT_USE_ANYMORE,
+};
 use crate::policies::policy_store::PolicyStore;
+use crate::secrets::secret::{
+    AddSecretArgs, Secret, SecretID, SecretListEntry, SecretSymmetricCryptoMaterial,
+    UpdateSecretArgs,
+};
+use crate::secrets::secret_store::SecretStore;
 use crate::secrets::secrets_interface_impl::{
     add_secret_impl, get_secret_impl, get_secret_list_impl,
     get_secret_symmetric_crypto_material_impl, remove_secret_impl, update_secret_impl,
@@ -24,17 +34,6 @@ use crate::users::users_interface_impl::{
     create_user_impl, delete_user_impl, get_user, update_user_impl, update_user_login_date_impl,
 };
 use crate::utils::caller::get_caller;
-
-use crate::policies::policy::{AddPolicyArgs, Policy, PolicyID, PolicyListEntry};
-use crate::policies::policy_registries::{
-    PolicyRegistries, PolicyRegistryForBeneficiaries_DO_NOT_USE_ANYMORE,
-    PolicyRegistryForValidators_DO_NOT_USE_ANYMORE,
-};
-use crate::secrets::secret::{
-    AddSecretArgs, Secret, SecretID, SecretListEntry, SecretSymmetricCryptoMaterial,
-    UpdateSecretArgs,
-};
-use crate::secrets::secret_store::SecretStore;
 
 thread_local! {
     // User vault store holding all the user vaults

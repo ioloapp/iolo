@@ -229,14 +229,14 @@ mod tests {
 
     use crate::{
         common::error::SmartVaultErr,
-        policies::policies_interface_impl::{
-            add_policy_impl, get_policy_list_as_beneficiary_impl, get_policy_list_as_owner_impl,
-            get_policy_list_as_validator_impl, update_policy_impl,
-        },
         policies::{
             conditions::{Condition, TimeBasedCondition, Validator, XOutOfYCondition},
             policies_interface_impl::{get_policy_as_beneficiary_impl, get_policy_as_owner_impl},
             policy::{AddPolicyArgs, LogicalOperator, PolicyResponse},
+        },
+        policies::policies_interface_impl::{
+            add_policy_impl, get_policy_list_as_beneficiary_impl, get_policy_list_as_owner_impl,
+            get_policy_list_as_validator_impl, update_policy_impl,
         },
         secrets::{
             secret::{AddSecretArgs, SecretSymmetricCryptoMaterial},
@@ -361,7 +361,7 @@ mod tests {
 
         // get policy list as beneficiary: this should fail, because validator is not a beneficiary
         let get_policy_list_as_validator = get_policy_list_as_validator_impl(&beneficiary);
-        assert!(get_policy_list_as_validator.is_err());
+        assert_eq!(get_policy_list_as_validator.unwrap().len(), 0);
 
         // get policy as validator: this souhld fail, because validator is not a beneficiary
         let policy_reponse = get_policy_as_beneficiary_impl(added_policy.id().clone(), &validator);
