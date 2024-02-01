@@ -10,8 +10,8 @@ use crate::policies::policies_interface_impl::{
     get_policy_list_as_beneficiary_impl, get_policy_list_as_owner_impl,
     get_policy_list_as_validator_impl, update_policy_impl,
 };
-use crate::policies::policy::{AddPolicyArgs, Policy, PolicyID, PolicyListEntry};
 use crate::policies::policy::PolicyResponse;
+use crate::policies::policy::{AddPolicyArgs, Policy, PolicyID, PolicyListEntry};
 use crate::policies::policy_registries::{
     PolicyRegistries, PolicyRegistryForBeneficiaries_DO_NOT_USE_ANYMORE,
     PolicyRegistryForValidators_DO_NOT_USE_ANYMORE,
@@ -286,6 +286,9 @@ pub fn remove_policy(policy_id: String) -> Result<(), SmartVaultErr> {
     )
 }
 
+/**
+ * Contact CRUD
+ */
 #[ic_cdk_macros::update]
 pub fn add_contact(args: AddUserArgs) -> Result<User, SmartVaultErr> {
     let principal = get_caller();

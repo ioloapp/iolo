@@ -1,7 +1,7 @@
 use std::borrow::Cow;
 
 use candid::{CandidType, Decode, Encode, Principal};
-use ic_stable_structures::{Storable, storable::Bound};
+use ic_stable_structures::{storable::Bound, Storable};
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -10,6 +10,8 @@ use crate::{
     user_vaults::user_vault::{KeyBox, UserVaultID},
     utils::time,
 };
+
+use super::contact::Contact;
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct User {
@@ -20,6 +22,7 @@ pub struct User {
     pub date_created: u64,
     pub date_modified: u64,
     pub date_last_login: Option<u64>,
+    pub contacts: Vec<Contact>,
     pub user_vault_id_DO_NOT_USE_ANYMORE: Option<UserVaultID>,
     // New: Secrets, KeyBox and policies are stored in the user
     pub secrets: Vec<UUID>,
@@ -59,6 +62,7 @@ impl From<AddUserArgs> for User {
             date_modified: now,
             date_last_login: None,
             user_vault_id_DO_NOT_USE_ANYMORE: None,
+            contacts: Vec::new(),
             secrets: Vec::new(),
             policies: Vec::new(),
             key_box: KeyBox::new(),
@@ -85,6 +89,7 @@ impl User {
             date_modified: now,
             date_last_login: Some(now),
             user_vault_id_DO_NOT_USE_ANYMORE: None,
+            contacts: Vec::new(),
             secrets: Vec::new(),
             policies: Vec::new(),
             key_box: KeyBox::new(),
