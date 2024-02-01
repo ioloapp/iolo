@@ -153,7 +153,7 @@ type XOutOfYCondition = record {
   validators : vec Validator;
 };
 service : () -> {
-  add_beneficiary : (AddUserArgs) -> (Result);
+  add_contact : (AddUserArgs) -> (Result);
   add_policy : (AddPolicyArgs) -> (Result_1);
   add_secret : (AddSecretArgs) -> (Result_2);
   confirm_x_out_of_y_condition : (principal, text, bool) -> (Result_3);
@@ -165,7 +165,7 @@ service : () -> {
       Result_4,
     );
   encrypted_symmetric_key_for_uservault : (vec nat8) -> (text);
-  get_beneficiary_list : () -> (Result_5) query;
+  get_contact_list : () -> (Result_5) query;
   get_current_user : () -> (Result) query;
   get_policy_as_beneficiary : (text) -> (Result_6) query;
   get_policy_as_owner : (text) -> (Result_6) query;
@@ -181,11 +181,11 @@ service : () -> {
     ) query;
   ibe_encryption_key : () -> (text);
   is_user_vault_existing : () -> (bool) query;
-  remove_beneficiary : (principal) -> (Result_3);
+  remove_contact : (principal) -> (Result_3);
   remove_policy : (text) -> (Result_3);
   remove_secret : (text) -> (Result_3);
   symmetric_key_verification_key : () -> (text);
-  update_beneficiary : (User) -> (Result);
+  update_contact : (User) -> (Result);
   update_policy : (Policy) -> (Result_1);
   update_secret : (UpdateSecretArgs) -> (Result_2);
   update_user : (User) -> (Result);

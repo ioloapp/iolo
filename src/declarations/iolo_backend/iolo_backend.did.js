@@ -167,7 +167,7 @@ export const idlFactory = ({ IDL }) => {
     'category' : IDL.Opt(SecretCategory),
   });
   return IDL.Service({
-    'add_beneficiary' : IDL.Func([AddUserArgs], [Result], []),
+    'add_contact' : IDL.Func([AddUserArgs], [Result], []),
     'add_policy' : IDL.Func([AddPolicyArgs], [Result_1], []),
     'add_secret' : IDL.Func([AddSecretArgs], [Result_2], []),
     'confirm_x_out_of_y_condition' : IDL.Func(
@@ -197,7 +197,7 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Text],
         [],
       ),
-    'get_beneficiary_list' : IDL.Func([], [Result_5], ['query']),
+    'get_contact_list' : IDL.Func([], [Result_5], ['query']),
     'get_current_user' : IDL.Func([], [Result], ['query']),
     'get_policy_as_beneficiary' : IDL.Func([IDL.Text], [Result_6], ['query']),
     'get_policy_as_owner' : IDL.Func([IDL.Text], [Result_6], ['query']),
@@ -223,11 +223,11 @@ export const idlFactory = ({ IDL }) => {
       ),
     'ibe_encryption_key' : IDL.Func([], [IDL.Text], []),
     'is_user_vault_existing' : IDL.Func([], [IDL.Bool], ['query']),
-    'remove_beneficiary' : IDL.Func([IDL.Principal], [Result_3], []),
+    'remove_contact' : IDL.Func([IDL.Principal], [Result_3], []),
     'remove_policy' : IDL.Func([IDL.Text], [Result_3], []),
     'remove_secret' : IDL.Func([IDL.Text], [Result_3], []),
     'symmetric_key_verification_key' : IDL.Func([], [IDL.Text], []),
-    'update_beneficiary' : IDL.Func([User], [Result], []),
+    'update_contact' : IDL.Func([User], [Result], []),
     'update_policy' : IDL.Func([Policy], [Result_1], []),
     'update_secret' : IDL.Func([UpdateSecretArgs], [Result_2], []),
     'update_user' : IDL.Func([User], [Result], []),

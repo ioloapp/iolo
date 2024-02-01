@@ -388,7 +388,7 @@ class IoloService {
             user_type: user.user_type,
         }
 
-        const result: Result = await (await this.getActor()).add_beneficiary(addUserArgs);
+        const result: Result = await (await this.getActor()).add_contact(addUserArgs);
         if (result['Ok']) {
             return this.mapUserToUiUser(result['Ok']);
         }
@@ -396,7 +396,7 @@ class IoloService {
     }
 
     public async getContactsList(): Promise<UiUser[]> {
-        const result: Result_5 = await (await this.getActor()).get_beneficiary_list();
+        const result: Result_5 = await (await this.getActor()).get_contact_list();
         if (result['Ok']) {
             return result['Ok'].map((item) => this.mapUserToUiUser(item)) ;
         }
@@ -405,7 +405,7 @@ class IoloService {
 
     public async updateContact(contact: UiUser): Promise<UiUser> {
         const user = this.mapUiUserToUser(contact);
-        const result: Result = await (await this.getActor()).update_beneficiary(user);
+        const result: Result = await (await this.getActor()).update_contact(user);
 
         if (result['Ok']) {
             return this.mapUserToUiUser(result['Ok']);
@@ -414,7 +414,7 @@ class IoloService {
     }
 
     public async deleteContact(id: string) {
-        const result: Result_3 = await (await this.getActor()).remove_beneficiary(Principal.fromText(id));
+        const result: Result_3 = await (await this.getActor()).remove_contact(Principal.fromText(id));
         if (result['Ok'] === null) {
             return;
         }

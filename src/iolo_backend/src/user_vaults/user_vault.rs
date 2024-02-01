@@ -30,7 +30,7 @@ pub struct UserVault {
     /// which itself is derived by vetkd.
     key_box: KeyBox, // TODO: make getter and setter
     policies: BTreeMap<PolicyID, Policy>,
-    beneficiaries: BTreeMap<Principal, User>,
+    contacts: BTreeMap<Principal, User>,
 }
 
 impl Default for UserVault {
@@ -51,7 +51,7 @@ impl UserVault {
             secret_ids: Vec::new(),
             key_box: BTreeMap::new(),
             policies: BTreeMap::new(),
-            beneficiaries: BTreeMap::new(),
+            contacts: BTreeMap::new(),
         }
     }
 
@@ -66,7 +66,7 @@ impl UserVault {
             secret_ids: Vec::new(),
             key_box: BTreeMap::new(),
             policies: BTreeMap::new(),
-            beneficiaries: BTreeMap::new(),
+            contacts: BTreeMap::new(),
         }
     }
 
@@ -196,45 +196,45 @@ impl UserVault {
         Ok(())
     }
 
-    pub fn beneficiaries(&self) -> &BTreeMap<Principal, User> {
-        &self.beneficiaries
+    pub fn contacts(&self) -> &BTreeMap<Principal, User> {
+        &self.contacts
     }
 
-    pub fn get_beneficiary(&self, user_id: &Principal) -> Result<&User, SmartVaultErr> {
-        self.beneficiaries
+    pub fn get_contact(&self, user_id: &Principal) -> Result<&User, SmartVaultErr> {
+        self.contacts
             .get(user_id)
             .ok_or_else(|| SmartVaultErr::UserDoesNotExist(user_id.to_string()))
     }
 
-    pub fn add_beneficiary(&mut self, user: User) -> Result<&User, SmartVaultErr> {
+    pub fn add_contact(&mut self, user: User) -> Result<&User, SmartVaultErr> {
         if self
-            .beneficiaries
+            .contacts
             .insert(*user.id(), user.clone())
             .is_some()
         {
             Err(SmartVaultErr::UserAlreadyExists(user.id().to_string()))
         } else {
             self.date_modified = time::get_current_time();
-            self.get_beneficiary(user.id())
+            self.get_contact(user.id())
         }
     }
 
-    pub fn update_beneficiary(&mut self, user: User) -> Result<User, SmartVaultErr> {
+    pub fn update_contact(&mut self, user: User) -> Result<User, SmartVaultErr> {
         let uid = *user.id();
-        if !self.beneficiaries.contains_key(user.id()) {
+        if !self.contacts.contains_key(user.id()) {
             return Err(SmartVaultErr::UserDoesNotExist(user.id().to_string()));
         }
 
-        self.beneficiaries.insert(uid, user);
+        self.contacts.insert(uid, user);
         self.date_modified = time::get_current_time();
-        Ok(self.beneficiaries.get(&uid).unwrap().clone())
+        Ok(self.contacts.get(&uid).unwrap().clone())
     }
 
-    pub fn remove_beneficiary(&mut self, user_id: &Principal) -> Result<(), SmartVaultErr> {
-        if !self.beneficiaries.contains_key(user_id) {
+    pub fn remove_contact(&mut self, user_id: &Principal) -> Result<(), SmartVaultErr> {
+        if !self.contacts.contains_key(user_id) {
             return Err(SmartVaultErr::UserDoesNotExist(user_id.to_string()));
         }
-        self.beneficiaries.remove(user_id);
+        self.contacts.remove(user_id);
         self.date_modified = time::get_current_time();
         Ok(())
     }

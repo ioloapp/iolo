@@ -287,57 +287,57 @@ pub fn remove_policy(policy_id: String) -> Result<(), SmartVaultErr> {
 }
 
 #[ic_cdk_macros::update]
-pub fn add_beneficiary(args: AddUserArgs) -> Result<User, SmartVaultErr> {
+pub fn add_contact(args: AddUserArgs) -> Result<User, SmartVaultErr> {
     let principal = get_caller();
     let user_vault_id: UUID = get_vault_id_for(principal)?;
 
     USER_VAULT_STORE_DO_NOT_USE_ANYMORE.with(
         |ms: &RefCell<UserVaultStore_DO_NOT_USE_ANYMORE>| -> Result<User, SmartVaultErr> {
             let mut master_vault = ms.borrow_mut();
-            master_vault.add_beneficiary(&user_vault_id, args)
+            master_vault.add_contact(&user_vault_id, args)
         },
     )
 }
 
 #[ic_cdk_macros::query]
-pub fn get_beneficiary_list() -> Result<Vec<User>, SmartVaultErr> {
+pub fn get_contact_list() -> Result<Vec<User>, SmartVaultErr> {
     let principal = get_caller();
     let user_vault_id: UUID = get_vault_id_for(principal)?;
 
     USER_VAULT_STORE_DO_NOT_USE_ANYMORE.with(|mv: &RefCell<UserVaultStore_DO_NOT_USE_ANYMORE>| {
-        let beneficiaries: Vec<User> = mv
+        let contacts: Vec<User> = mv
             .borrow()
             .get_user_vault(&user_vault_id)?
-            .beneficiaries()
+            .contacts()
             .clone()
             .into_values()
             .collect();
-        Ok(beneficiaries.into_iter().map(User::from).collect())
+        Ok(contacts.into_iter().map(User::from).collect())
     })
 }
 
 #[ic_cdk_macros::update]
-pub fn update_beneficiary(u: User) -> Result<User, SmartVaultErr> {
+pub fn update_contact(u: User) -> Result<User, SmartVaultErr> {
     let principal = get_caller();
     let user_vault_id: UUID = get_vault_id_for(principal)?;
 
     USER_VAULT_STORE_DO_NOT_USE_ANYMORE.with(
         |ms: &RefCell<UserVaultStore_DO_NOT_USE_ANYMORE>| -> Result<User, SmartVaultErr> {
             let mut master_vault = ms.borrow_mut();
-            master_vault.update_user_beneficiary(&user_vault_id, u)
+            master_vault.update_user_contact(&user_vault_id, u)
         },
     )
 }
 
 #[ic_cdk_macros::update]
-pub fn remove_beneficiary(user_id: Principal) -> Result<(), SmartVaultErr> {
+pub fn remove_contact(user_id: Principal) -> Result<(), SmartVaultErr> {
     let principal = get_caller();
     let user_vault_id: UUID = get_vault_id_for(principal)?;
 
     USER_VAULT_STORE_DO_NOT_USE_ANYMORE.with(
         |ms: &RefCell<UserVaultStore_DO_NOT_USE_ANYMORE>| -> Result<(), SmartVaultErr> {
             let mut master_vault = ms.borrow_mut();
-            master_vault.remove_user_beneficiary(&user_vault_id, &user_id)
+            master_vault.remove_user_contact(&user_vault_id, &user_id)
         },
     )
 }

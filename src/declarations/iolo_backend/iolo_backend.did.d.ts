@@ -163,7 +163,7 @@ export interface XOutOfYCondition {
   'validators' : Array<Validator>,
 }
 export interface _SERVICE {
-  'add_beneficiary' : ActorMethod<[AddUserArgs], Result>,
+  'add_contact' : ActorMethod<[AddUserArgs], Result>,
   'add_policy' : ActorMethod<[AddPolicyArgs], Result_1>,
   'add_secret' : ActorMethod<[AddSecretArgs], Result_2>,
   'confirm_x_out_of_y_condition' : ActorMethod<
@@ -188,7 +188,7 @@ export interface _SERVICE {
     [Uint8Array | number[]],
     string
   >,
-  'get_beneficiary_list' : ActorMethod<[], Result_5>,
+  'get_contact_list' : ActorMethod<[], Result_5>,
   'get_current_user' : ActorMethod<[], Result>,
   'get_policy_as_beneficiary' : ActorMethod<[string], Result_6>,
   'get_policy_as_owner' : ActorMethod<[string], Result_6>,
@@ -205,11 +205,11 @@ export interface _SERVICE {
   >,
   'ibe_encryption_key' : ActorMethod<[], string>,
   'is_user_vault_existing' : ActorMethod<[], boolean>,
-  'remove_beneficiary' : ActorMethod<[Principal], Result_3>,
+  'remove_contact' : ActorMethod<[Principal], Result_3>,
   'remove_policy' : ActorMethod<[string], Result_3>,
   'remove_secret' : ActorMethod<[string], Result_3>,
   'symmetric_key_verification_key' : ActorMethod<[], string>,
-  'update_beneficiary' : ActorMethod<[User], Result>,
+  'update_contact' : ActorMethod<[User], Result>,
   'update_policy' : ActorMethod<[Policy], Result_1>,
   'update_secret' : ActorMethod<[UpdateSecretArgs], Result_2>,
   'update_user' : ActorMethod<[User], Result>,

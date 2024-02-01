@@ -221,7 +221,7 @@ impl UserVaultStore_DO_NOT_USE_ANYMORE {
     }
 
     // Add a user to the address_book
-    pub fn add_beneficiary(
+    pub fn add_contact(
         &mut self,
         vault_id: &UUID,
         aua: AddUserArgs,
@@ -232,12 +232,12 @@ impl UserVaultStore_DO_NOT_USE_ANYMORE {
 
         let user_vault = self.user_vaults.get_mut(vault_id).unwrap();
         let user: User = aua.clone().into();
-        let added_user = user_vault.add_beneficiary(user)?;
+        let added_user = user_vault.add_contact(user)?;
 
         Ok(added_user.clone())
     }
 
-    pub fn update_user_beneficiary(
+    pub fn update_user_contact(
         &mut self,
         vault_id: &UUID,
         u: User,
@@ -247,10 +247,10 @@ impl UserVaultStore_DO_NOT_USE_ANYMORE {
         }
 
         let user_vault = self.user_vaults.get_mut(vault_id).unwrap();
-        user_vault.update_beneficiary(u)
+        user_vault.update_contact(u)
     }
 
-    pub fn remove_user_beneficiary(
+    pub fn remove_user_contact(
         &mut self,
         vault_id: &UUID,
         user_id: &Principal,
@@ -260,7 +260,7 @@ impl UserVaultStore_DO_NOT_USE_ANYMORE {
         }
 
         let user_vault = self.user_vaults.get_mut(vault_id).unwrap();
-        user_vault.remove_beneficiary(user_id)
+        user_vault.remove_contact(user_id)
     }
 }
 
