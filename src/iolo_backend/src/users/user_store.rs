@@ -273,6 +273,8 @@ mod tests {
         users::user::{AddUserArgs, User},
         users::user_store::UserStore,
     };
+    use crate::users::contact::Contact;
+    use crate::users::user::UserType;
 
     #[tokio::test]
     async fn utest_user_store() {
@@ -306,6 +308,18 @@ mod tests {
         assert_eq!(
             user_store.get_user(&principal_2).unwrap_err(),
             SmartVaultErr::UserDoesNotExist(principal_2.to_string())
+        );
+
+        let contact: Contact = Contact {
+            id: principal,
+            name: Some("Testuser".to_string()),
+            email: Some("test@me.com".to_string()),
+            user_type: None,
+        };
+        assert!(user_store.add_contact(new_user.id, contact).is_ok());
+        assert_eq!(
+            user_store.get_contact_list(new_user.id).unwrap().len(),
+            1
         );
     }
 }

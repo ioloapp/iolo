@@ -199,7 +199,7 @@ mod tests {
         assert!(new_login_date > old_login_date);
 
         // remove contact
-        remove_contact_impl(contact, &principal).unwrap();
+        remove_contact_impl(contact.id, &principal).unwrap();
         let contact_list = get_contact_list_impl(&principal).unwrap();
         assert_eq!(contact_list.len(), 0);
 

@@ -120,7 +120,7 @@ export const contactsSlice = createSlice({
                 state.showAddDialog = false;
                 state.dialogItem = initialState.dialogItem;
                 if(action.payload) {
-                    state.contactsList = [...state.contactsList, action.payload]
+                    state.contactsList = [...(state.contactsList ? state.contactsList : []), action.payload]
                 }
             })
             .addCase(addContactThunk.rejected, (state, action) => {
