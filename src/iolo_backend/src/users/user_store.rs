@@ -202,6 +202,14 @@ impl UserStore {
 
         Ok(())
     }
+
+    pub fn get_contact_list(&self, user: Principal) -> Result<Vec<Contact>, SmartVaultErr> {
+        if let Some(existing_user) = self.users.get(&PrincipalStorable::from(user.clone())) {
+            return Ok(existing_user.contacts.clone());
+        } else {
+            return Err(SmartVaultErr::UserDoesNotExist(user.to_string()));
+        }
+    }
 }
 
 #[cfg(test)]

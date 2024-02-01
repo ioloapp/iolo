@@ -81,11 +81,22 @@ pub fn add_contact_impl(args: AddContactArgs, caller: &Principal) -> Result<(), 
     Ok(())
 }
 
+pub fn get_contact_list_impl(caller: &Principal) -> Result<Vec<Contact>, SmartVaultErr> {
+    // add contact to user store (caller)
+    USER_STORE.with(
+        |ur: &RefCell<UserStore>| -> Result<Vec<Contact>, SmartVaultErr> {
+            let user_store = ur.borrow_mut();
+            user_store.get_contact_list(*caller)
+        },
+    )
+}
+
 #[cfg(test)]
 mod tests {
     use std::cell::RefCell;
 
     use candid::Principal;
+    use ic_agent::agent::http_transport::reqwest_transport::reqwest::blocking::get;
     use rand::Rng;
 
     use crate::{
@@ -96,8 +107,8 @@ mod tests {
             user::AddUserArgs,
             user_store::UserStore,
             users_interface_impl::{
-                add_contact_impl, create_user_impl, delete_user_impl, get_current_user_impl,
-                update_user_impl, update_user_login_date_impl,
+                add_contact_impl, create_user_impl, delete_user_impl, get_contact_list_impl,
+                get_current_user_impl, update_user_impl, update_user_login_date_impl,
             },
         },
     };
@@ -121,6 +132,10 @@ mod tests {
         assert_eq!(&created_user.email, &fetched_user.email);
         assert!(&created_user.contacts.is_empty());
 
+        // test get contact list
+        let contact_list = get_contact_list_impl(&principal).unwrap();
+        assert_eq!(contact_list.len(), 0);
+
         // add contact
         let aca: AddContactArgs = AddContactArgs {
             id: contact_principal,
@@ -137,6 +152,10 @@ mod tests {
             fetched_user.contacts[0].name,
             Some("my contact".to_string())
         );
+
+        // test get contact list
+        let contact_list = get_contact_list_impl(&principal).unwrap();
+        assert_eq!(contact_list.len(), 1);
 
         // update contact
 

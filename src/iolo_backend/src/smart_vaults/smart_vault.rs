@@ -28,12 +28,12 @@ use crate::secrets::secrets_interface_impl::{
 };
 use crate::user_vaults::user_vault::UserVaultID;
 use crate::user_vaults::user_vault_store_DO_NOT_USE_ANYMORE::UserVaultStore_DO_NOT_USE_ANYMORE;
-use crate::users::contact::AddContactArgs;
+use crate::users::contact::{AddContactArgs, Contact};
 use crate::users::user::{AddUserArgs, User};
 use crate::users::user_store::UserStore;
 use crate::users::users_interface_impl::{
-    add_contact_impl, create_user_impl, delete_user_impl, get_current_user_impl, update_user_impl,
-    update_user_login_date_impl,
+    add_contact_impl, create_user_impl, delete_user_impl, get_contact_list_impl,
+    get_current_user_impl, update_user_impl, update_user_login_date_impl,
 };
 use crate::utils::caller::get_caller;
 
@@ -297,20 +297,8 @@ pub fn add_contact(args: AddContactArgs) -> Result<(), SmartVaultErr> {
 }
 
 #[ic_cdk_macros::query]
-pub fn get_contact_list() -> Result<Vec<User>, SmartVaultErr> {
-    let principal = get_caller();
-    let user_vault_id: UUID = get_vault_id_for(principal)?;
-
-    USER_VAULT_STORE_DO_NOT_USE_ANYMORE.with(|mv: &RefCell<UserVaultStore_DO_NOT_USE_ANYMORE>| {
-        let contacts: Vec<User> = mv
-            .borrow()
-            .get_user_vault(&user_vault_id)?
-            .contacts()
-            .clone()
-            .into_values()
-            .collect();
-        Ok(contacts.into_iter().map(User::from).collect())
-    })
+pub fn get_contact_list() -> Result<Vec<Contact>, SmartVaultErr> {
+    get_contact_list_impl(&get_caller())
 }
 
 #[ic_cdk_macros::update]
