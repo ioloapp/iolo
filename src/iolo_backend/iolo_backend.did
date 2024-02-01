@@ -1,3 +1,9 @@
+type AddContactArgs = record {
+  id : principal;
+  user_type : opt UserType;
+  name : opt text;
+  email : opt text;
+};
 type AddPolicyArgs = record {
   name : opt text;
   conditions_logical_operator : LogicalOperator;
@@ -24,6 +30,12 @@ type AddUserArgs = record {
 type Condition = variant {
   TimeBasedCondition : TimeBasedCondition;
   XOutOfYCondition : XOutOfYCondition;
+};
+type Contact = record {
+  id : principal;
+  user_type : opt UserType;
+  name : opt text;
+  email : opt text;
 };
 type LogicalOperator = variant { Or; And };
 type Policy = record {
@@ -62,12 +74,12 @@ type PolicyResponse = record {
   conditions : vec Condition;
   date_modified : nat64;
 };
-type Result = variant { Ok : User; Err : SmartVaultErr };
+type Result = variant { Ok; Err : SmartVaultErr };
 type Result_1 = variant { Ok : Policy; Err : SmartVaultErr };
 type Result_2 = variant { Ok : Secret; Err : SmartVaultErr };
-type Result_3 = variant { Ok; Err : SmartVaultErr };
+type Result_3 = variant { Ok : User; Err : SmartVaultErr };
 type Result_4 = variant { Ok : text; Err : SmartVaultErr };
-type Result_5 = variant { Ok : vec User; Err : SmartVaultErr };
+type Result_5 = variant { Ok : vec Contact; Err : SmartVaultErr };
 type Result_6 = variant { Ok : PolicyResponse; Err : SmartVaultErr };
 type Result_7 = variant { Ok : vec PolicyListEntry; Err : SmartVaultErr };
 type Result_8 = variant { Ok : vec SecretListEntry; Err : SmartVaultErr };
@@ -101,6 +113,7 @@ type SmartVaultErr = variant {
   OnlyOwnerCanDeleteSecret : text;
   SecretHasNoId;
   UserDeletionFailed : text;
+  ContactAlreadyExists : text;
   OnlyOwnerCanUpdatePolicy : text;
   SecretDoesNotExist : text;
   NoPolicyForBeneficiary : text;
@@ -135,6 +148,7 @@ type User = record {
   id : principal;
   user_type : opt UserType;
   date_created : nat64;
+  contacts : vec Contact;
   name : opt text;
   secrets : vec nat;
   date_last_login : opt nat64;
@@ -153,12 +167,12 @@ type XOutOfYCondition = record {
   validators : vec Validator;
 };
 service : () -> {
-  add_contact : (AddUserArgs) -> (Result);
+  add_contact : (AddContactArgs) -> (Result);
   add_policy : (AddPolicyArgs) -> (Result_1);
   add_secret : (AddSecretArgs) -> (Result_2);
-  confirm_x_out_of_y_condition : (principal, text, bool) -> (Result_3);
-  create_user : (AddUserArgs) -> (Result);
-  delete_user : () -> (Result_3);
+  confirm_x_out_of_y_condition : (principal, text, bool) -> (Result);
+  create_user : (AddUserArgs) -> (Result_3);
+  delete_user : () -> (Result);
   encrypted_ibe_decryption_key_for_caller : (vec nat8) -> (text);
   encrypted_symmetric_key_for_caller : (vec nat8) -> (text);
   encrypted_symmetric_key_for_policies : (PolicyKeyDerviationArgs) -> (
@@ -166,7 +180,7 @@ service : () -> {
     );
   encrypted_symmetric_key_for_uservault : (vec nat8) -> (text);
   get_contact_list : () -> (Result_5) query;
-  get_current_user : () -> (Result) query;
+  get_current_user : () -> (Result_3) query;
   get_policy_as_beneficiary : (text) -> (Result_6) query;
   get_policy_as_owner : (text) -> (Result_6) query;
   get_policy_list_as_beneficiary : () -> (Result_7) query;
@@ -181,13 +195,13 @@ service : () -> {
     ) query;
   ibe_encryption_key : () -> (text);
   is_user_vault_existing : () -> (bool) query;
-  remove_contact : (principal) -> (Result_3);
-  remove_policy : (text) -> (Result_3);
-  remove_secret : (text) -> (Result_3);
+  remove_contact : (principal) -> (Result);
+  remove_policy : (text) -> (Result);
+  remove_secret : (text) -> (Result);
   symmetric_key_verification_key : () -> (text);
-  update_contact : (User) -> (Result);
+  update_contact : (User) -> (Result_3);
   update_policy : (Policy) -> (Result_1);
   update_secret : (UpdateSecretArgs) -> (Result_2);
-  update_user : (User) -> (Result);
-  update_user_login_date : () -> (Result);
+  update_user : (User) -> (Result_3);
+  update_user_login_date : () -> (Result_3);
 }
