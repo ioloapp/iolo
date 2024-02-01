@@ -11,6 +11,7 @@ pub enum SmartVaultErr {
     UserVaultCreationFailed(String),
     UserVaultDoesNotExist(String),
     ContactAlreadyExists(String),
+    ContactDoesNotExist(String),
     SecretDoesNotExist(String),
     OnlyOwnerCanDeleteSecret(String),
     SecretDecryptionMaterialDoesNotExist(String),
@@ -61,6 +62,9 @@ impl Display for SmartVaultErr {
             }
             SmartVaultErr::ContactAlreadyExists(contact) => {
                 write!(f, "The following contact already exists: {}", contact)
+            }
+            SmartVaultErr::ContactDoesNotExist(contact) => {
+                write!(f, "The following contact does not exist: {}", contact)
             }
             SmartVaultErr::SecretDoesNotExist(id) => {
                 write!(f, "Failed to read secret with the following id: {}", id)

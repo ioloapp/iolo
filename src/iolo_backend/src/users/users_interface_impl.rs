@@ -85,10 +85,19 @@ pub fn get_contact_list_impl(caller: &Principal) -> Result<Vec<Contact>, SmartVa
     // add contact to user store (caller)
     USER_STORE.with(
         |ur: &RefCell<UserStore>| -> Result<Vec<Contact>, SmartVaultErr> {
-            let user_store = ur.borrow_mut();
+            let user_store = ur.borrow();
             user_store.get_contact_list(*caller)
         },
     )
+}
+
+pub fn remove_contact_impl(contact: Contact, caller: &Principal) -> Result<(), SmartVaultErr> {
+    USER_STORE.with(|ur: &RefCell<UserStore>| -> Result<(), SmartVaultErr> {
+        let mut user_store = ur.borrow_mut();
+        user_store.remove_contact(*caller, contact)
+    })?;
+
+    Ok(())
 }
 
 #[cfg(test)]
@@ -96,7 +105,6 @@ mod tests {
     use std::cell::RefCell;
 
     use candid::Principal;
-    use ic_agent::agent::http_transport::reqwest_transport::reqwest::blocking::get;
     use rand::Rng;
 
     use crate::{
@@ -108,7 +116,8 @@ mod tests {
             user_store::UserStore,
             users_interface_impl::{
                 add_contact_impl, create_user_impl, delete_user_impl, get_contact_list_impl,
-                get_current_user_impl, update_user_impl, update_user_login_date_impl,
+                get_current_user_impl, remove_contact_impl, update_user_impl,
+                update_user_login_date_impl,
             },
         },
     };
@@ -172,6 +181,12 @@ mod tests {
         let fetched_user = get_current_user_impl(&principal).unwrap();
         let new_login_date = fetched_user.date_last_login().clone().unwrap();
         assert!(new_login_date > old_login_date);
+
+        // remove contact
+        let contact = fetched_user.contacts[0].clone();
+        remove_contact_impl(contact, &principal).unwrap();
+        let contact_list = get_contact_list_impl(&principal).unwrap();
+        assert_eq!(contact_list.len(), 0);
 
         // delete user
         let _deleted_user = delete_user_impl(&principal);

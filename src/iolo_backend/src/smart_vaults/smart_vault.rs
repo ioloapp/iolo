@@ -33,7 +33,7 @@ use crate::users::user::{AddUserArgs, User};
 use crate::users::user_store::UserStore;
 use crate::users::users_interface_impl::{
     add_contact_impl, create_user_impl, delete_user_impl, get_contact_list_impl,
-    get_current_user_impl, update_user_impl, update_user_login_date_impl,
+    get_current_user_impl, remove_contact_impl, update_user_impl, update_user_login_date_impl,
 };
 use crate::utils::caller::get_caller;
 
@@ -315,16 +315,8 @@ pub fn update_contact(u: User) -> Result<User, SmartVaultErr> {
 }
 
 #[ic_cdk_macros::update]
-pub fn remove_contact(user_id: Principal) -> Result<(), SmartVaultErr> {
-    let principal = get_caller();
-    let user_vault_id: UUID = get_vault_id_for(principal)?;
-
-    USER_VAULT_STORE_DO_NOT_USE_ANYMORE.with(
-        |ms: &RefCell<UserVaultStore_DO_NOT_USE_ANYMORE>| -> Result<(), SmartVaultErr> {
-            let mut master_vault = ms.borrow_mut();
-            master_vault.remove_user_contact(&user_vault_id, &user_id)
-        },
-    )
+pub fn remove_contact(contact: Contact) -> Result<(), SmartVaultErr> {
+    remove_contact_impl(contact, &get_caller())
 }
 
 #[ic_cdk_macros::query]

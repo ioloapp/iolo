@@ -203,6 +203,32 @@ impl UserStore {
         Ok(())
     }
 
+    pub fn remove_contact(
+        &mut self,
+        user: Principal,
+        contact: Contact,
+    ) -> Result<(), SmartVaultErr> {
+        let principal_storable = PrincipalStorable::from(user.clone());
+
+        // Only name, email and user_type can be updated
+        if let Some(mut existing_user) = self.users.remove(&principal_storable) {
+            // check if contact exist in user contacts. if yes, remove it. if not, throw error
+            if !existing_user.contacts.iter().any(|c| c.id == contact.id) {
+                return Err(SmartVaultErr::ContactDoesNotExist(contact.id.to_string()));
+            }
+
+            // remove contact from user
+            existing_user.contacts.retain(|c| c.id != contact.id);
+
+            // store user
+            self.users.insert(principal_storable, existing_user);
+        } else {
+            return Err(SmartVaultErr::UserDoesNotExist(user.to_string()));
+        }
+
+        Ok(())
+    }
+
     pub fn get_contact_list(&self, user: Principal) -> Result<Vec<Contact>, SmartVaultErr> {
         if let Some(existing_user) = self.users.get(&PrincipalStorable::from(user.clone())) {
             return Ok(existing_user.contacts.clone());
