@@ -101,6 +101,7 @@ type SmartVaultErr = variant {
   OnlyOwnerCanDeleteSecret : text;
   SecretHasNoId;
   UserDeletionFailed : text;
+  OnlyOwnerCanUpdatePolicy : text;
   SecretDoesNotExist : text;
   NoPolicyForBeneficiary : text;
   SecretDecryptionMaterialDoesNotExist : text;
@@ -138,8 +139,8 @@ type User = record {
   secrets : vec nat;
   date_last_login : opt nat64;
   email : opt text;
-  user_vault_id : opt nat;
   key_box : vec record { nat; SecretSymmetricCryptoMaterial };
+  user_vault_id_DO_NOT_USE_ANYMORE : opt nat;
   date_modified : nat64;
   policies : vec text;
 };

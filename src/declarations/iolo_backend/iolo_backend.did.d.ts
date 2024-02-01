@@ -111,6 +111,7 @@ export type SmartVaultErr = { 'UserAlreadyExists' : string } |
   { 'OnlyOwnerCanDeleteSecret' : string } |
   { 'SecretHasNoId' : null } |
   { 'UserDeletionFailed' : string } |
+  { 'OnlyOwnerCanUpdatePolicy' : string } |
   { 'SecretDoesNotExist' : string } |
   { 'NoPolicyForBeneficiary' : string } |
   { 'SecretDecryptionMaterialDoesNotExist' : string } |
@@ -147,8 +148,8 @@ export interface User {
   'secrets' : Array<bigint>,
   'date_last_login' : [] | [bigint],
   'email' : [] | [string],
-  'user_vault_id' : [] | [bigint],
   'key_box' : Array<[bigint, SecretSymmetricCryptoMaterial]>,
+  'user_vault_id_DO_NOT_USE_ANYMORE' : [] | [bigint],
   'date_modified' : bigint,
   'policies' : Array<string>,
 }

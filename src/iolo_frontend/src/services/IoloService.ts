@@ -456,7 +456,7 @@ class IoloService {
             date_last_login: uiUser.dateLastLogin? [this.dateToNanosecondsInBigint(uiUser.dateLastLogin)] : [],
             email: uiUser.email ? [uiUser.email] : [],
             date_modified: uiUser.dateCreated ? this.dateToNanosecondsInBigint(uiUser.dateModified) : 0n,
-            user_vault_id: null //TODO remove user_vault_id
+            user_vault_id_DO_NOT_USE_ANYMORE: null //TODO remove user_vault_id
         };
     }
 

@@ -17,8 +17,8 @@ export const idlFactory = ({ IDL }) => {
     'secrets' : IDL.Vec(IDL.Nat),
     'date_last_login' : IDL.Opt(IDL.Nat64),
     'email' : IDL.Opt(IDL.Text),
-    'user_vault_id' : IDL.Opt(IDL.Nat),
     'key_box' : IDL.Vec(IDL.Tuple(IDL.Nat, SecretSymmetricCryptoMaterial)),
+    'user_vault_id_DO_NOT_USE_ANYMORE' : IDL.Opt(IDL.Nat),
     'date_modified' : IDL.Nat64,
     'policies' : IDL.Vec(IDL.Text),
   });
@@ -27,6 +27,7 @@ export const idlFactory = ({ IDL }) => {
     'OnlyOwnerCanDeleteSecret' : IDL.Text,
     'SecretHasNoId' : IDL.Null,
     'UserDeletionFailed' : IDL.Text,
+    'OnlyOwnerCanUpdatePolicy' : IDL.Text,
     'SecretDoesNotExist' : IDL.Text,
     'NoPolicyForBeneficiary' : IDL.Text,
     'SecretDecryptionMaterialDoesNotExist' : IDL.Text,
