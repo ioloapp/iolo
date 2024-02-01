@@ -18,3 +18,14 @@ pub struct AddContactArgs {
     pub email: Option<String>,
     pub user_type: Option<UserType>,
 }
+
+impl From<AddContactArgs> for Contact {
+    fn from(aca: AddContactArgs) -> Self {
+        Contact {
+            id: aca.id,
+            name: aca.name,
+            email: aca.email,
+            user_type: aca.user_type,
+        }
+    }
+}

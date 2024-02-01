@@ -28,10 +28,12 @@ use crate::secrets::secrets_interface_impl::{
 };
 use crate::user_vaults::user_vault::UserVaultID;
 use crate::user_vaults::user_vault_store_DO_NOT_USE_ANYMORE::UserVaultStore_DO_NOT_USE_ANYMORE;
+use crate::users::contact::AddContactArgs;
 use crate::users::user::{AddUserArgs, User};
 use crate::users::user_store::UserStore;
 use crate::users::users_interface_impl::{
-    create_user_impl, delete_user_impl, get_user, update_user_impl, update_user_login_date_impl,
+    add_contact_impl, create_user_impl, delete_user_impl, get_current_user_impl, update_user_impl,
+    update_user_login_date_impl,
 };
 use crate::utils::caller::get_caller;
 
@@ -72,7 +74,7 @@ pub async fn create_user(args: AddUserArgs) -> Result<User, SmartVaultErr> {
 
 #[ic_cdk_macros::query]
 pub fn get_current_user() -> Result<User, SmartVaultErr> {
-    get_user(&get_caller())
+    get_current_user_impl(&get_caller())
 }
 
 #[ic_cdk_macros::update]
@@ -290,16 +292,8 @@ pub fn remove_policy(policy_id: String) -> Result<(), SmartVaultErr> {
  * Contact CRUD
  */
 #[ic_cdk_macros::update]
-pub fn add_contact(args: AddUserArgs) -> Result<User, SmartVaultErr> {
-    let principal = get_caller();
-    let user_vault_id: UUID = get_vault_id_for(principal)?;
-
-    USER_VAULT_STORE_DO_NOT_USE_ANYMORE.with(
-        |ms: &RefCell<UserVaultStore_DO_NOT_USE_ANYMORE>| -> Result<User, SmartVaultErr> {
-            let mut master_vault = ms.borrow_mut();
-            master_vault.add_contact(&user_vault_id, args)
-        },
-    )
+pub fn add_contact(args: AddContactArgs) -> Result<(), SmartVaultErr> {
+    add_contact_impl(args, &get_caller())
 }
 
 #[ic_cdk_macros::query]

@@ -5,6 +5,7 @@ use candid::Principal;
 use crate::{common::error::SmartVaultErr, smart_vaults::smart_vault::USER_STORE};
 
 use super::{
+    contact::{AddContactArgs, Contact},
     user::{AddUserArgs, User},
     user_store::UserStore,
 };
@@ -29,7 +30,7 @@ pub async fn create_user_impl(
     })
 }
 
-pub fn get_user(user: &Principal) -> Result<User, SmartVaultErr> {
+pub fn get_current_user_impl(user: &Principal) -> Result<User, SmartVaultErr> {
     // get current user
     USER_STORE.with(|ur: &RefCell<UserStore>| -> Result<User, SmartVaultErr> {
         let user_store = ur.borrow();
@@ -68,21 +69,35 @@ pub fn delete_user_impl(principal: &Principal) -> Result<(), SmartVaultErr> {
     Ok(())
 }
 
+pub fn add_contact_impl(args: AddContactArgs, caller: &Principal) -> Result<(), SmartVaultErr> {
+    let contact = Contact::from(args);
+
+    // add contact to user store (caller)
+    USER_STORE.with(|ur: &RefCell<UserStore>| -> Result<(), SmartVaultErr> {
+        let mut user_store = ur.borrow_mut();
+        user_store.add_contact(*caller, contact)
+    })?;
+
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use std::cell::RefCell;
 
     use candid::Principal;
+    use rand::Rng;
 
     use crate::{
         common::error::SmartVaultErr,
         smart_vaults::smart_vault::USER_STORE,
         users::{
+            contact::AddContactArgs,
             user::AddUserArgs,
             user_store::UserStore,
             users_interface_impl::{
-                create_user_impl, delete_user_impl, get_user, update_user_impl,
-                update_user_login_date_impl,
+                add_contact_impl, create_user_impl, delete_user_impl, get_current_user_impl,
+                update_user_impl, update_user_login_date_impl,
             },
         },
     };
@@ -91,6 +106,7 @@ mod tests {
     async fn itest_user_lifecycle() {
         // Create test user
         let principal = create_principal();
+        let contact_principal = create_principal();
 
         // Create User and store it
         let aua: AddUserArgs = AddUserArgs {
@@ -100,22 +116,41 @@ mod tests {
             user_type: None,
         };
         let created_user = create_user_impl(aua, &principal).await.unwrap();
-        let mut fetched_user = get_user(&principal).unwrap();
+        let fetched_user = get_current_user_impl(&principal).unwrap();
         assert_eq!(&created_user.id(), &fetched_user.id());
         assert_eq!(&created_user.email, &fetched_user.email);
+        assert!(&created_user.contacts.is_empty());
 
-        fetched_user.email = Some("donald@ducktown.com".to_string());
+        // add contact
+        let aca: AddContactArgs = AddContactArgs {
+            id: contact_principal,
+            name: Some("my contact".to_string()),
+            email: None,
+            user_type: None,
+        };
+        let add_contact_result = add_contact_impl(aca, &principal);
+        assert!(add_contact_result.is_ok());
+        let mut fetched_user = get_current_user_impl(&principal).unwrap();
+        assert!(fetched_user.contacts.len() == 1);
+        assert!(fetched_user.contacts[0].id == contact_principal);
+        assert_eq!(
+            fetched_user.contacts[0].name,
+            Some("my contact".to_string())
+        );
+
+        // update contact
 
         // update user
+        fetched_user.email = Some("donald@ducktown.com".to_string());
         update_user_impl(fetched_user.clone(), &principal).unwrap();
-        let fetched_user = get_user(&principal).unwrap();
+        let fetched_user = get_current_user_impl(&principal).unwrap();
         assert_eq!(fetched_user.email, Some("donald@ducktown.com".to_string()));
 
         // update login date
         let old_login_date = fetched_user.date_last_login().clone().unwrap();
         std::thread::sleep(std::time::Duration::from_millis(1));
         update_user_login_date_impl(&principal).unwrap();
-        let fetched_user = get_user(&principal).unwrap();
+        let fetched_user = get_current_user_impl(&principal).unwrap();
         let new_login_date = fetched_user.date_last_login().clone().unwrap();
         assert!(new_login_date > old_login_date);
 
@@ -135,8 +170,12 @@ mod tests {
     }
 
     fn create_principal() -> Principal {
-        Principal::from_slice(&[
-            1, 2, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        ])
+        // create random u8
+        let mut rng = rand::thread_rng();
+
+        // create random u8 array
+        let mut random_u8_array: [u8; 29] = [0; 29];
+        rng.fill(&mut random_u8_array[..]);
+        Principal::from_slice(&random_u8_array)
     }
 }

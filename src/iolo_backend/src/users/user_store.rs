@@ -14,6 +14,8 @@ use crate::{
     utils::time,
 };
 
+use super::contact::Contact;
+
 #[derive(Serialize, Deserialize)]
 pub struct UserStore {
     // An example `StableBTreeMap`. Data stored in `StableBTreeMap` doesn't need to
@@ -177,6 +179,28 @@ impl UserStore {
                 }
             })
             .collect()
+    }
+
+    pub fn add_contact(&mut self, user: Principal, contact: Contact) -> Result<(), SmartVaultErr> {
+        let principal_storable = PrincipalStorable::from(user.clone());
+
+        // Only name, email and user_type can be updated
+        if let Some(mut existing_user) = self.users.remove(&principal_storable) {
+            // add user only if not exists yet
+            if existing_user.contacts.iter().any(|c| c.id == contact.id) {
+                return Err(SmartVaultErr::ContactAlreadyExists(contact.id.to_string()));
+            }
+
+            // add contact to user
+            existing_user.contacts.push(contact);
+
+            // store user
+            self.users.insert(principal_storable, existing_user);
+        } else {
+            return Err(SmartVaultErr::UserDoesNotExist(user.to_string()));
+        }
+
+        Ok(())
     }
 }
 
