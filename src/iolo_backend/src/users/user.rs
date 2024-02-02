@@ -1,4 +1,4 @@
-use std::borrow::Cow;
+use std::{borrow::Cow, collections::HashSet};
 
 use candid::{CandidType, Decode, Encode, Principal};
 use ic_stable_structures::{storable::Bound, Storable};
@@ -22,10 +22,10 @@ pub struct User {
     pub date_created: u64,
     pub date_modified: u64,
     pub date_last_login: Option<u64>,
-    pub contacts: Vec<Contact>,
+    pub contacts: Vec<Contact>, // TODO: make hashset?
     pub user_vault_id_DO_NOT_USE_ANYMORE: Option<UserVaultID>,
     // New: Secrets, KeyBox and policies are stored in the user
-    pub secrets: Vec<UUID>,
+    pub secrets: Vec<UUID>, // TODO: make hashset?
     pub policies: Vec<String>,
     pub key_box: KeyBox,
 }
@@ -70,7 +70,7 @@ impl From<AddUserArgs> for User {
     }
 }
 
-#[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
+#[derive(Debug, CandidType, Deserialize, Serialize, Clone, PartialEq, Eq, Hash)]
 pub enum UserType {
     Person,
     Company,

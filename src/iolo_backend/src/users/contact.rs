@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 use super::user::UserType;
 
-#[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
+#[derive(Debug, CandidType, Deserialize, Serialize, Clone, PartialEq, Eq, Hash)]
 pub struct Contact {
     pub id: Principal,
     pub name: Option<String>,
