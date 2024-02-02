@@ -232,19 +232,19 @@ impl UserStore {
     pub fn remove_contact(
         &mut self,
         user: Principal,
-        contact: Contact,
+        id: Principal,
     ) -> Result<(), SmartVaultErr> {
         let principal_storable = PrincipalStorable::from(user);
 
         // Only name, email and user_type can be updated
         if let Some(mut existing_user) = self.users.remove(&principal_storable) {
             // check if contact exist in user contacts. if yes, remove it. if not, throw error
-            if !existing_user.contacts.iter().any(|c| c.id == contact.id) {
-                return Err(SmartVaultErr::ContactDoesNotExist(contact.id.to_string()));
+            if !existing_user.contacts.iter().any(|c| c.id == id) {
+                return Err(SmartVaultErr::ContactDoesNotExist(id.to_string()));
             }
 
             // remove contact from user
-            existing_user.contacts.retain(|c| c.id != contact.id);
+            existing_user.contacts.retain(|c| c.id != id);
 
             // store user
             self.users.insert(principal_storable, existing_user);
@@ -273,6 +273,8 @@ mod tests {
         users::user::{AddUserArgs, User},
         users::user_store::UserStore,
     };
+    use crate::users::contact::Contact;
+    use crate::users::user::UserType;
 
     #[tokio::test]
     async fn utest_user_store() {
@@ -306,6 +308,18 @@ mod tests {
         assert_eq!(
             user_store.get_user(&principal_2).unwrap_err(),
             SmartVaultErr::UserDoesNotExist(principal_2.to_string())
+        );
+
+        let contact: Contact = Contact {
+            id: principal,
+            name: Some("Testuser".to_string()),
+            email: Some("test@me.com".to_string()),
+            user_type: None,
+        };
+        assert!(user_store.add_contact(new_user.id, contact).is_ok());
+        assert_eq!(
+            user_store.get_contact_list(new_user.id).unwrap().len(),
+            1
         );
     }
 }

@@ -308,8 +308,8 @@ pub fn update_contact(c: Contact) -> Result<Contact, SmartVaultErr> {
 }
 
 #[ic_cdk_macros::update]
-pub fn remove_contact(contact: Contact) -> Result<(), SmartVaultErr> {
-    remove_contact_impl(contact, &get_caller())
+pub fn remove_contact(id: Principal) -> Result<(), SmartVaultErr> {
+    remove_contact_impl(id, &get_caller())
 }
 
 // #[ic_cdk_macros::query]

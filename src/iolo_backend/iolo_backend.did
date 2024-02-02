@@ -196,7 +196,7 @@ service : () -> {
       Result_9,
     ) query;
   ibe_encryption_key : () -> (text);
-  remove_contact : (Contact) -> (Result);
+  remove_contact : (principal) -> (Result);
   remove_policy : (text) -> (Result);
   remove_secret : (text) -> (Result);
   symmetric_key_verification_key : () -> (text);

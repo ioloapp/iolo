@@ -1,32 +1,18 @@
 export const idlFactory = ({ IDL }) => {
   const UserType = IDL.Variant({ 'Company' : IDL.Null, 'Person' : IDL.Null });
-  const AddUserArgs = IDL.Record({
+  const AddContactArgs = IDL.Record({
     'id' : IDL.Principal,
     'user_type' : IDL.Opt(UserType),
     'name' : IDL.Opt(IDL.Text),
     'email' : IDL.Opt(IDL.Text),
-  });
-  const SecretSymmetricCryptoMaterial = IDL.Record({
-    'encrypted_symmetric_key' : IDL.Vec(IDL.Nat8),
-  });
-  const User = IDL.Record({
-    'id' : IDL.Principal,
-    'user_type' : IDL.Opt(UserType),
-    'date_created' : IDL.Nat64,
-    'name' : IDL.Opt(IDL.Text),
-    'secrets' : IDL.Vec(IDL.Nat),
-    'date_last_login' : IDL.Opt(IDL.Nat64),
-    'email' : IDL.Opt(IDL.Text),
-    'key_box' : IDL.Vec(IDL.Tuple(IDL.Nat, SecretSymmetricCryptoMaterial)),
-    'user_vault_id_DO_NOT_USE_ANYMORE' : IDL.Opt(IDL.Nat),
-    'date_modified' : IDL.Nat64,
-    'policies' : IDL.Vec(IDL.Text),
   });
   const SmartVaultErr = IDL.Variant({
+    'ContactDoesNotExist' : IDL.Text,
     'UserAlreadyExists' : IDL.Text,
     'OnlyOwnerCanDeleteSecret' : IDL.Text,
     'SecretHasNoId' : IDL.Null,
     'UserDeletionFailed' : IDL.Text,
+    'ContactAlreadyExists' : IDL.Text,
     'OnlyOwnerCanUpdatePolicy' : IDL.Text,
     'SecretDoesNotExist' : IDL.Text,
     'NoPolicyForBeneficiary' : IDL.Text,
@@ -43,8 +29,11 @@ export const idlFactory = ({ IDL }) => {
     'InvalidPolicyCondition' : IDL.Null,
     'KeyGenerationNotAllowed' : IDL.Null,
   });
-  const Result = IDL.Variant({ 'Ok' : User, 'Err' : SmartVaultErr });
+  const Result = IDL.Variant({ 'Ok' : IDL.Null, 'Err' : SmartVaultErr });
   const LogicalOperator = IDL.Variant({ 'Or' : IDL.Null, 'And' : IDL.Null });
+  const SecretSymmetricCryptoMaterial = IDL.Record({
+    'encrypted_symmetric_key' : IDL.Vec(IDL.Nat8),
+  });
   const TimeBasedCondition = IDL.Record({
     'id' : IDL.Text,
     'condition_status' : IDL.Bool,
@@ -110,13 +99,42 @@ export const idlFactory = ({ IDL }) => {
     'date_modified' : IDL.Nat64,
   });
   const Result_2 = IDL.Variant({ 'Ok' : Secret, 'Err' : SmartVaultErr });
-  const Result_3 = IDL.Variant({ 'Ok' : IDL.Null, 'Err' : SmartVaultErr });
+  const AddUserArgs = IDL.Record({
+    'id' : IDL.Principal,
+    'user_type' : IDL.Opt(UserType),
+    'name' : IDL.Opt(IDL.Text),
+    'email' : IDL.Opt(IDL.Text),
+  });
+  const Contact = IDL.Record({
+    'id' : IDL.Principal,
+    'user_type' : IDL.Opt(UserType),
+    'name' : IDL.Opt(IDL.Text),
+    'email' : IDL.Opt(IDL.Text),
+  });
+  const User = IDL.Record({
+    'id' : IDL.Principal,
+    'user_type' : IDL.Opt(UserType),
+    'date_created' : IDL.Nat64,
+    'contacts' : IDL.Vec(Contact),
+    'name' : IDL.Opt(IDL.Text),
+    'secrets' : IDL.Vec(IDL.Nat),
+    'date_last_login' : IDL.Opt(IDL.Nat64),
+    'email' : IDL.Opt(IDL.Text),
+    'key_box' : IDL.Vec(IDL.Tuple(IDL.Nat, SecretSymmetricCryptoMaterial)),
+    'user_vault_id_DO_NOT_USE_ANYMORE' : IDL.Opt(IDL.Nat),
+    'date_modified' : IDL.Nat64,
+    'policies' : IDL.Vec(IDL.Text),
+  });
+  const Result_3 = IDL.Variant({ 'Ok' : User, 'Err' : SmartVaultErr });
   const PolicyKeyDerviationArgs = IDL.Record({
     'encryption_public_key' : IDL.Vec(IDL.Nat8),
     'policy_id' : IDL.Text,
   });
   const Result_4 = IDL.Variant({ 'Ok' : IDL.Text, 'Err' : SmartVaultErr });
-  const Result_5 = IDL.Variant({ 'Ok' : IDL.Vec(User), 'Err' : SmartVaultErr });
+  const Result_5 = IDL.Variant({
+    'Ok' : IDL.Vec(Contact),
+    'Err' : SmartVaultErr,
+  });
   const SecretListEntry = IDL.Record({
     'id' : IDL.Nat,
     'name' : IDL.Opt(IDL.Text),
@@ -157,6 +175,7 @@ export const idlFactory = ({ IDL }) => {
     'Ok' : SecretSymmetricCryptoMaterial,
     'Err' : SmartVaultErr,
   });
+  const Result_10 = IDL.Variant({ 'Ok' : Contact, 'Err' : SmartVaultErr });
   const UpdateSecretArgs = IDL.Record({
     'id' : IDL.Nat,
     'url' : IDL.Opt(IDL.Text),
@@ -167,16 +186,16 @@ export const idlFactory = ({ IDL }) => {
     'category' : IDL.Opt(SecretCategory),
   });
   return IDL.Service({
-    'add_contact' : IDL.Func([AddUserArgs], [Result], []),
+    'add_contact' : IDL.Func([AddContactArgs], [Result], []),
     'add_policy' : IDL.Func([AddPolicyArgs], [Result_1], []),
     'add_secret' : IDL.Func([AddSecretArgs], [Result_2], []),
     'confirm_x_out_of_y_condition' : IDL.Func(
         [IDL.Principal, IDL.Text, IDL.Bool],
-        [Result_3],
+        [Result],
         [],
       ),
-    'create_user' : IDL.Func([AddUserArgs], [Result], []),
-    'delete_user' : IDL.Func([], [Result_3], []),
+    'create_user' : IDL.Func([AddUserArgs], [Result_3], []),
+    'delete_user' : IDL.Func([], [Result], []),
     'encrypted_ibe_decryption_key_for_caller' : IDL.Func(
         [IDL.Vec(IDL.Nat8)],
         [IDL.Text],
@@ -198,7 +217,7 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'get_contact_list' : IDL.Func([], [Result_5], ['query']),
-    'get_current_user' : IDL.Func([], [Result], ['query']),
+    'get_current_user' : IDL.Func([], [Result_3], ['query']),
     'get_policy_as_beneficiary' : IDL.Func([IDL.Text], [Result_6], ['query']),
     'get_policy_as_owner' : IDL.Func([IDL.Text], [Result_6], ['query']),
     'get_policy_list_as_beneficiary' : IDL.Func([], [Result_7], ['query']),
@@ -222,16 +241,15 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'ibe_encryption_key' : IDL.Func([], [IDL.Text], []),
-    'is_user_vault_existing' : IDL.Func([], [IDL.Bool], ['query']),
-    'remove_contact' : IDL.Func([IDL.Principal], [Result_3], []),
-    'remove_policy' : IDL.Func([IDL.Text], [Result_3], []),
-    'remove_secret' : IDL.Func([IDL.Text], [Result_3], []),
+    'remove_contact' : IDL.Func([IDL.Principal], [Result], []),
+    'remove_policy' : IDL.Func([IDL.Text], [Result], []),
+    'remove_secret' : IDL.Func([IDL.Text], [Result], []),
     'symmetric_key_verification_key' : IDL.Func([], [IDL.Text], []),
-    'update_contact' : IDL.Func([User], [Result], []),
+    'update_contact' : IDL.Func([Contact], [Result_10], []),
     'update_policy' : IDL.Func([Policy], [Result_1], []),
     'update_secret' : IDL.Func([UpdateSecretArgs], [Result_2], []),
-    'update_user' : IDL.Func([User], [Result], []),
-    'update_user_login_date' : IDL.Func([], [Result], []),
+    'update_user' : IDL.Func([User], [Result_3], []),
+    'update_user_login_date' : IDL.Func([], [Result_3], []),
   });
 };
 export const init = ({ IDL }) => { return []; };

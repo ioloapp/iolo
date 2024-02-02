@@ -49,7 +49,7 @@ export const loadContactsThunk = createAsyncThunk<UiUser[], void, {
 >('contacts/load',
     async (_, {rejectWithValue}) => {
         try {
-            return await ioloService.getContactsList();
+            return ioloService.getContactsList();
         } catch (e) {
             rejectWithValue(e)
         }
@@ -120,7 +120,7 @@ export const contactsSlice = createSlice({
                 state.showAddDialog = false;
                 state.dialogItem = initialState.dialogItem;
                 if(action.payload) {
-                    state.contactsList = [...state.contactsList, action.payload]
+                    state.contactsList = [...(state.contactsList ? state.contactsList : []), action.payload]
                 }
             })
             .addCase(addContactThunk.rejected, (state, action) => {
