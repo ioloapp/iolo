@@ -1,4 +1,5 @@
 import {ActorSubclass, HttpAgent, Identity} from "@dfinity/agent";
+import {v4 as uuidv4} from 'uuid';
 import {
     _SERVICE,
     AddPolicyArgs,
@@ -655,7 +656,10 @@ class IoloService {
         }
     }
 
-    private async mapUiPolicyToPolicy(uiPolicy: UiPolicy): Promise<Policy> {
+    private async mapUiPolicyToPolicy(uiPolicyInput: UiPolicy): Promise<Policy> {
+        //TODO remove this if id is not needed anymore in get_aes_256_gcm_key_for_policy
+        const uiPolicy  = {...uiPolicyInput, id: uiPolicyInput.id ? uiPolicyInput.id : uuidv4()}
+
         const beneficiaries = uiPolicy.beneficiaries.map((item) => {
             return Principal.fromText(item.id);
         });
