@@ -37,7 +37,14 @@ export const PolicyDialogContent: FC<PolicyDialogContentProps> = ({readonly, vie
     useEffect(() => {
         if (readonly){
             setSelectedSecrets(dialogItem.secrets);
-            setSelectedContacts(dialogItem.beneficiaries);
+            const beneficiaries = dialogItem.beneficiaries.map(b => {
+                if(contacts){
+                    const c = contacts.find(c => c.id === b.id);
+                    return c ? c: b;
+                }
+                return b;
+            })
+            setSelectedContacts(beneficiaries);
         } else {
             const contactsSelection = contacts.map(h => {
                 const beneficiary = dialogItem.beneficiaries.find(dh => dh.id === h.id);

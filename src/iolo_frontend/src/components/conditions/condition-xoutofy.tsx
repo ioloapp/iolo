@@ -70,6 +70,18 @@ export const ConditionXOutOfY: FC<ConditionXOutOfYProps> = ({condition, readonly
         dispatch(policiesActions.updateConditionOfDialogItem(updatedConditon))
     }
 
+    const getValidatorName = (user: UiUser) => {
+        if(user.name) {
+            return user.name;
+        }else {
+            const c = contacts.find(c => c.id === user.id);
+            if(c?.name) {
+                return c.name;
+            }
+        }
+        return user.id
+    }
+
     if (readonly) {
         return (
             <TableRow>
@@ -90,7 +102,7 @@ export const ConditionXOutOfY: FC<ConditionXOutOfYProps> = ({condition, readonly
                                     {condition?.validators?.map((validator) => (
                                         <TableRow key={validator.user.id}>
                                             <TableCell component="th" scope="row">
-                                                {validator.user.name ? validator.user.name : validator.user.id}
+                                                {getValidatorName(validator.user)}
                                             </TableCell>
                                             <TableCell>{validator.status}</TableCell>
                                         </TableRow>
