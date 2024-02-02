@@ -19,39 +19,38 @@ export const addPolicyThunk = createAsyncThunk<UiPolicy, UiPolicy, { state: Root
         try {
             return await ioloService.addPolicy(policy);
         } catch (e) {
-            rejectWithValue(mapError(e))
+            return rejectWithValue(e)
         }
     }
 );
 
 export const viewPolicyThunk = createAsyncThunk<UiPolicyResponse, UiPolicy, { state: RootState }>(
     'policies/view',
-    (policy, {rejectWithValue}) => {
+    async (policy, {rejectWithValue}) => {
         try {
             if (policy.role === UiPolicyListEntryRole.Owner) {
-                return ioloService.getPolicyAsOwner(policy.id);
+                return await ioloService.getPolicyAsOwner(policy.id);
             } else {
-                return ioloService.getPolicyAsBeneficiary(policy.id);
+                return await ioloService.getPolicyAsBeneficiary(policy.id);
             }
-
         } catch (e) {
-            rejectWithValue(mapError(e))
+            return rejectWithValue(e)
         }
     }
 );
 
 export const editPolicyThunk = createAsyncThunk<UiPolicyResponse, UiPolicy, { state: RootState }>(
     'policies/edit',
-     (policy, {rejectWithValue, getState}) => {
+     async (policy, {rejectWithValue, getState}) => {
         try {
             if (policy.role === UiPolicyListEntryRole.Owner) {
-                return ioloService.getPolicyAsOwner(policy.id);
+                return await ioloService.getPolicyAsOwner(policy.id);
             } else {
-                return ioloService.getPolicyAsBeneficiary(policy.id);
+                return await ioloService.getPolicyAsBeneficiary(policy.id);
             }
 
         } catch (e) {
-            rejectWithValue(mapError(e))
+            return rejectWithValue(e)
         }
     }
 );
@@ -63,7 +62,7 @@ export const updatePolicyThunk = createAsyncThunk<UiPolicy, UiPolicy, {
         try {
             return await ioloService.updatePolicy(policy);
         } catch (e) {
-            rejectWithValue(mapError(e))
+            return rejectWithValue(e)
         }
     }
 );
@@ -77,7 +76,7 @@ export const deletePolicyThunk = createAsyncThunk<string, string, {
             await ioloService.deletePolicy(policyId);
             return policyId;
         } catch (e) {
-            rejectWithValue(mapError(e))
+            return rejectWithValue(e)
         }
     }
 );
@@ -89,7 +88,7 @@ export const loadPoliciesThunk = createAsyncThunk<UiPolicyListEntry[], void, {
         try {
             return await ioloService.getPolicyList();
         } catch (e) {
-            rejectWithValue(mapError(e))
+            return rejectWithValue(e)
         }
     }
 );

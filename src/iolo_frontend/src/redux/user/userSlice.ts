@@ -15,30 +15,46 @@ export interface UserLogin {
 
 export const loginUserThunk = createAsyncThunk<UiUser, void, { state: RootState }>(
     'user/login',
-    async (_): Promise<UiUser> => {
+    async (_, {rejectWithValue}): Promise<UiUser | unknown> => {
         const principal = await ioloService.login();
         if (principal) {
-            return ioloService.getCurrentUser(principal);
+            try{
+                return await ioloService.getCurrentUser(principal);
+            } catch (e) {
+                return rejectWithValue(e)
+            }
         }
         throw new LoginFailedException();
     });
 
 export const getCurrentUserThunk = createAsyncThunk<UiUser, void, { state: RootState }>(
     'user/get-current',
-    async (_): Promise<UiUser> => {
-        return await ioloService.getCurrentUser();
+    async (_, {rejectWithValue}): Promise<UiUser | unknown> => {
+        try{
+            return await ioloService.getCurrentUser();
+        } catch (e) {
+            return rejectWithValue(e)
+        }
     });
 
 export const createUserThunk = createAsyncThunk<UiUser, UiUser, { state: RootState }>(
     'user/create',
-    async (uiUser: UiUser): Promise<UiUser> => {
-        return await ioloService.createUser(uiUser);
+    async (uiUser: UiUser, {rejectWithValue}): Promise<UiUser | unknown> => {
+        try{
+            return await ioloService.createUser(uiUser);
+        } catch (e) {
+            return rejectWithValue(e)
+        }
     });
 
 export const updateUserThunk = createAsyncThunk<UiUser, UiUser, { state: RootState }>(
     'user/update',
-    async (uiUser: UiUser): Promise<UiUser> => {
-        return await ioloService.updateUser(uiUser);
+    async (uiUser: UiUser, {rejectWithValue}): Promise<UiUser | unknown> => {
+        try{
+            return await ioloService.updateUser(uiUser);
+        } catch (e) {
+            return rejectWithValue(e)
+        }
     });
 
 // Define a type for the slice state

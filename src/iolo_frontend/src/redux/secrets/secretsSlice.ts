@@ -14,7 +14,7 @@ export const addSecretThunk = createAsyncThunk<UiSecret, UiSecret, {
         try {
             return await ioloService.addSecret(uiSecret);
         } catch (e) {
-            rejectWithValue(mapError(e))
+            return rejectWithValue(e)
         }
     }
 );
@@ -26,7 +26,7 @@ export const getSecretThunk = createAsyncThunk<UiSecret, string, {
         try {
             return await ioloService.getSecret(secretId);
         } catch (e) {
-            rejectWithValue(mapError(e))
+            return rejectWithValue(e)
         }
     }
 );
@@ -44,9 +44,8 @@ export const getSecretInViewModeThunk = createAsyncThunk<UiSecret, GetSecret, {
             } else {
                 return await ioloService.getSecret(getSecret.secretId);
             }
-
         } catch (e) {
-            rejectWithValue(mapError(e))
+            return rejectWithValue(e)
         }
     }
 );
@@ -58,7 +57,7 @@ export const updateSecretThunk = createAsyncThunk<UiSecret, UiSecret, {
         try {
             return await ioloService.updateSecret(uiSecret);
         } catch (e) {
-            rejectWithValue(mapError(e))
+            return rejectWithValue(e)
         }
     }
 );
@@ -71,7 +70,7 @@ export const deleteSecretThunk = createAsyncThunk<string, UiSecret, {
             await ioloService.deleteSecret(uiSecret.id);
             return uiSecret.id;
         } catch (e) {
-            rejectWithValue(mapError(e))
+            return rejectWithValue(e)
         }
     }
 );
@@ -83,7 +82,7 @@ export const loadSecretsThunk = createAsyncThunk<UiSecretListEntry[], void, {
         try {
             return await ioloService.getSecretList();
         } catch (e) {
-            rejectWithValue(mapError(e))
+            return rejectWithValue(e)
         }
     }
 );

@@ -22,6 +22,10 @@ export const SecretDialogContent : FC<SecretDialogContentProps> = ({readonly}) =
         dispatch(secretsActions.updateDialogItem(secret))
     }
 
+    if(!dialogItem){
+        return null;
+    }
+
     return (
         <>
             <FormControl fullWidth>

@@ -14,7 +14,7 @@ export const addContactThunk = createAsyncThunk<UiUser, UiUser, {
         try {
             return await ioloService.addContact(contact);
         } catch (e) {
-            rejectWithValue(e)
+            return rejectWithValue(e)
         }
     }
 );
@@ -26,7 +26,7 @@ export const updateContactThunk = createAsyncThunk<UiUser, UiUser, {
         try {
             return await ioloService.updateContact(contact);
         } catch (e) {
-            rejectWithValue(e)
+            return rejectWithValue(e)
         }
     }
 );
@@ -39,7 +39,7 @@ export const deleteContactThunk = createAsyncThunk<string, UiUser, {
             await ioloService.deleteContact(contact.id);
             return contact.id;
         } catch (e) {
-            rejectWithValue(mapError(e))
+            return rejectWithValue(e)
         }
     }
 );
@@ -49,9 +49,9 @@ export const loadContactsThunk = createAsyncThunk<UiUser[], void, {
 >('contacts/load',
     async (_, {rejectWithValue}) => {
         try {
-            return ioloService.getContactsList();
+            return await ioloService.getContactsList();
         } catch (e) {
-            rejectWithValue(e)
+            return rejectWithValue(e)
         }
     }
 );

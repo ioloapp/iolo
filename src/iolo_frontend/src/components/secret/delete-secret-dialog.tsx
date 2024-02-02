@@ -33,7 +33,7 @@ export default function DeleteSecretDialog() {
 
     return (
         <BasicDialog title={t('secrets.dialog.delete.title')}
-                     leadText={<Trans i18nKey='secrets.dialog.delete.text' values={{secret: dialogItem.name}} />}
+                     leadText={<Trans i18nKey='secrets.dialog.delete.text' values={{secret: dialogItem?.name}} />}
                      isOpen={showDeleteSecretDialog}
                      handleClose={handleClose}
                      cancelAction={cancelDeleteSecret}
