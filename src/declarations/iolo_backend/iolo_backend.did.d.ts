@@ -7,14 +7,7 @@ export interface AddContactArgs {
   'name' : [] | [string],
   'email' : [] | [string],
 }
-export interface AddPolicyArgs {
-  'name' : [] | [string],
-  'conditions_logical_operator' : LogicalOperator,
-  'secrets' : Array<string>,
-  'beneficiaries' : Array<Principal>,
-  'key_box' : Array<[bigint, SecretSymmetricCryptoMaterial]>,
-  'conditions' : Array<Condition>,
-}
+export interface AddPolicyArgs { 'name' : [] | [string] }
 export interface AddSecretArgs {
   'url' : [] | [string],
   'username' : [] | [Uint8Array | number[]],
@@ -45,7 +38,7 @@ export interface Policy {
   'date_created' : bigint,
   'owner' : Principal,
   'name' : [] | [string],
-  'conditions_logical_operator' : LogicalOperator,
+  'conditions_logical_operator' : [] | [LogicalOperator],
   'secrets' : Array<string>,
   'conditions_status' : boolean,
   'beneficiaries' : Array<Principal>,
@@ -68,7 +61,7 @@ export interface PolicyResponse {
   'date_created' : bigint,
   'owner' : Principal,
   'name' : [] | [string],
-  'conditions_logical_operator' : LogicalOperator,
+  'conditions_logical_operator' : [] | [LogicalOperator],
   'secrets' : Array<SecretListEntry>,
   'conditions_status' : boolean,
   'beneficiaries' : Array<Principal>,

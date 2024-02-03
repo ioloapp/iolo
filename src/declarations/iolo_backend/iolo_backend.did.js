@@ -30,6 +30,7 @@ export const idlFactory = ({ IDL }) => {
     'KeyGenerationNotAllowed' : IDL.Null,
   });
   const Result = IDL.Variant({ 'Ok' : IDL.Null, 'Err' : SmartVaultErr });
+  const AddPolicyArgs = IDL.Record({ 'name' : IDL.Opt(IDL.Text) });
   const LogicalOperator = IDL.Variant({ 'Or' : IDL.Null, 'And' : IDL.Null });
   const SecretSymmetricCryptoMaterial = IDL.Record({
     'encrypted_symmetric_key' : IDL.Vec(IDL.Nat8),
@@ -50,20 +51,12 @@ export const idlFactory = ({ IDL }) => {
     'TimeBasedCondition' : TimeBasedCondition,
     'XOutOfYCondition' : XOutOfYCondition,
   });
-  const AddPolicyArgs = IDL.Record({
-    'name' : IDL.Opt(IDL.Text),
-    'conditions_logical_operator' : LogicalOperator,
-    'secrets' : IDL.Vec(IDL.Text),
-    'beneficiaries' : IDL.Vec(IDL.Principal),
-    'key_box' : IDL.Vec(IDL.Tuple(IDL.Nat, SecretSymmetricCryptoMaterial)),
-    'conditions' : IDL.Vec(Condition),
-  });
   const Policy = IDL.Record({
     'id' : IDL.Text,
     'date_created' : IDL.Nat64,
     'owner' : IDL.Principal,
     'name' : IDL.Opt(IDL.Text),
-    'conditions_logical_operator' : LogicalOperator,
+    'conditions_logical_operator' : IDL.Opt(LogicalOperator),
     'secrets' : IDL.Vec(IDL.Text),
     'conditions_status' : IDL.Bool,
     'beneficiaries' : IDL.Vec(IDL.Principal),
@@ -145,7 +138,7 @@ export const idlFactory = ({ IDL }) => {
     'date_created' : IDL.Nat64,
     'owner' : IDL.Principal,
     'name' : IDL.Opt(IDL.Text),
-    'conditions_logical_operator' : LogicalOperator,
+    'conditions_logical_operator' : IDL.Opt(LogicalOperator),
     'secrets' : IDL.Vec(SecretListEntry),
     'conditions_status' : IDL.Bool,
     'beneficiaries' : IDL.Vec(IDL.Principal),

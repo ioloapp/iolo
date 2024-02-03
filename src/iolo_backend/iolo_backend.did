@@ -4,14 +4,7 @@ type AddContactArgs = record {
   name : opt text;
   email : opt text;
 };
-type AddPolicyArgs = record {
-  name : opt text;
-  conditions_logical_operator : LogicalOperator;
-  secrets : vec text;
-  beneficiaries : vec principal;
-  key_box : vec record { nat; SecretSymmetricCryptoMaterial };
-  conditions : vec Condition;
-};
+type AddPolicyArgs = record { name : opt text };
 type AddSecretArgs = record {
   url : opt text;
   username : opt vec nat8;
@@ -43,7 +36,7 @@ type Policy = record {
   date_created : nat64;
   owner : principal;
   name : opt text;
-  conditions_logical_operator : LogicalOperator;
+  conditions_logical_operator : opt LogicalOperator;
   secrets : vec text;
   conditions_status : bool;
   beneficiaries : vec principal;
@@ -66,7 +59,7 @@ type PolicyResponse = record {
   date_created : nat64;
   owner : principal;
   name : opt text;
-  conditions_logical_operator : LogicalOperator;
+  conditions_logical_operator : opt LogicalOperator;
   secrets : vec SecretListEntry;
   conditions_status : bool;
   beneficiaries : vec principal;

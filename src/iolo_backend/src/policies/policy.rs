@@ -31,7 +31,7 @@ pub struct Policy {
     /// which itself is derived by vetkd.
     key_box: KeyBox,
     conditions_status: bool,
-    conditions_logical_operator: LogicalOperator,
+    conditions_logical_operator: Option<LogicalOperator>,
     pub conditions: Vec<Condition>,
 }
 
@@ -55,12 +55,7 @@ pub enum LogicalOperator {
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct AddPolicyArgs {
-    pub name: Option<String>,
-    pub beneficiaries: HashSet<Principal>,
-    pub secrets: HashSet<SecretID>,
-    pub key_box: KeyBox,
-    pub conditions_logical_operator: LogicalOperator,
-    pub conditions: Vec<Condition>,
+    pub name: Option<String>
 }
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone, PartialEq)]
@@ -95,7 +90,7 @@ impl Policy {
             secrets: HashSet::new(),
             key_box: BTreeMap::new(),
             conditions_status: false,
-            conditions_logical_operator: LogicalOperator::And,
+            conditions_logical_operator: None,
             conditions: Vec::new(),
         }
     }
@@ -104,11 +99,11 @@ impl Policy {
         let mut new_policy = Policy::new(policy_id.to_string(), owner);
         new_policy.owner = owner.clone();
         new_policy.name = ata.name;
-        new_policy.beneficiaries = ata.beneficiaries;
-        new_policy.secrets = ata.secrets;
-        new_policy.key_box = ata.key_box;
-        new_policy.conditions = ata.conditions;
-        new_policy.conditions_logical_operator = ata.conditions_logical_operator;
+        new_policy.beneficiaries = HashSet::new();
+        new_policy.secrets = HashSet::new();
+        new_policy.key_box = BTreeMap::new();
+        new_policy.conditions = Vec::new();
+        new_policy.conditions_logical_operator = None;
         new_policy.conditions_status = false;
         new_policy
     }
@@ -149,7 +144,7 @@ impl Policy {
         &self.conditions_status
     }
 
-    pub fn conditions_logical_operator(&self) -> &LogicalOperator {
+    pub fn conditions_logical_operator(&self) -> &Option<LogicalOperator> {
         &self.conditions_logical_operator
     }
 
@@ -217,7 +212,7 @@ pub struct PolicyResponse {
     secrets: HashSet<SecretListEntry>,
     key_box: KeyBox,
     conditions_status: bool,
-    conditions_logical_operator: LogicalOperator,
+    conditions_logical_operator: Option<LogicalOperator>,
     pub conditions: Vec<Condition>,
 }
 
@@ -235,7 +230,7 @@ impl PolicyResponse {
             key_box: BTreeMap::new(),
             conditions: Vec::new(),
             conditions_status: false,
-            conditions_logical_operator: LogicalOperator::And,
+            conditions_logical_operator: None,
         }
     }
 

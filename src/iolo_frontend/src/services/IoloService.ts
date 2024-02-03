@@ -272,22 +272,16 @@ class IoloService {
 
     public async addPolicy(uiPolicy: UiPolicy): Promise<UiPolicy> {
         console.debug('start adding policy...');
-        const policy: Policy = await this.mapUiPolicyToPolicy(uiPolicy);
         const addPolicyArgs: AddPolicyArgs = {
-            beneficiaries: policy.beneficiaries,
-            key_box: policy.key_box,
-            name: policy.name,
-            secrets: policy.secrets,
-            conditions: policy.conditions,
-            conditions_logical_operator: policy.conditions_logical_operator,
+            name: [uiPolicy.name],
         }
 
-        // Add policy
+        // Add policy to get an id
         const result = await (await this.getActor()).add_policy(addPolicyArgs);
         if (result['Ok']) {
-            return this.mapPolicyToUiPolicy(result['Ok'], UiPolicyListEntryRole.Owner);
+            uiPolicy.id = result['Ok'].id; // Use created policy id
+            return await this.updatePolicy(uiPolicy); // Update created policy with all other attributes
         } else throw mapError(result['Err']);
-
     }
 
     public async updatePolicy(uiPolicy: UiPolicy): Promise<UiPolicy> {
@@ -656,10 +650,7 @@ class IoloService {
         }
     }
 
-    private async mapUiPolicyToPolicy(uiPolicyInput: UiPolicy): Promise<Policy> {
-        //TODO remove this if id is not needed anymore in get_aes_256_gcm_key_for_policy
-        const uiPolicy  = {...uiPolicyInput, id: uiPolicyInput.id ? uiPolicyInput.id : uuidv4()}
-
+    private async mapUiPolicyToPolicy(uiPolicy: UiPolicy): Promise<Policy> {
         const beneficiaries = uiPolicy.beneficiaries.map((item) => {
             return Principal.fromText(item.id);
         });
@@ -678,7 +669,7 @@ class IoloService {
                 // Decrypt symmetric key with uservault vetKey
                 const decryptedSymmetricKey = await aes_gcm_decrypt(result['Ok'].encrypted_symmetric_key as Uint8Array, uservaultVetKey, this.ivLength);
 
-                // Enrcypt symmetric key with policy vetKey
+                // Encrypt symmetric key with policy vetKey
                 const ivSymmetricKey = window.crypto.getRandomValues(new Uint8Array(12)); // 96-bits; unique per message
                 const encryptedSymmetricKey = await aes_gcm_encrypt(decryptedSymmetricKey, policyVetKey, ivSymmetricKey);
 
@@ -695,7 +686,7 @@ class IoloService {
             owner: Principal.fromText(uiPolicy.owner.id),
             secrets: uiPolicy.secrets.map((item) => item.toString()),
             key_box: keyBox,
-            conditions_logical_operator: uiPolicy.conditionsLogicalOperator == LogicalOperator.And ? { 'And' : null } : { 'Or' : null },
+            conditions_logical_operator: uiPolicy.conditionsLogicalOperator == LogicalOperator.And ? [{ 'And' : null }] : [{ 'Or' : null }],
             conditions_status: uiPolicy.conditionsStatus,
             conditions: uiPolicy.conditions.map(uiCondition => this.mapUiConditionToCondition(uiCondition)),
             date_created: uiPolicy.dateCreated ? this.dateToNanosecondsInBigint(uiPolicy.dateCreated) : 0n,

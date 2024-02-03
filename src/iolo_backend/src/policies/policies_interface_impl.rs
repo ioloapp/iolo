@@ -21,14 +21,6 @@ pub async fn add_policy_impl(
     apa: AddPolicyArgs,
     policy_owner: &Principal,
 ) -> Result<Policy, SmartVaultErr> {
-    // check if secrets in apa exist in secret store
-    for secret_id in apa.secrets.iter() {
-        SECRET_STORE.with(|ss| {
-            let secret_store = ss.borrow();
-            secret_store.get(&UUID::from(secret_id.to_string()))
-        })?;
-    }
-
     // we create the policy id in the backend
     let new_policy_id: String = UUID::new_random().await.into();
 
@@ -192,6 +184,14 @@ pub fn update_policy_impl(policy: Policy, caller: &Principal) -> Result<Policy, 
             caller,
             policy.id()
         )));
+    }
+
+    // check if secrets in policy exist in secret store
+    for secret_id in policy.secrets.iter() {
+        SECRET_STORE.with(|ss| {
+            let secret_store = ss.borrow();
+            secret_store.get(&UUID::from(secret_id.to_string()))
+        })?;
     }
 
     // update policy in policy store
