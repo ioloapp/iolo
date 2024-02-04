@@ -17,10 +17,7 @@ use super::{
     policy_store::PolicyStore,
 };
 
-pub async fn add_policy_impl(
-    apa: AddPolicyArgs,
-    policy_owner: &Principal,
-) -> Result<Policy, SmartVaultErr> {
+pub async fn add_policy_impl(apa: AddPolicyArgs, policy_owner: &Principal) -> Result<Policy, SmartVaultErr> {
     // we create the policy id in the backend
     let new_policy_id: String = UUID::new_random().await.into();
 
@@ -61,10 +58,7 @@ pub async fn add_policy_impl(
     Ok(policy)
 }
 
-pub fn get_policy_as_owner_impl(
-    policy_id: PolicyID,
-    caller: &Principal,
-) -> Result<PolicyResponse, SmartVaultErr> {
+pub fn get_policy_as_owner_impl(policy_id: PolicyID, caller: &Principal) -> Result<PolicyResponse, SmartVaultErr> {
     // get policy from policy store
     let policy: Policy = POLICY_STORE.with(|ps| -> Result<Policy, SmartVaultErr> {
         let policy_store = ps.borrow();
@@ -87,9 +81,7 @@ pub fn get_policy_as_owner_impl(
     Ok(policy_response)
 }
 
-pub fn get_policy_list_as_owner_impl(
-    caller: &Principal,
-) -> Result<Vec<PolicyListEntry>, SmartVaultErr> {
+pub fn get_policy_list_as_owner_impl(caller: &Principal) -> Result<Vec<PolicyListEntry>, SmartVaultErr> {
     // get policy ids from user in user store
     let policy_ids: Vec<PolicyID> = USER_STORE.with(|us| {
         let user_store = us.borrow();
@@ -110,10 +102,7 @@ pub fn get_policy_list_as_owner_impl(
     Ok(policies.into_iter().map(PolicyListEntry::from).collect())
 }
 
-pub fn get_policy_as_beneficiary_impl(
-    policy_id: PolicyID,
-    beneficiary: &Principal,
-) -> Result<PolicyResponse, SmartVaultErr> {
+pub fn get_policy_as_beneficiary_impl(policy_id: PolicyID, beneficiary: &Principal) -> Result<PolicyResponse, SmartVaultErr> {
     // get policy from policy store
     let policy: Policy = POLICY_STORE.with(|ps| -> Result<Policy, SmartVaultErr> {
         let policy_store = ps.borrow();
@@ -150,9 +139,7 @@ pub fn get_policy_as_beneficiary_impl(
     }
 }
 
-pub fn get_policy_list_as_beneficiary_impl(
-    caller: &Principal,
-) -> Result<Vec<PolicyListEntry>, SmartVaultErr> {
+pub fn get_policy_list_as_beneficiary_impl(caller: &Principal) -> Result<Vec<PolicyListEntry>, SmartVaultErr> {
     // get all policy ids for caller by checking the policy registry index for beneficiaries
     POLICY_REGISTRIES.with(|pr| {
         let policy_registries = pr.borrow();
@@ -160,9 +147,7 @@ pub fn get_policy_list_as_beneficiary_impl(
     })
 }
 
-pub fn get_policy_list_as_validator_impl(
-    validator: &Principal,
-) -> Result<Vec<PolicyListEntry>, SmartVaultErr> {
+pub fn get_policy_list_as_validator_impl(validator: &Principal) -> Result<Vec<PolicyListEntry>, SmartVaultErr> {
     // get all policy ids for caller by checking the policy registry index for validators
     POLICY_REGISTRIES.with(|pr| -> Result<Vec<PolicyListEntry>, SmartVaultErr> {
         let policy_registries = pr.borrow();
@@ -218,6 +203,48 @@ pub fn update_policy_impl(policy: Policy, caller: &Principal) -> Result<Policy, 
     }
 
     Ok(updated_policy)
+}
+
+pub fn remove_policy_impl(policy_id: String, caller: &Principal) -> Result<(), SmartVaultErr> {
+    // check if policy exists
+    let policy = POLICY_STORE.with(|ps| {
+        let policy_store = ps.borrow();
+        policy_store.get(&policy_id)
+    })?;
+
+    // check if caller is owner of policy
+    if policy.owner() != caller {
+        return Err(SmartVaultErr::OnlyOwnerCanUpdatePolicy(format!(
+            "Caller {:?} is not owner of policy {:?}",
+            caller,
+            policy.id()
+        )));
+    }
+
+    // remove policy in policy store
+    POLICY_STORE.with(|ps| {
+        let mut policy_store = ps.borrow_mut();
+        policy_store.remove_policy(&policy_id)
+    })?;
+
+    // remove policy from registry for beneficiaries (reverse index)
+    POLICY_REGISTRIES.with(|pr| -> Result<(), SmartVaultErr> {
+        let mut policy_registries = pr.borrow_mut();
+        policy_registries.remove_policy_from_beneficiary(&policy);
+        Ok(())
+    })?;
+
+    // remove policy from registry for validators (reverse index) if there is a XOutOfYCondition
+    for condition in policy.conditions().iter() {
+        if let Condition::XOutOfYCondition(xoutofy) = condition {
+            POLICY_REGISTRIES.with(|x| {
+                let mut policy_registries = x.borrow_mut();
+                policy_registries.remove_policy_from_validators(&xoutofy.validators, policy.id());
+            });
+        }
+    }
+
+    Ok(())
 }
 
 #[cfg(test)]
@@ -301,14 +328,22 @@ mod tests {
 
         let mut apa: AddPolicyArgs = AddPolicyArgs {
             name: Some("Policy#1".to_string()),
-            beneficiaries: [beneficiary].iter().cloned().collect(),
-            secrets: HashSet::new(),
-            key_box: KeyBox::new(),
-            conditions_logical_operator: LogicalOperator::And,
-            conditions: vec![time_based_condition.clone(), x_out_of_y_condition.clone()],
+            //beneficiaries: [beneficiary].iter().cloned().collect(),
+            //secrets: HashSet::new(),
+            //key_box: KeyBox::new(),
+            //conditions_logical_operator: LogicalOperator::And,
+            //conditions: vec![time_based_condition.clone(), x_out_of_y_condition.clone()],
         };
-        apa.secrets.insert(added_secret.id().to_string());
+        //apa.secrets.insert(added_secret.id().to_string());
         let mut added_policy = add_policy_impl(apa.clone(), &principal).await.unwrap();
+
+        // Update policy with other attributes
+        added_policy.beneficiaries = [beneficiary].iter().cloned().collect();
+        added_policy.secrets.insert(added_secret.id().to_string());
+        added_policy.key_box() = &KeyBox::new();
+        //added_policy.conditions_logical_operator = None;
+        added_policy.conditions = vec![time_based_condition.clone(), x_out_of_y_condition.clone()];
+
 
         // check if policy is in policy store and check if it contains the secret
         POLICY_STORE.with(|ps| {

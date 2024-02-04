@@ -5,11 +5,7 @@ use ic_cdk::{post_upgrade, pre_upgrade, storage};
 
 use crate::common::error::SmartVaultErr;
 use crate::common::uuid::UUID;
-use crate::policies::policies_interface_impl::{
-    add_policy_impl, get_policy_as_beneficiary_impl, get_policy_as_owner_impl,
-    get_policy_list_as_beneficiary_impl, get_policy_list_as_owner_impl,
-    get_policy_list_as_validator_impl, update_policy_impl,
-};
+use crate::policies::policies_interface_impl::{add_policy_impl, get_policy_as_beneficiary_impl, get_policy_as_owner_impl, get_policy_list_as_beneficiary_impl, get_policy_list_as_owner_impl, get_policy_list_as_validator_impl, remove_policy_impl, update_policy_impl};
 use crate::policies::policy::PolicyResponse;
 use crate::policies::policy::{AddPolicyArgs, Policy, PolicyID, PolicyListEntry};
 use crate::policies::policy_registries::{
@@ -248,15 +244,7 @@ pub fn update_policy(policy: Policy) -> Result<Policy, SmartVaultErr> {
 
 #[ic_cdk_macros::update]
 pub fn remove_policy(policy_id: String) -> Result<(), SmartVaultErr> {
-    let principal = get_caller();
-    let user_vault_id: UUID = get_vault_id_for_DO_NOT_USE_ANYMORE(principal)?;
-
-    USER_VAULT_STORE_DO_NOT_USE_ANYMORE.with(
-        |ms: &RefCell<UserVaultStore_DO_NOT_USE_ANYMORE>| -> Result<(), SmartVaultErr> {
-            let mut master_vault = ms.borrow_mut();
-            master_vault.remove_user_policies(&user_vault_id, &policy_id)
-        },
-    )
+    remove_policy_impl(policy_id, &get_caller())
 }
 
 #[ic_cdk_macros::update]

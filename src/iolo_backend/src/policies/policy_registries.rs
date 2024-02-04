@@ -131,11 +131,7 @@ impl PolicyRegistries {
         }
     }
 
-    pub fn remove_policy_from_validators(
-        &mut self,
-        validator: &Vec<Validator>,
-        policy_id: &PolicyID,
-    ) {
+    pub fn remove_policy_from_validators(&mut self, validator: &Vec<Validator>, policy_id: &PolicyID) {
         for validator in validator {
             if let Some(mut policy_hash_set) = self
                 .validator_to_policies
@@ -150,10 +146,7 @@ impl PolicyRegistries {
         }
     }
 
-    pub fn get_policy_ids_as_beneficiary(
-        &self,
-        beneficiary: &Principal,
-    ) -> Result<Vec<PolicyListEntry>, SmartVaultErr> {
+    pub fn get_policy_ids_as_beneficiary(&self, beneficiary: &Principal) -> Result<Vec<PolicyListEntry>, SmartVaultErr> {
         // pub beneficiaries_to_policies: StableBTreeMap<PrincipalStorable, PolicyHashSetStorable, Memory>,
         let beneficiary_storable = PrincipalStorable::from(*beneficiary);
 
@@ -174,10 +167,7 @@ impl PolicyRegistries {
         })
     }
 
-    pub fn get_policy_ids_as_validator(
-        &self,
-        validator: &Principal,
-    ) -> Result<Vec<PolicyListEntry>, SmartVaultErr> {
+    pub fn get_policy_ids_as_validator(&self, validator: &Principal) -> Result<Vec<PolicyListEntry>, SmartVaultErr> {
         // pub beneficiaries_to_policies: StableBTreeMap<PrincipalStorable, PolicyHashSetStorable, Memory>,
         let beneficiary_storable = PrincipalStorable::from(*validator);
 
@@ -198,10 +188,7 @@ impl PolicyRegistries {
         })
     }
 
-    pub fn update_policy_to_beneficiary(
-        &mut self,
-        policy: &Policy,
-    ) -> Result<Policy, SmartVaultErr> {
+    pub fn update_policy_to_beneficiary(&mut self, policy: &Policy) -> Result<Policy, SmartVaultErr> {
         // clean the index
         self.remove_policy_from_beneficiary(policy);
 
@@ -211,11 +198,7 @@ impl PolicyRegistries {
         Ok(policy.clone())
     }
 
-    pub fn update_policy_to_validators(
-        &mut self,
-        validators: &Vec<Validator>,
-        policy_id: &PolicyID,
-    ) {
+    pub fn update_policy_to_validators(&mut self, validators: &Vec<Validator>, policy_id: &PolicyID) {
         // clean the index
         self.remove_policy_from_validators(validators, policy_id);
 
