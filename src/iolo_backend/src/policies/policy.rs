@@ -20,7 +20,7 @@ pub struct Policy {
     owner: Principal,
     pub name: Option<String>,
     date_created: u64,
-    date_modified: u64,
+    pub date_modified: u64,
     pub beneficiaries: HashSet<Principal>,
     // References to the secrets contained in this policy
     // Path to secret: owner -> owner uservault -> secret

@@ -130,7 +130,7 @@ pub fn get_secret_symmetric_crypto_material_impl(
 
 pub fn get_secret_as_beneficiary_impl(sid: UUID, policy_id: PolicyID) -> Result<Secret, SmartVaultErr> {
     // Verify that beneficiary belongs to policy
-    let policies_result = POLICY_REGISTRIES.with(|x| {
+    /*let policies_result = POLICY_REGISTRIES.with(|x| {
         let policy_registries = x.borrow();
         policy_registries.get_policy_ids_as_beneficiary(&get_caller())
     });
@@ -156,13 +156,17 @@ pub fn get_secret_as_beneficiary_impl(sid: UUID, policy_id: PolicyID) -> Result<
         Ok(policy) if *policy.conditions_status() => Ok(policy),
         Ok(_) => Err(SmartVaultErr::InvalidPolicyCondition),
         Err(e) => Err(e),
-    };
+    };*/
 
     // Get secret
     let secret_option = SECRET_STORE.with(|x| {
         let secret_store = x.borrow();
         secret_store.get(&sid)
     });
+    return match secret_option {
+        Ok(secret) => Ok(secret),
+        Err(e) => Err(e),
+    };
 }
 
 #[cfg(test)]

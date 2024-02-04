@@ -5,6 +5,7 @@ use crate::common::{
     error::SmartVaultErr,
     memory::{get_stable_btree_memory_for_policies, Memory},
 };
+use crate::utils::time;
 
 use super::policy::Policy;
 
@@ -54,6 +55,10 @@ impl PolicyStore {
     }
 
     pub fn update_policy(&mut self, policy: Policy) -> Result<Policy, SmartVaultErr> {
+        let now: u64 = time::get_current_time();
+        let mut policy = policy.clone();
+        policy.date_modified = now;
+
         let policy_id: String = policy.id().clone();
         let p = self.policies.insert(policy_id.clone(), policy.clone());
         match p {
