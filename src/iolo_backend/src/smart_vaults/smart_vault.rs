@@ -122,10 +122,7 @@ pub fn get_secret_symmetric_crypto_material(
 }
 
 #[ic_cdk_macros::query]
-pub fn get_secret_as_beneficiary(
-    sid: SecretID,
-    policy_id: PolicyID,
-) -> Result<Secret, SmartVaultErr> {
+pub fn get_secret_as_beneficiary(sid: SecretID, policy_id: PolicyID) -> Result<Secret, SmartVaultErr> {
     let principal = get_caller();
 
     // Verify that beneficiary belongs to policy
