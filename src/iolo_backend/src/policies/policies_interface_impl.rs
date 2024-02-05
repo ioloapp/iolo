@@ -17,7 +17,10 @@ use super::{
     policy_store::PolicyStore,
 };
 
-pub async fn add_policy_impl(apa: AddPolicyArgs, policy_owner: &Principal) -> Result<Policy, SmartVaultErr> {
+pub async fn add_policy_impl(
+    apa: AddPolicyArgs,
+    policy_owner: &Principal,
+) -> Result<Policy, SmartVaultErr> {
     // we create the policy id in the backend
     let new_policy_id: String = UUID::new_random().await.into();
 
@@ -58,7 +61,10 @@ pub async fn add_policy_impl(apa: AddPolicyArgs, policy_owner: &Principal) -> Re
     Ok(policy)
 }
 
-pub fn get_policy_as_owner_impl(policy_id: PolicyID, caller: &Principal) -> Result<PolicyResponse, SmartVaultErr> {
+pub fn get_policy_as_owner_impl(
+    policy_id: PolicyID,
+    caller: &Principal,
+) -> Result<PolicyResponse, SmartVaultErr> {
     // get policy from policy store
     let policy: Policy = POLICY_STORE.with(|ps| -> Result<Policy, SmartVaultErr> {
         let policy_store = ps.borrow();
@@ -81,7 +87,9 @@ pub fn get_policy_as_owner_impl(policy_id: PolicyID, caller: &Principal) -> Resu
     Ok(policy_response)
 }
 
-pub fn get_policy_list_as_owner_impl(caller: &Principal) -> Result<Vec<PolicyListEntry>, SmartVaultErr> {
+pub fn get_policy_list_as_owner_impl(
+    caller: &Principal,
+) -> Result<Vec<PolicyListEntry>, SmartVaultErr> {
     // get policy ids from user in user store
     let policy_ids: Vec<PolicyID> = USER_STORE.with(|us| {
         let user_store = us.borrow();
@@ -102,7 +110,10 @@ pub fn get_policy_list_as_owner_impl(caller: &Principal) -> Result<Vec<PolicyLis
     Ok(policies.into_iter().map(PolicyListEntry::from).collect())
 }
 
-pub fn get_policy_as_beneficiary_impl(policy_id: PolicyID, beneficiary: &Principal) -> Result<PolicyResponse, SmartVaultErr> {
+pub fn get_policy_as_beneficiary_impl(
+    policy_id: PolicyID,
+    beneficiary: &Principal,
+) -> Result<PolicyResponse, SmartVaultErr> {
     // get policy from policy store
     let policy: Policy = POLICY_STORE.with(|ps| -> Result<Policy, SmartVaultErr> {
         let policy_store = ps.borrow();
@@ -139,7 +150,9 @@ pub fn get_policy_as_beneficiary_impl(policy_id: PolicyID, beneficiary: &Princip
     }
 }
 
-pub fn get_policy_list_as_beneficiary_impl(caller: &Principal) -> Result<Vec<PolicyListEntry>, SmartVaultErr> {
+pub fn get_policy_list_as_beneficiary_impl(
+    caller: &Principal,
+) -> Result<Vec<PolicyListEntry>, SmartVaultErr> {
     // get all policy ids for caller by checking the policy registry index for beneficiaries
     POLICY_REGISTRIES.with(|pr| {
         let policy_registries = pr.borrow();
@@ -147,7 +160,9 @@ pub fn get_policy_list_as_beneficiary_impl(caller: &Principal) -> Result<Vec<Pol
     })
 }
 
-pub fn get_policy_list_as_validator_impl(validator: &Principal) -> Result<Vec<PolicyListEntry>, SmartVaultErr> {
+pub fn get_policy_list_as_validator_impl(
+    validator: &Principal,
+) -> Result<Vec<PolicyListEntry>, SmartVaultErr> {
     // get all policy ids for caller by checking the policy registry index for validators
     POLICY_REGISTRIES.with(|pr| -> Result<Vec<PolicyListEntry>, SmartVaultErr> {
         let policy_registries = pr.borrow();
@@ -256,18 +271,22 @@ mod tests {
 
     use crate::{
         common::error::SmartVaultErr,
-        policies::policies_interface_impl::{
-            add_policy_impl, get_policy_list_as_beneficiary_impl, get_policy_list_as_owner_impl,
-            get_policy_list_as_validator_impl, update_policy_impl,
-        },
         policies::{
             conditions::{Condition, TimeBasedCondition, Validator, XOutOfYCondition},
             policies_interface_impl::{get_policy_as_beneficiary_impl, get_policy_as_owner_impl},
             policy::{AddPolicyArgs, LogicalOperator, PolicyResponse},
         },
+        policies::{
+            policies_interface_impl::{
+                add_policy_impl, get_policy_list_as_beneficiary_impl,
+                get_policy_list_as_owner_impl, get_policy_list_as_validator_impl,
+                update_policy_impl,
+            },
+            policy::Policy,
+        },
         secrets::{
             secret::{AddSecretArgs, SecretSymmetricCryptoMaterial},
-            secrets_interface_impl::add_secret_impl,
+            secrets_interface_impl::{add_secret_impl, get_secret_as_beneficiary_impl},
         },
         smart_vaults::smart_vault::POLICY_STORE,
         user_vaults::user_vault::KeyBox,
@@ -326,7 +345,7 @@ mod tests {
             condition_status: false,
         });
 
-        let mut apa: AddPolicyArgs = AddPolicyArgs {
+        let apa: AddPolicyArgs = AddPolicyArgs {
             name: Some("Policy#1".to_string()),
             //beneficiaries: [beneficiary].iter().cloned().collect(),
             //secrets: HashSet::new(),
@@ -335,15 +354,16 @@ mod tests {
             //conditions: vec![time_based_condition.clone(), x_out_of_y_condition.clone()],
         };
         //apa.secrets.insert(added_secret.id().to_string());
-        let mut added_policy = add_policy_impl(apa.clone(), &principal).await.unwrap();
+        let mut added_policy: Policy = add_policy_impl(apa.clone(), &principal).await.unwrap();
 
         // Update policy with other attributes
         added_policy.beneficiaries = [beneficiary].iter().cloned().collect();
         added_policy.secrets.insert(added_secret.id().to_string());
-        added_policy.key_box() = &KeyBox::new();
-        //added_policy.conditions_logical_operator = None;
+        added_policy.key_box = KeyBox::new();
         added_policy.conditions = vec![time_based_condition.clone(), x_out_of_y_condition.clone()];
-
+        let added_policy = update_policy_impl(added_policy.clone(), &principal);
+        assert!(added_policy.is_ok());
+        let mut added_policy = added_policy.unwrap();
 
         // check if policy is in policy store and check if it contains the secret
         POLICY_STORE.with(|ps| {
@@ -439,6 +459,20 @@ mod tests {
         let policy_list_as_new_validator = get_policy_list_as_validator_impl(&validator2);
         assert_eq!(policy_list_as_old_validator.unwrap().len(), 0);
         assert_eq!(policy_list_as_new_validator.unwrap().len(), 1);
+        let updated_policy = updated_policy.unwrap();
+
+        // test get secret as beneficiary
+
+        // this should return an error, because the policy has not been activated
+        let secret_as_beneficiary = get_secret_as_beneficiary_impl(
+            added_secret.id().to_string(),
+            updated_policy.id,
+            &beneficiary,
+        );
+        assert!(secret_as_beneficiary.is_err_and(|e| match e {
+            SmartVaultErr::InvalidPolicyCondition => true,
+            _ => false,
+        }));
     }
 
     fn create_principal() -> Principal {

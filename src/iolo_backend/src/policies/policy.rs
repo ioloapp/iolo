@@ -2,8 +2,8 @@ use std::borrow::Cow;
 use std::collections::{BTreeMap, HashSet};
 
 use candid::{CandidType, Decode, Encode, Principal};
-use ic_stable_structures::Storable;
 use ic_stable_structures::storable::Bound;
+use ic_stable_structures::Storable;
 use serde::{Deserialize, Serialize};
 
 use crate::policies::conditions::{Condition, Validator};
@@ -29,7 +29,7 @@ pub struct Policy {
     /// Every secret is encrypted by using dedicated key.
     /// This key is itself encrypted using the policy decryption key,
     /// which itself is derived by vetkd.
-    key_box: KeyBox,
+    pub key_box: KeyBox,
     conditions_status: bool,
     conditions_logical_operator: Option<LogicalOperator>,
     pub conditions: Vec<Condition>,
@@ -55,7 +55,7 @@ pub enum LogicalOperator {
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct AddPolicyArgs {
-    pub name: Option<String>
+    pub name: Option<String>,
 }
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone, PartialEq)]

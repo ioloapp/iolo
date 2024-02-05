@@ -5,7 +5,11 @@ use ic_cdk::{post_upgrade, pre_upgrade, storage};
 
 use crate::common::error::SmartVaultErr;
 use crate::common::uuid::UUID;
-use crate::policies::policies_interface_impl::{add_policy_impl, get_policy_as_beneficiary_impl, get_policy_as_owner_impl, get_policy_list_as_beneficiary_impl, get_policy_list_as_owner_impl, get_policy_list_as_validator_impl, remove_policy_impl, update_policy_impl};
+use crate::policies::policies_interface_impl::{
+    add_policy_impl, get_policy_as_beneficiary_impl, get_policy_as_owner_impl,
+    get_policy_list_as_beneficiary_impl, get_policy_list_as_owner_impl,
+    get_policy_list_as_validator_impl, remove_policy_impl, update_policy_impl,
+};
 use crate::policies::policy::PolicyResponse;
 use crate::policies::policy::{AddPolicyArgs, Policy, PolicyID, PolicyListEntry};
 use crate::policies::policy_registries::{
@@ -19,7 +23,7 @@ use crate::secrets::secret::{
 };
 use crate::secrets::secret_store::SecretStore;
 use crate::secrets::secrets_interface_impl::{
-    add_secret_impl, get_secret_impl, get_secret_list_impl,
+    add_secret_impl, get_secret_as_beneficiary_impl, get_secret_impl, get_secret_list_impl,
     get_secret_symmetric_crypto_material_impl, remove_secret_impl, update_secret_impl,
 };
 use crate::user_vaults::user_vault::UserVaultID;
@@ -122,44 +126,11 @@ pub fn get_secret_symmetric_crypto_material(
 }
 
 #[ic_cdk_macros::query]
-pub fn get_secret_as_beneficiary(sid: SecretID, policy_id: PolicyID) -> Result<Secret, SmartVaultErr> {
-    let principal = get_caller();
-
-    // Verify that beneficiary belongs to policy
-    let result_pr = POLICY_REGISTRY_FOR_BENEFICIARIES_DO_NOT_USE_ANYMORE.with(
-        |pr: &RefCell<PolicyRegistryForBeneficiaries_DO_NOT_USE_ANYMORE>| -> Result<(PolicyID, Principal), SmartVaultErr> {
-            let policy_registry = pr.borrow();
-            policy_registry.get_policy_id_as_beneficiary(principal, policy_id.clone())
-        },
-    )?;
-
-    // Get user vault of owner
-    let user_vault_id: UUID = get_vault_id_for_DO_NOT_USE_ANYMORE(result_pr.1)?;
-
-    // Read policy
-    let result_mv = USER_VAULT_STORE_DO_NOT_USE_ANYMORE.with(
-        |mv: &RefCell<UserVaultStore_DO_NOT_USE_ANYMORE>| -> Result<Policy, SmartVaultErr> {
-            mv.borrow()
-                .get_user_vault(&user_vault_id)?
-                .get_policy(&policy_id)
-                .cloned()
-        },
-    )?;
-
-    // Check that beneficiary is allowed to read policy
-    if *result_mv.conditions_status() {
-        // Read secret in owner user vault
-        USER_VAULT_STORE_DO_NOT_USE_ANYMORE.with(
-            |mv: &RefCell<UserVaultStore_DO_NOT_USE_ANYMORE>| -> Result<Secret, SmartVaultErr> {
-                mv.borrow()
-                    .get_user_vault(&user_vault_id)?
-                    .get_secret(&sid)
-                    .cloned()
-            },
-        )
-    } else {
-        Err(SmartVaultErr::InvalidPolicyCondition)
-    }
+pub fn get_secret_as_beneficiary(
+    sid: SecretID,
+    policy_id: PolicyID,
+) -> Result<Secret, SmartVaultErr> {
+    get_secret_as_beneficiary_impl(sid, policy_id, &get_caller())
 }
 
 #[ic_cdk_macros::query]
@@ -296,15 +267,6 @@ pub fn update_contact(c: Contact) -> Result<Contact, SmartVaultErr> {
 pub fn remove_contact(id: Principal) -> Result<(), SmartVaultErr> {
     remove_contact_impl(id, &get_caller())
 }
-
-// #[ic_cdk_macros::query]
-// pub fn is_user_vault_existing() -> bool {
-//     let principal = get_caller();
-//     if get_vault_id_for(principal).is_ok() {
-//         return true;
-//     }
-//     false
-// }
 
 pub fn get_vault_id_for_DO_NOT_USE_ANYMORE(
     principal: Principal,

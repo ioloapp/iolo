@@ -13,6 +13,7 @@ pub enum SmartVaultErr {
     ContactAlreadyExists(String),
     ContactDoesNotExist(String),
     SecretDoesNotExist(String),
+    CallerNotBeneficiary(String),
     OnlyOwnerCanDeleteSecret(String),
     SecretDecryptionMaterialDoesNotExist(String),
     SecretHasNoId,
@@ -68,6 +69,9 @@ impl Display for SmartVaultErr {
             }
             SmartVaultErr::SecretDoesNotExist(id) => {
                 write!(f, "Failed to read secret with the following id: {}", id)
+            }
+            SmartVaultErr::CallerNotBeneficiary(id) => {
+                write!(f, "Caller is not beneficiary of policy with id: {}", id)
             }
             SmartVaultErr::OnlyOwnerCanDeleteSecret(id) => {
                 write!(

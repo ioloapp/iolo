@@ -1,16 +1,17 @@
 use std::cell::RefCell;
+use std::f32::consts::E;
 
 use candid::Principal;
 
+use crate::policies::policy::{Policy, PolicyID};
 use crate::secrets::secret::{SecretID, UpdateSecretArgs};
+use crate::smart_vaults::smart_vault::{POLICY_REGISTRIES, POLICY_STORE};
+use crate::utils::caller::get_caller;
 use crate::{
     common::{error::SmartVaultErr, uuid::UUID},
     secrets::secret::SecretSymmetricCryptoMaterial,
     smart_vaults::smart_vault::{SECRET_STORE, USER_STORE},
 };
-use crate::policies::policy::PolicyID;
-use crate::smart_vaults::smart_vault::{POLICY_REGISTRIES, POLICY_STORE};
-use crate::utils::caller::get_caller;
 
 use super::{
     secret::{AddSecretArgs, Secret, SecretListEntry},
@@ -26,7 +27,10 @@ use super::{
  * 3. Add the secret to the secret store
  * 4. Add the secret id to the user vault's secret id list
  */
-pub async fn add_secret_impl(args: AddSecretArgs, caller: &Principal) -> Result<Secret, SmartVaultErr> {
+pub async fn add_secret_impl(
+    args: AddSecretArgs,
+    caller: &Principal,
+) -> Result<Secret, SmartVaultErr> {
     // generate a new UUID for the secret
     let new_secret_id: UUID = UUID::new_random().await;
 
@@ -128,45 +132,36 @@ pub fn get_secret_symmetric_crypto_material_impl(
     )
 }
 
-pub fn get_secret_as_beneficiary_impl(sid: UUID, policy_id: PolicyID) -> Result<Secret, SmartVaultErr> {
-    // Verify that beneficiary belongs to policy
-    /*let policies_result = POLICY_REGISTRIES.with(|x| {
-        let policy_registries = x.borrow();
-        policy_registries.get_policy_ids_as_beneficiary(&get_caller())
-    });
-
-    let policies = match policies_result {
-        Ok(policies) => policies,
-        Err(_) => return Err(SmartVaultErr::PolicyDoesNotExist(policy_id.to_string())),
-    };
-
-    // Verify that beneficiary belongs to policy
-    if !policies.iter().any(|policy| &policy.id == &policy_id) {
-        return Err(SmartVaultErr::PolicyDoesNotExist(policy_id.to_string()));
+pub fn get_secret_as_beneficiary_impl(
+    sid: SecretID,
+    policy_id: PolicyID,
+    caller: &Principal,
+) -> Result<Secret, SmartVaultErr> {
+    // fetch policy from policy store and check if caller is beneficiary
+    let policy: Policy;
+    if let Ok(p) = POLICY_STORE.with(|ps| {
+        let policy_store = ps.borrow();
+        policy_store.get(&policy_id)
+    }) {
+        // check if the caller is a beneficiary of the policy
+        if !p.beneficiaries().contains(caller) {
+            return Err(SmartVaultErr::CallerNotBeneficiary(policy_id));
+        }
+        policy = p;
+    } else {
+        return Err(SmartVaultErr::PolicyDoesNotExist(policy_id));
     }
 
-    // Get whole policy
-    let policy = POLICY_STORE.with(|x| {
-        let policy_store = x.borrow();
-        policy_store.get(&policy_id)
-    });
+    // Check that beneficiary is allowed to read policy
+    if *policy.conditions_status() {
+        let secret = SECRET_STORE.with(|ss| {
+            let secret_store = ss.borrow();
+            secret_store.get(&UUID::from(sid))
+        })?;
+        return Ok(secret);
+    }
 
-    // Check status of policy
-    let policy = match policy {
-        Ok(policy) if *policy.conditions_status() => Ok(policy),
-        Ok(_) => Err(SmartVaultErr::InvalidPolicyCondition),
-        Err(e) => Err(e),
-    };*/
-
-    // Get secret
-    let secret_option = SECRET_STORE.with(|x| {
-        let secret_store = x.borrow();
-        secret_store.get(&sid)
-    });
-    return match secret_option {
-        Ok(secret) => Ok(secret),
-        Err(e) => Err(e),
-    };
+    return Err(SmartVaultErr::InvalidPolicyCondition);
 }
 
 #[cfg(test)]
