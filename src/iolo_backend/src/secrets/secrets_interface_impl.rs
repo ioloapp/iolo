@@ -133,7 +133,7 @@ pub fn get_secret_symmetric_crypto_material_impl(
 }
 
 pub fn get_secret_as_beneficiary_impl(
-    sid: SecretID,
+    secret_id: SecretID,
     policy_id: PolicyID,
     caller: &Principal,
 ) -> Result<Secret, SmartVaultErr> {
@@ -156,9 +156,37 @@ pub fn get_secret_as_beneficiary_impl(
     if *policy.conditions_status() {
         let secret = SECRET_STORE.with(|ss| {
             let secret_store = ss.borrow();
-            secret_store.get(&UUID::from(sid))
+            secret_store.get(&UUID::from(secret_id))
         })?;
         return Ok(secret);
+    }
+
+    return Err(SmartVaultErr::InvalidPolicyCondition);
+}
+
+pub fn get_secret_symmetric_crypto_material_as_beneficiary_impl(
+    secret_id: UUID,
+    policy_id: PolicyID,
+    caller: &Principal,
+) -> Result<SecretSymmetricCryptoMaterial, SmartVaultErr> {
+    // fetch policy from policy store and check if caller is beneficiary
+    let policy: Policy;
+    if let Ok(p) = POLICY_STORE.with(|ps| {
+        let policy_store = ps.borrow();
+        policy_store.get(&policy_id)
+    }) {
+        // check if the caller is a beneficiary of the policy
+        if !p.beneficiaries().contains(caller) {
+            return Err(SmartVaultErr::CallerNotBeneficiary(policy_id));
+        }
+        policy = p;
+    } else {
+        return Err(SmartVaultErr::PolicyDoesNotExist(policy_id));
+    }
+
+    // Check that beneficiary is allowed to read policy
+    if *policy.conditions_status() {
+        return Ok(policy.key_box().get(&secret_id).unwrap().clone());
     }
 
     return Err(SmartVaultErr::InvalidPolicyCondition);

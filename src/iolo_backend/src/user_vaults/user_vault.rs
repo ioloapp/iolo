@@ -6,9 +6,9 @@ use serde::Serialize;
 use crate::common::uuid::UUID;
 use crate::policies::policy::{Policy, PolicyID};
 use crate::secrets::secret::{Secret, SecretID, SecretSymmetricCryptoMaterial};
-use crate::SmartVaultErr;
 use crate::users::user::User;
 use crate::utils::time;
+use crate::SmartVaultErr;
 
 pub type UserVaultID = UUID;
 pub type KeyBox = BTreeMap<UUID, SecretSymmetricCryptoMaterial>;
@@ -24,11 +24,11 @@ pub struct UserVault {
     // New: Secrets are stored as UUIDs in the user vault.
     pub secret_ids: Vec<UUID>,
 
+    /// Maps Secrets to SecretSymmetricCryptoMaterial.
     /// Contains all the keys required to decrypt the secrets:
-    /// Every secret is encrypted by using dedicated key.
-    /// This key is itself encrypted using the UserVault decryption key,
-    /// which itself is derived by vetkd.
-    key_box: KeyBox, // TODO: make getter and setter
+    /// Every secret is encrypted by using a locally derived symmetric key.
+    /// This key is itself encrypted using the user's vetkd decryption key.
+    key_box: KeyBox,
     policies: BTreeMap<PolicyID, Policy>,
     contacts: BTreeMap<Principal, User>,
 }
@@ -207,11 +207,7 @@ impl UserVault {
     }
 
     pub fn add_contact(&mut self, user: User) -> Result<&User, SmartVaultErr> {
-        if self
-            .contacts
-            .insert(*user.id(), user.clone())
-            .is_some()
-        {
+        if self.contacts.insert(*user.id(), user.clone()).is_some() {
             Err(SmartVaultErr::UserAlreadyExists(user.id().to_string()))
         } else {
             self.date_modified = time::get_current_time();

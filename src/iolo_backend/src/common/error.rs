@@ -19,6 +19,7 @@ pub enum SmartVaultErr {
     SecretHasNoId,
     SecretAlreadyExists(String),
     PolicyAlreadyExists(String),
+    CallerNotPolicyOwner(String),
     PolicyDoesNotExist(String),
     InvalidPolicyCondition,
     OnlyOwnerCanUpdatePolicy(String),
@@ -91,6 +92,9 @@ impl Display for SmartVaultErr {
             }
             SmartVaultErr::PolicyAlreadyExists(id) => {
                 write!(f, "Failed to create policy with the following id: {}", id)
+            }
+            SmartVaultErr::CallerNotPolicyOwner(id) => {
+                write!(f, "Caller is not owner of policy: {}", id)
             }
             SmartVaultErr::PolicyDoesNotExist(id) => {
                 write!(f, "Failed to read policy with the following id: {}", id)

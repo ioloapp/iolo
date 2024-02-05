@@ -262,9 +262,40 @@ pub fn remove_policy_impl(policy_id: String, caller: &Principal) -> Result<(), S
     Ok(())
 }
 
+pub fn confirm_x_out_of_y_condition_impl(
+    policy_owner: Principal,
+    policy_id: PolicyID,
+    status: bool,
+    validator: &Principal,
+) -> Result<(), SmartVaultErr> {
+    // fetch policy from policy store and check if caller is beneficiary
+    let mut policy: Policy;
+    if let Ok(p) = POLICY_STORE.with(|ps| {
+        let policy_store = ps.borrow();
+        policy_store.get(&policy_id)
+    }) {
+        // check if the caller is a beneficiary of the policy
+        if !p.owner().eq(&policy_owner) {
+            return Err(SmartVaultErr::CallerNotPolicyOwner(policy_id));
+        }
+        policy = p;
+    } else {
+        return Err(SmartVaultErr::PolicyDoesNotExist(policy_id));
+    }
+
+    // Check that there is a XOutOfYCondition in the policy and that the caller is one of the confirmers
+    match policy.find_validator_mut(validator) {
+        Some(confirmer) => {
+            // Modify the confirmer as needed
+            confirmer.status = status;
+            Ok(())
+        }
+        None => Err(SmartVaultErr::Unauthorized),
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use std::collections::HashSet;
 
     use candid::Principal;
     use rand::Rng;
