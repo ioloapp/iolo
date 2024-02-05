@@ -221,7 +221,7 @@ mod tests {
         });
     }
 
-    fn create_principal() -> Principal {
+    pub fn create_principal() -> Principal {
         // create random u8
         let mut rng = rand::thread_rng();
 
