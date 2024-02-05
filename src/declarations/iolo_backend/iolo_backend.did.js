@@ -200,12 +200,12 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Text],
         [],
       ),
-    'encrypted_symmetric_key_for_policies' : IDL.Func(
+    'generate_vetkd_encrypted_symmetric_key_for_policy' : IDL.Func(
         [PolicyKeyDerviationArgs],
         [Result_4],
         [],
       ),
-    'encrypted_symmetric_key_for_uservault' : IDL.Func(
+    'generate_vetkd_encrypted_symmetric_key_for_user' : IDL.Func(
         [IDL.Vec(IDL.Nat8)],
         [IDL.Text],
         [],

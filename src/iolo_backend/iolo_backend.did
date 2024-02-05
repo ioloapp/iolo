@@ -171,10 +171,10 @@ service : () -> {
   delete_user : () -> (Result);
   encrypted_ibe_decryption_key_for_caller : (vec nat8) -> (text);
   encrypted_symmetric_key_for_caller : (vec nat8) -> (text);
-  encrypted_symmetric_key_for_policies : (PolicyKeyDerviationArgs) -> (
-      Result_4,
-    );
-  encrypted_symmetric_key_for_uservault : (vec nat8) -> (text);
+  generate_vetkd_encrypted_symmetric_key_for_policy : (
+      PolicyKeyDerviationArgs,
+    ) -> (Result_4);
+  generate_vetkd_encrypted_symmetric_key_for_user : (vec nat8) -> (text);
   get_contact_list : () -> (Result_5) query;
   get_current_user : () -> (Result_3) query;
   get_policy_as_beneficiary : (text) -> (Result_6) query;

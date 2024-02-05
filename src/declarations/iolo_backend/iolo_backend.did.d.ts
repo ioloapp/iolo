@@ -191,11 +191,11 @@ export interface _SERVICE {
     [Uint8Array | number[]],
     string
   >,
-  'encrypted_symmetric_key_for_policies' : ActorMethod<
+  'generate_vetkd_encrypted_symmetric_key_for_policy' : ActorMethod<
     [PolicyKeyDerviationArgs],
     Result_4
   >,
-  'encrypted_symmetric_key_for_uservault' : ActorMethod<
+  'generate_vetkd_encrypted_symmetric_key_for_user' : ActorMethod<
     [Uint8Array | number[]],
     string
   >,
