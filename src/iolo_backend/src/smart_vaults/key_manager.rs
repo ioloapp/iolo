@@ -57,7 +57,7 @@ async fn generate_vetkd_encrypted_symmetric_key_for_user(encryption_public_key: 
 ///
 /// The key is encrypted using the provided encryption_public_key.
 #[ic_cdk_macros::update]
-async fn encrypted_symmetric_key_for_policies(
+async fn generate_vetkd_encrypted_symmetric_key_for_policy(
     args: PolicyKeyDerviationArgs,
 ) -> Result<String, SmartVaultErr> {
     let caller = ic_cdk::caller(); //.as_slice().to_vec();
