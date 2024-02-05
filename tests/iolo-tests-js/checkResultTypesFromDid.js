@@ -6,16 +6,16 @@ const methodDefinitionFile = '../../src/declarations/iolo_backend/iolo_backend.d
 const knownFilenames = ['user.test.ts', 'secret.test.ts', 'crypto.test.ts', 'policy.test.ts']; // Add your file names here
 
 // Helper function to recursively find files
-function findFiles(dir, filenames) {
+function findAllFiles(dir) {
     let results = [];
     fs.readdirSync(dir).forEach(file => {
-        file = path.resolve(dir, file);
-        const stat = fs.statSync(file);
+        const fullPath = path.resolve(dir, file);
+        const stat = fs.statSync(fullPath);
 
         if (stat && stat.isDirectory()) {
-            results = results.concat(findFiles(file, filenames));
-        } else if (filenames.includes(path.basename(file))) {
-            results.push(file);
+            results = results.concat(findAllFiles(fullPath));
+        } else {
+            results.push(fullPath);
         }
     });
     return results;
@@ -48,7 +48,7 @@ function findMethodSignature(method, content) {
 
 // Main function to process files
 async function processFiles() {
-    const files = findFiles(fileDirectory, knownFilenames);
+    const files = findAllFiles(fileDirectory);
     const methodDefinitions = fs.readFileSync(methodDefinitionFile, 'utf-8');
 
     for (const file of files) {

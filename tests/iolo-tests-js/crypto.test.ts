@@ -1,5 +1,6 @@
 import {beforeAll, describe, expect, test} from 'vitest';
 import {
+    createAliceAndBob,
     createIdentity,
     createNewActor,
     determineBackendCanisterId,
@@ -52,21 +53,7 @@ beforeAll(async () => {
     vetKeyOne = await get_aes_256_gcm_key_for_uservault(identityOne.getPrincipal(), actorOne);
     vetKeyTwo = await get_aes_256_gcm_key_for_uservault(identityTwo.getPrincipal(), actorTwo);
 
-    const addOrUpdateUserArgsOne: AddOrUpdateUserArgs = {
-        name: ['Alice'],
-        email: ['alice@ioloapp.io'],
-        user_type: [{ 'Person' : null }],
-    };
-    const resultCreateUserOne: Result = await actorOne.create_user(addOrUpdateUserArgsOne);
-    expect(resultCreateUserOne).toHaveProperty('Ok');
-
-    const addOrUpdateUserArgsTwo: AddOrUpdateUserArgs = {
-        name: ['Bob'],
-        email: ['bob@ioloapp.io'],
-        user_type: [{ 'Person' : null }],
-    };
-    const resultCreateUserTwo: Result = await actorTwo.create_user(addOrUpdateUserArgsTwo);
-    expect(resultCreateUserTwo).toHaveProperty('Ok');
+    await createAliceAndBob(actorOne, actorTwo);
 }, 30000);
 
 

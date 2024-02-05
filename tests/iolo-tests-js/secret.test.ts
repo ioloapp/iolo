@@ -1,7 +1,8 @@
 import {beforeAll, describe, expect, test} from 'vitest';
 import {
+    createAliceAndBob,
     createIdentity,
-    createNewActor,
+    createNewActor, createSecret,
     determineBackendCanisterId,
 } from "./utils";
 import {Secp256k1KeyIdentity} from "@dfinity/identity-secp256k1";
@@ -10,10 +11,8 @@ import {
     Result,
     SecretSymmetricCryptoMaterial,
     Secret,
-    Result_3,
-    Result_9, Result_8, Result_2
+    Result_9, Result_8, Result_2, UpdateSecretArgs
 } from "../../src/declarations/iolo_backend/iolo_backend.did";
-import {AddOrUpdateUserArgs, UpdateSecretArgs} from "../../.dfx/local/canisters/iolo_backend/service.did";
 
 const canisterId: string = determineBackendCanisterId();
 
@@ -85,21 +84,7 @@ let secretFour: Secret = structuredClone(secretOne); // byValue instead of byRef
  */
 
 beforeAll(async () => {
-    const addOrUpdateUserArgsOne: AddOrUpdateUserArgs = {
-        name: ['Alice'],
-        email: ['alice@ioloapp.io'],
-        user_type: [{ 'Person' : null }],
-    };
-    const resultCreateUserOne: Result = await actorOne.create_user(addOrUpdateUserArgsOne);
-    expect(resultCreateUserOne).toHaveProperty('Ok');
-
-    const addOrUpdateUserArgsTwo: AddOrUpdateUserArgs = {
-        name: ['Bob'],
-        email: ['bob@ioloapp.io'],
-        user_type: [{ 'Person' : null }],
-    };
-    const resultCreateUserTwo: Result = await actorTwo.create_user(addOrUpdateUserArgsTwo);
-    expect(resultCreateUserTwo).toHaveProperty('Ok');
+    await createAliceAndBob(actorOne, actorTwo);
 });
 
 describe("Secret Tests", () => {
