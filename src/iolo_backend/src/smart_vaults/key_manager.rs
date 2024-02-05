@@ -1,5 +1,5 @@
-use std::{str::FromStr, vec};
 use std::cell::RefCell;
+use std::{str::FromStr, vec};
 
 use candid::{CandidType, Principal};
 use serde::{Deserialize, Serialize};
@@ -34,9 +34,7 @@ pub struct PolicyKeyDerviationArgs {
 ///
 /// The key is encrypted using the provided encryption_public_key.
 #[ic_cdk_macros::update]
-async fn encrypted_symmetric_key_for_uservault(encryption_public_key: Vec<u8>) -> String {
-    // debug_println_caller("encrypted_symmetric_key_for_caller");
-
+async fn generate_vetkd_encrypted_symmetric_key_for_user(encryption_public_key: Vec<u8>) -> String {
     let request = VetKDEncryptedKeyRequest {
         derivation_id: ic_cdk::caller().as_slice().to_vec(),
         public_key_derivation_path: vec![b"symmetric_key".to_vec()],

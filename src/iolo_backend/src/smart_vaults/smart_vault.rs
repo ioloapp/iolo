@@ -232,27 +232,11 @@ pub fn get_vault_id_for_DO_NOT_USE_ANYMORE(
 
 #[pre_upgrade]
 fn pre_upgrade() {
-    USER_VAULT_STORE_DO_NOT_USE_ANYMORE.with(|ms| storage::stable_save((ms,)).unwrap());
-    // USER_STORE.with(|ur| storage::stable_save((ur,)).unwrap());
-    POLICY_REGISTRY_FOR_BENEFICIARIES_DO_NOT_USE_ANYMORE
-        .with(|tr| storage::stable_save((tr,)).unwrap());
-    POLICY_REGISTRY_FOR_VALIDATORS_DO_NOT_USE_ANYMORE
-        .with(|tr| storage::stable_save((tr,)).unwrap());
     UUID_COUNTER.with(|c| storage::stable_save((c,)).unwrap());
 }
 
 #[post_upgrade]
 fn post_upgrade() {
-    let (old_ms,): (UserVaultStore_DO_NOT_USE_ANYMORE,) = storage::stable_restore().unwrap();
-    USER_VAULT_STORE_DO_NOT_USE_ANYMORE.with(|ms| *ms.borrow_mut() = old_ms);
-
-    // let (old_ur,): (UserStore,) = storage::stable_restore().unwrap();
-    // USER_STORE.with(|ur| *ur.borrow_mut() = old_ur);
-
-    let (old_tr,): (PolicyRegistryForBeneficiaries_DO_NOT_USE_ANYMORE,) =
-        storage::stable_restore().unwrap();
-    POLICY_REGISTRY_FOR_BENEFICIARIES_DO_NOT_USE_ANYMORE.with(|tr| *tr.borrow_mut() = old_tr);
-
     let (old_c,): (u128,) = storage::stable_restore().unwrap();
     UUID_COUNTER.with(|c| *c.borrow_mut() = old_c);
 }

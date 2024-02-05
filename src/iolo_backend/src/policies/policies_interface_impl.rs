@@ -305,7 +305,7 @@ mod tests {
         policies::{
             conditions::{Condition, TimeBasedCondition, Validator, XOutOfYCondition},
             policies_interface_impl::{get_policy_as_beneficiary_impl, get_policy_as_owner_impl},
-            policy::{AddPolicyArgs, LogicalOperator, PolicyResponse},
+            policy::{AddPolicyArgs, PolicyResponse},
         },
         policies::{
             policies_interface_impl::{
