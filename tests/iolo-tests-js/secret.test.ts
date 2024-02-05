@@ -13,7 +13,7 @@ import {
     Result_3,
     Result_9, Result_8, Result_2
 } from "../../src/declarations/iolo_backend/iolo_backend.did";
-import {UpdateSecretArgs} from "../../.dfx/local/canisters/iolo_backend/service.did";
+import {AddOrUpdateUserArgs, UpdateSecretArgs} from "../../.dfx/local/canisters/iolo_backend/service.did";
 
 const canisterId: string = determineBackendCanisterId();
 
@@ -85,22 +85,20 @@ let secretFour: Secret = structuredClone(secretOne); // byValue instead of byRef
  */
 
 beforeAll(async () => {
-    const addUserOneArgs = {
-        id: createIdentity().getPrincipal(),
+    const addOrUpdateUserArgsOne: AddOrUpdateUserArgs = {
         name: ['Alice'],
         email: ['alice@ioloapp.io'],
         user_type: [{ 'Person' : null }],
     };
-    const resultCreateUserOne: Result = await actorOne.create_user(addUserOneArgs);
+    const resultCreateUserOne: Result = await actorOne.create_user(addOrUpdateUserArgsOne);
     expect(resultCreateUserOne).toHaveProperty('Ok');
 
-    const addUserTwoArgs = {
-        id: createIdentity().getPrincipal(),
+    const addOrUpdateUserArgsTwo: AddOrUpdateUserArgs = {
         name: ['Bob'],
         email: ['bob@ioloapp.io'],
         user_type: [{ 'Person' : null }],
     };
-    const resultCreateUserTwo: Result = await actorTwo.create_user(addUserTwoArgs);
+    const resultCreateUserTwo: Result = await actorTwo.create_user(addOrUpdateUserArgsTwo);
     expect(resultCreateUserTwo).toHaveProperty('Ok');
 });
 
@@ -181,7 +179,7 @@ describe("Secret Tests", () => {
         expect(resultAddSecretOne['Ok'].id).not.toBe(secretOne.id);
 
         // Delete it again
-        const resultRemoveSecretOne: Result_3 = await actorOne.remove_secret(resultAddSecretOne['Ok'].id.toString());
+        const resultRemoveSecretOne: Result = await actorOne.remove_secret(resultAddSecretOne['Ok'].id.toString());
         expect(resultRemoveSecretOne).toHaveProperty('Ok');
 
     }, 15000); // Set timeout
@@ -356,7 +354,7 @@ describe("Secret Tests", () => {
 
     test("it should delete secrets properly", async () => {
         // Deleting secretOne with userOne must work
-        const resultRemoveSecretOne: Result_3 = await actorOne.remove_secret(secretOne.id.toString());
+        const resultRemoveSecretOne: Result = await actorOne.remove_secret(secretOne.id.toString());
         expect(resultRemoveSecretOne).toHaveProperty('Ok');
         expect(resultRemoveSecretOne['Ok']).toBeNull();
 
@@ -370,7 +368,7 @@ describe("Secret Tests", () => {
 
     test("it must not delete secrets of a different user", async () => {
         // Deleting secretThree with userOne must not work
-        const resultRemoveSecretThree: Result_3 = await actorOne.remove_secret(secretThree.id.toString());
+        const resultRemoveSecretThree: Result = await actorOne.remove_secret(secretThree.id.toString());
         expect(resultRemoveSecretThree).toHaveProperty('Err');
         expect(resultRemoveSecretThree['Err']).toHaveProperty('SecretDoesNotExist');
 

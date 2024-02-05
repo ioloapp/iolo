@@ -43,18 +43,17 @@ impl Storable for User {
 }
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
-pub struct AddUserArgs {
-    pub id: Principal,
+pub struct AddOrUpdateUserArgs {
     pub name: Option<String>,
     pub email: Option<String>,
     pub user_type: Option<UserType>,
 }
 
-impl From<AddUserArgs> for User {
-    fn from(value: AddUserArgs) -> Self {
+impl From<AddOrUpdateUserArgs> for User {
+    fn from(value: AddOrUpdateUserArgs) -> Self {
         let now = time::get_current_time();
         User {
-            id: value.id,
+            id: Principal::anonymous(),
             name: value.name,
             email: value.email,
             user_type: value.user_type,
@@ -77,7 +76,7 @@ pub enum UserType {
 }
 
 impl User {
-    pub fn new(id: &Principal, args: AddUserArgs) -> Self {
+    pub fn new(id: &Principal, args: AddOrUpdateUserArgs) -> Self {
         let now = time::get_current_time();
 
         Self {

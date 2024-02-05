@@ -23,16 +23,16 @@ function findFiles(dir, filenames) {
 
 // Helper function to find specific actor method call pattern
 function findActorMethodCalls(content) {
-    const actorMethodCallRegex = /const\s+(result\w+)\s*:\s*(Result_\d+)\s*=\s*await\s+(actor\w+)\.(\w+)\(/g;
+    const actorMethodCallRegex = /(const|let)\s+(result\w+)\s*:\s*(Result_\d+)\s*=\s*await\s+(actor\w+)\.(\w+)\(/g;
     let match;
     let calls = [];
 
     while (match = actorMethodCallRegex.exec(content)) {
         calls.push({
-            resultVar: match[1],
-            resultType: match[2],
-            actorVar: match[3],
-            methodName: match[4]
+            resultVar: match[2],
+            resultType: match[3],
+            actorVar: match[4],
+            methodName: match[5]
         });
     }
 

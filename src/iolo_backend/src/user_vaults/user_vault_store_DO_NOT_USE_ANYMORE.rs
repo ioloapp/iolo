@@ -15,7 +15,7 @@ use crate::smart_vaults::smart_vault::{
     POLICY_REGISTRY_FOR_VALIDATORS_DO_NOT_USE_ANYMORE,
 };
 use crate::user_vaults::user_vault::UserVault;
-use crate::users::user::{AddUserArgs, User};
+use crate::users::user::{AddOrUpdateUserArgs, User};
 
 #[derive(CandidType, Deserialize, Clone, Debug)]
 pub struct UserVaultStore_DO_NOT_USE_ANYMORE {
@@ -224,7 +224,7 @@ impl UserVaultStore_DO_NOT_USE_ANYMORE {
     pub fn add_contact(
         &mut self,
         vault_id: &UUID,
-        aua: AddUserArgs,
+        aua: AddOrUpdateUserArgs,
     ) -> Result<User, SmartVaultErr> {
         if !self.user_vaults.contains_key(vault_id) {
             return Err(SmartVaultErr::UserVaultDoesNotExist(vault_id.to_string()));
