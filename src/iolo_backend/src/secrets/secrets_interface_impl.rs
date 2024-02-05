@@ -207,7 +207,7 @@ mod tests {
         },
         smart_vaults::smart_vault::SECRET_STORE,
         smart_vaults::smart_vault::USER_STORE,
-        users::{user::AddUserArgs, users_interface_impl::create_user_impl},
+        users::{user::AddOrUpdateUserArgs, users_interface_impl::create_user_impl},
     };
 
     #[tokio::test]
@@ -216,8 +216,7 @@ mod tests {
         let principal = create_principal();
 
         // Create User and store it
-        let aua: AddUserArgs = AddUserArgs {
-            id: principal,
+        let aua: AddOrUpdateUserArgs = AddOrUpdateUserArgs {
             name: Some("donald".to_string()),
             email: None,
             user_type: None,

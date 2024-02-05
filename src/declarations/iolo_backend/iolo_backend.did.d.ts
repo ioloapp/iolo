@@ -7,6 +7,11 @@ export interface AddContactArgs {
   'name' : [] | [string],
   'email' : [] | [string],
 }
+export interface AddOrUpdateUserArgs {
+  'user_type' : [] | [UserType],
+  'name' : [] | [string],
+  'email' : [] | [string],
+}
 export interface AddPolicyArgs { 'name' : [] | [string] }
 export interface AddSecretArgs {
   'url' : [] | [string],
@@ -16,12 +21,6 @@ export interface AddSecretArgs {
   'symmetric_crypto_material' : SecretSymmetricCryptoMaterial,
   'notes' : [] | [Uint8Array | number[]],
   'category' : [] | [SecretCategory],
-}
-export interface AddUserArgs {
-  'id' : Principal,
-  'user_type' : [] | [UserType],
-  'name' : [] | [string],
-  'email' : [] | [string],
 }
 export type Condition = { 'TimeBasedCondition' : TimeBasedCondition } |
   { 'XOutOfYCondition' : XOutOfYCondition };
@@ -120,9 +119,11 @@ export type SmartVaultErr = { 'ContactDoesNotExist' : string } |
   { 'SecretHasNoId' : null } |
   { 'UserDeletionFailed' : string } |
   { 'ContactAlreadyExists' : string } |
+  { 'CallerNotBeneficiary' : string } |
   { 'OnlyOwnerCanUpdatePolicy' : string } |
   { 'SecretDoesNotExist' : string } |
   { 'NoPolicyForBeneficiary' : string } |
+  { 'CallerNotPolicyOwner' : string } |
   { 'SecretDecryptionMaterialDoesNotExist' : string } |
   { 'Unauthorized' : null } |
   { 'UserUpdateFailed' : string } |
@@ -180,7 +181,7 @@ export interface _SERVICE {
     [Principal, string, boolean],
     Result
   >,
-  'create_user' : ActorMethod<[AddUserArgs], Result_3>,
+  'create_user' : ActorMethod<[AddOrUpdateUserArgs], Result_3>,
   'delete_user' : ActorMethod<[], Result>,
   'encrypted_ibe_decryption_key_for_caller' : ActorMethod<
     [Uint8Array | number[]],
@@ -221,6 +222,6 @@ export interface _SERVICE {
   'update_contact' : ActorMethod<[Contact], Result_10>,
   'update_policy' : ActorMethod<[Policy], Result_1>,
   'update_secret' : ActorMethod<[UpdateSecretArgs], Result_2>,
-  'update_user' : ActorMethod<[User], Result_3>,
+  'update_user' : ActorMethod<[AddOrUpdateUserArgs], Result_3>,
   'update_user_login_date' : ActorMethod<[], Result_3>,
 }

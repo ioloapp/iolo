@@ -6,7 +6,7 @@ use crate::{common::error::SmartVaultErr, smart_vaults::smart_vault::USER_STORE}
 
 use super::{
     contact::{AddContactArgs, Contact},
-    user::{AddUserArgs, User},
+    user::{AddOrUpdateUserArgs, User},
     user_store::UserStore,
 };
 
@@ -14,7 +14,7 @@ use super::{
  * This is the implementation for the interface create_user method
  */
 pub async fn create_user_impl(
-    args: AddUserArgs,
+    args: AddOrUpdateUserArgs,
     caller: &Principal,
 ) -> Result<User, SmartVaultErr> {
     // Create user from principal (caller)
@@ -41,11 +41,11 @@ pub fn get_current_user_impl(user: &Principal) -> Result<User, SmartVaultErr> {
     })
 }
 
-pub fn update_user_impl(user: User, principal: &Principal) -> Result<User, SmartVaultErr> {
+pub fn update_user_impl(args: AddOrUpdateUserArgs, principal: &Principal) -> Result<User, SmartVaultErr> {
     // Update the user
     USER_STORE.with(|ur: &RefCell<UserStore>| -> Result<User, SmartVaultErr> {
         let mut user_store = ur.borrow_mut();
-        match user_store.update_user(user, principal) {
+        match user_store.update_user(args, principal) {
             Ok(u) => Ok(u.clone()),
             Err(e) => Err(e),
         }
@@ -121,7 +121,7 @@ mod tests {
         smart_vaults::smart_vault::USER_STORE,
         users::{
             contact::AddContactArgs,
-            user::AddUserArgs,
+            user::AddOrUpdateUserArgs,
             user_store::UserStore,
             users_interface_impl::{
                 add_contact_impl, create_user_impl, delete_user_impl, get_contact_list_impl,
@@ -138,8 +138,7 @@ mod tests {
         let contact_principal = create_principal();
 
         // Create User and store it
-        let aua: AddUserArgs = AddUserArgs {
-            id: principal,
+        let aua: AddOrUpdateUserArgs = AddOrUpdateUserArgs {
             name: Some("donald".to_string()),
             email: None,
             user_type: None,
@@ -185,8 +184,12 @@ mod tests {
         assert_eq!(contact.email, Some("hey_my_first_email@hi.com".to_string()));
 
         // update user
-        fetched_user.email = Some("donald@ducktown.com".to_string());
-        update_user_impl(fetched_user.clone(), &principal).unwrap();
+        let aua: AddOrUpdateUserArgs = AddOrUpdateUserArgs {
+            name: fetched_user.name.clone(),
+            email: Some("donald@ducktown.com".to_string()),
+            user_type: fetched_user.user_type.clone(),
+        };
+        update_user_impl(aua, &principal).unwrap();
         let fetched_user = get_current_user_impl(&principal).unwrap();
         assert_eq!(fetched_user.email, Some("donald@ducktown.com".to_string()));
 

@@ -1,7 +1,7 @@
 export enum UiSecretCategory {
     Password = "Password",
     Note = "Note",
-    //TODO Document = "Document"
+    Document = "Document"
 }
 
 export interface UiSecretListEntry {

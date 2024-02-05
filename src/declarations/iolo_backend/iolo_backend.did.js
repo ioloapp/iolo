@@ -13,9 +13,11 @@ export const idlFactory = ({ IDL }) => {
     'SecretHasNoId' : IDL.Null,
     'UserDeletionFailed' : IDL.Text,
     'ContactAlreadyExists' : IDL.Text,
+    'CallerNotBeneficiary' : IDL.Text,
     'OnlyOwnerCanUpdatePolicy' : IDL.Text,
     'SecretDoesNotExist' : IDL.Text,
     'NoPolicyForBeneficiary' : IDL.Text,
+    'CallerNotPolicyOwner' : IDL.Text,
     'SecretDecryptionMaterialDoesNotExist' : IDL.Text,
     'Unauthorized' : IDL.Null,
     'UserUpdateFailed' : IDL.Text,
@@ -92,8 +94,7 @@ export const idlFactory = ({ IDL }) => {
     'date_modified' : IDL.Nat64,
   });
   const Result_2 = IDL.Variant({ 'Ok' : Secret, 'Err' : SmartVaultErr });
-  const AddUserArgs = IDL.Record({
-    'id' : IDL.Principal,
+  const AddOrUpdateUserArgs = IDL.Record({
     'user_type' : IDL.Opt(UserType),
     'name' : IDL.Opt(IDL.Text),
     'email' : IDL.Opt(IDL.Text),
@@ -187,7 +188,7 @@ export const idlFactory = ({ IDL }) => {
         [Result],
         [],
       ),
-    'create_user' : IDL.Func([AddUserArgs], [Result_3], []),
+    'create_user' : IDL.Func([AddOrUpdateUserArgs], [Result_3], []),
     'delete_user' : IDL.Func([], [Result], []),
     'encrypted_ibe_decryption_key_for_caller' : IDL.Func(
         [IDL.Vec(IDL.Nat8)],
@@ -241,7 +242,7 @@ export const idlFactory = ({ IDL }) => {
     'update_contact' : IDL.Func([Contact], [Result_10], []),
     'update_policy' : IDL.Func([Policy], [Result_1], []),
     'update_secret' : IDL.Func([UpdateSecretArgs], [Result_2], []),
-    'update_user' : IDL.Func([User], [Result_3], []),
+    'update_user' : IDL.Func([AddOrUpdateUserArgs], [Result_3], []),
     'update_user_login_date' : IDL.Func([], [Result_3], []),
   });
 };

@@ -18,6 +18,7 @@ import {
     get_local_random_aes_256_gcm_key
 } from "./crypto";
 import * as crypto from "crypto";
+import {AddOrUpdateUserArgs} from "../../.dfx/local/canisters/iolo_backend/service.did";
 
 
 /*
@@ -51,22 +52,20 @@ beforeAll(async () => {
     vetKeyOne = await get_aes_256_gcm_key_for_uservault(identityOne.getPrincipal(), actorOne);
     vetKeyTwo = await get_aes_256_gcm_key_for_uservault(identityTwo.getPrincipal(), actorTwo);
 
-    const addUserOneArgs = {
-        id: createIdentity().getPrincipal(),
+    const addOrUpdateUserArgsOne: AddOrUpdateUserArgs = {
         name: ['Alice'],
         email: ['alice@ioloapp.io'],
         user_type: [{ 'Person' : null }],
     };
-    const resultCreateUserOne: Result = await actorOne.create_user(addUserOneArgs);
+    const resultCreateUserOne: Result = await actorOne.create_user(addOrUpdateUserArgsOne);
     expect(resultCreateUserOne).toHaveProperty('Ok');
 
-    const addUserTwoArgs = {
-        id: createIdentity().getPrincipal(),
+    const addOrUpdateUserArgsTwo: AddOrUpdateUserArgs = {
         name: ['Bob'],
         email: ['bob@ioloapp.io'],
         user_type: [{ 'Person' : null }],
     };
-    const resultCreateUserTwo: Result = await actorTwo.create_user(addUserTwoArgs);
+    const resultCreateUserTwo: Result = await actorTwo.create_user(addOrUpdateUserArgsTwo);
     expect(resultCreateUserTwo).toHaveProperty('Ok');
 }, 30000);
 

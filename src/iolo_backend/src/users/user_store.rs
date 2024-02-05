@@ -13,6 +13,7 @@ use crate::{
     users::user::User,
     utils::time,
 };
+use crate::users::user::AddOrUpdateUserArgs;
 
 use super::contact::Contact;
 
@@ -55,14 +56,15 @@ impl UserStore {
         }
     }
 
-    pub fn update_user(&mut self, user: User, caller: &Principal) -> Result<User, SmartVaultErr> {
+    pub fn update_user(&mut self, args: AddOrUpdateUserArgs, caller: &Principal) -> Result<User, SmartVaultErr> {
         let principal_storable = PrincipalStorable::from(*caller);
 
-        // Only name, email and user_type can be updated
         if let Some(mut existing_user) = self.users.remove(&principal_storable) {
-            existing_user.name = user.name.clone();
-            existing_user.email = user.email.clone();
-            existing_user.user_type = user.user_type.clone();
+            let now = time::get_current_time();
+            existing_user.date_modified = now;
+            existing_user.name = args.name.clone();
+            existing_user.email = args.email.clone();
+            existing_user.user_type = args.user_type.clone();
             self.users.insert(principal_storable, existing_user);
             self.get_user(caller)
         } else {
@@ -270,7 +272,7 @@ mod tests {
 
     use crate::{
         common::error::SmartVaultErr,
-        users::user::{AddUserArgs, User},
+        users::user::{AddOrUpdateUserArgs, User},
         users::user_store::UserStore,
     };
     use crate::users::contact::Contact;
@@ -287,8 +289,7 @@ mod tests {
             1, 2, 3, 4, 5, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         ]);
 
-        let args = AddUserArgs {
-            id: principal,
+        let args = AddOrUpdateUserArgs {
             name: None,
             email: None,
             user_type: None,

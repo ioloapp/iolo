@@ -4,7 +4,7 @@ import {
     _SERVICE,
     AddPolicyArgs,
     AddSecretArgs,
-    AddUserArgs,
+    AddOrUpdateUserArgs,
     Condition,
     Policy,
     PolicyListEntry,
@@ -26,7 +26,6 @@ import {
     User,
     UserType,
     XOutOfYCondition,
-    Contact,
     AddContactArgs
 } from "../../../declarations/iolo_backend/iolo_backend.did";
 import {AuthClient} from "@dfinity/auth-client";
@@ -124,8 +123,7 @@ class IoloService {
     }
 
     public async createUser(uiUser: UiUser): Promise<UiUser> {
-        let args: AddUserArgs = {
-            id: Principal.anonymous(), // No principal needed, backend will take anyway the caller...
+        let args: AddOrUpdateUserArgs = {
             email: uiUser.email ? [uiUser.email] : [],
             name: uiUser.name ? [uiUser.name] : [],
             user_type: uiUser.type ? (uiUser.type === UiUserType.Person ? [{ 'Person' : null }] : [{ 'Company' : null }]) : []
@@ -151,8 +149,13 @@ class IoloService {
         throw mapError(result['Err']);
     }
 
-    public async updateUser(user: UiUser): Promise<UiUser> {
-        let result: Result_3 = await (await this.getActor()).update_user(this.mapUiUserToUser(user));
+    public async updateUser(uiUser: UiUser): Promise<UiUser> {
+        const addOrUpdateUserArgs: AddOrUpdateUserArgs = {
+            email: uiUser.email ? [uiUser.email] : [],
+            name: uiUser.name ? [uiUser.name] : [],
+            user_type: uiUser.type ? (uiUser.type === UiUserType.Person ? [{ 'Person' : null }] : [{ 'Company' : null }]) : []
+        }
+        let result: Result_3 = await (await this.getActor()).update_user(addOrUpdateUserArgs);
         if (result['Ok']) {
             return this.mapUserToUiUser(result['Ok']);
         }

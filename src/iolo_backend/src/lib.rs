@@ -14,7 +14,7 @@ use crate::secrets::secret::SecretSymmetricCryptoMaterial;
 use crate::smart_vaults::key_manager::PolicyKeyDerviationArgs;
 use crate::users::contact::AddContactArgs;
 use crate::users::contact::Contact;
-use crate::users::user::AddUserArgs;
+use crate::users::user::AddOrUpdateUserArgs;
 use crate::users::user::User;
 use candid::Principal;
 
