@@ -15,6 +15,7 @@ use crate::policies::conditions::{Condition, Validator};
 use crate::policies::policy::{Policy, PolicyID};
 use crate::smart_vaults::smart_vault::POLICY_STORE;
 
+use super::policies_interface_impl::get_policies_from_policy_store;
 use super::policy::PolicyListEntry;
 
 /** New: combining the two below */
@@ -163,16 +164,8 @@ impl PolicyRegistries {
         };
 
         // get the policies form the policy store
-        // TODO: use get_policies_from_policy_store helper
-        POLICY_STORE.with(|ps| -> Result<Vec<PolicyListEntry>, SmartVaultErr> {
-            let policy_store = ps.borrow();
-            let policy_list_entries: Vec<PolicyListEntry> = policy_ids
-                .iter()
-                .map(|policy_id| policy_store.get(policy_id).unwrap())
-                .map(PolicyListEntry::from)
-                .collect();
-            Ok(policy_list_entries)
-        })
+        let policies = get_policies_from_policy_store(policy_ids.clone())?;
+        Ok(policies.into_iter().map(PolicyListEntry::from).collect())
     }
 
     pub fn get_policy_ids_as_validator(
@@ -188,15 +181,8 @@ impl PolicyRegistries {
         };
 
         // get the policies form the policy store
-        POLICY_STORE.with(|ps| -> Result<Vec<PolicyListEntry>, SmartVaultErr> {
-            let policy_store = ps.borrow();
-            let policy_list_entries: Vec<PolicyListEntry> = policy_ids
-                .iter()
-                .map(|policy_id| policy_store.get(policy_id).unwrap())
-                .map(PolicyListEntry::from)
-                .collect();
-            Ok(policy_list_entries)
-        })
+        let policies = get_policies_from_policy_store(policy_ids.clone())?;
+        Ok(policies.into_iter().map(PolicyListEntry::from).collect())
     }
 
     pub fn update_policy_to_beneficiary(
