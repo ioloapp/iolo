@@ -164,7 +164,7 @@ impl PolicyRegistries {
         };
 
         // get the policies form the policy store
-        let policies = get_policies_from_policy_store(policy_ids.clone())?;
+        let policies = get_policies_from_policy_store(policy_ids)?;
         Ok(policies.into_iter().map(PolicyListEntry::from).collect())
     }
 
@@ -181,7 +181,7 @@ impl PolicyRegistries {
         };
 
         // get the policies form the policy store
-        let policies = get_policies_from_policy_store(policy_ids.clone())?;
+        let policies = get_policies_from_policy_store(policy_ids)?;
         Ok(policies.into_iter().map(PolicyListEntry::from).collect())
     }
 
