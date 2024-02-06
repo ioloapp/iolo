@@ -3,6 +3,7 @@ use std::f32::consts::E;
 
 use candid::Principal;
 
+use crate::policies::policies_interface_impl::get_policy_from_policy_store;
 use crate::policies::policy::{Policy, PolicyID};
 use crate::secrets::secret::{SecretID, UpdateSecretArgs};
 use crate::smart_vaults::smart_vault::{POLICY_REGISTRIES, POLICY_STORE};
@@ -139,10 +140,7 @@ pub fn get_secret_as_beneficiary_impl(
 ) -> Result<Secret, SmartVaultErr> {
     // fetch policy from policy store and check if caller is beneficiary
     let policy: Policy;
-    if let Ok(p) = POLICY_STORE.with(|ps| {
-        let policy_store = ps.borrow();
-        policy_store.get(&policy_id)
-    }) {
+    if let Ok(p) = get_policy_from_policy_store(&policy_id) {
         // check if the caller is a beneficiary of the policy
         if !p.beneficiaries().contains(caller) {
             return Err(SmartVaultErr::CallerNotBeneficiary(policy_id));
@@ -171,10 +169,7 @@ pub fn get_secret_symmetric_crypto_material_as_beneficiary_impl(
 ) -> Result<SecretSymmetricCryptoMaterial, SmartVaultErr> {
     // fetch policy from policy store and check if caller is beneficiary
     let policy: Policy;
-    if let Ok(p) = POLICY_STORE.with(|ps| {
-        let policy_store = ps.borrow();
-        policy_store.get(&policy_id)
-    }) {
+    if let Ok(p) = get_policy_from_policy_store(&policy_id) {
         // check if the caller is a beneficiary of the policy
         if !p.beneficiaries().contains(caller) {
             return Err(SmartVaultErr::CallerNotBeneficiary(policy_id));

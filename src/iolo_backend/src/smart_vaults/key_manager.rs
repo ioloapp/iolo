@@ -28,7 +28,7 @@ pub struct PolicyKeyDerviationArgs {
     pub policy_id: String,
 }
 
-/// Computes a fresh vetkd symmetric key to encrypt the secrets in a user vault.
+/// Computes a fresh vetkd symmetric key to encrypt/decrypt the secrets in a user vault.
 ///
 /// It uses the caller and a random Nonce value provided by the front-end.
 ///
@@ -53,7 +53,7 @@ async fn generate_vetkd_encrypted_symmetric_key_for_user(encryption_public_key: 
     hex::encode(response.encrypted_key)
 }
 
-/// Computes a fresh vetkd symmetric key to encrypt the secrets in a policy.
+/// Computes a fresh vetkd symmetric key to encrypt/decrypt the secrets in a policy.
 ///
 /// The key is encrypted using the provided encryption_public_key.
 #[ic_cdk_macros::update]
@@ -177,10 +177,10 @@ async fn symmetric_key_verification_key() -> String {
 }
 
 /// The key is encrypted using the provided encryption_publi_key.
+/// TODO: it is the same as generate_vetkd_encrypted_symmetric_key_for_user
+/// Which one do we need?
 #[ic_cdk_macros::update]
 async fn encrypted_symmetric_key_for_caller(encryption_public_key: Vec<u8>) -> String {
-    // debug_println_caller("encrypted_symmetric_key_for_caller");
-
     let request = VetKDEncryptedKeyRequest {
         derivation_id: ic_cdk::caller().as_slice().to_vec(),
         public_key_derivation_path: vec![b"symmetric_key".to_vec()],

@@ -66,10 +66,7 @@ pub fn get_policy_as_owner_impl(
     caller: &Principal,
 ) -> Result<PolicyResponse, SmartVaultErr> {
     // get policy from policy store
-    let policy: Policy = POLICY_STORE.with(|ps| -> Result<Policy, SmartVaultErr> {
-        let policy_store = ps.borrow();
-        policy_store.get(&policy_id)
-    })?;
+    let policy: Policy = get_policy_from_policy_store(&policy_id)?;
 
     // TODO: check if caller is owner of policy
 
@@ -115,10 +112,7 @@ pub fn get_policy_as_beneficiary_impl(
     beneficiary: &Principal,
 ) -> Result<PolicyResponse, SmartVaultErr> {
     // get policy from policy store
-    let policy: Policy = POLICY_STORE.with(|ps| -> Result<Policy, SmartVaultErr> {
-        let policy_store = ps.borrow();
-        policy_store.get(&policy_id)
-    })?;
+    let policy: Policy = get_policy_from_policy_store(&policy_id)?;
 
     // Ensure beneficiary is in policy.beneficiaries
     if !policy.beneficiaries().contains(beneficiary) {
@@ -222,10 +216,7 @@ pub fn update_policy_impl(policy: Policy, caller: &Principal) -> Result<Policy, 
 
 pub fn remove_policy_impl(policy_id: String, caller: &Principal) -> Result<(), SmartVaultErr> {
     // check if policy exists
-    let policy = POLICY_STORE.with(|ps| {
-        let policy_store = ps.borrow();
-        policy_store.get(&policy_id)
-    })?;
+    let policy: Policy = get_policy_from_policy_store(&policy_id)?;
 
     // check if caller is owner of policy
     if policy.owner() != caller {
@@ -270,10 +261,7 @@ pub fn confirm_x_out_of_y_condition_impl(
 ) -> Result<(), SmartVaultErr> {
     // fetch policy from policy store and check if caller is beneficiary
     let mut policy: Policy;
-    if let Ok(p) = POLICY_STORE.with(|ps| {
-        let policy_store = ps.borrow();
-        policy_store.get(&policy_id)
-    }) {
+    if let Ok(p) = get_policy_from_policy_store(&policy_id) {
         // check if the caller is a beneficiary of the policy
         if !p.owner().eq(&policy_owner) {
             return Err(SmartVaultErr::CallerNotPolicyOwner(policy_id));
@@ -292,6 +280,13 @@ pub fn confirm_x_out_of_y_condition_impl(
         }
         None => Err(SmartVaultErr::Unauthorized),
     }
+}
+
+pub fn get_policy_from_policy_store(policy_id: &PolicyID) -> Result<Policy, SmartVaultErr> {
+    POLICY_STORE.with(|ps| -> Result<Policy, SmartVaultErr> {
+        let policy_store = ps.borrow();
+        policy_store.get(&policy_id)
+    })
 }
 
 #[cfg(test)]
