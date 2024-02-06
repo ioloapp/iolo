@@ -2,8 +2,8 @@ use std::borrow::Cow;
 use std::collections::{BTreeMap, HashSet};
 
 use candid::{CandidType, Decode, Encode, Principal};
-use ic_stable_structures::{StableBTreeMap, Storable};
 use ic_stable_structures::storable::Bound;
+use ic_stable_structures::{StableBTreeMap, Storable};
 use serde::{Deserialize, Serialize};
 
 use crate::common::error::SmartVaultErr;
@@ -131,7 +131,11 @@ impl PolicyRegistries {
         }
     }
 
-    pub fn remove_policy_from_validators(&mut self, validator: &Vec<Validator>, policy_id: &PolicyID) {
+    pub fn remove_policy_from_validators(
+        &mut self,
+        validator: &Vec<Validator>,
+        policy_id: &PolicyID,
+    ) {
         for validator in validator {
             if let Some(mut policy_hash_set) = self
                 .validator_to_policies
@@ -146,7 +150,10 @@ impl PolicyRegistries {
         }
     }
 
-    pub fn get_policy_ids_as_beneficiary(&self, beneficiary: &Principal) -> Result<Vec<PolicyListEntry>, SmartVaultErr> {
+    pub fn get_policy_ids_as_beneficiary(
+        &self,
+        beneficiary: &Principal,
+    ) -> Result<Vec<PolicyListEntry>, SmartVaultErr> {
         // pub beneficiaries_to_policies: StableBTreeMap<PrincipalStorable, PolicyHashSetStorable, Memory>,
         let beneficiary_storable = PrincipalStorable::from(*beneficiary);
 
@@ -156,6 +163,7 @@ impl PolicyRegistries {
         };
 
         // get the policies form the policy store
+        // TODO: use get_policies_from_policy_store helper
         POLICY_STORE.with(|ps| -> Result<Vec<PolicyListEntry>, SmartVaultErr> {
             let policy_store = ps.borrow();
             let policy_list_entries: Vec<PolicyListEntry> = policy_ids
@@ -167,7 +175,10 @@ impl PolicyRegistries {
         })
     }
 
-    pub fn get_policy_ids_as_validator(&self, validator: &Principal) -> Result<Vec<PolicyListEntry>, SmartVaultErr> {
+    pub fn get_policy_ids_as_validator(
+        &self,
+        validator: &Principal,
+    ) -> Result<Vec<PolicyListEntry>, SmartVaultErr> {
         // pub beneficiaries_to_policies: StableBTreeMap<PrincipalStorable, PolicyHashSetStorable, Memory>,
         let beneficiary_storable = PrincipalStorable::from(*validator);
 
@@ -188,7 +199,10 @@ impl PolicyRegistries {
         })
     }
 
-    pub fn update_policy_to_beneficiary(&mut self, policy: &Policy) -> Result<Policy, SmartVaultErr> {
+    pub fn update_policy_to_beneficiary(
+        &mut self,
+        policy: &Policy,
+    ) -> Result<Policy, SmartVaultErr> {
         // clean the index
         self.remove_policy_from_beneficiary(policy);
 
@@ -198,7 +212,11 @@ impl PolicyRegistries {
         Ok(policy.clone())
     }
 
-    pub fn update_policy_to_validators(&mut self, validators: &Vec<Validator>, policy_id: &PolicyID) {
+    pub fn update_policy_to_validators(
+        &mut self,
+        validators: &Vec<Validator>,
+        policy_id: &PolicyID,
+    ) {
         // clean the index
         self.remove_policy_from_validators(validators, policy_id);
 

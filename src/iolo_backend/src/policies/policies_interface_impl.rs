@@ -1,4 +1,4 @@
-use std::cell::RefCell;
+use std::{cell::RefCell, collections::HashSet};
 
 use candid::Principal;
 
@@ -287,6 +287,15 @@ pub fn get_policy_from_policy_store(policy_id: &PolicyID) -> Result<Policy, Smar
         let policy_store = ps.borrow();
         policy_store.get(&policy_id)
     })
+}
+
+pub fn get_policies_from_policy_store(
+    policy_ids: HashSet<String>,
+) -> Result<Vec<Policy>, SmartVaultErr> {
+    policy_ids
+        .iter()
+        .map(|policy_id| get_policy_from_policy_store(policy_id))
+        .collect()
 }
 
 #[cfg(test)]
