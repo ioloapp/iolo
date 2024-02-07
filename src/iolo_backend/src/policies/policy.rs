@@ -85,7 +85,7 @@ impl Policy {
             name: None,
             date_created: now,
             date_modified: now,
-            owner: owner.clone(),
+            owner: *owner,
             beneficiaries: HashSet::new(),
             secrets: HashSet::new(),
             key_box: BTreeMap::new(),
@@ -97,7 +97,7 @@ impl Policy {
 
     pub fn from_add_policy_args(policy_id: &str, owner: &Principal, ata: AddPolicyArgs) -> Self {
         let mut new_policy = Policy::new(policy_id.to_string(), owner);
-        new_policy.owner = owner.clone();
+        new_policy.owner = *owner;
         new_policy.name = ata.name;
         new_policy.beneficiaries = HashSet::new();
         new_policy.secrets = HashSet::new();

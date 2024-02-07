@@ -157,7 +157,7 @@ pub fn get_secret_as_beneficiary_impl(
         return Ok(secret);
     }
 
-    return Err(SmartVaultErr::InvalidPolicyCondition);
+    Err(SmartVaultErr::InvalidPolicyCondition)
 }
 
 pub fn get_secret_symmetric_crypto_material_as_beneficiary_impl(
@@ -182,7 +182,7 @@ pub fn get_secret_symmetric_crypto_material_as_beneficiary_impl(
         return Ok(policy.key_box().get(&secret_id).unwrap().clone());
     }
 
-    return Err(SmartVaultErr::InvalidPolicyCondition);
+    Err(SmartVaultErr::InvalidPolicyCondition)
 }
 
 #[cfg(test)]
