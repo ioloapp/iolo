@@ -129,10 +129,8 @@ export type SmartVaultErr = { 'ContactDoesNotExist' : string } |
   { 'UserUpdateFailed' : string } |
   { 'NoPolicyForValidator' : string } |
   { 'PolicyAlreadyExists' : string } |
-  { 'UserVaultCreationFailed' : string } |
   { 'PolicyDoesNotExist' : string } |
   { 'UserDoesNotExist' : string } |
-  { 'UserVaultDoesNotExist' : string } |
   { 'SecretAlreadyExists' : string } |
   { 'InvalidPolicyCondition' : null } |
   { 'KeyGenerationNotAllowed' : null };
@@ -160,7 +158,6 @@ export interface User {
   'date_last_login' : [] | [bigint],
   'email' : [] | [string],
   'key_box' : Array<[bigint, SecretSymmetricCryptoMaterial]>,
-  'user_vault_id_DO_NOT_USE_ANYMORE' : [] | [bigint],
   'date_modified' : bigint,
   'policies' : Array<string>,
 }
@@ -184,10 +181,6 @@ export interface _SERVICE {
   'create_user' : ActorMethod<[AddOrUpdateUserArgs], Result_3>,
   'delete_user' : ActorMethod<[], Result>,
   'encrypted_ibe_decryption_key_for_caller' : ActorMethod<
-    [Uint8Array | number[]],
-    string
-  >,
-  'encrypted_symmetric_key_for_caller' : ActorMethod<
     [Uint8Array | number[]],
     string
   >,

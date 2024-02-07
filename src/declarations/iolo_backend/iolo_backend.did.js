@@ -23,10 +23,8 @@ export const idlFactory = ({ IDL }) => {
     'UserUpdateFailed' : IDL.Text,
     'NoPolicyForValidator' : IDL.Text,
     'PolicyAlreadyExists' : IDL.Text,
-    'UserVaultCreationFailed' : IDL.Text,
     'PolicyDoesNotExist' : IDL.Text,
     'UserDoesNotExist' : IDL.Text,
-    'UserVaultDoesNotExist' : IDL.Text,
     'SecretAlreadyExists' : IDL.Text,
     'InvalidPolicyCondition' : IDL.Null,
     'KeyGenerationNotAllowed' : IDL.Null,
@@ -115,7 +113,6 @@ export const idlFactory = ({ IDL }) => {
     'date_last_login' : IDL.Opt(IDL.Nat64),
     'email' : IDL.Opt(IDL.Text),
     'key_box' : IDL.Vec(IDL.Tuple(IDL.Nat, SecretSymmetricCryptoMaterial)),
-    'user_vault_id_DO_NOT_USE_ANYMORE' : IDL.Opt(IDL.Nat),
     'date_modified' : IDL.Nat64,
     'policies' : IDL.Vec(IDL.Text),
   });
@@ -191,11 +188,6 @@ export const idlFactory = ({ IDL }) => {
     'create_user' : IDL.Func([AddOrUpdateUserArgs], [Result_3], []),
     'delete_user' : IDL.Func([], [Result], []),
     'encrypted_ibe_decryption_key_for_caller' : IDL.Func(
-        [IDL.Vec(IDL.Nat8)],
-        [IDL.Text],
-        [],
-      ),
-    'encrypted_symmetric_key_for_caller' : IDL.Func(
         [IDL.Vec(IDL.Nat8)],
         [IDL.Text],
         [],
