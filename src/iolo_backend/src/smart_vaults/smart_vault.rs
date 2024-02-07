@@ -39,9 +39,6 @@ use crate::users::users_interface_impl::{
 use crate::utils::caller::get_caller;
 
 thread_local! {
-    // User vault store holding all the user vaults
-    // pub static USER_VAULT_STORE_DO_NOT_USE_ANYMORE: RefCell<UserVaultStore_DO_NOT_USE_ANYMORE> = RefCell::new(UserVaultStore_DO_NOT_USE_ANYMORE::new());
-
     /// User Store
     pub static USER_STORE: RefCell<UserStore> = RefCell::new(UserStore::new());
 
@@ -54,14 +51,17 @@ thread_local! {
     /// Policy Registry for beneficiaries and validators
     pub static POLICY_REGISTRIES: RefCell<PolicyRegistries> = RefCell::new(PolicyRegistries::new());
 
-    // policy Registry for beneficiaries
-    pub static POLICY_REGISTRY_FOR_BENEFICIARIES_DO_NOT_USE_ANYMORE: RefCell<PolicyRegistryForBeneficiaries_DO_NOT_USE_ANYMORE> = RefCell::new(PolicyRegistryForBeneficiaries_DO_NOT_USE_ANYMORE::new());
-
-    // policy Registry for validators
-    pub static POLICY_REGISTRY_FOR_VALIDATORS_DO_NOT_USE_ANYMORE: RefCell<PolicyRegistryForValidators_DO_NOT_USE_ANYMORE> = RefCell::new(PolicyRegistryForValidators_DO_NOT_USE_ANYMORE::new());
-
     // counter for the UUIDs
     pub static UUID_COUNTER: RefCell<u128>  = RefCell::new(1);
+
+    // User vault store holding all the user vaults
+    // pub static USER_VAULT_STORE_DO_NOT_USE_ANYMORE: RefCell<UserVaultStore_DO_NOT_USE_ANYMORE> = RefCell::new(UserVaultStore_DO_NOT_USE_ANYMORE::new());
+
+    // policy Registry for beneficiaries
+    // pub static POLICY_REGISTRY_FOR_BENEFICIARIES_DO_NOT_USE_ANYMORE: RefCell<PolicyRegistryForBeneficiaries_DO_NOT_USE_ANYMORE> = RefCell::new(PolicyRegistryForBeneficiaries_DO_NOT_USE_ANYMORE::new());
+
+    // policy Registry for validators
+    // pub static POLICY_REGISTRY_FOR_VALIDATORS_DO_NOT_USE_ANYMORE: RefCell<PolicyRegistryForValidators_DO_NOT_USE_ANYMORE> = RefCell::new(PolicyRegistryForValidators_DO_NOT_USE_ANYMORE::new());
 }
 
 /// Creates a new user
