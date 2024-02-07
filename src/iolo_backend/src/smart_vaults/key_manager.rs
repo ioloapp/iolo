@@ -126,6 +126,7 @@ async fn symmetric_key_verification_key() -> String {
 /// The key is encrypted using the provided encryption_publi_key.
 /// TODO: it is the same as generate_vetkd_encrypted_symmetric_key_for_user
 /// Which one do we need?
+/**
 #[ic_cdk_macros::update]
 async fn encrypted_symmetric_key_for_caller(encryption_public_key: Vec<u8>) -> String {
     let request = VetKDEncryptedKeyRequest {
@@ -145,6 +146,7 @@ async fn encrypted_symmetric_key_for_caller(encryption_public_key: Vec<u8>) -> S
 
     hex::encode(response.encrypted_key)
 }
+*/
 
 #[ic_cdk_macros::update]
 async fn ibe_encryption_key() -> String {

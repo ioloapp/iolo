@@ -170,7 +170,6 @@ service : () -> {
   create_user : (AddOrUpdateUserArgs) -> (Result_3);
   delete_user : () -> (Result);
   encrypted_ibe_decryption_key_for_caller : (vec nat8) -> (text);
-  encrypted_symmetric_key_for_caller : (vec nat8) -> (text);
   generate_vetkd_encrypted_symmetric_key_for_policy : (
       PolicyKeyDerviationArgs,
     ) -> (Result_4);
