@@ -13,7 +13,6 @@ use crate::common::memory::{
 use crate::common::principal_storable::PrincipalStorable;
 use crate::policies::conditions::{Condition, Validator};
 use crate::policies::policy::{Policy, PolicyID};
-use crate::smart_vaults::smart_vault::POLICY_STORE;
 
 use super::policies_interface_impl::get_policies_from_policy_store;
 use super::policy::PolicyListEntry;

@@ -1,20 +1,10 @@
-use std::cell::RefCell;
 use std::{str::FromStr, vec};
 
-use candid::{CandidType, Principal};
+use candid::CandidType;
 use serde::{Deserialize, Serialize};
 
 use crate::common::error::SmartVaultErr;
-use crate::common::uuid::UUID;
 use crate::policies::policies_interface_impl::get_policy_from_policy_store;
-use crate::policies::policy::{Policy, PolicyID};
-use crate::policies::policy_registries::PolicyRegistryForBeneficiaries_DO_NOT_USE_ANYMORE;
-use crate::smart_vaults::smart_vault::{
-    POLICY_REGISTRY_FOR_BENEFICIARIES_DO_NOT_USE_ANYMORE, USER_STORE,
-    USER_VAULT_STORE_DO_NOT_USE_ANYMORE,
-};
-use crate::user_vaults::user_vault_store_DO_NOT_USE_ANYMORE::UserVaultStore_DO_NOT_USE_ANYMORE;
-use crate::users::user_store::UserStore;
 
 use super::vetkd_types::{
     CanisterId, VetKDCurve, VetKDEncryptedKeyReply, VetKDEncryptedKeyRequest, VetKDKeyId,
@@ -122,31 +112,6 @@ async fn symmetric_key_verification_key() -> String {
 
     hex::encode(response.public_key)
 }
-
-/// The key is encrypted using the provided encryption_publi_key.
-/// TODO: it is the same as generate_vetkd_encrypted_symmetric_key_for_user
-/// Which one do we need?
-/**
-#[ic_cdk_macros::update]
-async fn encrypted_symmetric_key_for_caller(encryption_public_key: Vec<u8>) -> String {
-    let request = VetKDEncryptedKeyRequest {
-        derivation_id: ic_cdk::caller().as_slice().to_vec(),
-        public_key_derivation_path: vec![b"symmetric_key".to_vec()],
-        key_id: bls12_381_test_key_1(),
-        encryption_public_key,
-    };
-
-    let (response,): (VetKDEncryptedKeyReply,) = ic_cdk::api::call::call(
-        vetkd_system_api_canister_id(),
-        "vetkd_encrypted_key",
-        (request,),
-    )
-    .await
-    .expect("call to vetkd_encrypted_key failed");
-
-    hex::encode(response.encrypted_key)
-}
-*/
 
 #[ic_cdk_macros::update]
 async fn ibe_encryption_key() -> String {
