@@ -28,7 +28,6 @@ use crate::secrets::secrets_interface_impl::{
     get_secret_symmetric_crypto_material_impl, remove_secret_impl, update_secret_impl,
 };
 use crate::user_vaults::user_vault::UserVaultID;
-use crate::user_vaults::user_vault_store_DO_NOT_USE_ANYMORE::UserVaultStore_DO_NOT_USE_ANYMORE;
 use crate::users::contact::{AddContactArgs, Contact};
 use crate::users::user::{AddOrUpdateUserArgs, User};
 use crate::users::user_store::UserStore;
@@ -40,8 +39,8 @@ use crate::users::users_interface_impl::{
 use crate::utils::caller::get_caller;
 
 thread_local! {
-    /// User vault store holding all the user vaults
-    pub static USER_VAULT_STORE_DO_NOT_USE_ANYMORE: RefCell<UserVaultStore_DO_NOT_USE_ANYMORE> = RefCell::new(UserVaultStore_DO_NOT_USE_ANYMORE::new());
+    // User vault store holding all the user vaults
+    // pub static USER_VAULT_STORE_DO_NOT_USE_ANYMORE: RefCell<UserVaultStore_DO_NOT_USE_ANYMORE> = RefCell::new(UserVaultStore_DO_NOT_USE_ANYMORE::new());
 
     /// User Store
     pub static USER_STORE: RefCell<UserStore> = RefCell::new(UserStore::new());

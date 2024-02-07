@@ -1,3 +1,4 @@
+//! DO NOT USE ANYMORE
 use std::{cell::RefCell, collections::BTreeMap};
 
 use candid::{CandidType, Deserialize, Principal};
