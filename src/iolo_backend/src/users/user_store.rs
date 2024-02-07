@@ -2,6 +2,7 @@ use candid::Principal;
 use ic_stable_structures::StableBTreeMap;
 use serde::{Deserialize, Serialize};
 
+use crate::users::user::AddOrUpdateUserArgs;
 use crate::{
     common::{
         error::SmartVaultErr,
@@ -13,7 +14,6 @@ use crate::{
     users::user::User,
     utils::time,
 };
-use crate::users::user::AddOrUpdateUserArgs;
 
 use super::contact::Contact;
 
@@ -56,7 +56,11 @@ impl UserStore {
         }
     }
 
-    pub fn update_user(&mut self, args: AddOrUpdateUserArgs, caller: &Principal) -> Result<User, SmartVaultErr> {
+    pub fn update_user(
+        &mut self,
+        args: AddOrUpdateUserArgs,
+        caller: &Principal,
+    ) -> Result<User, SmartVaultErr> {
         let principal_storable = PrincipalStorable::from(*caller);
 
         if let Some(mut existing_user) = self.users.remove(&principal_storable) {
@@ -231,11 +235,7 @@ impl UserStore {
         }
     }
 
-    pub fn remove_contact(
-        &mut self,
-        user: Principal,
-        id: Principal,
-    ) -> Result<(), SmartVaultErr> {
+    pub fn remove_contact(&mut self, user: Principal, id: Principal) -> Result<(), SmartVaultErr> {
         let principal_storable = PrincipalStorable::from(user);
 
         // Only name, email and user_type can be updated
@@ -270,13 +270,12 @@ impl UserStore {
 mod tests {
     use candid::Principal;
 
+    use crate::users::contact::Contact;
     use crate::{
         common::error::SmartVaultErr,
         users::user::{AddOrUpdateUserArgs, User},
         users::user_store::UserStore,
     };
-    use crate::users::contact::Contact;
-    use crate::users::user::UserType;
 
     #[tokio::test]
     async fn utest_user_store() {
@@ -318,9 +317,6 @@ mod tests {
             user_type: None,
         };
         assert!(user_store.add_contact(new_user.id, contact).is_ok());
-        assert_eq!(
-            user_store.get_contact_list(new_user.id).unwrap().len(),
-            1
-        );
+        assert_eq!(user_store.get_contact_list(new_user.id).unwrap().len(), 1);
     }
 }

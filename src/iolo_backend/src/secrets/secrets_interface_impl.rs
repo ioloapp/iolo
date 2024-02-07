@@ -1,13 +1,11 @@
 use std::cell::RefCell;
-use std::f32::consts::E;
 
 use candid::Principal;
 
 use crate::policies::policies_interface_impl::get_policy_from_policy_store;
 use crate::policies::policy::{Policy, PolicyID};
 use crate::secrets::secret::{SecretID, UpdateSecretArgs};
-use crate::smart_vaults::smart_vault::{POLICY_REGISTRIES, POLICY_STORE};
-use crate::utils::caller::get_caller;
+
 use crate::{
     common::{error::SmartVaultErr, uuid::UUID},
     secrets::secret::SecretSymmetricCryptoMaterial,

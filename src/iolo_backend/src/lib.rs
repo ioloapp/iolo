@@ -28,7 +28,6 @@ pub mod common;
 pub mod policies;
 pub mod secrets;
 pub mod smart_vaults;
-pub mod user_vaults;
 pub mod users;
 pub mod utils;
 

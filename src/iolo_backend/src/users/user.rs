@@ -1,4 +1,4 @@
-use std::borrow::Cow;
+use std::{borrow::Cow, collections::BTreeMap};
 
 use candid::{CandidType, Decode, Encode, Principal};
 use ic_stable_structures::{storable::Bound, Storable};
@@ -7,11 +7,12 @@ use serde::{Deserialize, Serialize};
 use crate::{
     common::{error::SmartVaultErr, uuid::UUID},
     secrets::secret::SecretSymmetricCryptoMaterial,
-    user_vaults::user_vault::{KeyBox, UserVaultID},
     utils::time,
 };
 
 use super::contact::Contact;
+
+pub type KeyBox = BTreeMap<UUID, SecretSymmetricCryptoMaterial>;
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct User {
@@ -23,7 +24,6 @@ pub struct User {
     pub date_modified: u64,
     pub date_last_login: Option<u64>,
     pub contacts: Vec<Contact>, // TODO: make hashset?
-    pub user_vault_id_DO_NOT_USE_ANYMORE: Option<UserVaultID>,
     // New: Secrets, KeyBox and policies are stored in the user
     pub secrets: Vec<UUID>, // TODO: make hashset?
     pub policies: Vec<String>,
@@ -60,7 +60,6 @@ impl From<AddOrUpdateUserArgs> for User {
             date_created: now,
             date_modified: now,
             date_last_login: None,
-            user_vault_id_DO_NOT_USE_ANYMORE: None,
             contacts: Vec::new(),
             secrets: Vec::new(),
             policies: Vec::new(),
@@ -87,7 +86,6 @@ impl User {
             date_created: now,
             date_modified: now,
             date_last_login: Some(now),
-            user_vault_id_DO_NOT_USE_ANYMORE: None,
             contacts: Vec::new(),
             secrets: Vec::new(),
             policies: Vec::new(),
@@ -97,10 +95,6 @@ impl User {
 
     pub fn id(&self) -> &Principal {
         &self.id
-    }
-
-    pub fn user_vault_id(&self) -> &Option<UserVaultID> {
-        &self.user_vault_id_DO_NOT_USE_ANYMORE
     }
 
     pub fn key_box(&self) -> &KeyBox {
@@ -147,11 +141,6 @@ impl User {
 
     pub fn add_policy(&mut self, policy_id: String) {
         self.policies.push(policy_id);
-        self.date_modified = time::get_current_time();
-    }
-
-    pub fn set_user_vault(&mut self, user_vault_id: UserVaultID) {
-        self.user_vault_id_DO_NOT_USE_ANYMORE = Some(user_vault_id);
         self.date_modified = time::get_current_time();
     }
 

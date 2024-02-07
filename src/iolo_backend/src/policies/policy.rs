@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 use crate::policies::conditions::{Condition, Validator};
 use crate::secrets::secret::SecretID;
 use crate::secrets::secret::SecretListEntry;
-use crate::user_vaults::user_vault::KeyBox;
+use crate::users::user::KeyBox;
 use crate::utils::{caller::get_caller, time};
 
 pub type PolicyID = String;

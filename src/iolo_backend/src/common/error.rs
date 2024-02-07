@@ -8,8 +8,6 @@ pub enum SmartVaultErr {
     UserDoesNotExist(String),
     UserDeletionFailed(String),
     UserUpdateFailed(String),
-    UserVaultCreationFailed(String),
-    UserVaultDoesNotExist(String),
     ContactAlreadyExists(String),
     ContactDoesNotExist(String),
     SecretDoesNotExist(String),
@@ -51,16 +49,6 @@ impl Display for SmartVaultErr {
                     "Failed to update the user with the following principal: {}",
                     user
                 )
-            }
-            SmartVaultErr::UserVaultCreationFailed(user) => {
-                write!(
-                    f,
-                    "Failed creating a vault for the following user: {}",
-                    user
-                )
-            }
-            SmartVaultErr::UserVaultDoesNotExist(id) => {
-                write!(f, "Failed to read vault with the following id: {}", id)
             }
             SmartVaultErr::ContactAlreadyExists(contact) => {
                 write!(f, "The following contact already exists: {}", contact)

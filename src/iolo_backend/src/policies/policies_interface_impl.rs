@@ -107,6 +107,7 @@ pub fn get_policy_list_as_owner_impl(
     Ok(policies.into_iter().map(PolicyListEntry::from).collect())
 }
 
+///
 pub fn get_policy_as_beneficiary_impl(
     policy_id: PolicyID,
     beneficiary: &Principal,
@@ -308,24 +309,22 @@ mod tests {
         common::error::SmartVaultErr,
         policies::{
             conditions::{Condition, TimeBasedCondition, Validator, XOutOfYCondition},
-            policies_interface_impl::{get_policy_as_beneficiary_impl, get_policy_as_owner_impl},
-            policy::{AddPolicyArgs, PolicyResponse},
-        },
-        policies::{
             policies_interface_impl::{
-                add_policy_impl, get_policy_list_as_beneficiary_impl,
-                get_policy_list_as_owner_impl, get_policy_list_as_validator_impl,
-                update_policy_impl,
+                add_policy_impl, get_policy_as_beneficiary_impl, get_policy_as_owner_impl,
+                get_policy_list_as_beneficiary_impl, get_policy_list_as_owner_impl,
+                get_policy_list_as_validator_impl, update_policy_impl,
             },
-            policy::Policy,
+            policy::{AddPolicyArgs, Policy, PolicyResponse},
         },
         secrets::{
             secret::{AddSecretArgs, SecretSymmetricCryptoMaterial},
             secrets_interface_impl::{add_secret_impl, get_secret_as_beneficiary_impl},
         },
         smart_vaults::smart_vault::POLICY_STORE,
-        user_vaults::user_vault::KeyBox,
-        users::{user::AddOrUpdateUserArgs, users_interface_impl::create_user_impl},
+        users::{
+            user::{AddOrUpdateUserArgs, KeyBox},
+            users_interface_impl::create_user_impl,
+        },
     };
 
     #[tokio::test]

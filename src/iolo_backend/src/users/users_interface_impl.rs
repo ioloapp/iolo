@@ -41,7 +41,10 @@ pub fn get_current_user_impl(user: &Principal) -> Result<User, SmartVaultErr> {
     })
 }
 
-pub fn update_user_impl(args: AddOrUpdateUserArgs, principal: &Principal) -> Result<User, SmartVaultErr> {
+pub fn update_user_impl(
+    args: AddOrUpdateUserArgs,
+    principal: &Principal,
+) -> Result<User, SmartVaultErr> {
     // Update the user
     USER_STORE.with(|ur: &RefCell<UserStore>| -> Result<User, SmartVaultErr> {
         let mut user_store = ur.borrow_mut();
@@ -178,7 +181,7 @@ mod tests {
         // update contact
         contact.email = Some("hey_my_first_email@hi.com".to_string());
         update_contact_impl(contact.clone(), &principal).unwrap();
-        let mut fetched_user = get_current_user_impl(&principal).unwrap();
+        let fetched_user = get_current_user_impl(&principal).unwrap();
         assert!(fetched_user.contacts.len() == 1);
         let contact = fetched_user.contacts[0].clone();
         assert_eq!(contact.email, Some("hey_my_first_email@hi.com".to_string()));

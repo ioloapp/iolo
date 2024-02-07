@@ -12,10 +12,7 @@ use crate::policies::policies_interface_impl::{
 };
 use crate::policies::policy::PolicyResponse;
 use crate::policies::policy::{AddPolicyArgs, Policy, PolicyID, PolicyListEntry};
-use crate::policies::policy_registries::{
-    PolicyRegistries, PolicyRegistryForBeneficiaries_DO_NOT_USE_ANYMORE,
-    PolicyRegistryForValidators_DO_NOT_USE_ANYMORE,
-};
+use crate::policies::policy_registries::PolicyRegistries;
 use crate::policies::policy_store::PolicyStore;
 use crate::secrets::secret::{
     AddSecretArgs, Secret, SecretID, SecretListEntry, SecretSymmetricCryptoMaterial,
@@ -27,7 +24,7 @@ use crate::secrets::secrets_interface_impl::{
     get_secret_symmetric_crypto_material_as_beneficiary_impl,
     get_secret_symmetric_crypto_material_impl, remove_secret_impl, update_secret_impl,
 };
-use crate::user_vaults::user_vault::UserVaultID;
+
 use crate::users::contact::{AddContactArgs, Contact};
 use crate::users::user::{AddOrUpdateUserArgs, User};
 use crate::users::user_store::UserStore;
@@ -53,15 +50,6 @@ thread_local! {
 
     // counter for the UUIDs
     pub static UUID_COUNTER: RefCell<u128>  = RefCell::new(1);
-
-    // User vault store holding all the user vaults
-    // pub static USER_VAULT_STORE_DO_NOT_USE_ANYMORE: RefCell<UserVaultStore_DO_NOT_USE_ANYMORE> = RefCell::new(UserVaultStore_DO_NOT_USE_ANYMORE::new());
-
-    // policy Registry for beneficiaries
-    // pub static POLICY_REGISTRY_FOR_BENEFICIARIES_DO_NOT_USE_ANYMORE: RefCell<PolicyRegistryForBeneficiaries_DO_NOT_USE_ANYMORE> = RefCell::new(PolicyRegistryForBeneficiaries_DO_NOT_USE_ANYMORE::new());
-
-    // policy Registry for validators
-    // pub static POLICY_REGISTRY_FOR_VALIDATORS_DO_NOT_USE_ANYMORE: RefCell<PolicyRegistryForValidators_DO_NOT_USE_ANYMORE> = RefCell::new(PolicyRegistryForValidators_DO_NOT_USE_ANYMORE::new());
 }
 
 /// Creates a new user
@@ -213,18 +201,6 @@ pub fn update_contact(c: Contact) -> Result<Contact, SmartVaultErr> {
 #[ic_cdk_macros::update]
 pub fn remove_contact(id: Principal) -> Result<(), SmartVaultErr> {
     remove_contact_impl(id, &get_caller())
-}
-
-pub fn get_vault_id_for_DO_NOT_USE_ANYMORE(
-    principal: Principal,
-) -> Result<UserVaultID, SmartVaultErr> {
-    USER_STORE.with(|ur: &RefCell<UserStore>| -> Result<UUID, SmartVaultErr> {
-        let user_store = ur.borrow();
-        let user = user_store.get_user(&principal)?;
-
-        user.user_vault_id_DO_NOT_USE_ANYMORE
-            .ok_or_else(|| SmartVaultErr::UserVaultDoesNotExist("".to_string()))
-    })
 }
 
 #[pre_upgrade]
