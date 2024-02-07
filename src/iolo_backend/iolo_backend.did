@@ -118,10 +118,8 @@ type SmartVaultErr = variant {
   UserUpdateFailed : text;
   NoPolicyForValidator : text;
   PolicyAlreadyExists : text;
-  UserVaultCreationFailed : text;
   PolicyDoesNotExist : text;
   UserDoesNotExist : text;
-  UserVaultDoesNotExist : text;
   SecretAlreadyExists : text;
   InvalidPolicyCondition;
   KeyGenerationNotAllowed;
@@ -150,7 +148,6 @@ type User = record {
   date_last_login : opt nat64;
   email : opt text;
   key_box : vec record { nat; SecretSymmetricCryptoMaterial };
-  user_vault_id_DO_NOT_USE_ANYMORE : opt nat;
   date_modified : nat64;
   policies : vec text;
 };
