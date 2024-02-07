@@ -1,3 +1,7 @@
+//! # iolo backend
+//!
+//! This is the iolo backend implementation.
+//!
 use common::uuid::UUID;
 use ic_cdk_macros::export_candid;
 

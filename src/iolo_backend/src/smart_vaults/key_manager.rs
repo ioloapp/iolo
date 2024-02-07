@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::common::error::SmartVaultErr;
 use crate::common::uuid::UUID;
+use crate::policies::policies_interface_impl::get_policy_from_policy_store;
 use crate::policies::policy::{Policy, PolicyID};
 use crate::policies::policy_registries::PolicyRegistryForBeneficiaries_DO_NOT_USE_ANYMORE;
 use crate::smart_vaults::smart_vault::{
@@ -62,72 +63,18 @@ async fn generate_vetkd_encrypted_symmetric_key_for_policy(
 ) -> Result<String, SmartVaultErr> {
     let caller = ic_cdk::caller(); //.as_slice().to_vec();
 
-    // check if caller has the right to derive this key
-    let mut key_can_be_generated = false;
-
     // Let's see if the policy is existing
-    let result_1 = POLICY_REGISTRY_FOR_BENEFICIARIES_DO_NOT_USE_ANYMORE.with(
-        |tr: &RefCell<PolicyRegistryForBeneficiaries_DO_NOT_USE_ANYMORE>| -> Option<Principal> {
-            let policy_registry = tr.borrow();
-            policy_registry.get_owner_of_policy(args.policy_id.clone())
-        },
-    );
+    let policy = get_policy_from_policy_store(&args.policy_id)?;
 
-    if result_1.is_none() {
-        // No policy with this id is existing, we can easily create a vetkey
-        key_can_be_generated = true;
-    } else {
-        // policy is existing, further checks are needed
-        if result_1.unwrap() == caller {
-            // Caller is owner, all good
-            key_can_be_generated = true;
-        } else {
-            // Let's see if caller is beneficiary
-            let result_2 = POLICY_REGISTRY_FOR_BENEFICIARIES_DO_NOT_USE_ANYMORE.with(
-                |tr: &RefCell<PolicyRegistryForBeneficiaries_DO_NOT_USE_ANYMORE>| -> Result<(PolicyID, Principal), SmartVaultErr> {
-                    let policy_registry = tr.borrow();
-                    policy_registry.get_policy_id_as_beneficiary(caller, args.policy_id.clone())
-                },
-            )?;
+    // Checks if one of the following conditions are met:
+    // 1. Caller is the owner or
+    // 2. Caller is a beneficiary and conditions are met
+    let key_can_be_generated = policy.owner() == &caller
+        || (policy.beneficiaries().contains(&caller) && *policy.conditions_status());
 
-            // Caller is beneficiary, let's see if the associated policy is in correct condition status.
-            let result_3 =
-                USER_STORE.with(|ur: &RefCell<UserStore>| -> Result<UUID, SmartVaultErr> {
-                    let user_store = ur.borrow();
-                    let user = user_store.get_user(&result_2.1)?;
-                    user.user_vault_id_DO_NOT_USE_ANYMORE
-                        .ok_or_else(|| SmartVaultErr::UserVaultDoesNotExist("".to_string()))
-                })?;
-            let result_4 = USER_VAULT_STORE_DO_NOT_USE_ANYMORE.with(
-                |mv: &RefCell<UserVaultStore_DO_NOT_USE_ANYMORE>| -> Result<Policy, SmartVaultErr> {
-                    mv.borrow()
-                        .get_user_vault(&result_3)?
-                        .get_policy(&args.policy_id)
-                        .cloned()
-                },
-            )?;
-            if *result_4.conditions_status() {
-                key_can_be_generated = true;
-            }
-        }
-    }
-
-    if !(key_can_be_generated) {
+    if !key_can_be_generated {
         return Err(SmartVaultErr::KeyGenerationNotAllowed);
     }
-
-    /*let mut derivation_id: Vec<u8> = ic_cdk::id().as_slice().to_vec();
-    ic_cdk::println!(
-        "backend id: {:?}, {:?}",
-        ic_cdk::id().to_string(),
-        &derivation_id,
-    );
-
-    derivation_id.extend_from_slice(&args.policy_id.as_bytes());
-    ic_cdk::println!(
-        "policy id: {:?}",
-        &args.policy_id.as_bytes()
-    );*/
 
     let derivation_id = args.policy_id.as_bytes().to_vec();
 

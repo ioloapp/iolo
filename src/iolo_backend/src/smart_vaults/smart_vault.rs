@@ -40,19 +40,19 @@ use crate::users::users_interface_impl::{
 use crate::utils::caller::get_caller;
 
 thread_local! {
-    // User vault store holding all the user vaults
+    /// User vault store holding all the user vaults
     pub static USER_VAULT_STORE_DO_NOT_USE_ANYMORE: RefCell<UserVaultStore_DO_NOT_USE_ANYMORE> = RefCell::new(UserVaultStore_DO_NOT_USE_ANYMORE::new());
 
-    // User Store
+    /// User Store
     pub static USER_STORE: RefCell<UserStore> = RefCell::new(UserStore::new());
 
-    // Secret Store
+    /// Secret Store
     pub static SECRET_STORE: RefCell<SecretStore> = RefCell::new(SecretStore::new());
 
-    // Policy (fka Testament) Store
+    /// Policy (fka Testament) Store
     pub static POLICY_STORE: RefCell<PolicyStore> = RefCell::new(PolicyStore::new());
 
-    // Policy Registry for beneficiaries and validators
+    /// Policy Registry for beneficiaries and validators
     pub static POLICY_REGISTRIES: RefCell<PolicyRegistries> = RefCell::new(PolicyRegistries::new());
 
     // policy Registry for beneficiaries
@@ -65,15 +65,13 @@ thread_local! {
     pub static UUID_COUNTER: RefCell<u128>  = RefCell::new(1);
 }
 
-/**
- * User CRUD
- */
-
+/// Creates a new user
 #[ic_cdk_macros::update]
 pub async fn create_user(args: AddOrUpdateUserArgs) -> Result<User, SmartVaultErr> {
     create_user_impl(args, &get_caller()).await
 }
 
+/// Gets the current user
 #[ic_cdk_macros::query]
 pub fn get_current_user() -> Result<User, SmartVaultErr> {
     get_current_user_impl(&get_caller())
