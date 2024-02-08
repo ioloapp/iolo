@@ -38,7 +38,7 @@ pub async fn add_policy_impl(
     // add the policy id to the user in the USER_STORE
     USER_STORE.with(|us| {
         let mut user_store = us.borrow_mut();
-        user_store.add_policy_to_user(policy_owner, policy.id().clone())
+        user_store.add_policy_to_user(&policy_owner.to_string(), policy.id().clone())
     })?;
 
     // Add entry to policy registry for beneficiaries (reverse index)
@@ -90,7 +90,7 @@ pub fn get_policy_list_as_owner_impl(
     // get policy ids from user in user store
     let policy_ids: Vec<PolicyID> = USER_STORE.with(|us| {
         let user_store = us.borrow();
-        let user = user_store.get_user(caller).unwrap();
+        let user = user_store.get_user(&caller.to_string()).unwrap();
         user.policies().clone()
     });
 

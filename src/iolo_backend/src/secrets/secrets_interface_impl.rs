@@ -48,7 +48,7 @@ pub async fn add_secret_impl(
     // add the secret id to the user in the USER_STORE
     USER_STORE.with(|us| {
         let mut user_store = us.borrow_mut();
-        user_store.add_secret_to_user(caller, new_secret_id, decryption_material)
+        user_store.add_secret_to_user(&caller.to_string(), new_secret_id, decryption_material)
     })?;
     Ok(secret)
 }
@@ -70,7 +70,7 @@ pub fn get_secret_list_impl(principal: &Principal) -> Result<Vec<SecretListEntry
     // get secret ids from user in user store
     let secret_ids: Vec<UUID> = USER_STORE.with(|us| {
         let user_store = us.borrow();
-        let user = user_store.get_user(principal).unwrap();
+        let user = user_store.get_user(&principal.to_string()).unwrap();
         user.secrets.clone()
     });
 
@@ -110,7 +110,7 @@ pub fn remove_secret_impl(secret_id: String, principal: &Principal) -> Result<()
     // delete secret from users secret list
     USER_STORE.with(|us| -> Result<(), SmartVaultErr> {
         let mut user_store = us.borrow_mut();
-        user_store.remove_secret_from_user(principal, &secret_id)
+        user_store.remove_secret_from_user(&principal.to_string(), &secret_id)
     })
 }
 
@@ -122,7 +122,7 @@ pub fn get_secret_symmetric_crypto_material_impl(
     USER_STORE.with(
         |us| -> Result<SecretSymmetricCryptoMaterial, SmartVaultErr> {
             let user_store = us.borrow();
-            let user = user_store.get_user(principal)?;
+            let user = user_store.get_user(&principal.to_string())?;
             user.key_box()
                 .get(&sid)
                 .cloned()
@@ -249,7 +249,7 @@ mod tests {
         // check if the secret is in the user object
         USER_STORE.with(|us| {
             let user_store = us.borrow();
-            let user = user_store.get_user(&principal).unwrap();
+            let user = user_store.get_user(&principal.to_string()).unwrap();
             assert_eq!(user.secrets.len(), 1, "suer should hold 1 secret now");
             assert_eq!(user.secrets[0], added_secret.id());
         });

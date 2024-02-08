@@ -13,10 +13,11 @@ use crate::{
 use super::contact::Contact;
 
 pub type KeyBox = BTreeMap<UUID, SecretSymmetricCryptoMaterial>;
+pub type PrincipalID = String;
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct User {
-    pub id: Principal,
+    pub id: PrincipalID,
     pub name: Option<String>,
     pub email: Option<String>,
     pub user_type: Option<UserType>,
@@ -53,7 +54,7 @@ impl From<AddOrUpdateUserArgs> for User {
     fn from(value: AddOrUpdateUserArgs) -> Self {
         let now = time::get_current_time();
         User {
-            id: Principal::anonymous(),
+            id: Principal::anonymous().to_string(),
             name: value.name,
             email: value.email,
             user_type: value.user_type,
@@ -75,11 +76,11 @@ pub enum UserType {
 }
 
 impl User {
-    pub fn new(id: &Principal, args: AddOrUpdateUserArgs) -> Self {
+    pub fn new(id: PrincipalID, args: AddOrUpdateUserArgs) -> Self {
         let now = time::get_current_time();
 
         Self {
-            id: *id,
+            id,
             name: args.name,
             email: args.email,
             user_type: args.user_type,
@@ -93,7 +94,7 @@ impl User {
         }
     }
 
-    pub fn id(&self) -> &Principal {
+    pub fn id(&self) -> &PrincipalID {
         &self.id
     }
 

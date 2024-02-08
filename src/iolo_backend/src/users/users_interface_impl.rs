@@ -18,7 +18,7 @@ pub async fn create_user_impl(
     caller: &Principal,
 ) -> Result<User, SmartVaultErr> {
     // Create user from principal (caller)
-    let new_user = User::new(caller, args);
+    let new_user = User::new(caller.to_string(), args);
 
     // // Store the new user
     USER_STORE.with(|ur: &RefCell<UserStore>| -> Result<User, SmartVaultErr> {
@@ -34,7 +34,7 @@ pub fn get_current_user_impl(user: &Principal) -> Result<User, SmartVaultErr> {
     // get current user
     USER_STORE.with(|ur: &RefCell<UserStore>| -> Result<User, SmartVaultErr> {
         let user_store = ur.borrow();
-        match user_store.get_user(user) {
+        match user_store.get_user(&user.to_string()) {
             Ok(u) => Ok(u.clone()),
             Err(e) => Err(e),
         }
@@ -48,7 +48,7 @@ pub fn update_user_impl(
     // Update the user
     USER_STORE.with(|ur: &RefCell<UserStore>| -> Result<User, SmartVaultErr> {
         let mut user_store = ur.borrow_mut();
-        match user_store.update_user(args, principal) {
+        match user_store.update_user(args, &principal.to_string()) {
             Ok(u) => Ok(u.clone()),
             Err(e) => Err(e),
         }
@@ -59,7 +59,7 @@ pub fn update_user_login_date_impl(principal: &Principal) -> Result<User, SmartV
     // get current user
     USER_STORE.with(|ur: &RefCell<UserStore>| -> Result<User, SmartVaultErr> {
         let mut user_store = ur.borrow_mut();
-        user_store.update_user_login_date(principal)
+        user_store.update_user_login_date(&principal.to_string())
     })
 }
 
@@ -67,7 +67,7 @@ pub fn delete_user_impl(principal: &Principal) -> Result<(), SmartVaultErr> {
     // delete the user
     USER_STORE.with(|ur: &RefCell<UserStore>| -> Result<User, SmartVaultErr> {
         let mut user_store = ur.borrow_mut();
-        user_store.delete_user(principal)
+        user_store.delete_user(&principal.to_string())
     })?;
     Ok(())
 }
@@ -78,7 +78,7 @@ pub fn add_contact_impl(args: AddContactArgs, caller: &Principal) -> Result<(), 
     // add contact to user store (caller)
     USER_STORE.with(|ur: &RefCell<UserStore>| -> Result<(), SmartVaultErr> {
         let mut user_store = ur.borrow_mut();
-        user_store.add_contact(*caller, contact)
+        user_store.add_contact(&caller.to_string(), contact)
     })?;
 
     Ok(())
@@ -89,7 +89,7 @@ pub fn get_contact_list_impl(caller: &Principal) -> Result<Vec<Contact>, SmartVa
     USER_STORE.with(
         |ur: &RefCell<UserStore>| -> Result<Vec<Contact>, SmartVaultErr> {
             let user_store = ur.borrow();
-            user_store.get_contact_list(*caller)
+            user_store.get_contact_list(&caller.to_string())
         },
     )
 }
@@ -98,7 +98,7 @@ pub fn update_contact_impl(contact: Contact, caller: &Principal) -> Result<Conta
     USER_STORE.with(
         |ur: &RefCell<UserStore>| -> Result<Contact, SmartVaultErr> {
             let mut user_store = ur.borrow_mut();
-            user_store.update_contact(*caller, contact)
+            user_store.update_contact(&caller.to_string(), contact)
         },
     )
 }
@@ -106,7 +106,7 @@ pub fn update_contact_impl(contact: Contact, caller: &Principal) -> Result<Conta
 pub fn remove_contact_impl(id: Principal, caller: &Principal) -> Result<(), SmartVaultErr> {
     USER_STORE.with(|ur: &RefCell<UserStore>| -> Result<(), SmartVaultErr> {
         let mut user_store = ur.borrow_mut();
-        user_store.remove_contact(*caller, id)
+        user_store.remove_contact(&caller.to_string(), id)
     })?;
 
     Ok(())
@@ -215,7 +215,7 @@ mod tests {
         // assert that user is deleted
         USER_STORE.with(|ur: &RefCell<UserStore>| {
             let user_store = ur.borrow();
-            let user = user_store.get_user(&principal);
+            let user = user_store.get_user(&principal.to_string());
             assert!(user.is_err());
             assert!(
                 matches!(user, Err(SmartVaultErr::UserDoesNotExist(_))),

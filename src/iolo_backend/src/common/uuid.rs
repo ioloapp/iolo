@@ -36,6 +36,17 @@ impl UUID {
     pub fn as_bytes(&self) -> Vec<u8> {
         self.0.to_string().as_bytes().to_vec()
     }
+
+    pub async fn new_string() -> String {
+        let random_array = get_new_random().await;
+        let result_string = random_array
+            .to_vec()
+            .iter()
+            .map(|b| b.to_string())
+            .collect::<Vec<String>>()
+            .join("-");
+        result_string
+    }
 }
 
 impl fmt::Display for UUID {
@@ -80,4 +91,16 @@ impl Storable for UUID {
     }
 
     const BOUND: Bound = Bound::Unbounded;
+}
+
+#[cfg(test)]
+mod tests {
+
+    use crate::common::uuid::UUID;
+
+    #[tokio::test]
+    async fn test_uuid() {
+        let id = UUID::new_string().await;
+        dbg!(id);
+    }
 }

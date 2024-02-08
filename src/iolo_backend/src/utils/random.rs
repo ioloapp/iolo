@@ -6,20 +6,25 @@ cfg_if::cfg_if! {
     if #[cfg(test)] {
         // local rust, dummy mockup implementation.
         async fn get_random_array() -> [u8;16] {
-            [rand::random();16]
+            // create 16 random u8
+            let mut random_array: [u8; 16] = [0; 16];
+            for i in 0..16 {
+                random_array[i] = rand::random();
+            }
+            random_array
         }
 
     } else {
-		use candid::Principal;
+        use candid::Principal;
         async fn get_random_array() -> [u8;16]{
             // let management_canister = management_canister();
-			// let (bytes,): (Vec<u8>,) = ic_cdk::api::call(Principal::management_canister(), "raw_rand", ()).await?;
+            // let (bytes,): (Vec<u8>,) = ic_cdk::api::call(Principal::management_canister(), "raw_rand", ()).await?;
             let mut random_bytes: Vec<u8> = match ic_cdk::call(Principal::management_canister(), "raw_rand", ()).await {
                 Ok((res,)) => res,
                 Err((_, err)) => ic_cdk::trap(&format!("Failed to get random seed: {}", err)),
             };
 
-			// let (random_bytes,): (Vec<u8>,) = ic_cdk::call(Principal::management_canister(), "raw_rand", ()).await?;
+            // let (random_bytes,): (Vec<u8>,) = ic_cdk::call(Principal::management_canister(), "raw_rand", ()).await?;
 
             random_bytes.resize(16, 0);
 
