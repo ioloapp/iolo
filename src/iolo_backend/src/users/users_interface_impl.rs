@@ -6,7 +6,7 @@ use crate::{common::error::SmartVaultErr, smart_vaults::smart_vault::USER_STORE}
 
 use super::{
     contact::{AddContactArgs, Contact},
-    user::{AddOrUpdateUserArgs, User},
+    user::{AddOrUpdateUserArgs, PrincipalID, User},
     user_store::UserStore,
 };
 
@@ -103,10 +103,13 @@ pub fn update_contact_impl(contact: Contact, caller: &Principal) -> Result<Conta
     )
 }
 
-pub fn remove_contact_impl(id: Principal, caller: &Principal) -> Result<(), SmartVaultErr> {
+pub fn remove_contact_impl(
+    contact_id: PrincipalID,
+    caller: &Principal,
+) -> Result<(), SmartVaultErr> {
     USER_STORE.with(|ur: &RefCell<UserStore>| -> Result<(), SmartVaultErr> {
         let mut user_store = ur.borrow_mut();
-        user_store.remove_contact(&caller.to_string(), id)
+        user_store.remove_contact(&caller.to_string(), contact_id)
     })?;
 
     Ok(())
@@ -167,7 +170,7 @@ mod tests {
         assert!(add_contact_result.is_ok());
         let fetched_user = get_current_user_impl(&principal).unwrap();
         assert!(fetched_user.contacts.len() == 1);
-        assert!(fetched_user.contacts[0].id == contact_principal);
+        assert!(fetched_user.contacts[0].id == contact_principal.to_text());
         assert_eq!(
             fetched_user.contacts[0].name,
             Some("my contact".to_string())

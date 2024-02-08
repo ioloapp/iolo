@@ -2,11 +2,11 @@ use candid::{CandidType, Principal};
 use serde::{Deserialize, Serialize};
 use std::hash::{Hash, Hasher};
 
-use super::user::UserType;
+use super::user::{PrincipalID, UserType};
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct Contact {
-    pub id: Principal,
+    pub id: PrincipalID,
     pub name: Option<String>,
     pub email: Option<String>,
     pub user_type: Option<UserType>,
@@ -23,7 +23,7 @@ pub struct AddContactArgs {
 impl From<AddContactArgs> for Contact {
     fn from(aca: AddContactArgs) -> Self {
         Contact {
-            id: aca.id,
+            id: aca.id.to_string(),
             name: aca.name,
             email: aca.email,
             user_type: aca.user_type,
@@ -60,7 +60,7 @@ mod tests {
         let mut hs: HashSet<Contact> = HashSet::new();
 
         let mut contact: Contact = Contact {
-            id: principal,
+            id: principal.to_string(),
             name: None,
             email: None,
             user_type: None,

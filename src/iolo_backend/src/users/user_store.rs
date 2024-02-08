@@ -232,17 +232,17 @@ impl UserStore {
     pub fn remove_contact(
         &mut self,
         user: &PrincipalID,
-        id: Principal,
+        contact_id: PrincipalID,
     ) -> Result<(), SmartVaultErr> {
         // Only name, email and user_type can be updated
         if let Some(mut existing_user) = self.users.remove(user) {
             // check if contact exist in user contacts. if yes, remove it. if not, throw error
-            if !existing_user.contacts.iter().any(|c| c.id == id) {
-                return Err(SmartVaultErr::ContactDoesNotExist(id.to_string()));
+            if !existing_user.contacts.iter().any(|c| c.id == contact_id) {
+                return Err(SmartVaultErr::ContactDoesNotExist(contact_id.to_string()));
             }
 
             // remove contact from user
-            existing_user.contacts.retain(|c| c.id != id);
+            existing_user.contacts.retain(|c| c.id != contact_id);
 
             // store user
             self.users.insert(user.to_string(), existing_user);
@@ -309,7 +309,7 @@ mod tests {
         );
 
         let contact: Contact = Contact {
-            id: principal,
+            id: principal.to_text(),
             name: Some("Testuser".to_string()),
             email: Some("test@me.com".to_string()),
             user_type: None,

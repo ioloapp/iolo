@@ -24,7 +24,7 @@ type Condition = variant {
   XOutOfYCondition : XOutOfYCondition;
 };
 type Contact = record {
-  id : principal;
+  id : text;
   user_type : opt UserType;
   name : opt text;
   email : opt text;
