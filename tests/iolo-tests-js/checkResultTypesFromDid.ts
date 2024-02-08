@@ -3,7 +3,6 @@ const path = require('path');
 
 const fileDirectory = '../../tests/iolo-tests-js'; // Change to your directory path
 const methodDefinitionFile = '../../src/declarations/iolo_backend/iolo_backend.did.d.ts'; // Change to your definitions file path
-const knownFilenames = ['user.test.ts', 'secret.test.ts', 'crypto.test.ts', 'policy.test.ts']; // Add your file names here
 
 // Helper function to recursively find files
 function findAllFiles(dir) {
@@ -15,7 +14,9 @@ function findAllFiles(dir) {
         if (stat && stat.isDirectory()) {
             results = results.concat(findAllFiles(fullPath));
         } else {
-            results.push(fullPath);
+            if (path.extname(file) === '.ts') {
+                results.push(fullPath);
+            }
         }
     });
     return results;
@@ -23,7 +24,7 @@ function findAllFiles(dir) {
 
 // Helper function to find specific actor method call pattern
 function findActorMethodCalls(content) {
-    const actorMethodCallRegex = /(const|let)\s+(result\w+)\s*:\s*(Result_\d+)\s*=\s*await\s+(actor\w+)\.(\w+)\(/g;
+        const actorMethodCallRegex = /(const|let)\s+(\w+)\s*:\s*(Result\w*)\s*=\s*await\s+(actor\w*)\.(\w+)\(/g;
     let match;
     let calls = [];
 
@@ -54,6 +55,7 @@ async function processFiles() {
     for (const file of files) {
         const content = fs.readFileSync(file, 'utf-8');
         const calls = findActorMethodCalls(content);
+
 
         for (const { resultVar, resultType, actorVar, methodName } of calls) {
             const methodResultType = findMethodSignature(methodName, methodDefinitions);

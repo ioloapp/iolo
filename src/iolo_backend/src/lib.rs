@@ -13,7 +13,6 @@ use crate::policies::policy::PolicyListEntry;
 use crate::policies::policy::PolicyResponse;
 use crate::secrets::secret::SecretID;
 use crate::secrets::secret::SecretListEntry;
-use crate::secrets::secret::SecretSymmetricCryptoMaterial;
 use crate::smart_vaults::key_manager::PolicyKeyDerviationArgs;
 use crate::users::contact::AddContactArgs;
 use crate::users::contact::Contact;

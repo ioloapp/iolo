@@ -13,7 +13,6 @@ pub enum SmartVaultErr {
     SecretDoesNotExist(String),
     CallerNotBeneficiary(String),
     OnlyOwnerCanDeleteSecret(String),
-    SecretDecryptionMaterialDoesNotExist(String),
     SecretHasNoId,
     SecretAlreadyExists(String),
     PolicyAlreadyExists(String),
@@ -68,9 +67,6 @@ impl Display for SmartVaultErr {
                     "Only the owner of the secret can delete a secret. Secret ID: {}",
                     id
                 )
-            }
-            SmartVaultErr::SecretDecryptionMaterialDoesNotExist(id) => {
-                write!(f, "Failed to read secret decryption material for secret with the following id: {}", id)
             }
             SmartVaultErr::SecretHasNoId => {
                 write!(f, "Secret has no id")

@@ -6,20 +6,21 @@ import {
     determineBackendCanisterId,
 } from "./utils";
 import {Secp256k1KeyIdentity} from "@dfinity/identity-secp256k1";
-import {AddSecretArgs, Result, Result_1,
+import {
+    AddSecretArgs,
     Secret,
-    SecretSymmetricCryptoMaterial,
-    SecretCategory, Result_7, Result_2, Result_9} from "../../src/declarations/iolo_backend/iolo_backend.did";
+    SecretCategory, Result_2, Result_6, _SERVICE
+} from "../../src/declarations/iolo_backend/iolo_backend.did";
 import {v4 as uuidv4} from 'uuid';
 import {UiSecret, UiSecretCategory} from "../../src/iolo_frontend/src/services/IoloTypesForUi";
 import {
     aes_gcm_decrypt,
     aes_gcm_encrypt,
-    get_aes_256_gcm_key_for_uservault,
+    get_aes_256_gcm_key_for_user,
     get_local_random_aes_256_gcm_key
 } from "./crypto";
 import * as crypto from "crypto";
-import {AddOrUpdateUserArgs} from "../../.dfx/local/canisters/iolo_backend/service.did";
+import {ActorSubclass} from "@dfinity/agent";
 
 
 /*
@@ -33,8 +34,8 @@ const canisterId: string = determineBackendCanisterId();
 // Use random identities to not interfere with other tests which are running in parallel
 const identityOne: Secp256k1KeyIdentity = createIdentity();
 const identityTwo: Secp256k1KeyIdentity = createIdentity();
-const actorOne = createNewActor(identityOne, canisterId);
-const actorTwo = createNewActor(identityTwo, canisterId);
+const actorOne: ActorSubclass<_SERVICE> = createNewActor(identityOne, canisterId);
+const actorTwo: ActorSubclass<_SERVICE> = createNewActor(identityTwo, canisterId);
 
 const ivLength = 12;
 const secretOne: UiSecret = {
@@ -49,9 +50,16 @@ const secretOne: UiSecret = {
 
 let vetKeyOne: Uint8Array;
 let vetKeyTwo: Uint8Array;
+
+/*
+ This test suit tests encryption and decryption of secrets and policies which happens in the frontend.
+ Once ic_vetkd_utils is exposed as npm package, it should use the crypto.ts from the frontend.
+ */
+
+
 beforeAll(async () => {
-    vetKeyOne = await get_aes_256_gcm_key_for_uservault(identityOne.getPrincipal(), actorOne);
-    vetKeyTwo = await get_aes_256_gcm_key_for_uservault(identityTwo.getPrincipal(), actorTwo);
+    vetKeyOne = await get_aes_256_gcm_key_for_user(identityOne.getPrincipal(), actorOne);
+    vetKeyTwo = await get_aes_256_gcm_key_for_user(identityTwo.getPrincipal(), actorTwo);
 
     await createAliceAndBob(actorOne, actorTwo);
 }, 30000);
@@ -63,6 +71,7 @@ describe("Encryption and Decryption Tests", () => {
 
         // Add secrets
         const addSecretArgsOne: AddSecretArgs = await encryptNewSecret(secretOne, vetKeyOne);
+
         const resultAddSecretOne: Result_2 = await actorOne.add_secret(addSecretArgsOne);
         expect(resultAddSecretOne).toHaveProperty('Ok');
         secretOne.id = resultAddSecretOne['Ok'].id;
@@ -76,10 +85,10 @@ describe("Encryption and Decryption Tests", () => {
         expect(resultSecretOne).toHaveProperty('Ok');
 
         // Get crypto material for secret
-        const resultSymmetricCryptoMaterialOne: Result_9 = await actorOne.get_secret_symmetric_crypto_material(secretOne.id);
-        expect(resultSymmetricCryptoMaterialOne).toHaveProperty('Ok');
+        const resultEncryptedSymmetricKeyOne: Result_6 = await actorOne.get_encrypted_symmetric_key(secretOne.id);
+        expect(resultEncryptedSymmetricKeyOne).toHaveProperty('Ok');
 
-        const decryptedSecretOne: UiSecret = await decryptSecret(resultSecretOne['Ok'], resultSymmetricCryptoMaterialOne['Ok'].encrypted_symmetric_key, vetKeyOne);
+        const decryptedSecretOne: UiSecret = await decryptSecret(resultSecretOne['Ok'], resultEncryptedSymmetricKeyOne['Ok'], vetKeyOne);
         expect(decryptedSecretOne.username).toStrictEqual(secretOne.username);
         expect(decryptedSecretOne.password).toStrictEqual(secretOne.password);
         expect(decryptedSecretOne.notes).toStrictEqual(secretOne.notes);
@@ -93,11 +102,11 @@ describe("Encryption and Decryption Tests", () => {
         expect(resultSecretOne).toHaveProperty('Ok');
 
         // Get crypto material for secret
-        const resultSymmetricCryptoMaterialOne: Result_9 = await actorOne.get_secret_symmetric_crypto_material(secretOne.id);
+        const resultSymmetricCryptoMaterialOne: Result_6 = await actorOne.get_encrypted_symmetric_key(secretOne.id);
         expect(resultSymmetricCryptoMaterialOne).toHaveProperty('Ok');
 
         // Try with vetKeyTwo, must fail
-        await expect(decryptSecret(resultSecretOne['Ok'], resultSymmetricCryptoMaterialOne['Ok'].encrypted_symmetric_key, vetKeyTwo)).rejects.toThrow('The operation failed for an operation-specific reason');
+        await expect(decryptSecret(resultSecretOne['Ok'], resultSymmetricCryptoMaterialOne['Ok'], vetKeyTwo)).rejects.toThrow('The operation failed for an operation-specific reason');
 
     }, 60000); // Set timeout
 
@@ -130,10 +139,6 @@ async function encryptNewSecret(uiSecret: UiSecret, vetKey: Uint8Array): Promise
         encryptedNotes = await aes_gcm_encrypt(uiSecret.notes, symmetricKey, ivNotes);
     }
 
-    let symmetricCryptoMaterial: SecretSymmetricCryptoMaterial = {
-        encrypted_symmetric_key: encryptedSymmetricKey,
-    };
-
     return {
         url: uiSecret.url ? [uiSecret.url] : [],
         name: [uiSecret.name],
@@ -141,7 +146,7 @@ async function encryptNewSecret(uiSecret: UiSecret, vetKey: Uint8Array): Promise
         username: encryptedUsername.length > 0 ? [encryptedUsername] : [],
         password: encryptedPassword.length > 0 ? [encryptedPassword] : [],
         notes: encryptedNotes.length > 0 ? [encryptedNotes] : [],
-        symmetric_crypto_material: symmetricCryptoMaterial
+        encrypted_symmetric_key: encryptedSymmetricKey
     }
 }
 

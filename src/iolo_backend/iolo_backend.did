@@ -15,7 +15,7 @@ type AddSecretArgs = record {
   username : opt vec nat8;
   password : opt vec nat8;
   name : opt text;
-  symmetric_crypto_material : SecretSymmetricCryptoMaterial;
+  encrypted_symmetric_key : vec nat8;
   notes : opt vec nat8;
   category : opt SecretCategory;
 };
@@ -39,7 +39,7 @@ type Policy = record {
   secrets : vec text;
   conditions_status : bool;
   beneficiaries : vec principal;
-  key_box : vec record { text; SecretSymmetricCryptoMaterial };
+  key_box : vec record { text; vec nat8 };
   conditions : vec Condition;
   date_modified : nat64;
 };
@@ -62,7 +62,7 @@ type PolicyResponse = record {
   secrets : vec SecretListEntry;
   conditions_status : bool;
   beneficiaries : vec principal;
-  key_box : vec record { text; SecretSymmetricCryptoMaterial };
+  key_box : vec record { text; vec nat8 };
   conditions : vec Condition;
   date_modified : nat64;
 };
@@ -73,13 +73,10 @@ type Result_2 = variant { Ok : Secret; Err : SmartVaultErr };
 type Result_3 = variant { Ok : User; Err : SmartVaultErr };
 type Result_4 = variant { Ok : text; Err : SmartVaultErr };
 type Result_5 = variant { Ok : vec Contact; Err : SmartVaultErr };
-type Result_6 = variant { Ok : PolicyResponse; Err : SmartVaultErr };
-type Result_7 = variant { Ok : vec PolicyListEntry; Err : SmartVaultErr };
-type Result_8 = variant { Ok : vec SecretListEntry; Err : SmartVaultErr };
-type Result_9 = variant {
-  Ok : SecretSymmetricCryptoMaterial;
-  Err : SmartVaultErr;
-};
+type Result_6 = variant { Ok : vec nat8; Err : SmartVaultErr };
+type Result_7 = variant { Ok : PolicyResponse; Err : SmartVaultErr };
+type Result_8 = variant { Ok : vec PolicyListEntry; Err : SmartVaultErr };
+type Result_9 = variant { Ok : vec SecretListEntry; Err : SmartVaultErr };
 type Secret = record {
   id : text;
   url : opt text;
@@ -98,9 +95,6 @@ type SecretListEntry = record {
   name : opt text;
   category : opt SecretCategory;
 };
-type SecretSymmetricCryptoMaterial = record {
-  encrypted_symmetric_key : vec nat8;
-};
 type SmartVaultErr = variant {
   ContactDoesNotExist : text;
   UserAlreadyExists : text;
@@ -113,7 +107,6 @@ type SmartVaultErr = variant {
   SecretDoesNotExist : text;
   NoPolicyForBeneficiary : text;
   CallerNotPolicyOwner : text;
-  SecretDecryptionMaterialDoesNotExist : text;
   Unauthorized;
   UserUpdateFailed : text;
   NoPolicyForValidator : text;
@@ -147,7 +140,7 @@ type User = record {
   secrets : vec text;
   date_last_login : opt nat64;
   email : opt text;
-  key_box : vec record { text; SecretSymmetricCryptoMaterial };
+  key_box : vec record { text; vec nat8 };
   date_modified : nat64;
   policies : vec text;
 };
@@ -173,18 +166,16 @@ service : () -> {
   generate_vetkd_encrypted_symmetric_key_for_user : (vec nat8) -> (text);
   get_contact_list : () -> (Result_5) query;
   get_current_user : () -> (Result_3) query;
-  get_policy_as_beneficiary : (text) -> (Result_6) query;
-  get_policy_as_owner : (text) -> (Result_6) query;
-  get_policy_list_as_beneficiary : () -> (Result_7) query;
-  get_policy_list_as_owner : () -> (Result_7) query;
-  get_policy_list_as_validator : () -> (Result_7) query;
+  get_encrypted_symmetric_key : (text) -> (Result_6) query;
+  get_encrypted_symmetric_key_as_beneficiary : (text, text) -> (Result_6) query;
+  get_policy_as_beneficiary : (text) -> (Result_7) query;
+  get_policy_as_owner : (text) -> (Result_7) query;
+  get_policy_list_as_beneficiary : () -> (Result_8) query;
+  get_policy_list_as_owner : () -> (Result_8) query;
+  get_policy_list_as_validator : () -> (Result_8) query;
   get_secret : (text) -> (Result_2) query;
   get_secret_as_beneficiary : (text, text) -> (Result_2) query;
-  get_secret_list : () -> (Result_8) query;
-  get_secret_symmetric_crypto_material : (text) -> (Result_9) query;
-  get_secret_symmetric_crypto_material_as_beneficiary : (text, text) -> (
-      Result_9,
-    ) query;
+  get_secret_list : () -> (Result_9) query;
   ibe_encryption_key : () -> (text);
   remove_contact : (principal) -> (Result);
   remove_policy : (text) -> (Result);

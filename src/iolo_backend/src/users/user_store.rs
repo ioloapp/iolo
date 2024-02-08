@@ -9,7 +9,6 @@ use crate::{
         error::SmartVaultErr,
         memory::{get_stable_btree_memory_for_users, Memory},
     },
-    secrets::secret::SecretSymmetricCryptoMaterial,
     users::user::User,
     utils::time,
 };
@@ -110,14 +109,14 @@ impl UserStore {
         &mut self,
         caller: &PrincipalID,
         secret_id: SecretID,
-        secret_decryption_material: SecretSymmetricCryptoMaterial,
+        encrypted_symmetric_key: Vec<u8>,
     ) -> Result<(), SmartVaultErr> {
         // find user in users and add secret id to secrets
         let mut user = self
             .users
             .get(caller)
             .ok_or_else(|| SmartVaultErr::UserDoesNotExist(caller.to_string()))?;
-        user.add_secret(secret_id, secret_decryption_material);
+        user.add_secret(secret_id, encrypted_symmetric_key);
 
         self.users.insert(caller.to_string(), user);
         Ok(())

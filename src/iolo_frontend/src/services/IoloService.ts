@@ -20,7 +20,6 @@ import {
     Secret,
     SecretCategory,
     SecretListEntry,
-    SecretSymmetricCryptoMaterial,
     TimeBasedCondition,
     UpdateSecretArgs,
     User,
@@ -171,7 +170,7 @@ class IoloService {
     }
 
     public async getSecretList(): Promise<UiSecretListEntry[]> {
-        const result: Result_8 = await (await this.getActor()).get_secret_list();
+        const result: Result_9 = await (await this.getActor()).get_secret_list();
         if (result['Ok']) {
             return result['Ok'].map((secretListEntry: SecretListEntry): UiSecretListEntry => {
                 return {
@@ -186,8 +185,8 @@ class IoloService {
 
     public async getSecret(secretId: string): Promise<UiSecret> {
         console.debug('start getting secret...')
-        const result1 = (await this.getActor()).get_secret(BigInt(secretId));
-        const result2 = (await this.getActor()).get_secret_symmetric_crypto_material(BigInt(secretId));
+        const result1: Result_2 = await (await this.getActor()).get_secret(secretId);
+        const result2: Result_6 = await (await this.getActor()).get_encrypted_symmetric_key(secretId);
 
         // Wait for both promises to complete
         const [value1, value2] = await Promise.all([result1, result2]);
@@ -203,8 +202,8 @@ class IoloService {
 
     public async getSecretAsBeneficiary(secretId: string, policyId: string): Promise<UiSecret> {
         console.debug('start getting secret for beneficiary...')
-        const result1 = (await this.getActor()).get_secret_as_beneficiary(secretId.toString(), policyId);
-        const result2 = (await this.getActor()).get_secret_symmetric_crypto_material_as_beneficiary(BigInt(secretId), policyId);
+        const result1: Result_2 = await (await this.getActor()).get_secret_as_beneficiary(secretId.toString(), policyId);
+        const result2: Result_6 = await (await this.getActor()).get_encrypted_symmetric_key_as_beneficiary(secretId, policyId);
 
         // Wait for both promises to complete
         const [value1, value2] = await Promise.all([result1, result2]);
@@ -229,17 +228,17 @@ class IoloService {
 
     public async updateSecret(uiSecret: UiSecret): Promise<UiSecret> {
         console.debug('start updating secret...')
-        const resultSymmetricCryptoMaterial: Result_9 = await (await this.getActor()).get_secret_symmetric_crypto_material(BigInt(uiSecret.id));
+        const resultEncryptedSymmetricKey: Result_6 = await (await this.getActor()).get_encrypted_symmetric_key(uiSecret.id);
 
-        let symmetricCryptoMaterial: SecretSymmetricCryptoMaterial;
-        if (resultSymmetricCryptoMaterial['Ok']) {
-            symmetricCryptoMaterial = resultSymmetricCryptoMaterial['Ok'];
+        let encrypted_symmetric_key: Uint8Array;
+        if (resultEncryptedSymmetricKey['Ok']) {
+            encrypted_symmetric_key = resultEncryptedSymmetricKey['Ok'];
         } else {
-            throw mapError(resultSymmetricCryptoMaterial['Err']);
+            throw mapError(resultEncryptedSymmetricKey['Err']);
         }
 
         // Get secret with encrypted attributes incl. ivs
-        const resultSecret: Result_2 = await (await this.getActor()).get_secret(BigInt(uiSecret.id));
+        const resultSecret: Result_2 = await (await this.getActor()).get_secret(uiSecret.id);
         let existingSecret: Secret;
         if (resultSecret['Ok']) {
             existingSecret = resultSecret['Ok'];
@@ -251,7 +250,7 @@ class IoloService {
         const uservaultVetKey: Uint8Array = await get_aes_256_gcm_key_for_uservault(await this.getUserPrincipal(),(await this.getActor()));
 
         // Decrypt symmetric key
-        const decryptedSymmetricKey = await aes_gcm_decrypt(symmetricCryptoMaterial.encrypted_symmetric_key as Uint8Array, uservaultVetKey, this.ivLength);
+        const decryptedSymmetricKey = await aes_gcm_decrypt(encrypted_symmetric_key as Uint8Array, uservaultVetKey, this.ivLength);
 
         // Encrypt updated secret args
         const encryptedUpdateSecretArgs: UpdateSecretArgs = await this.encryptExistingSecret(uiSecret, decryptedSymmetricKey, existingSecret);
@@ -299,7 +298,7 @@ class IoloService {
     }
 
     public async getPolicyList(): Promise<UiPolicyListEntry[]> {
-        const resultAsTestator: Result_7 = await (await this.getActor()).get_policy_list_as_owner();
+        const resultAsTestator: Result_8 = await (await this.getActor()).get_policy_list_as_owner();
         let policiesAsTestator: UiPolicyListEntry[] = [];
         if (resultAsTestator['Ok']) {
             policiesAsTestator = resultAsTestator['Ok'].map((item: PolicyListEntry): UiPolicyListEntry  => {
@@ -315,7 +314,7 @@ class IoloService {
             throw mapError(resultAsTestator['Err']);
         }
 
-        const resultAsBeneficiary: Result_7 = await (await this.getActor()).get_policy_list_as_beneficiary();
+        const resultAsBeneficiary: Result_8 = await (await this.getActor()).get_policy_list_as_beneficiary();
         let policiesAsBeneficiary: UiPolicyListEntry[] =  [];
         if (resultAsBeneficiary['Ok'] && resultAsBeneficiary['Ok'].length > 0) {
             policiesAsBeneficiary = resultAsBeneficiary['Ok'].map((item: PolicyListEntry): UiPolicyListEntry  => {
@@ -334,7 +333,7 @@ class IoloService {
     }
 
     public async getPolicyAsOwner(id: string): Promise<UiPolicyResponse> {
-        const result: Result_6 = await (await this.getActor()).get_policy_as_owner(id);
+        const result: Result_7 = await (await this.getActor()).get_policy_as_owner(id);
         console.debug('start get policies as owner', result);
         if (result['Ok']) {
             return this.mapPolicyResponseToUiPolicyResponse(result['Ok'], UiPolicyListEntryRole.Owner);
@@ -343,7 +342,7 @@ class IoloService {
     }
 
     public async getPolicyAsBeneficiary(id: string): Promise<UiPolicyResponse> {
-        const result: Result_6 = await (await this.getActor()).get_policy_as_beneficiary(id);
+        const result: Result_7 = await (await this.getActor()).get_policy_as_beneficiary(id);
         if (result['Ok']) {
             return this.mapPolicyResponseToUiPolicyResponse(result['Ok'], UiPolicyListEntryRole.Beneficiary);
         }
@@ -424,7 +423,7 @@ class IoloService {
 
     private mapUserToUiUser(user: User): UiUser {
         let uiUser: UiUser =  {
-            id: user.id.toText(),
+            id: user.id,
             name: user.name.length > 0 ? user.name[0] : undefined,
             email: user.email.length > 0 ? user.email[0] : undefined,
             dateLastLogin: user.date_last_login?.length > 0 ? this.nanosecondsInBigintToIsoString(user.date_last_login[0]) : undefined,
@@ -450,7 +449,7 @@ class IoloService {
             key_box: undefined,
             policies: undefined,
             secrets: undefined,
-            id: Principal.fromText(uiUser.id),
+            id: uiUser.id,
             user_type: uiUser.type ? [this.mapUiUserTypeToUserType(uiUser.type)] : [],
             date_created: uiUser.dateCreated ? this.dateToNanosecondsInBigint(uiUser.dateCreated) : 0n,
             name: uiUser.name ? [uiUser.name] : [],
@@ -461,10 +460,10 @@ class IoloService {
         };
     }
 
-    private async mapEncryptedSecretToUiSecret(secret: Secret, keyMaterial: SecretSymmetricCryptoMaterial, vetKey: Uint8Array): Promise<UiSecret> {
+    private async mapEncryptedSecretToUiSecret(secret: Secret, encrypted_symmetric_key: Uint8Array, vetKey: Uint8Array): Promise<UiSecret> {
 
         // Decrypt symmetric key
-        const decryptedSymmetricKey = await aes_gcm_decrypt(keyMaterial.encrypted_symmetric_key as Uint8Array, vetKey, this.ivLength);
+        const decryptedSymmetricKey = await aes_gcm_decrypt(encrypted_symmetric_key, vetKey, this.ivLength);
 
         // Decrypt attributes
         let decryptedUsername = undefined;
@@ -551,10 +550,6 @@ class IoloService {
                 encryptedNotes = await aes_gcm_encrypt(uiSecret.notes, symmetricKey, ivNotes);
             }
 
-            let symmetricCryptoMaterial: SecretSymmetricCryptoMaterial = {
-                encrypted_symmetric_key: encryptedSymmetricKey,
-            };
-
             return {
                 url: uiSecret.url ? [uiSecret.url] : [],
                 name: [uiSecret.name],
@@ -562,7 +557,7 @@ class IoloService {
                 username: encryptedUsername.length > 0 ? [encryptedUsername] : [],
                 password: encryptedPassword.length > 0 ? [encryptedPassword] : [],
                 notes: encryptedNotes.length > 0 ? [encryptedNotes] : [],
-                symmetric_crypto_material: symmetricCryptoMaterial
+                encrypted_symmetric_key: encryptedSymmetricKey
             }
         } catch (e) {
             throw mapError(e)
@@ -616,7 +611,7 @@ class IoloService {
             }
 
             return {
-                id: BigInt(uiSecret.id),
+                id: uiSecret.id,
                 url: uiSecret.url ? [uiSecret.url] : [],
                 name: [uiSecret.name],
                 category: [this.mapUiSecretCategoryToSecretCategory(uiSecret.category)],
@@ -664,9 +659,9 @@ class IoloService {
         const policyVetKey = await get_aes_256_gcm_key_for_policy(uiPolicy.id, (await this.getActor()));
 
         // Create key_box by encrypting symmetric secrets key with policy vetKey
-        let keyBox = new Array<[bigint, SecretSymmetricCryptoMaterial]>;
+        let keyBox = new Array<[string, Uint8Array]>;
         for (const item of uiPolicy.secrets) {
-            const result: Result_9 = await (await this.getActor()).get_secret_symmetric_crypto_material(BigInt(item));
+            const result: Result_6 = await (await this.getActor()).get_encrypted_symmetric_key(item);
             if (result['Ok']) {
                 // Decrypt symmetric key with uservault vetKey
                 const decryptedSymmetricKey = await aes_gcm_decrypt(result['Ok'].encrypted_symmetric_key as Uint8Array, uservaultVetKey, this.ivLength);
@@ -675,9 +670,7 @@ class IoloService {
                 const ivSymmetricKey = window.crypto.getRandomValues(new Uint8Array(12)); // 96-bits; unique per message
                 const encryptedSymmetricKey = await aes_gcm_encrypt(decryptedSymmetricKey, policyVetKey, ivSymmetricKey);
 
-                keyBox.push([BigInt(item), {
-                    encrypted_symmetric_key: encryptedSymmetricKey,
-                }]);
+                keyBox.push([item,  encryptedSymmetricKey]);
             } else throw mapError(result['Err']);
         }
 

@@ -8,7 +8,6 @@ use crate::secrets::secret::{SecretID, UpdateSecretArgs};
 
 use crate::{
     common::{error::SmartVaultErr, uuid::UUID},
-    secrets::secret::SecretSymmetricCryptoMaterial,
     smart_vaults::smart_vault::{SECRET_STORE, USER_STORE},
 };
 
@@ -26,17 +25,13 @@ use super::{
  * 3. Add the secret to the secret store
  * 4. Add the secret id to the user vault's secret id list
  */
-pub async fn add_secret_impl(
-    args: AddSecretArgs,
-    caller: &Principal,
-) -> Result<Secret, SmartVaultErr> {
+pub async fn add_secret_impl(args: AddSecretArgs, caller: &Principal) -> Result<Secret, SmartVaultErr> {
     // generate a new UUID for the secret
     let new_secret_id: SecretID = UUID::new().await;
 
-    // we generate the secret and produce the decryption material
+    // we generate the secret
     let secret: Secret =
         Secret::create_from_add_secret_args(*caller, new_secret_id.clone(), args.clone());
-    let decryption_material: SecretSymmetricCryptoMaterial = args.symmetric_crypto_material.clone();
 
     // Add the secret to the secret store (secrets: StableBTreeMap<UUID, Secret, Memory>,)
     SECRET_STORE.with(
@@ -49,7 +44,7 @@ pub async fn add_secret_impl(
     // add the secret id to the user in the USER_STORE
     USER_STORE.with(|us| {
         let mut user_store = us.borrow_mut();
-        user_store.add_secret_to_user(&caller.to_string(), new_secret_id, decryption_material)
+        user_store.add_secret_to_user(&caller.to_string(), new_secret_id, args.encrypted_symmetric_key.clone())
     })?;
     Ok(secret)
 }
@@ -88,10 +83,7 @@ pub fn get_secret_list_impl(principal: &Principal) -> Result<Vec<SecretListEntry
     Ok(secrets.into_iter().map(SecretListEntry::from).collect())
 }
 
-pub fn update_secret_impl(
-    usa: UpdateSecretArgs,
-    principal: &Principal,
-) -> Result<Secret, SmartVaultErr> {
+pub fn update_secret_impl(usa: UpdateSecretArgs, principal: &Principal) -> Result<Secret, SmartVaultErr> {
     SECRET_STORE.with(|x| {
         let mut secret_store = x.borrow_mut();
         // TODO: check if the secret is in the user vault
@@ -115,28 +107,21 @@ pub fn remove_secret_impl(secret_id: SecretID, principal: &Principal) -> Result<
     })
 }
 
-pub fn get_secret_symmetric_crypto_material_impl(
-    sid: SecretID,
-    principal: &Principal,
-) -> Result<SecretSymmetricCryptoMaterial, SmartVaultErr> {
-    // get symmetric decryption material from user's keybox in the user store
+pub fn get_encrypted_symmetric_key_impl(sid: SecretID, principal: &Principal) -> Result<Vec<u8>, SmartVaultErr> {
+    // get encrypted symmetric key of a secret from user's keybox in the user store
     USER_STORE.with(
-        |us| -> Result<SecretSymmetricCryptoMaterial, SmartVaultErr> {
+        |us| -> Result<Vec<u8>, SmartVaultErr> {
             let user_store = us.borrow();
             let user = user_store.get_user(&principal.to_string())?;
             user.key_box()
                 .get(&sid)
                 .cloned()
-                .ok_or_else(|| SmartVaultErr::SecretDecryptionMaterialDoesNotExist(sid.to_string()))
+                .ok_or_else(|| SmartVaultErr::SecretDoesNotExist(sid.to_string()))
         },
     )
 }
 
-pub fn get_secret_as_beneficiary_impl(
-    secret_id: SecretID,
-    policy_id: PolicyID,
-    caller: &Principal,
-) -> Result<Secret, SmartVaultErr> {
+pub fn get_secret_as_beneficiary_impl(secret_id: SecretID, policy_id: PolicyID, caller: &Principal) -> Result<Secret, SmartVaultErr> {
     // fetch policy from policy store and check if caller is beneficiary
     let policy: Policy;
     if let Ok(p) = get_policy_from_policy_store(&policy_id) {
@@ -161,11 +146,7 @@ pub fn get_secret_as_beneficiary_impl(
     Err(SmartVaultErr::InvalidPolicyCondition)
 }
 
-pub fn get_secret_symmetric_crypto_material_as_beneficiary_impl(
-    secret_id: SecretID,
-    policy_id: PolicyID,
-    caller: &Principal,
-) -> Result<SecretSymmetricCryptoMaterial, SmartVaultErr> {
+pub fn get_encrypted_symmetric_key_as_beneficiary_impl(secret_id: SecretID, policy_id: PolicyID, caller: &Principal) -> Result<Vec<u8>, SmartVaultErr> {
     // fetch policy from policy store and check if caller is beneficiary
     let policy: Policy;
     if let Ok(p) = get_policy_from_policy_store(&policy_id) {
@@ -193,10 +174,10 @@ mod tests {
     use crate::{
         common::error::SmartVaultErr,
         secrets::{
-            secret::{AddSecretArgs, SecretSymmetricCryptoMaterial, UpdateSecretArgs},
+            secret::{AddSecretArgs, UpdateSecretArgs},
             secrets_interface_impl::{
                 add_secret_impl, get_secret_impl, get_secret_list_impl,
-                get_secret_symmetric_crypto_material_impl, remove_secret_impl, update_secret_impl,
+                get_encrypted_symmetric_key_impl, remove_secret_impl, update_secret_impl,
             },
         },
         smart_vaults::smart_vault::SECRET_STORE,
@@ -218,9 +199,8 @@ mod tests {
         let _new_user = create_user_impl(aua, &principal).await.unwrap();
 
         // Create Mock Secret
-        let sscm: SecretSymmetricCryptoMaterial = SecretSymmetricCryptoMaterial {
-            encrypted_symmetric_key: vec![1, 2, 3],
-        };
+        let encrypted_symmetric_key = vec![1, 2, 3];
+
         let mut asa: AddSecretArgs = AddSecretArgs {
             category: None,
             name: Some("Google".to_string()),
@@ -228,7 +208,7 @@ mod tests {
             password: Some(vec![1, 2, 3]),
             url: None,
             notes: Some(vec![1, 2, 3]),
-            symmetric_crypto_material: sscm,
+            encrypted_symmetric_key,
         };
 
         // Add Secret
@@ -266,9 +246,9 @@ mod tests {
         assert_eq!(added_secret.password(), fetched_secret.password());
 
         // get secret decryption material
-        let sscm = get_secret_symmetric_crypto_material_impl(added_secret.id(), &principal);
-        assert!(sscm.is_ok());
-        assert_eq!(sscm.unwrap().encrypted_symmetric_key, vec![1, 2, 3]);
+        let enc_sym_key = get_encrypted_symmetric_key_impl(added_secret.id(), &principal);
+        assert!(enc_sym_key.is_ok());
+        assert_eq!(enc_sym_key.unwrap(), vec![1, 2, 3]);
 
         // check get secret list
         let secrets_list = get_secret_list_impl(&principal).unwrap();

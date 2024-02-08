@@ -18,14 +18,14 @@ export interface AddSecretArgs {
   'username' : [] | [Uint8Array | number[]],
   'password' : [] | [Uint8Array | number[]],
   'name' : [] | [string],
-  'symmetric_crypto_material' : SecretSymmetricCryptoMaterial,
+  'encrypted_symmetric_key' : Uint8Array | number[],
   'notes' : [] | [Uint8Array | number[]],
   'category' : [] | [SecretCategory],
 }
 export type Condition = { 'TimeBasedCondition' : TimeBasedCondition } |
   { 'XOutOfYCondition' : XOutOfYCondition };
 export interface Contact {
-  'id' : Principal,
+  'id' : string,
   'user_type' : [] | [UserType],
   'name' : [] | [string],
   'email' : [] | [string],
@@ -41,7 +41,7 @@ export interface Policy {
   'secrets' : Array<string>,
   'conditions_status' : boolean,
   'beneficiaries' : Array<Principal>,
-  'key_box' : Array<[bigint, SecretSymmetricCryptoMaterial]>,
+  'key_box' : Array<[string, Uint8Array | number[]]>,
   'conditions' : Array<Condition>,
   'date_modified' : bigint,
 }
@@ -64,7 +64,7 @@ export interface PolicyResponse {
   'secrets' : Array<SecretListEntry>,
   'conditions_status' : boolean,
   'beneficiaries' : Array<Principal>,
-  'key_box' : Array<[bigint, SecretSymmetricCryptoMaterial]>,
+  'key_box' : Array<[string, Uint8Array | number[]]>,
   'conditions' : Array<Condition>,
   'date_modified' : bigint,
 }
@@ -82,16 +82,16 @@ export type Result_4 = { 'Ok' : string } |
   { 'Err' : SmartVaultErr };
 export type Result_5 = { 'Ok' : Array<Contact> } |
   { 'Err' : SmartVaultErr };
-export type Result_6 = { 'Ok' : PolicyResponse } |
+export type Result_6 = { 'Ok' : Uint8Array | number[] } |
   { 'Err' : SmartVaultErr };
-export type Result_7 = { 'Ok' : Array<PolicyListEntry> } |
+export type Result_7 = { 'Ok' : PolicyResponse } |
   { 'Err' : SmartVaultErr };
-export type Result_8 = { 'Ok' : Array<SecretListEntry> } |
+export type Result_8 = { 'Ok' : Array<PolicyListEntry> } |
   { 'Err' : SmartVaultErr };
-export type Result_9 = { 'Ok' : SecretSymmetricCryptoMaterial } |
+export type Result_9 = { 'Ok' : Array<SecretListEntry> } |
   { 'Err' : SmartVaultErr };
 export interface Secret {
-  'id' : bigint,
+  'id' : string,
   'url' : [] | [string],
   'username' : [] | [Uint8Array | number[]],
   'date_created' : bigint,
@@ -106,12 +106,9 @@ export type SecretCategory = { 'Password' : null } |
   { 'Note' : null } |
   { 'Document' : null };
 export interface SecretListEntry {
-  'id' : bigint,
+  'id' : string,
   'name' : [] | [string],
   'category' : [] | [SecretCategory],
-}
-export interface SecretSymmetricCryptoMaterial {
-  'encrypted_symmetric_key' : Uint8Array | number[],
 }
 export type SmartVaultErr = { 'ContactDoesNotExist' : string } |
   { 'UserAlreadyExists' : string } |
@@ -124,7 +121,6 @@ export type SmartVaultErr = { 'ContactDoesNotExist' : string } |
   { 'SecretDoesNotExist' : string } |
   { 'NoPolicyForBeneficiary' : string } |
   { 'CallerNotPolicyOwner' : string } |
-  { 'SecretDecryptionMaterialDoesNotExist' : string } |
   { 'Unauthorized' : null } |
   { 'UserUpdateFailed' : string } |
   { 'NoPolicyForValidator' : string } |
@@ -140,7 +136,7 @@ export interface TimeBasedCondition {
   'number_of_days_since_last_login' : bigint,
 }
 export interface UpdateSecretArgs {
-  'id' : bigint,
+  'id' : string,
   'url' : [] | [string],
   'username' : [] | [Uint8Array | number[]],
   'password' : [] | [Uint8Array | number[]],
@@ -149,15 +145,15 @@ export interface UpdateSecretArgs {
   'category' : [] | [SecretCategory],
 }
 export interface User {
-  'id' : Principal,
+  'id' : string,
   'user_type' : [] | [UserType],
   'date_created' : bigint,
   'contacts' : Array<Contact>,
   'name' : [] | [string],
-  'secrets' : Array<bigint>,
+  'secrets' : Array<string>,
   'date_last_login' : [] | [bigint],
   'email' : [] | [string],
-  'key_box' : Array<[bigint, SecretSymmetricCryptoMaterial]>,
+  'key_box' : Array<[string, Uint8Array | number[]]>,
   'date_modified' : bigint,
   'policies' : Array<string>,
 }
@@ -194,19 +190,19 @@ export interface _SERVICE {
   >,
   'get_contact_list' : ActorMethod<[], Result_5>,
   'get_current_user' : ActorMethod<[], Result_3>,
-  'get_policy_as_beneficiary' : ActorMethod<[string], Result_6>,
-  'get_policy_as_owner' : ActorMethod<[string], Result_6>,
-  'get_policy_list_as_beneficiary' : ActorMethod<[], Result_7>,
-  'get_policy_list_as_owner' : ActorMethod<[], Result_7>,
-  'get_policy_list_as_validator' : ActorMethod<[], Result_7>,
-  'get_secret' : ActorMethod<[bigint], Result_2>,
-  'get_secret_as_beneficiary' : ActorMethod<[string, string], Result_2>,
-  'get_secret_list' : ActorMethod<[], Result_8>,
-  'get_secret_symmetric_crypto_material' : ActorMethod<[bigint], Result_9>,
-  'get_secret_symmetric_crypto_material_as_beneficiary' : ActorMethod<
-    [bigint, string],
-    Result_9
+  'get_encrypted_symmetric_key' : ActorMethod<[string], Result_6>,
+  'get_encrypted_symmetric_key_as_beneficiary' : ActorMethod<
+    [string, string],
+    Result_6
   >,
+  'get_policy_as_beneficiary' : ActorMethod<[string], Result_7>,
+  'get_policy_as_owner' : ActorMethod<[string], Result_7>,
+  'get_policy_list_as_beneficiary' : ActorMethod<[], Result_8>,
+  'get_policy_list_as_owner' : ActorMethod<[], Result_8>,
+  'get_policy_list_as_validator' : ActorMethod<[], Result_8>,
+  'get_secret' : ActorMethod<[string], Result_2>,
+  'get_secret_as_beneficiary' : ActorMethod<[string, string], Result_2>,
+  'get_secret_list' : ActorMethod<[], Result_9>,
   'ibe_encryption_key' : ActorMethod<[], string>,
   'remove_contact' : ActorMethod<[Principal], Result>,
   'remove_policy' : ActorMethod<[string], Result>,

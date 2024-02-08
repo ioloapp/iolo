@@ -37,9 +37,7 @@ pub struct AddSecretArgs {
     pub password: Option<Vec<u8>>,
     pub url: Option<String>,
     pub notes: Option<Vec<u8>>,
-    // All the information required to decrypt the secret.
-    // This material will be stored in the uservault's key box
-    pub symmetric_crypto_material: SecretSymmetricCryptoMaterial,
+    pub encrypted_symmetric_key: Vec<u8>,
 }
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
@@ -68,17 +66,6 @@ impl From<Secret> for SecretListEntry {
             name: s.name(),
         }
     }
-}
-
-/// SecretDecryptionMaterial contains all the information required to decrypt a secret:
-///
-/// 1) The aes gcm decryption key encrypted with the uservault's vetkd key
-/// 2) The nonce/iv required to decrypt the decryption key
-#[derive(Debug, CandidType, Deserialize, Serialize, Clone, Default)]
-pub struct SecretSymmetricCryptoMaterial {
-    /// the "decryption key" (encrypted using the users vetkd) required to decrypt username, password and notes
-    /// the first bytes are resesrved for the initialization vector (iv/nonce) to decrypt the encrypted_decryption_key
-    pub encrypted_symmetric_key: Vec<u8>,
 }
 
 impl Secret {
@@ -244,9 +231,7 @@ mod tests {
             password: Some(vec![4, 5, 6]),
             url: Some("http://test.com".to_string()),
             notes: Some(vec![7, 8, 9]),
-            symmetric_crypto_material: SecretSymmetricCryptoMaterial {
-                encrypted_symmetric_key: vec![1, 2, 3],
-            },
+            encrypted_symmetric_key: vec![1, 2, 3],
         };
 
         // let secret: Secret = args.into();

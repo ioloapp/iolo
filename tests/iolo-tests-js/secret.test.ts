@@ -2,29 +2,28 @@ import {beforeAll, describe, expect, test} from 'vitest';
 import {
     createAliceAndBob,
     createIdentity,
-    createNewActor, createSecret,
+    createNewActor,
     determineBackendCanisterId,
 } from "./utils";
 import {Secp256k1KeyIdentity} from "@dfinity/identity-secp256k1";
 import {
     AddSecretArgs,
     Result,
-    SecretSymmetricCryptoMaterial,
     Secret,
-    Result_9, Result_8, Result_2, UpdateSecretArgs
+    Result_9, Result_6, Result_2, UpdateSecretArgs, _SERVICE
 } from "../../src/declarations/iolo_backend/iolo_backend.did";
+import {ActorSubclass} from "@dfinity/agent";
 
 const canisterId: string = determineBackendCanisterId();
 
 // Use random identities to not interfere with other tests which are running in parallel
 const identityOne: Secp256k1KeyIdentity = createIdentity();
 const identityTwo: Secp256k1KeyIdentity = createIdentity();
-const actorOne = createNewActor(identityOne, canisterId);
-const actorTwo = createNewActor(identityTwo, canisterId);
+const actorOne: ActorSubclass<_SERVICE> = createNewActor(identityOne, canisterId);
+const actorTwo: ActorSubclass<_SERVICE> = createNewActor(identityTwo, canisterId);
 
-const symmetricCryptoMaterial: SecretSymmetricCryptoMaterial = {
-    encrypted_symmetric_key: new TextEncoder().encode('mySuperKey'), // just a byte array, no symmetric key
-};
+const encrypted_symmetric_key = new TextEncoder().encode('mySuperKey'); // just a byte array, no symmetric key
+
 const addSecretArgsOne: AddSecretArgs = {
     name: ['secretA'],
     url: ['https://urlOne'],
@@ -32,7 +31,7 @@ const addSecretArgsOne: AddSecretArgs = {
     username: [new TextEncoder().encode('userOne')], // arbitrary byte array
     password: [new TextEncoder().encode('pwOne')], // arbitrary byte array
     notes: [new TextEncoder().encode('notesOne')], // arbitrary byte array
-    symmetric_crypto_material: symmetricCryptoMaterial,
+    encrypted_symmetric_key: encrypted_symmetric_key,
 };
 const addSecretArgsTwo: AddSecretArgs = {
     name: ['secretB'],
@@ -41,7 +40,7 @@ const addSecretArgsTwo: AddSecretArgs = {
     username: [],
     password: [],
     notes: [new TextEncoder().encode('notesTwo')], // arbitrary byte array
-    symmetric_crypto_material: symmetricCryptoMaterial,
+    encrypted_symmetric_key: encrypted_symmetric_key,
 };
 const addSecretArgsThree: AddSecretArgs = {
     name: ['secretC'],
@@ -50,7 +49,7 @@ const addSecretArgsThree: AddSecretArgs = {
     username: [],
     password: [],
     notes: [new TextEncoder().encode('notesThree')], // arbitrary byte array
-    symmetric_crypto_material: symmetricCryptoMaterial,
+    encrypted_symmetric_key: encrypted_symmetric_key,
 };
 const addSecretArgsFour: AddSecretArgs = {
     name: [],
@@ -59,7 +58,7 @@ const addSecretArgsFour: AddSecretArgs = {
     username: [],
     password: [],
     notes: [],
-    symmetric_crypto_material: symmetricCryptoMaterial,
+    encrypted_symmetric_key: encrypted_symmetric_key,
 };
 
 let secretOne: Secret = {
@@ -79,8 +78,9 @@ let secretThree: Secret = structuredClone(secretOne); // byValue instead of byRe
 let secretFour: Secret = structuredClone(secretOne); // byValue instead of byReference
 
 /*
- NOTE: This test suite does only check the backend. It does not check the secret encryption/decryption.
-       Therefore, only arbitrary byte arrays are used for username, password and notes and also for symmetricCryptoMaterial.
+ This test suit tests all secret related methods of the backend canister.
+ Focus is on the correct return types and the correct behavior of the methods.
+ It does not check the secret encryption/decryption, therefore, only arbitrary byte arrays are used for username, password and notes and also for symmetricCryptoMaterial.
  */
 
 beforeAll(async () => {
@@ -88,11 +88,11 @@ beforeAll(async () => {
 });
 
 describe("Secret Tests", () => {
-    test("it should create secrets properly", async () => {
+    test("it must create secrets properly", async () => {
         const resultAddSecretOne: Result_2 = await actorOne.add_secret(addSecretArgsOne);
         expect(resultAddSecretOne).toHaveProperty('Ok');
         expect(Object.keys(resultAddSecretOne['Ok']).length).toStrictEqual(10);
-        expect(resultAddSecretOne['Ok'].id).toBeGreaterThan(0);
+        expect(resultAddSecretOne['Ok'].id).not.toStrictEqual("");
         expect(resultAddSecretOne['Ok'].owner).toStrictEqual(identityOne.getPrincipal());
         expect(resultAddSecretOne['Ok'].name).toStrictEqual(addSecretArgsOne.name);
         expect(resultAddSecretOne['Ok'].url).toStrictEqual(addSecretArgsOne.url);
@@ -107,7 +107,7 @@ describe("Secret Tests", () => {
         const resultAddSecretTwo: Result_2 = await actorOne.add_secret(addSecretArgsTwo);
         expect(resultAddSecretTwo).toHaveProperty('Ok');
         expect(Object.keys(resultAddSecretTwo['Ok']).length).toStrictEqual(10);
-        expect(resultAddSecretTwo['Ok'].id).toBeGreaterThan(0);
+        expect(resultAddSecretTwo['Ok'].id).not.toStrictEqual("");
         expect(resultAddSecretTwo['Ok'].id).not.toBe(secretOne.id);
         expect(resultAddSecretTwo['Ok'].owner).toStrictEqual(identityOne.getPrincipal());
         expect(resultAddSecretTwo['Ok'].name).toStrictEqual(addSecretArgsTwo.name);
@@ -123,7 +123,7 @@ describe("Secret Tests", () => {
         const resultAddSecretThree: Result_2 = await actorTwo.add_secret(addSecretArgsThree);
         expect(resultAddSecretThree).toHaveProperty('Ok');
         expect(Object.keys(resultAddSecretThree['Ok']).length).toStrictEqual(10);
-        expect(resultAddSecretThree['Ok'].id).toBeGreaterThan(0);
+        expect(resultAddSecretThree['Ok'].id).not.toStrictEqual("");
         expect(resultAddSecretThree['Ok'].id).not.toBe(secretOne.id);
         expect(resultAddSecretThree['Ok'].id).not.toBe(secretTwo.id);
         expect(resultAddSecretThree['Ok'].owner).toStrictEqual(identityTwo.getPrincipal());
@@ -140,7 +140,7 @@ describe("Secret Tests", () => {
         const resultAddSecretFour: Result_2 = await actorTwo.add_secret(addSecretArgsFour);
         expect(resultAddSecretFour).toHaveProperty('Ok');
         expect(Object.keys(resultAddSecretFour['Ok']).length).toStrictEqual(10);
-        expect(resultAddSecretFour['Ok'].id).toBeGreaterThan(0);
+        expect(resultAddSecretFour['Ok'].id).not.toStrictEqual("");
         expect(resultAddSecretFour['Ok'].id).not.toBe(secretOne.id);
         expect(resultAddSecretFour['Ok'].id).not.toBe(secretTwo.id);
         expect(resultAddSecretFour['Ok'].id).not.toBe(secretThree.id);
@@ -157,19 +157,19 @@ describe("Secret Tests", () => {
 
     }, 60000); // Set timeout
 
-    test("it should be possible to create the same secret twice", async () => {
+    test("it must create the same secret twice", async () => {
         // Adding a new secret with the same attributes must work
         const resultAddSecretOne: Result_2 = await actorOne.add_secret(addSecretArgsOne);
         expect(resultAddSecretOne).toHaveProperty('Ok');
         expect(resultAddSecretOne['Ok'].id).not.toBe(secretOne.id);
 
         // Delete it again
-        const resultRemoveSecretOne: Result = await actorOne.remove_secret(resultAddSecretOne['Ok'].id.toString());
+        const resultRemoveSecretOne: Result = await actorOne.remove_secret(resultAddSecretOne['Ok'].id);
         expect(resultRemoveSecretOne).toHaveProperty('Ok');
 
     }, 15000); // Set timeout
 
-    test("it should read secrets properly", async () => {
+    test("it must read secrets properly", async () => {
         // Check created secret via getSecret
         const resultSecretOne: Result_2 = await actorOne.get_secret(secretOne.id);
         expect(resultSecretOne).toHaveProperty('Ok');
@@ -217,10 +217,10 @@ describe("Secret Tests", () => {
 
     }, 30000); // Set timeout
 
-    test("it should read the secret list properly", async () => {
+    test("it must read the secret list properly", async () => {
 
         // Check created secret of identity one via getSecretList
-        const resultSecretListOne: Result_8 = await actorOne.get_secret_list();
+        const resultSecretListOne: Result_9 = await actorOne.get_secret_list();
         expect(resultSecretListOne).toHaveProperty('Ok');
         expect(Array.isArray(resultSecretListOne['Ok'])).toBe(true);
         resultSecretListOne['Ok'].sort((a, b) => {
@@ -237,7 +237,7 @@ describe("Secret Tests", () => {
         expect(resultSecretListOne['Ok'][1].category).toStrictEqual(addSecretArgsTwo.category);
 
         // Check created secret of identity two via getSecretList
-        const resultSecretListTwo: Result_8 = await actorTwo.get_secret_list();
+        const resultSecretListTwo: Result_9 = await actorTwo.get_secret_list();
         expect(resultSecretListTwo).toHaveProperty('Ok');
         expect(Array.isArray(resultSecretListTwo['Ok'])).toBe(true);
         resultSecretListTwo['Ok'].sort((a, b) => {
@@ -255,7 +255,7 @@ describe("Secret Tests", () => {
 
     }, 10000); // Set timeout
 
-    test("it should update secrets properly", async () => {
+    test("it must update secrets properly", async () => {
         let secretOneDateCreatedBeforeUpdate: bigint = secretOne.date_created;
         let secretOneDateModifiedBeforeUpdate: bigint = secretOne.date_modified;
 
@@ -305,7 +305,7 @@ describe("Secret Tests", () => {
         // Unknown secret id
         let updateSecretArgsThree: UpdateSecretArgs = {
             category: secretThree.category,
-            id: BigInt(123456789),
+            id: "123456789",
             name: secretThree.name,
             notes: secretThree.notes,
             url: secretThree.url,
@@ -325,26 +325,26 @@ describe("Secret Tests", () => {
         expect(resultUpdateSecretOne['Err']).toHaveProperty('SecretDoesNotExist');
     }, 15000); // Set timeout
 
-    test("it should read the secret symmetric crypto material properly", async () => {
-        const resultSecretSymmetricCryptoMaterialOne: Result_9 = await actorOne.get_secret_symmetric_crypto_material(secretOne.id);
-        expect(resultSecretSymmetricCryptoMaterialOne).toHaveProperty('Ok');
-        expect(resultSecretSymmetricCryptoMaterialOne['Ok'].encrypted_symmetric_key).toStrictEqual(symmetricCryptoMaterial.encrypted_symmetric_key);
+    test("it must read the encrypted symmetric key properly", async () => {
+        const resultEncryptedSymmetricKeyOne: Result_6 = await actorOne.get_encrypted_symmetric_key(secretOne.id);
+        expect(resultEncryptedSymmetricKeyOne).toHaveProperty('Ok');
+        expect(resultEncryptedSymmetricKeyOne['Ok']).toStrictEqual(encrypted_symmetric_key);
     }, 15000); // Set timeout
 
-    test("it must not be possible to read the secret symmetric crypto material from a different user", async () => {
-        const resultSecretSymmetricCryptoMaterialOne: Result_9 = await actorTwo.get_secret_symmetric_crypto_material(secretOne.id);
-        expect(resultSecretSymmetricCryptoMaterialOne).toHaveProperty('Err');
-        expect(resultSecretSymmetricCryptoMaterialOne['Err']).toHaveProperty('SecretDecryptionMaterialDoesNotExist');
+    test("it must not be possible to read the encrypted symmetric key from a different user", async () => {
+        const resultEncryptedSecretKeyOne: Result_6 = await actorTwo.get_encrypted_symmetric_key(secretOne.id);
+        expect(resultEncryptedSecretKeyOne).toHaveProperty('Err');
+        expect(resultEncryptedSecretKeyOne['Err']).toHaveProperty('SecretDoesNotExist');
     }, 15000); // Set timeout
 
-    test("it should delete secrets properly", async () => {
+    test("it must delete secrets properly", async () => {
         // Deleting secretOne with userOne must work
-        const resultRemoveSecretOne: Result = await actorOne.remove_secret(secretOne.id.toString());
+        const resultRemoveSecretOne: Result = await actorOne.remove_secret(secretOne.id);
         expect(resultRemoveSecretOne).toHaveProperty('Ok');
         expect(resultRemoveSecretOne['Ok']).toBeNull();
 
         // Only one secret must exist in the backend now
-        const resultSecretListOne: Result_8 = await actorOne.get_secret_list();
+        const resultSecretListOne: Result_9 = await actorOne.get_secret_list();
         expect(resultSecretListOne).toHaveProperty('Ok');
         expect(Array.isArray(resultSecretListOne['Ok'])).toBe(true);
         expect(resultSecretListOne['Ok']).toHaveLength(1);
@@ -353,7 +353,7 @@ describe("Secret Tests", () => {
 
     test("it must not delete secrets of a different user", async () => {
         // Deleting secretThree with userOne must not work
-        const resultRemoveSecretThree: Result = await actorOne.remove_secret(secretThree.id.toString());
+        const resultRemoveSecretThree: Result = await actorOne.remove_secret(secretThree.id);
         expect(resultRemoveSecretThree).toHaveProperty('Err');
         expect(resultRemoveSecretThree['Err']).toHaveProperty('SecretDoesNotExist');
 

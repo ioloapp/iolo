@@ -317,7 +317,7 @@ mod tests {
             policy::{AddPolicyArgs, Policy, PolicyResponse},
         },
         secrets::{
-            secret::{AddSecretArgs, SecretSymmetricCryptoMaterial},
+            secret::{AddSecretArgs},
             secrets_interface_impl::{add_secret_impl, get_secret_as_beneficiary_impl},
         },
         smart_vaults::smart_vault::POLICY_STORE,
@@ -345,9 +345,8 @@ mod tests {
         let _new_user = create_user_impl(aua, &principal).await.unwrap();
 
         // Create a Secret
-        let sscm: SecretSymmetricCryptoMaterial = SecretSymmetricCryptoMaterial {
-            encrypted_symmetric_key: vec![1, 2, 3],
-        };
+        let encrypted_symmetric_key: Vec<u8> = vec![1, 2, 3];
+
         let asa: AddSecretArgs = AddSecretArgs {
             category: None,
             name: Some("Google".to_string()),
@@ -355,7 +354,7 @@ mod tests {
             password: Some(vec![1, 2, 3]),
             url: None,
             notes: Some(vec![1, 2, 3]),
-            symmetric_crypto_material: sscm,
+            encrypted_symmetric_key,
         };
 
         // Add Secret

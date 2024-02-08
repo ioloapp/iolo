@@ -6,13 +6,13 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     common::error::SmartVaultErr,
-    secrets::secret::{SecretID, SecretSymmetricCryptoMaterial},
+    secrets::secret::{SecretID},
     utils::time,
 };
 
 use super::contact::Contact;
 
-pub type KeyBox = BTreeMap<SecretID, SecretSymmetricCryptoMaterial>;
+pub type KeyBox = BTreeMap<SecretID, Vec<u8>>;
 pub type PrincipalID = String;
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
@@ -113,10 +113,10 @@ impl User {
     pub fn add_secret(
         &mut self,
         secret_id: SecretID,
-        secret_decryption_material: SecretSymmetricCryptoMaterial,
+        encrypted_symmetric_key: Vec<u8>,
     ) {
         self.secrets.push(secret_id.clone());
-        self.key_box.insert(secret_id, secret_decryption_material);
+        self.key_box.insert(secret_id, encrypted_symmetric_key);
         self.date_modified = time::get_current_time();
     }
 

@@ -1,6 +1,8 @@
 import * as vetkd from './wasm/ic_vetkd_utils';
 import {Principal} from "@dfinity/principal";
 import * as crypto from "crypto";
+import {ActorSubclass} from "@dfinity/agent";
+import {_SERVICE} from "../../src/declarations/iolo_backend/iolo_backend.did";
 
 const hex_decode = (hexString: string) =>
     Uint8Array.from(hexString.match(/.{1,2}/g).map((byte) => parseInt(byte, 16)));
@@ -24,7 +26,7 @@ export async function get_local_random_aes_256_gcm_key() {
     return new Uint8Array(rawKey);
 }
 
-export async function get_aes_256_gcm_key_for_uservault(principal: Principal, actor) {
+export async function get_aes_256_gcm_key_for_user(principal: Principal, actor: ActorSubclass<_SERVICE>) {
     const seed = crypto.getRandomValues(new Uint8Array(32));
     const tsk = new vetkd.TransportSecretKey(seed);
     const ek_bytes_hex = await actor.generate_vetkd_encrypted_symmetric_key_for_user(tsk.public_key());

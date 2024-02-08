@@ -1,8 +1,14 @@
 import { expect, test, describe } from 'vitest'
 import { determineBackendCanisterId, createIdentity, createNewActor } from "./utils";
 import {Secp256k1KeyIdentity} from "@dfinity/identity-secp256k1";
-import {Result, Result_3, User, UserType} from "../../src/declarations/iolo_backend/iolo_backend.did";
-import {AddOrUpdateUserArgs} from "../../.dfx/local/canisters/iolo_backend/service.did";
+import {
+    Result,
+    User,
+    AddOrUpdateUserArgs,
+    Result_3,
+    _SERVICE
+} from "../../src/declarations/iolo_backend/iolo_backend.did";
+import {ActorSubclass} from "@dfinity/agent";
 
 const canisterId: string = determineBackendCanisterId();
 
@@ -12,14 +18,19 @@ const identityOne: Secp256k1KeyIdentity = createIdentity(seedOne);
 const identityTwo: Secp256k1KeyIdentity = createIdentity();
 const identityThree: Secp256k1KeyIdentity = createIdentity();
 
-const actorOne = createNewActor(identityOne, canisterId);
-const actorTwo = createNewActor(identityTwo, canisterId);
-const actorThree = createNewActor(identityThree, canisterId);
+const actorOne: ActorSubclass<_SERVICE> = createNewActor(identityOne, canisterId);
+const actorTwo: ActorSubclass<_SERVICE> = createNewActor(identityTwo, canisterId);
+const actorThree: ActorSubclass<_SERVICE> = createNewActor(identityThree, canisterId);
 
 let userOneForComparison: User = {} as User;
 
+/*
+ This test suit tests all user related methods of the backend canister.
+ Focus is on the correct return types and the correct behavior of the methods.
+ */
+
 describe("User Tests", () => {
-    test("it should create different users", async () => {
+    test("it must create users properly", async () => {
         const resultOne: Result = await actorOne.delete_user(); // Just in case the user is already existing on the replica
         const resultTwo: Result = await actorTwo.delete_user(); // Just in case the user is already existing on the replica
         const resultThree: Result = await actorThree.delete_user(); // Just in case the user is already existing on the replica
@@ -30,11 +41,10 @@ describe("User Tests", () => {
             email: ['alice@ioloapp.io'],
             user_type: [{ 'Person' : null }],
         };
-        const resultUserOne: Result = await actorOne.create_user(addOrUpdateUserArgsOne);
+        const resultUserOne: Result_3 = await actorOne.create_user(addOrUpdateUserArgsOne);
         expect(resultUserOne).toHaveProperty('Ok');
-        expect(Object.keys(resultUserOne['Ok'])).toHaveLength(12);
-        expect(resultUserOne['Ok'].id).toStrictEqual(identityOne.getPrincipal());
-        expect(resultUserOne['Ok'].user_vault_id_DO_NOT_USE_ANYMORE).toStrictEqual([]);
+        expect(Object.keys(resultUserOne['Ok'])).toHaveLength(11);
+        expect(resultUserOne['Ok'].id).toStrictEqual(identityOne.getPrincipal().toString());
         expect(resultUserOne['Ok'].user_type).toStrictEqual([{ 'Person' : null }]);
         expect(resultUserOne['Ok'].name).toStrictEqual(['Alice']);
         expect(resultUserOne['Ok'].email).toStrictEqual(['alice@ioloapp.io']);
@@ -57,11 +67,10 @@ describe("User Tests", () => {
             email: ['alicecompany@ioloapp.io'],
             user_type: [{ 'Company' : null }],
         };
-        const resultUserTwo: Result = await actorTwo.create_user(addOrUpdateUserArgsTwo);
+        const resultUserTwo: Result_3 = await actorTwo.create_user(addOrUpdateUserArgsTwo);
         expect(resultUserTwo).toHaveProperty('Ok');
-        expect(Object.keys(resultUserOne['Ok'])).toHaveLength(12);
-        expect(resultUserTwo['Ok'].id).toStrictEqual(identityTwo.getPrincipal());
-        expect(resultUserTwo['Ok'].user_vault_id_DO_NOT_USE_ANYMORE).toStrictEqual([]);
+        expect(Object.keys(resultUserOne['Ok'])).toHaveLength(11);
+        expect(resultUserTwo['Ok'].id).toStrictEqual(identityTwo.getPrincipal().toString());
         expect(resultUserTwo['Ok'].user_type).toStrictEqual([{ 'Company' : null }]);
         expect(resultUserTwo['Ok'].name).toStrictEqual(['AliceCompany']);
         expect(resultUserTwo['Ok'].email).toStrictEqual(['alicecompany@ioloapp.io']);
@@ -81,11 +90,10 @@ describe("User Tests", () => {
             email: [],
             user_type: [],
         };
-        const resultUserThree: Result = await actorThree.create_user(addOrUpdateUserArgsThree);
+        const resultUserThree: Result_3 = await actorThree.create_user(addOrUpdateUserArgsThree);
         expect(resultUserThree).toHaveProperty('Ok');
-        expect(Object.keys(resultUserOne['Ok'])).toHaveLength(12);
-        expect(resultUserThree['Ok'].id).toStrictEqual(identityThree.getPrincipal());
-        expect(resultUserThree['Ok'].user_vault_id_DO_NOT_USE_ANYMORE).toStrictEqual([]);
+        expect(Object.keys(resultUserOne['Ok'])).toHaveLength(11);
+        expect(resultUserThree['Ok'].id).toStrictEqual(identityThree.getPrincipal().toString());
         expect(resultUserThree['Ok'].user_type).toHaveLength(0);
         expect(resultUserThree['Ok'].name).toHaveLength(0);
         expect(resultUserThree['Ok'].email).toHaveLength(0);
@@ -100,7 +108,7 @@ describe("User Tests", () => {
 
     }, 20000); // Set timeout
 
-    test("it should not create a second user with the same agent", async () => {
+    test("it must not create a second user with the same agent", async () => {
         // Create first user again, must fail
         const addOrUpdateUserArgsOne: AddOrUpdateUserArgs = {
             name: ['Eve'],
@@ -108,7 +116,7 @@ describe("User Tests", () => {
             user_type: [{ 'Person' : null }],
         };
 
-        const userOneAgain: Result = await actorOne.create_user(addOrUpdateUserArgsOne);
+        const userOneAgain: Result_3 = await actorOne.create_user(addOrUpdateUserArgsOne);
         expect(userOneAgain).toHaveProperty('Err');
         expect(userOneAgain['Err']).toHaveProperty('UserAlreadyExists');
 
@@ -116,16 +124,16 @@ describe("User Tests", () => {
 
     }, 10000); // Set timeout
 
-    test("it should read the current user properly", async () => {
-        const currentUser: Result = await actorOne.get_current_user();
+    test("it must read the current user properly", async () => {
+        const currentUser: Result_3 = await actorOne.get_current_user();
 
         expect(currentUser).toHaveProperty('Ok');
-        expect(Object.keys(currentUser['Ok'])).toHaveLength(12);
+        expect(Object.keys(currentUser['Ok'])).toHaveLength(11);
         expect(currentUser['Ok']).toStrictEqual(userOneForComparison);
     }, 10000); // Set timeout
 
-    test("it should update a user properly", async () => {
-        const currentUser: Result = await actorOne.get_current_user();
+    test("it must update a user properly", async () => {
+        const currentUser: Result_3 = await actorOne.get_current_user();
         expect(currentUser).toHaveProperty('Ok');
 
         const addOrUpdateUserArgsOne: AddOrUpdateUserArgs = {
@@ -135,11 +143,10 @@ describe("User Tests", () => {
         };
 
         // Only mail, name and user_type should have been updated
-        const resultUpdatedUser: Result = await actorOne.update_user(addOrUpdateUserArgsOne);
+        const resultUpdatedUser: Result_3 = await actorOne.update_user(addOrUpdateUserArgsOne);
         expect(resultUpdatedUser).toHaveProperty('Ok');
-        expect(Object.keys(resultUpdatedUser['Ok'])).toHaveLength(12);
+        expect(Object.keys(resultUpdatedUser['Ok'])).toHaveLength(11);
         expect(resultUpdatedUser['Ok'].id).toStrictEqual(currentUser['Ok'].id);
-        expect(resultUpdatedUser['Ok'].user_vault_id_DO_NOT_USE_ANYMORE).toStrictEqual(currentUser['Ok'].user_vault_id_DO_NOT_USE_ANYMORE);
         expect(resultUpdatedUser['Ok'].user_type).toStrictEqual(addOrUpdateUserArgsOne.user_type);
         expect(resultUpdatedUser['Ok'].name).toStrictEqual(addOrUpdateUserArgsOne.name);
         expect(resultUpdatedUser['Ok'].email).toStrictEqual(addOrUpdateUserArgsOne.email);
@@ -153,15 +160,14 @@ describe("User Tests", () => {
 
     }, 15000); // Set timeout
 
-    test("it should update the last_login_date properly", async () => {
-        const currentUser: Result = await actorOne.get_current_user();
+    test("it must update the last_login_date properly", async () => {
+        const currentUser: Result_3 = await actorOne.get_current_user();
         expect(currentUser).toHaveProperty('Ok');
 
-        const resultUpdatedUser: Result = await actorOne.update_user_login_date();
+        const resultUpdatedUser: Result_3 = await actorOne.update_user_login_date();
         expect(resultUpdatedUser).toHaveProperty('Ok');
-        expect(Object.keys(resultUpdatedUser['Ok'])).toHaveLength(12);
+        expect(Object.keys(resultUpdatedUser['Ok'])).toHaveLength(11);
         expect(resultUpdatedUser['Ok'].id).toStrictEqual(currentUser['Ok'].id);
-        expect(resultUpdatedUser['Ok'].user_vault_id_DO_NOT_USE_ANYMORE).toStrictEqual(currentUser['Ok'].user_vault_id_DO_NOT_USE_ANYMORE);
         expect(resultUpdatedUser['Ok'].user_type).toStrictEqual(currentUser['Ok'].user_type);
         expect(resultUpdatedUser['Ok'].name).toStrictEqual(currentUser['Ok'].name);
         expect(resultUpdatedUser['Ok'].email).toStrictEqual(currentUser['Ok'].email);
@@ -176,7 +182,7 @@ describe("User Tests", () => {
 
     }, 15000); // Set timeout
 
-    test("it should delete a user properly", async () => {
+    test("it must delete a user properly", async () => {
         // Delete user
         let resultOne: Result = await actorOne.delete_user();
         expect(resultOne).toHaveProperty('Ok');
@@ -192,9 +198,9 @@ describe("User Tests", () => {
             email: ['alice@ioloapp.io'],
             user_type: [{ 'Person' : null }],
         };
-        const userOneAgain: Result = await actorOne.create_user(addOrUpdateUserArgsOne);
+        const userOneAgain: Result_3 = await actorOne.create_user(addOrUpdateUserArgsOne);
         expect(userOneAgain).toHaveProperty('Ok');
-        expect(userOneAgain['Ok'].id).toStrictEqual(identityOne.getPrincipal());
+        expect(userOneAgain['Ok'].id).toStrictEqual(identityOne.getPrincipal().toString());
 
         // Delete user
         let resultTwo: Result = await actorTwo.delete_user();

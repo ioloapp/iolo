@@ -15,14 +15,14 @@ use crate::policies::policy::{AddPolicyArgs, Policy, PolicyID, PolicyListEntry};
 use crate::policies::policy_registries::PolicyRegistries;
 use crate::policies::policy_store::PolicyStore;
 use crate::secrets::secret::{
-    AddSecretArgs, Secret, SecretID, SecretListEntry, SecretSymmetricCryptoMaterial,
+    AddSecretArgs, Secret, SecretID, SecretListEntry,
     UpdateSecretArgs,
 };
 use crate::secrets::secret_store::SecretStore;
 use crate::secrets::secrets_interface_impl::{
     add_secret_impl, get_secret_as_beneficiary_impl, get_secret_impl, get_secret_list_impl,
-    get_secret_symmetric_crypto_material_as_beneficiary_impl,
-    get_secret_symmetric_crypto_material_impl, remove_secret_impl, update_secret_impl,
+    get_encrypted_symmetric_key_as_beneficiary_impl,
+    get_encrypted_symmetric_key_impl, remove_secret_impl, update_secret_impl,
 };
 
 use crate::users::contact::{AddContactArgs, Contact};
@@ -102,10 +102,10 @@ pub fn get_secret_list() -> Result<Vec<SecretListEntry>, SmartVaultErr> {
 }
 
 #[ic_cdk_macros::query]
-pub fn get_secret_symmetric_crypto_material(
+pub fn get_encrypted_symmetric_key(
     sid: SecretID,
-) -> Result<SecretSymmetricCryptoMaterial, SmartVaultErr> {
-    get_secret_symmetric_crypto_material_impl(sid, &get_caller())
+) -> Result<Vec<u8>, SmartVaultErr> {
+    get_encrypted_symmetric_key_impl(sid, &get_caller())
 }
 
 #[ic_cdk_macros::query]
@@ -117,11 +117,11 @@ pub fn get_secret_as_beneficiary(
 }
 
 #[ic_cdk_macros::query]
-pub fn get_secret_symmetric_crypto_material_as_beneficiary(
+pub fn get_encrypted_symmetric_key_as_beneficiary(
     secret_id: SecretID,
     policy_id: PolicyID,
-) -> Result<SecretSymmetricCryptoMaterial, SmartVaultErr> {
-    get_secret_symmetric_crypto_material_as_beneficiary_impl(secret_id, policy_id, &get_caller())
+) -> Result<Vec<u8>, SmartVaultErr> {
+    get_encrypted_symmetric_key_as_beneficiary_impl(secret_id, policy_id, &get_caller())
 }
 
 /**
