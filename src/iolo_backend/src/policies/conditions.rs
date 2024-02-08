@@ -1,9 +1,14 @@
+//! Conditions contain the logic required to define the dead man's switch mechanism. There are two type of conditions:
+//! 1. Time based conditions - Checks whether a certain time threshold is reached
+//! 2. X out of Y conditions - Checks whether X out of Y validators have voted "yes" on the condition
+
 use candid::{CandidType, Deserialize, Principal};
 use serde::Serialize;
 
 use crate::users::user::User;
 use crate::utils::time;
 
+/// Defines the number of days since the last login of a user.
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct TimeBasedCondition {
     pub id: ConditionID,
@@ -11,6 +16,9 @@ pub struct TimeBasedCondition {
     pub condition_status: bool,
 }
 
+/// The X out of Y condition contains a set of validators and defines a quorum.
+///
+/// The overall condition status defines the status of the condition.
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct XOutOfYCondition {
     pub id: ConditionID,
@@ -19,6 +27,7 @@ pub struct XOutOfYCondition {
     pub condition_status: bool,
 }
 
+/// Validator is the role a user has when it is part of of a condition and has to vote for it
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct Validator {
     pub id: Principal,
@@ -27,6 +36,7 @@ pub struct Validator {
 
 pub type ConditionID = String;
 
+/// The condition enum contains the two types of conditions: TimeBasedCondition and XOutOfYCondition
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub enum Condition {
     TimeBasedCondition(TimeBasedCondition),

@@ -1,6 +1,6 @@
 //! # iolo backend
 //!
-//! This is the iolo backend implementation.
+//! This is the iolo backend implementation. It contains all the types, modules and methods provided to the front-end.
 //!
 use common::uuid::UUID;
 use ic_cdk_macros::export_candid;
@@ -24,15 +24,20 @@ use candid::Principal;
 
 use crate::secrets::secret::{AddSecretArgs, Secret, UpdateSecretArgs};
 
+/// Contains common types, modules and methods
 pub mod common;
+/// Contains types, modules and methods for Policies
 pub mod policies;
+/// Contains types, modules and methods for Secrets
 pub mod secrets;
+/// Contains types, modules and methods for Smart Vaults
 pub mod smart_vaults;
+/// Contains types, modules and methods for Users
 pub mod users;
+/// Contains shared utils like random generator, time and caller
 pub mod utils;
 
 #[ic_cdk_macros::init]
 fn init() {}
 
-// Generate did files
 export_candid!();
