@@ -2,7 +2,6 @@
 //!
 //! This is the iolo backend implementation. It contains all the types, modules and methods provided to the front-end.
 //!
-use common::uuid::UUID;
 use ic_cdk_macros::export_candid;
 
 // for the candid file creation

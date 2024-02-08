@@ -31,10 +31,11 @@ pub async fn add_secret_impl(
     caller: &Principal,
 ) -> Result<Secret, SmartVaultErr> {
     // generate a new UUID for the secret
-    let new_secret_id: UUID = UUID::new_random().await;
+    let new_secret_id: SecretID = UUID::new().await;
 
     // we generate the secret and produce the decryption material
-    let secret: Secret = Secret::create_from_add_secret_args(*caller, new_secret_id, args.clone());
+    let secret: Secret =
+        Secret::create_from_add_secret_args(*caller, new_secret_id.clone(), args.clone());
     let decryption_material: SecretSymmetricCryptoMaterial = args.symmetric_crypto_material.clone();
 
     // Add the secret to the secret store (secrets: StableBTreeMap<UUID, Secret, Memory>,)
@@ -53,7 +54,7 @@ pub async fn add_secret_impl(
     Ok(secret)
 }
 
-pub fn get_secret_impl(sid: UUID, _principal: &Principal) -> Result<Secret, SmartVaultErr> {
+pub fn get_secret_impl(sid: SecretID, _principal: &Principal) -> Result<Secret, SmartVaultErr> {
     let secret = SECRET_STORE.with(|x| {
         let secret_store = x.borrow();
         secret_store.get(&sid.clone())
@@ -68,7 +69,7 @@ pub fn get_secret_impl(sid: UUID, _principal: &Principal) -> Result<Secret, Smar
 
 pub fn get_secret_list_impl(principal: &Principal) -> Result<Vec<SecretListEntry>, SmartVaultErr> {
     // get secret ids from user in user store
-    let secret_ids: Vec<UUID> = USER_STORE.with(|us| {
+    let secret_ids: Vec<SecretID> = USER_STORE.with(|us| {
         let user_store = us.borrow();
         let user = user_store.get_user(&principal.to_string()).unwrap();
         user.secrets.clone()
@@ -98,7 +99,7 @@ pub fn update_secret_impl(
     })
 }
 
-pub fn remove_secret_impl(secret_id: String, principal: &Principal) -> Result<(), SmartVaultErr> {
+pub fn remove_secret_impl(secret_id: SecretID, principal: &Principal) -> Result<(), SmartVaultErr> {
     // delete secret from secret store
     SECRET_STORE.with(
         |secret_store_rc: &RefCell<SecretStore>| -> Result<(), SmartVaultErr> {
@@ -110,12 +111,12 @@ pub fn remove_secret_impl(secret_id: String, principal: &Principal) -> Result<()
     // delete secret from users secret list
     USER_STORE.with(|us| -> Result<(), SmartVaultErr> {
         let mut user_store = us.borrow_mut();
-        user_store.remove_secret_from_user(&principal.to_string(), &secret_id)
+        user_store.remove_secret_from_user(&principal.to_string(), secret_id)
     })
 }
 
 pub fn get_secret_symmetric_crypto_material_impl(
-    sid: UUID,
+    sid: SecretID,
     principal: &Principal,
 ) -> Result<SecretSymmetricCryptoMaterial, SmartVaultErr> {
     // get symmetric decryption material from user's keybox in the user store
@@ -152,7 +153,7 @@ pub fn get_secret_as_beneficiary_impl(
     if *policy.conditions_status() {
         let secret = SECRET_STORE.with(|ss| {
             let secret_store = ss.borrow();
-            secret_store.get(&UUID::from(secret_id))
+            secret_store.get(&secret_id)
         })?;
         return Ok(secret);
     }
@@ -161,7 +162,7 @@ pub fn get_secret_as_beneficiary_impl(
 }
 
 pub fn get_secret_symmetric_crypto_material_as_beneficiary_impl(
-    secret_id: UUID,
+    secret_id: SecretID,
     policy_id: PolicyID,
     caller: &Principal,
 ) -> Result<SecretSymmetricCryptoMaterial, SmartVaultErr> {
@@ -255,7 +256,7 @@ mod tests {
         });
 
         // get secret from proper interface implementation
-        let fetched_secret_res = get_secret_impl(added_secret.id(), &principal);
+        let fetched_secret_res = get_secret_impl(added_secret.id().to_string(), &principal);
         assert!(fetched_secret_res.is_ok());
         let fetched_secret = fetched_secret_res.unwrap();
 
@@ -283,7 +284,7 @@ mod tests {
 
         // update secret
         let updated_secret: UpdateSecretArgs = UpdateSecretArgs {
-            id: fetched_secret.id(),
+            id: fetched_secret.id().to_string(),
             category: None,
             name: Some("iolo2024".to_string()),
             username: None,
@@ -297,7 +298,7 @@ mod tests {
         // delete secret
         let deleted_secret = remove_secret_impl(updated_secret.id().to_string(), &principal);
         assert!(deleted_secret.is_ok());
-        let test_fetch = get_secret_impl(added_secret.id(), &principal);
+        let test_fetch = get_secret_impl(added_secret.id().to_string(), &principal);
         assert!(test_fetch.is_err());
         assert_eq!(
             test_fetch.unwrap_err(),

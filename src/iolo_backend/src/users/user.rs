@@ -5,14 +5,14 @@ use ic_stable_structures::{storable::Bound, Storable};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    common::{error::SmartVaultErr, uuid::UUID},
-    secrets::secret::SecretSymmetricCryptoMaterial,
+    common::error::SmartVaultErr,
+    secrets::secret::{SecretID, SecretSymmetricCryptoMaterial},
     utils::time,
 };
 
 use super::contact::Contact;
 
-pub type KeyBox = BTreeMap<UUID, SecretSymmetricCryptoMaterial>;
+pub type KeyBox = BTreeMap<SecretID, SecretSymmetricCryptoMaterial>;
 pub type PrincipalID = String;
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
@@ -26,7 +26,7 @@ pub struct User {
     pub date_last_login: Option<u64>,
     pub contacts: Vec<Contact>, // TODO: make hashset?
     // New: Secrets, KeyBox and policies are stored in the user
-    pub secrets: Vec<UUID>, // TODO: make hashset?
+    pub secrets: Vec<SecretID>, // TODO: make hashset?
     pub policies: Vec<String>,
     pub key_box: KeyBox,
 }
@@ -112,23 +112,23 @@ impl User {
 
     pub fn add_secret(
         &mut self,
-        secret_id: UUID,
+        secret_id: SecretID,
         secret_decryption_material: SecretSymmetricCryptoMaterial,
     ) {
-        self.secrets.push(secret_id);
+        self.secrets.push(secret_id.clone());
         self.key_box.insert(secret_id, secret_decryption_material);
         self.date_modified = time::get_current_time();
     }
 
-    pub fn remove_secret(&mut self, secret_id: UUID) -> Result<(), SmartVaultErr> {
+    pub fn remove_secret(&mut self, secret_id: &SecretID) -> Result<(), SmartVaultErr> {
         // Check if the secret exists in either `secrets` or `key_box`
-        let exists_in_secrets = self.secrets.iter().any(|s| s == &secret_id);
-        let exists_in_key_box = self.key_box.contains_key(&secret_id);
+        let exists_in_secrets = self.secrets.iter().any(|s| s == secret_id);
+        let exists_in_key_box = self.key_box.contains_key(secret_id);
 
         if exists_in_secrets || exists_in_key_box {
             // Remove the secret from both collections if it exists
-            self.secrets.retain(|s| s != &secret_id);
-            self.key_box.remove(&secret_id);
+            self.secrets.retain(|s| s != secret_id);
+            self.key_box.remove(secret_id);
 
             // Update the date_modified
             self.date_modified = time::get_current_time();

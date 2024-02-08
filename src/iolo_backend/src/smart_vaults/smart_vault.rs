@@ -1,10 +1,10 @@
 use std::cell::RefCell;
 
 use candid::Principal;
-use ic_cdk::{post_upgrade, pre_upgrade, storage};
+use ic_cdk::{post_upgrade, pre_upgrade};
 
 use crate::common::error::SmartVaultErr;
-use crate::common::uuid::UUID;
+
 use crate::policies::policies_interface_impl::{
     add_policy_impl, confirm_x_out_of_y_condition_impl, get_policy_as_beneficiary_impl,
     get_policy_as_owner_impl, get_policy_list_as_beneficiary_impl, get_policy_list_as_owner_impl,
@@ -47,9 +47,6 @@ thread_local! {
 
     /// Policy Registry for beneficiaries and validators
     pub static POLICY_REGISTRIES: RefCell<PolicyRegistries> = RefCell::new(PolicyRegistries::new());
-
-    // counter for the UUIDs
-    pub static UUID_COUNTER: RefCell<u128>  = RefCell::new(1);
 }
 
 /// Creates a new user
@@ -85,7 +82,7 @@ pub async fn add_secret(args: AddSecretArgs) -> Result<Secret, SmartVaultErr> {
 }
 
 #[ic_cdk_macros::query]
-pub fn get_secret(sid: UUID) -> Result<Secret, SmartVaultErr> {
+pub fn get_secret(sid: SecretID) -> Result<Secret, SmartVaultErr> {
     get_secret_impl(sid, &get_caller())
 }
 
@@ -106,7 +103,7 @@ pub fn get_secret_list() -> Result<Vec<SecretListEntry>, SmartVaultErr> {
 
 #[ic_cdk_macros::query]
 pub fn get_secret_symmetric_crypto_material(
-    sid: UUID,
+    sid: SecretID,
 ) -> Result<SecretSymmetricCryptoMaterial, SmartVaultErr> {
     get_secret_symmetric_crypto_material_impl(sid, &get_caller())
 }
@@ -121,7 +118,7 @@ pub fn get_secret_as_beneficiary(
 
 #[ic_cdk_macros::query]
 pub fn get_secret_symmetric_crypto_material_as_beneficiary(
-    secret_id: UUID,
+    secret_id: SecretID,
     policy_id: PolicyID,
 ) -> Result<SecretSymmetricCryptoMaterial, SmartVaultErr> {
     get_secret_symmetric_crypto_material_as_beneficiary_impl(secret_id, policy_id, &get_caller())
@@ -204,15 +201,10 @@ pub fn remove_contact(id: Principal) -> Result<(), SmartVaultErr> {
 }
 
 #[pre_upgrade]
-fn pre_upgrade() {
-    UUID_COUNTER.with(|c| storage::stable_save((c,)).unwrap());
-}
+fn pre_upgrade() {}
 
 #[post_upgrade]
-fn post_upgrade() {
-    let (old_c,): (u128,) = storage::stable_restore().unwrap();
-    UUID_COUNTER.with(|c| *c.borrow_mut() = old_c);
-}
+fn post_upgrade() {}
 
 #[cfg(test)]
 mod tests {}

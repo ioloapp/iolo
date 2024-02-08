@@ -39,7 +39,7 @@ type Policy = record {
   secrets : vec text;
   conditions_status : bool;
   beneficiaries : vec principal;
-  key_box : vec record { nat; SecretSymmetricCryptoMaterial };
+  key_box : vec record { text; SecretSymmetricCryptoMaterial };
   conditions : vec Condition;
   date_modified : nat64;
 };
@@ -62,7 +62,7 @@ type PolicyResponse = record {
   secrets : vec SecretListEntry;
   conditions_status : bool;
   beneficiaries : vec principal;
-  key_box : vec record { nat; SecretSymmetricCryptoMaterial };
+  key_box : vec record { text; SecretSymmetricCryptoMaterial };
   conditions : vec Condition;
   date_modified : nat64;
 };
@@ -81,7 +81,7 @@ type Result_9 = variant {
   Err : SmartVaultErr;
 };
 type Secret = record {
-  id : nat;
+  id : text;
   url : opt text;
   username : opt vec nat8;
   date_created : nat64;
@@ -94,7 +94,7 @@ type Secret = record {
 };
 type SecretCategory = variant { Password; Note; Document };
 type SecretListEntry = record {
-  id : nat;
+  id : text;
   name : opt text;
   category : opt SecretCategory;
 };
@@ -130,7 +130,7 @@ type TimeBasedCondition = record {
   number_of_days_since_last_login : nat64;
 };
 type UpdateSecretArgs = record {
-  id : nat;
+  id : text;
   url : opt text;
   username : opt vec nat8;
   password : opt vec nat8;
@@ -139,15 +139,15 @@ type UpdateSecretArgs = record {
   category : opt SecretCategory;
 };
 type User = record {
-  id : principal;
+  id : text;
   user_type : opt UserType;
   date_created : nat64;
   contacts : vec Contact;
   name : opt text;
-  secrets : vec nat;
+  secrets : vec text;
   date_last_login : opt nat64;
   email : opt text;
-  key_box : vec record { nat; SecretSymmetricCryptoMaterial };
+  key_box : vec record { text; SecretSymmetricCryptoMaterial };
   date_modified : nat64;
   policies : vec text;
 };
@@ -178,11 +178,11 @@ service : () -> {
   get_policy_list_as_beneficiary : () -> (Result_7) query;
   get_policy_list_as_owner : () -> (Result_7) query;
   get_policy_list_as_validator : () -> (Result_7) query;
-  get_secret : (nat) -> (Result_2) query;
+  get_secret : (text) -> (Result_2) query;
   get_secret_as_beneficiary : (text, text) -> (Result_2) query;
   get_secret_list : () -> (Result_8) query;
-  get_secret_symmetric_crypto_material : (nat) -> (Result_9) query;
-  get_secret_symmetric_crypto_material_as_beneficiary : (nat, text) -> (
+  get_secret_symmetric_crypto_material : (text) -> (Result_9) query;
+  get_secret_symmetric_crypto_material_as_beneficiary : (text, text) -> (
       Result_9,
     ) query;
   ibe_encryption_key : () -> (text);

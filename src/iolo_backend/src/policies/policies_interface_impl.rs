@@ -22,7 +22,7 @@ pub async fn add_policy_impl(
     policy_owner: &Principal,
 ) -> Result<Policy, SmartVaultErr> {
     // we create the policy id in the backend
-    let new_policy_id: String = UUID::new_random().await.into();
+    let new_policy_id: String = UUID::new().await;
 
     // create policy from AddPolicyArgs
     let policy: Policy = Policy::from_add_policy_args(&new_policy_id, policy_owner, apa);
@@ -73,9 +73,9 @@ pub fn get_policy_as_owner_impl(
     let mut policy_response = PolicyResponse::from(policy.clone());
     for secret_id in policy.secrets() {
         // get secret from secret store
-        let secret: Secret = get_secret_impl(UUID::from(secret_id.to_string()), caller)?;
+        let secret: Secret = get_secret_impl(secret_id.to_string(), caller)?;
         let secret_list_entry = SecretListEntry {
-            id: secret.id(),
+            id: secret.id().to_string(),
             category: secret.category(),
             name: secret.name(),
         };
@@ -130,7 +130,7 @@ pub fn get_policy_as_beneficiary_impl(
         for secret_ref in policy.secrets() {
             let secret = SECRET_STORE.with(|ss| {
                 let secret_store = ss.borrow();
-                secret_store.get(&UUID::from(secret_ref.to_string()))
+                secret_store.get(secret_ref)
             })?;
             let secret_list_entry = SecretListEntry {
                 id: secret.id(),
@@ -185,7 +185,7 @@ pub fn update_policy_impl(policy: Policy, caller: &Principal) -> Result<Policy, 
     for secret_id in policy.secrets.iter() {
         SECRET_STORE.with(|ss| {
             let secret_store = ss.borrow();
-            secret_store.get(&UUID::from(secret_id.to_string()))
+            secret_store.get(secret_id)
         })?;
     }
 
@@ -286,7 +286,7 @@ pub fn confirm_x_out_of_y_condition_impl(
 pub fn get_policy_from_policy_store(policy_id: &PolicyID) -> Result<Policy, SmartVaultErr> {
     POLICY_STORE.with(|ps| -> Result<Policy, SmartVaultErr> {
         let policy_store = ps.borrow();
-        policy_store.get(&policy_id)
+        policy_store.get(policy_id)
     })
 }
 
@@ -295,7 +295,7 @@ pub fn get_policies_from_policy_store(
 ) -> Result<Vec<Policy>, SmartVaultErr> {
     policy_ids
         .iter()
-        .map(|policy_id| get_policy_from_policy_store(policy_id))
+        .map(get_policy_from_policy_store)
         .collect()
 }
 

@@ -7,21 +7,21 @@ use crate::{
     common::{
         error::SmartVaultErr,
         memory::{get_stable_btree_memory_for_secrets, Memory},
-        uuid::UUID,
     },
     secrets::secret::Secret,
 };
+
+use super::secret::SecretID;
 
 #[derive(Serialize, Deserialize)]
 pub struct SecretStore {
     // An example `StableBTreeMap`. Data stored in `StableBTreeMap` doesn't need to
     // be serialized/deserialized in upgrades, so we tell serde to skip it.
     #[serde(skip, default = "init_stable_data")]
-    // users: StableBTreeMap<u128, u128, Memory>,
-    pub secrets: StableBTreeMap<UUID, Secret, Memory>,
+    pub secrets: StableBTreeMap<SecretID, Secret, Memory>,
 }
 
-fn init_stable_data() -> StableBTreeMap<UUID, Secret, Memory> {
+fn init_stable_data() -> StableBTreeMap<SecretID, Secret, Memory> {
     StableBTreeMap::init(get_stable_btree_memory_for_secrets())
 }
 
@@ -40,7 +40,7 @@ impl SecretStore {
         }
     }
 
-    pub fn get(&self, secret_id: &UUID) -> Result<Secret, SmartVaultErr> {
+    pub fn get(&self, secret_id: &SecretID) -> Result<Secret, SmartVaultErr> {
         let s = self.secrets.get(secret_id);
 
         match s {
@@ -52,8 +52,8 @@ impl SecretStore {
 
     pub fn add_secret(&mut self, secret: Secret) -> Result<Secret, SmartVaultErr> {
         // TODO: DO WE REALLY WANT TO INSERT IF THE SECRET ALREADY EXISTS?
-        let secret_id: UUID = secret.id();
-        let s = self.secrets.insert(secret_id, secret.clone());
+        let secret_id = secret.id();
+        let s = self.secrets.insert(secret_id.clone(), secret.clone());
         match s {
             Some(_) => Err(SmartVaultErr::SecretAlreadyExists(secret_id.to_string())),
             None => Ok(secret),
@@ -65,17 +65,17 @@ impl SecretStore {
         caller: &Principal,
         usa: UpdateSecretArgs,
     ) -> Result<Secret, SmartVaultErr> {
-        let sid = usa.id;
+        let sid = usa.clone().id;
 
         // Check if the secret exists
         let existing_secret = match self.secrets.get(&sid) {
             Some(s) => s,
-            None => return Err(SmartVaultErr::SecretDoesNotExist(usa.id.to_string())),
+            None => return Err(SmartVaultErr::SecretDoesNotExist(sid.clone())),
         };
 
         // Security check 1: Ensure the caller is the owner of the secret
         if &existing_secret.owner() != caller {
-            return Err(SmartVaultErr::SecretDoesNotExist(usa.id.to_string()));
+            return Err(SmartVaultErr::SecretDoesNotExist(sid.clone()));
         }
 
         // Update the secret
@@ -84,7 +84,7 @@ impl SecretStore {
             *existing_secret.date_created(),
             usa,
         );
-        self.secrets.insert(sid, updated_secret);
+        self.secrets.insert(sid.clone(), updated_secret);
 
         // Return the updated secret
         Ok(self.secrets.get(&sid).unwrap().clone())
@@ -93,12 +93,10 @@ impl SecretStore {
     pub fn remove_secret(
         &mut self,
         caller: &Principal,
-        secret_id: &str,
+        secret_id: &SecretID,
     ) -> Result<(), SmartVaultErr> {
-        let sid = UUID::from(secret_id);
-
         // Check if the secret exists
-        let secret = match self.secrets.get(&sid) {
+        let secret = match self.secrets.get(secret_id) {
             Some(s) => s,
             None => return Err(SmartVaultErr::SecretDoesNotExist(secret_id.to_string())),
         };
@@ -109,7 +107,7 @@ impl SecretStore {
         }
 
         // Remove the secret since the caller is the owner
-        self.secrets.remove(&sid);
+        self.secrets.remove(secret_id);
         Ok(())
     }
 }

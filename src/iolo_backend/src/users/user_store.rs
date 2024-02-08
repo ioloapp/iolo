@@ -2,12 +2,12 @@ use candid::Principal;
 use ic_stable_structures::StableBTreeMap;
 use serde::{Deserialize, Serialize};
 
+use crate::secrets::secret::SecretID;
 use crate::users::user::AddOrUpdateUserArgs;
 use crate::{
     common::{
         error::SmartVaultErr,
         memory::{get_stable_btree_memory_for_users, Memory},
-        uuid::UUID,
     },
     secrets::secret::SecretSymmetricCryptoMaterial,
     users::user::User,
@@ -109,7 +109,7 @@ impl UserStore {
     pub fn add_secret_to_user(
         &mut self,
         caller: &PrincipalID,
-        secret_id: UUID,
+        secret_id: SecretID,
         secret_decryption_material: SecretSymmetricCryptoMaterial,
     ) -> Result<(), SmartVaultErr> {
         // find user in users and add secret id to secrets
@@ -126,15 +126,14 @@ impl UserStore {
     pub fn remove_secret_from_user(
         &mut self,
         caller: &PrincipalID,
-        secret_id_str: &str,
+        secret_id: SecretID,
     ) -> Result<(), SmartVaultErr> {
-        let secret_id: UUID = secret_id_str.into();
         let mut user = self
             .users
             .get(caller)
             .ok_or_else(|| SmartVaultErr::UserDoesNotExist(caller.to_string()))?;
 
-        user.remove_secret(secret_id)?;
+        user.remove_secret(&secret_id)?;
         match self.update_user_secrets(user, caller) {
             Ok(_) => Ok(()),
             Err(e) => Err(e),
@@ -149,7 +148,7 @@ impl UserStore {
         // find user in users and add secret id to secrets
         let mut user = self
             .users
-            .get(&caller)
+            .get(caller)
             .ok_or_else(|| SmartVaultErr::UserDoesNotExist(caller.to_string()))?;
         user.add_policy(policy_id);
 

@@ -17,7 +17,7 @@ pub enum SecretCategory {
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone, PartialEq)]
 pub struct Secret {
-    pub id: UUID,
+    pub id: SecretID,
     owner: Principal,
     date_created: u64,
     date_modified: u64,
@@ -44,7 +44,7 @@ pub struct AddSecretArgs {
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct UpdateSecretArgs {
-    pub id: UUID,
+    pub id: SecretID,
     pub category: Option<SecretCategory>,
     pub name: Option<String>,
     pub username: Option<Vec<u8>>,
@@ -55,7 +55,7 @@ pub struct UpdateSecretArgs {
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone, PartialEq, Eq, Hash)]
 pub struct SecretListEntry {
-    pub id: UUID,
+    pub id: SecretID,
     pub category: Option<SecretCategory>,
     pub name: Option<String>,
 }
@@ -63,7 +63,7 @@ pub struct SecretListEntry {
 impl From<Secret> for SecretListEntry {
     fn from(s: Secret) -> Self {
         SecretListEntry {
-            id: s.id(),
+            id: s.id().to_string(),
             category: s.category(),
             name: s.name(),
         }
@@ -82,10 +82,10 @@ pub struct SecretSymmetricCryptoMaterial {
 }
 
 impl Secret {
-    pub fn new_test_instance() -> Self {
+    pub async fn new_test_instance() -> Self {
         let now: u64 = time::get_current_time();
         Self {
-            id: UUID::new(),
+            id: UUID::new().await,
             owner: Principal::anonymous(),
             date_created: now,
             date_modified: now,
@@ -100,7 +100,7 @@ impl Secret {
 
     pub fn create_from_add_secret_args(
         owner: Principal,
-        secret_id: UUID,
+        secret_id: SecretID,
         asa: AddSecretArgs,
     ) -> Self {
         let now: u64 = time::get_current_time();
@@ -140,8 +140,8 @@ impl Secret {
         }
     }
 
-    pub fn id(&self) -> UUID {
-        self.id
+    pub fn id(&self) -> SecretID {
+        self.id.clone()
     }
 
     pub fn date_created(&self) -> &u64 {
@@ -222,9 +222,9 @@ impl Storable for Secret {
 mod tests {
     use super::*;
 
-    #[test]
-    fn test_new_test_instance() {
-        let secret = Secret::new_test_instance();
+    #[tokio::test]
+    async fn test_new_test_instance() {
+        let secret = Secret::new_test_instance().await;
 
         assert_eq!(secret.date_created(), secret.date_modified());
         assert!(secret.category().is_none());
@@ -235,8 +235,8 @@ mod tests {
         assert!(secret.notes().is_none());
     }
 
-    #[test]
-    fn test_from_add_secret_args() {
+    #[tokio::test]
+    async fn test_from_add_secret_args() {
         let args = AddSecretArgs {
             category: Some(SecretCategory::Password),
             name: Some("test_name".to_string()),
@@ -251,7 +251,7 @@ mod tests {
 
         // let secret: Secret = args.into();
         let secret: Secret =
-            Secret::create_from_add_secret_args(Principal::anonymous(), UUID::new(), args);
+            Secret::create_from_add_secret_args(Principal::anonymous(), UUID::new().await, args);
 
         assert_eq!(secret.category(), Some(SecretCategory::Password));
         assert_eq!(secret.name(), Some("test_name".to_string()));
@@ -261,9 +261,9 @@ mod tests {
         assert_eq!(secret.notes(), Some(&vec![7, 8, 9]));
     }
 
-    #[test]
-    fn test_setters() {
-        let mut secret = Secret::new_test_instance();
+    #[tokio::test]
+    async fn test_setters() {
+        let mut secret = Secret::new_test_instance().await;
 
         // Testing set_name
         let initial_date_modified = *secret.date_modified();
