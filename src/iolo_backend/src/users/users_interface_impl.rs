@@ -1,7 +1,5 @@
 use std::cell::RefCell;
 
-use candid::Principal;
-
 use crate::{common::error::SmartVaultErr, smart_vaults::smart_vault::USER_STORE};
 
 use super::{
@@ -72,7 +70,7 @@ pub fn delete_user_impl(principal: PrincipalID) -> Result<(), SmartVaultErr> {
     Ok(())
 }
 
-pub fn add_contact_impl(args: AddContactArgs, caller: &Principal) -> Result<(), SmartVaultErr> {
+pub fn add_contact_impl(args: AddContactArgs, caller: PrincipalID) -> Result<(), SmartVaultErr> {
     let contact = Contact::from(args);
 
     // add contact to user store (caller)
@@ -84,7 +82,7 @@ pub fn add_contact_impl(args: AddContactArgs, caller: &Principal) -> Result<(), 
     Ok(())
 }
 
-pub fn get_contact_list_impl(caller: &Principal) -> Result<Vec<Contact>, SmartVaultErr> {
+pub fn get_contact_list_impl(caller: PrincipalID) -> Result<Vec<Contact>, SmartVaultErr> {
     // add contact to user store (caller)
     USER_STORE.with(
         |ur: &RefCell<UserStore>| -> Result<Vec<Contact>, SmartVaultErr> {
@@ -94,7 +92,10 @@ pub fn get_contact_list_impl(caller: &Principal) -> Result<Vec<Contact>, SmartVa
     )
 }
 
-pub fn update_contact_impl(contact: Contact, caller: &Principal) -> Result<Contact, SmartVaultErr> {
+pub fn update_contact_impl(
+    contact: Contact,
+    caller: PrincipalID,
+) -> Result<Contact, SmartVaultErr> {
     USER_STORE.with(
         |ur: &RefCell<UserStore>| -> Result<Contact, SmartVaultErr> {
             let mut user_store = ur.borrow_mut();
@@ -105,7 +106,7 @@ pub fn update_contact_impl(contact: Contact, caller: &Principal) -> Result<Conta
 
 pub fn remove_contact_impl(
     contact_id: PrincipalID,
-    caller: &Principal,
+    caller: PrincipalID,
 ) -> Result<(), SmartVaultErr> {
     USER_STORE.with(|ur: &RefCell<UserStore>| -> Result<(), SmartVaultErr> {
         let mut user_store = ur.borrow_mut();
@@ -156,7 +157,7 @@ mod tests {
         assert!(&created_user.contacts.is_empty());
 
         // test get contact list
-        let contact_list = get_contact_list_impl(&principal).unwrap();
+        let contact_list = get_contact_list_impl(principal.to_string()).unwrap();
         assert_eq!(contact_list.len(), 0);
 
         // add contact
@@ -166,7 +167,7 @@ mod tests {
             email: None,
             user_type: None,
         };
-        let add_contact_result = add_contact_impl(aca, &principal);
+        let add_contact_result = add_contact_impl(aca, principal.to_string());
         assert!(add_contact_result.is_ok());
         let fetched_user = get_current_user_impl(principal.to_string()).unwrap();
         assert!(fetched_user.contacts.len() == 1);
@@ -178,12 +179,12 @@ mod tests {
         let mut contact = fetched_user.contacts[0].clone();
 
         // test get contact list
-        let contact_list = get_contact_list_impl(&principal).unwrap();
+        let contact_list = get_contact_list_impl(principal.to_string()).unwrap();
         assert_eq!(contact_list.len(), 1);
 
         // update contact
         contact.email = Some("hey_my_first_email@hi.com".to_string());
-        update_contact_impl(contact.clone(), &principal).unwrap();
+        update_contact_impl(contact.clone(), principal.to_string()).unwrap();
         let fetched_user = get_current_user_impl(principal.to_string()).unwrap();
         assert!(fetched_user.contacts.len() == 1);
         let contact = fetched_user.contacts[0].clone();
@@ -208,8 +209,8 @@ mod tests {
         assert!(new_login_date > old_login_date);
 
         // remove contact
-        remove_contact_impl(contact.id, &principal).unwrap();
-        let contact_list = get_contact_list_impl(&principal).unwrap();
+        remove_contact_impl(contact.id, principal.to_string()).unwrap();
+        let contact_list = get_contact_list_impl(principal.to_string()).unwrap();
         assert_eq!(contact_list.len(), 0);
 
         // delete user

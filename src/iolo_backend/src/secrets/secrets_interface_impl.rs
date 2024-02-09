@@ -1,7 +1,5 @@
 use std::cell::RefCell;
 
-use candid::Principal;
-
 use crate::policies::policies_interface_impl::get_policy_from_policy_store;
 use crate::policies::policy::{Policy, PolicyID};
 use crate::secrets::secret::{SecretID, UpdateSecretArgs};
@@ -67,7 +65,7 @@ pub fn get_secret_impl(sid: SecretID, caller: PrincipalID) -> Result<Secret, Sma
     });
 
     match secret {
-        Ok(s) if &s.owner() == &caller.to_string() => Ok(s),
+        Ok(s) if s.owner() == caller => Ok(s),
         Ok(s) => Err(SmartVaultErr::SecretDoesNotExist(s.id().to_string())),
         Err(e) => Err(e),
     }

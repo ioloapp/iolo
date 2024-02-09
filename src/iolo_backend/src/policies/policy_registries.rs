@@ -71,7 +71,7 @@ impl PolicyRegistries {
 
     pub fn add_policy_to_beneficiary(&mut self, policy: &Policy) {
         for beneficiary in policy.beneficiaries() {
-            match self.beneficiary_to_policies.get(&beneficiary) {
+            match self.beneficiary_to_policies.get(beneficiary) {
                 Some(mut sphs) => {
                     // entry for beneficiary already exists
                     sphs.0.insert(policy.id().clone());
@@ -139,7 +139,7 @@ impl PolicyRegistries {
         &self,
         beneficiary: &PrincipalID,
     ) -> Result<Vec<PolicyListEntry>, SmartVaultErr> {
-        let policy_ids = match self.beneficiary_to_policies.get(&beneficiary) {
+        let policy_ids = match self.beneficiary_to_policies.get(beneficiary) {
             Some(sphs) => sphs.0.clone(),
             None => return Ok(vec![]),
         };
@@ -153,7 +153,7 @@ impl PolicyRegistries {
         &self,
         validator: &PrincipalID,
     ) -> Result<Vec<PolicyListEntry>, SmartVaultErr> {
-        let policy_ids = match self.validator_to_policies.get(&validator) {
+        let policy_ids = match self.validator_to_policies.get(validator) {
             Some(sphs) => sphs.0.clone(),
             None => return Ok(vec![]),
         };

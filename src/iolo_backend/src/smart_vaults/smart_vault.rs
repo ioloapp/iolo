@@ -48,58 +48,58 @@ thread_local! {
 /// Creates a new user
 #[ic_cdk_macros::update]
 pub async fn create_user(args: AddOrUpdateUserArgs) -> Result<User, SmartVaultErr> {
-    create_user_impl(args, get_caller().to_string()).await
+    create_user_impl(args, get_caller_id()).await
 }
 
 /// Gets the current user
 #[ic_cdk_macros::query]
 pub fn get_current_user() -> Result<User, SmartVaultErr> {
-    get_current_user_impl(get_caller().to_string())
+    get_current_user_impl(get_caller_id())
 }
 
 #[ic_cdk_macros::update]
 pub fn update_user(args: AddOrUpdateUserArgs) -> Result<User, SmartVaultErr> {
-    update_user_impl(args, get_caller().to_string())
+    update_user_impl(args, get_caller_id())
 }
 
 #[ic_cdk_macros::update]
 pub fn update_user_login_date() -> Result<User, SmartVaultErr> {
-    update_user_login_date_impl(get_caller().to_string())
+    update_user_login_date_impl(get_caller_id())
 }
 
 #[ic_cdk_macros::update]
 pub fn delete_user() -> Result<(), SmartVaultErr> {
-    delete_user_impl(get_caller().to_string())
+    delete_user_impl(get_caller_id())
 }
 
 #[ic_cdk_macros::update]
 pub async fn add_secret(args: AddSecretArgs) -> Result<Secret, SmartVaultErr> {
-    add_secret_impl(args, get_caller().to_string()).await
+    add_secret_impl(args, get_caller_id()).await
 }
 
 #[ic_cdk_macros::query]
 pub fn get_secret(sid: SecretID) -> Result<Secret, SmartVaultErr> {
-    get_secret_impl(sid, get_caller().to_string())
+    get_secret_impl(sid, get_caller_id())
 }
 
 #[ic_cdk_macros::update]
 pub fn update_secret(usa: UpdateSecretArgs) -> Result<Secret, SmartVaultErr> {
-    update_secret_impl(usa, get_caller().to_string())
+    update_secret_impl(usa, get_caller_id())
 }
 
 #[ic_cdk_macros::update]
 pub fn remove_secret(secret_id: String) -> Result<(), SmartVaultErr> {
-    remove_secret_impl(secret_id, get_caller().to_string())
+    remove_secret_impl(secret_id, get_caller_id())
 }
 
 #[ic_cdk_macros::query]
 pub fn get_secret_list() -> Result<Vec<SecretListEntry>, SmartVaultErr> {
-    get_secret_list_impl(get_caller().to_string())
+    get_secret_list_impl(get_caller_id())
 }
 
 #[ic_cdk_macros::query]
 pub fn get_encrypted_symmetric_key(sid: SecretID) -> Result<Vec<u8>, SmartVaultErr> {
-    get_encrypted_symmetric_key_impl(sid, get_caller().to_string())
+    get_encrypted_symmetric_key_impl(sid, get_caller_id())
 }
 
 #[ic_cdk_macros::query]
@@ -107,7 +107,7 @@ pub fn get_secret_as_beneficiary(
     sid: SecretID,
     policy_id: PolicyID,
 ) -> Result<Secret, SmartVaultErr> {
-    get_secret_as_beneficiary_impl(sid, policy_id, get_caller().to_string())
+    get_secret_as_beneficiary_impl(sid, policy_id, get_caller_id())
 }
 
 #[ic_cdk_macros::query]
@@ -115,7 +115,7 @@ pub fn get_encrypted_symmetric_key_as_beneficiary(
     secret_id: SecretID,
     policy_id: PolicyID,
 ) -> Result<Vec<u8>, SmartVaultErr> {
-    get_encrypted_symmetric_key_as_beneficiary_impl(secret_id, policy_id, get_caller().to_string())
+    get_encrypted_symmetric_key_as_beneficiary_impl(secret_id, policy_id, get_caller_id())
 }
 
 /**
@@ -124,42 +124,42 @@ pub fn get_encrypted_symmetric_key_as_beneficiary(
 
 #[ic_cdk_macros::update]
 pub async fn add_policy(args: AddPolicyArgs) -> Result<Policy, SmartVaultErr> {
-    add_policy_impl(args, &get_caller()).await
+    add_policy_impl(args, get_caller_id()).await
 }
 
 #[ic_cdk_macros::query]
 pub fn get_policy_as_owner(policy_id: PolicyID) -> Result<PolicyResponse, SmartVaultErr> {
-    get_policy_as_owner_impl(policy_id, &get_caller())
+    get_policy_as_owner_impl(policy_id, get_caller_id())
 }
 
 #[ic_cdk_macros::query]
 pub fn get_policy_list_as_owner() -> Result<Vec<PolicyListEntry>, SmartVaultErr> {
-    get_policy_list_as_owner_impl(&get_caller())
+    get_policy_list_as_owner_impl(get_caller_id())
 }
 
 #[ic_cdk_macros::query]
 pub fn get_policy_as_beneficiary(policy_id: PolicyID) -> Result<PolicyResponse, SmartVaultErr> {
-    get_policy_as_beneficiary_impl(policy_id, &get_caller())
+    get_policy_as_beneficiary_impl(policy_id, get_caller_id())
 }
 
 #[ic_cdk_macros::query]
 pub fn get_policy_list_as_beneficiary() -> Result<Vec<PolicyListEntry>, SmartVaultErr> {
-    get_policy_list_as_beneficiary_impl(&get_caller())
+    get_policy_list_as_beneficiary_impl(get_caller_id())
 }
 
 #[ic_cdk_macros::query]
 pub fn get_policy_list_as_validator() -> Result<Vec<PolicyListEntry>, SmartVaultErr> {
-    get_policy_list_as_validator_impl(&get_caller())
+    get_policy_list_as_validator_impl(get_caller_id())
 }
 
 #[ic_cdk_macros::update]
 pub fn update_policy(policy: Policy) -> Result<Policy, SmartVaultErr> {
-    update_policy_impl(policy, get_caller().to_string())
+    update_policy_impl(policy, get_caller_id())
 }
 
 #[ic_cdk_macros::update]
 pub fn remove_policy(policy_id: String) -> Result<(), SmartVaultErr> {
-    remove_policy_impl(policy_id, &get_caller())
+    remove_policy_impl(policy_id, get_caller_id())
 }
 
 #[ic_cdk_macros::update]
@@ -168,7 +168,7 @@ pub fn confirm_x_out_of_y_condition(
     policy_id: PolicyID,
     status: bool,
 ) -> Result<(), SmartVaultErr> {
-    confirm_x_out_of_y_condition_impl(policy_owner, policy_id, status, &get_caller())
+    confirm_x_out_of_y_condition_impl(policy_owner, policy_id, status, get_caller_id())
 }
 
 /**
@@ -176,22 +176,26 @@ pub fn confirm_x_out_of_y_condition(
  */
 #[ic_cdk_macros::update]
 pub fn add_contact(args: AddContactArgs) -> Result<(), SmartVaultErr> {
-    add_contact_impl(args, &get_caller())
+    add_contact_impl(args, get_caller_id())
 }
 
 #[ic_cdk_macros::query]
 pub fn get_contact_list() -> Result<Vec<Contact>, SmartVaultErr> {
-    get_contact_list_impl(&get_caller())
+    get_contact_list_impl(get_caller_id())
 }
 
 #[ic_cdk_macros::update]
 pub fn update_contact(c: Contact) -> Result<Contact, SmartVaultErr> {
-    update_contact_impl(c, &get_caller())
+    update_contact_impl(c, get_caller_id())
 }
 
 #[ic_cdk_macros::update]
 pub fn remove_contact(contact: PrincipalID) -> Result<(), SmartVaultErr> {
-    remove_contact_impl(contact, &get_caller())
+    remove_contact_impl(contact, get_caller_id())
+}
+
+pub fn get_caller_id() -> PrincipalID {
+    get_caller().to_string()
 }
 
 #[pre_upgrade]
