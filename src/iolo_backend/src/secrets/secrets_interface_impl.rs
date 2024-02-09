@@ -6,6 +6,7 @@ use crate::policies::policies_interface_impl::get_policy_from_policy_store;
 use crate::policies::policy::{Policy, PolicyID};
 use crate::secrets::secret::{SecretID, UpdateSecretArgs};
 
+use crate::users::user::PrincipalID;
 use crate::{
     common::{error::SmartVaultErr, uuid::UUID},
     smart_vaults::smart_vault::{SECRET_STORE, USER_STORE},
@@ -27,7 +28,7 @@ use super::{
  */
 pub async fn add_secret_impl(
     args: AddSecretArgs,
-    caller: &Principal,
+    caller: PrincipalID,
 ) -> Result<Secret, SmartVaultErr> {
     // generate a new UUID for the secret
     let new_secret_id: SecretID = UUID::new().await;
@@ -59,7 +60,7 @@ pub async fn add_secret_impl(
     Ok(secret)
 }
 
-pub fn get_secret_impl(sid: SecretID, caller: &Principal) -> Result<Secret, SmartVaultErr> {
+pub fn get_secret_impl(sid: SecretID, caller: PrincipalID) -> Result<Secret, SmartVaultErr> {
     let secret = SECRET_STORE.with(|x| {
         let secret_store = x.borrow();
         secret_store.get(&sid.clone())
@@ -72,7 +73,7 @@ pub fn get_secret_impl(sid: SecretID, caller: &Principal) -> Result<Secret, Smar
     }
 }
 
-pub fn get_secret_list_impl(principal: &Principal) -> Result<Vec<SecretListEntry>, SmartVaultErr> {
+pub fn get_secret_list_impl(principal: PrincipalID) -> Result<Vec<SecretListEntry>, SmartVaultErr> {
     // get secret ids from user in user store
     let secret_ids: Vec<SecretID> = USER_STORE.with(|us| {
         let user_store = us.borrow();
@@ -95,7 +96,7 @@ pub fn get_secret_list_impl(principal: &Principal) -> Result<Vec<SecretListEntry
 
 pub fn update_secret_impl(
     usa: UpdateSecretArgs,
-    principal: &Principal,
+    principal: PrincipalID,
 ) -> Result<Secret, SmartVaultErr> {
     SECRET_STORE.with(|x| {
         let mut secret_store = x.borrow_mut();
@@ -104,7 +105,10 @@ pub fn update_secret_impl(
     })
 }
 
-pub fn remove_secret_impl(secret_id: SecretID, principal: &Principal) -> Result<(), SmartVaultErr> {
+pub fn remove_secret_impl(
+    secret_id: SecretID,
+    principal: PrincipalID,
+) -> Result<(), SmartVaultErr> {
     // delete secret from secret store
     SECRET_STORE.with(
         |secret_store_rc: &RefCell<SecretStore>| -> Result<(), SmartVaultErr> {
@@ -122,7 +126,7 @@ pub fn remove_secret_impl(secret_id: SecretID, principal: &Principal) -> Result<
 
 pub fn get_encrypted_symmetric_key_impl(
     sid: SecretID,
-    principal: &Principal,
+    principal: PrincipalID,
 ) -> Result<Vec<u8>, SmartVaultErr> {
     // get encrypted symmetric key of a secret from user's keybox in the user store
     USER_STORE.with(|us| -> Result<Vec<u8>, SmartVaultErr> {
@@ -138,7 +142,7 @@ pub fn get_encrypted_symmetric_key_impl(
 pub fn get_secret_as_beneficiary_impl(
     secret_id: SecretID,
     policy_id: PolicyID,
-    caller: &Principal,
+    caller: PrincipalID,
 ) -> Result<Secret, SmartVaultErr> {
     // fetch policy from policy store and check if caller is beneficiary
     let policy: Policy;
@@ -167,7 +171,7 @@ pub fn get_secret_as_beneficiary_impl(
 pub fn get_encrypted_symmetric_key_as_beneficiary_impl(
     secret_id: SecretID,
     policy_id: PolicyID,
-    caller: &Principal,
+    caller: PrincipalID,
 ) -> Result<Vec<u8>, SmartVaultErr> {
     // fetch policy from policy store and check if caller is beneficiary
     let policy: Policy;
@@ -217,7 +221,7 @@ mod tests {
             email: None,
             user_type: None,
         };
-        let _new_user = create_user_impl(aua, &principal).await.unwrap();
+        let _new_user = create_user_impl(aua, principal.to_string()).await.unwrap();
 
         // Create Mock Secret
         let encrypted_symmetric_key = vec![1, 2, 3];
@@ -233,7 +237,9 @@ mod tests {
         };
 
         // Add Secret
-        let added_secret = add_secret_impl(asa.clone(), &principal).await.unwrap();
+        let added_secret = add_secret_impl(asa.clone(), principal.to_string())
+            .await
+            .unwrap();
         assert_eq!(added_secret.name(), asa.name);
         assert_eq!(added_secret.username().cloned(), asa.username);
         assert_eq!(added_secret.password().cloned(), asa.password);
@@ -257,7 +263,8 @@ mod tests {
         });
 
         // get secret from proper interface implementation
-        let fetched_secret_res = get_secret_impl(added_secret.id().to_string(), &principal);
+        let fetched_secret_res =
+            get_secret_impl(added_secret.id().to_string(), principal.to_string());
         assert!(fetched_secret_res.is_ok());
         let fetched_secret = fetched_secret_res.unwrap();
 
@@ -267,20 +274,23 @@ mod tests {
         assert_eq!(added_secret.password(), fetched_secret.password());
 
         // get secret decryption material
-        let enc_sym_key = get_encrypted_symmetric_key_impl(added_secret.id(), &principal);
+        let enc_sym_key =
+            get_encrypted_symmetric_key_impl(added_secret.id(), principal.to_string());
         assert!(enc_sym_key.is_ok());
         assert_eq!(enc_sym_key.unwrap(), vec![1, 2, 3]);
 
         // check get secret list
-        let secrets_list = get_secret_list_impl(&principal).unwrap();
+        let secrets_list = get_secret_list_impl(principal.to_string()).unwrap();
         assert_eq!(secrets_list.len(), 1, "secrets list is not length 1");
 
         // add another again
         asa.name = Some("iolo".to_string());
-        add_secret_impl(asa.clone(), &principal).await.unwrap();
+        add_secret_impl(asa.clone(), principal.to_string())
+            .await
+            .unwrap();
 
         // check get secret list
-        let secrets_list = get_secret_list_impl(&principal).unwrap();
+        let secrets_list = get_secret_list_impl(principal.to_string()).unwrap();
         assert_eq!(secrets_list.len(), 2);
 
         // update secret
@@ -293,13 +303,14 @@ mod tests {
             url: None,
             notes: None,
         };
-        let updated_secret = update_secret_impl(updated_secret, &principal).unwrap();
+        let updated_secret = update_secret_impl(updated_secret, principal.to_string()).unwrap();
         assert_eq!(updated_secret.name(), Some("iolo2024".to_string()));
 
         // delete secret
-        let deleted_secret = remove_secret_impl(updated_secret.id().to_string(), &principal);
+        let deleted_secret =
+            remove_secret_impl(updated_secret.id().to_string(), principal.to_string());
         assert!(deleted_secret.is_ok());
-        let test_fetch = get_secret_impl(added_secret.id().to_string(), &principal);
+        let test_fetch = get_secret_impl(added_secret.id().to_string(), principal.to_string());
         assert!(test_fetch.is_err());
         assert_eq!(
             test_fetch.unwrap_err(),
@@ -307,7 +318,7 @@ mod tests {
         );
 
         // check get secret list
-        let secrets_list = get_secret_list_impl(&principal).unwrap();
+        let secrets_list = get_secret_list_impl(principal.to_string()).unwrap();
         assert_eq!(secrets_list.len(), 1);
     }
 

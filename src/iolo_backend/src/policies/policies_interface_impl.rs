@@ -75,7 +75,7 @@ pub fn get_policy_as_owner_impl(
     let mut policy_response = PolicyResponse::from(policy.clone());
     for secret_id in policy.secrets() {
         // get secret from secret store
-        let secret: Secret = get_secret_impl(secret_id.to_string(), caller)?;
+        let secret: Secret = get_secret_impl(secret_id.to_string(), caller.to_string())?;
         let secret_list_entry = SecretListEntry {
             id: secret.id().to_string(),
             category: secret.category(),
@@ -343,7 +343,7 @@ mod tests {
             email: None,
             user_type: None,
         };
-        let _new_user = create_user_impl(aua, &principal).await.unwrap();
+        let _new_user = create_user_impl(aua, principal.to_string()).await.unwrap();
 
         // Create a Secret
         let encrypted_symmetric_key: Vec<u8> = vec![1, 2, 3];
@@ -359,7 +359,9 @@ mod tests {
         };
 
         // Add Secret
-        let added_secret = add_secret_impl(asa.clone(), &principal).await.unwrap();
+        let added_secret = add_secret_impl(asa.clone(), principal.to_string())
+            .await
+            .unwrap();
 
         // create a policy with a time based condition
         let time_based_condition: Condition = Condition::TimeBasedCondition(TimeBasedCondition {
@@ -504,7 +506,7 @@ mod tests {
         let secret_as_beneficiary = get_secret_as_beneficiary_impl(
             added_secret.id().to_string(),
             updated_policy.id,
-            &beneficiary,
+            beneficiary.to_string(),
         );
         assert!(secret_as_beneficiary.is_err_and(|e| match e {
             SmartVaultErr::InvalidPolicyCondition => true,

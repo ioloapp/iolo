@@ -48,58 +48,58 @@ thread_local! {
 /// Creates a new user
 #[ic_cdk_macros::update]
 pub async fn create_user(args: AddOrUpdateUserArgs) -> Result<User, SmartVaultErr> {
-    create_user_impl(args, &get_caller()).await
+    create_user_impl(args, get_caller().to_string()).await
 }
 
 /// Gets the current user
 #[ic_cdk_macros::query]
 pub fn get_current_user() -> Result<User, SmartVaultErr> {
-    get_current_user_impl(&get_caller())
+    get_current_user_impl(get_caller().to_string())
 }
 
 #[ic_cdk_macros::update]
 pub fn update_user(args: AddOrUpdateUserArgs) -> Result<User, SmartVaultErr> {
-    update_user_impl(args, &get_caller())
+    update_user_impl(args, get_caller().to_string())
 }
 
 #[ic_cdk_macros::update]
 pub fn update_user_login_date() -> Result<User, SmartVaultErr> {
-    update_user_login_date_impl(&get_caller())
+    update_user_login_date_impl(get_caller().to_string())
 }
 
 #[ic_cdk_macros::update]
 pub fn delete_user() -> Result<(), SmartVaultErr> {
-    delete_user_impl(&get_caller())
+    delete_user_impl(get_caller().to_string())
 }
 
 #[ic_cdk_macros::update]
 pub async fn add_secret(args: AddSecretArgs) -> Result<Secret, SmartVaultErr> {
-    add_secret_impl(args, &get_caller()).await
+    add_secret_impl(args, get_caller().to_string()).await
 }
 
 #[ic_cdk_macros::query]
 pub fn get_secret(sid: SecretID) -> Result<Secret, SmartVaultErr> {
-    get_secret_impl(sid, &get_caller())
+    get_secret_impl(sid, get_caller().to_string())
 }
 
 #[ic_cdk_macros::update]
 pub fn update_secret(usa: UpdateSecretArgs) -> Result<Secret, SmartVaultErr> {
-    update_secret_impl(usa, &get_caller())
+    update_secret_impl(usa, get_caller().to_string())
 }
 
 #[ic_cdk_macros::update]
 pub fn remove_secret(secret_id: String) -> Result<(), SmartVaultErr> {
-    remove_secret_impl(secret_id, &get_caller())
+    remove_secret_impl(secret_id, get_caller().to_string())
 }
 
 #[ic_cdk_macros::query]
 pub fn get_secret_list() -> Result<Vec<SecretListEntry>, SmartVaultErr> {
-    get_secret_list_impl(&get_caller())
+    get_secret_list_impl(get_caller().to_string())
 }
 
 #[ic_cdk_macros::query]
 pub fn get_encrypted_symmetric_key(sid: SecretID) -> Result<Vec<u8>, SmartVaultErr> {
-    get_encrypted_symmetric_key_impl(sid, &get_caller())
+    get_encrypted_symmetric_key_impl(sid, get_caller().to_string())
 }
 
 #[ic_cdk_macros::query]
@@ -107,7 +107,7 @@ pub fn get_secret_as_beneficiary(
     sid: SecretID,
     policy_id: PolicyID,
 ) -> Result<Secret, SmartVaultErr> {
-    get_secret_as_beneficiary_impl(sid, policy_id, &get_caller())
+    get_secret_as_beneficiary_impl(sid, policy_id, get_caller().to_string())
 }
 
 #[ic_cdk_macros::query]
@@ -115,7 +115,7 @@ pub fn get_encrypted_symmetric_key_as_beneficiary(
     secret_id: SecretID,
     policy_id: PolicyID,
 ) -> Result<Vec<u8>, SmartVaultErr> {
-    get_encrypted_symmetric_key_as_beneficiary_impl(secret_id, policy_id, &get_caller())
+    get_encrypted_symmetric_key_as_beneficiary_impl(secret_id, policy_id, get_caller().to_string())
 }
 
 /**

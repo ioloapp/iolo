@@ -15,10 +15,10 @@ use super::{
  */
 pub async fn create_user_impl(
     args: AddOrUpdateUserArgs,
-    caller: &Principal,
+    caller: PrincipalID,
 ) -> Result<User, SmartVaultErr> {
     // Create user from principal (caller)
-    let new_user = User::new(caller.to_string(), args);
+    let new_user = User::new(caller, args);
 
     // // Store the new user
     USER_STORE.with(|ur: &RefCell<UserStore>| -> Result<User, SmartVaultErr> {
@@ -30,7 +30,7 @@ pub async fn create_user_impl(
     })
 }
 
-pub fn get_current_user_impl(user: &Principal) -> Result<User, SmartVaultErr> {
+pub fn get_current_user_impl(user: PrincipalID) -> Result<User, SmartVaultErr> {
     // get current user
     USER_STORE.with(|ur: &RefCell<UserStore>| -> Result<User, SmartVaultErr> {
         let user_store = ur.borrow();
@@ -43,7 +43,7 @@ pub fn get_current_user_impl(user: &Principal) -> Result<User, SmartVaultErr> {
 
 pub fn update_user_impl(
     args: AddOrUpdateUserArgs,
-    principal: &Principal,
+    principal: PrincipalID,
 ) -> Result<User, SmartVaultErr> {
     // Update the user
     USER_STORE.with(|ur: &RefCell<UserStore>| -> Result<User, SmartVaultErr> {
@@ -55,7 +55,7 @@ pub fn update_user_impl(
     })
 }
 
-pub fn update_user_login_date_impl(principal: &Principal) -> Result<User, SmartVaultErr> {
+pub fn update_user_login_date_impl(principal: PrincipalID) -> Result<User, SmartVaultErr> {
     // get current user
     USER_STORE.with(|ur: &RefCell<UserStore>| -> Result<User, SmartVaultErr> {
         let mut user_store = ur.borrow_mut();
@@ -63,7 +63,7 @@ pub fn update_user_login_date_impl(principal: &Principal) -> Result<User, SmartV
     })
 }
 
-pub fn delete_user_impl(principal: &Principal) -> Result<(), SmartVaultErr> {
+pub fn delete_user_impl(principal: PrincipalID) -> Result<(), SmartVaultErr> {
     // delete the user
     USER_STORE.with(|ur: &RefCell<UserStore>| -> Result<User, SmartVaultErr> {
         let mut user_store = ur.borrow_mut();
@@ -149,8 +149,8 @@ mod tests {
             email: None,
             user_type: None,
         };
-        let created_user = create_user_impl(aua, &principal).await.unwrap();
-        let fetched_user = get_current_user_impl(&principal).unwrap();
+        let created_user = create_user_impl(aua, principal.to_string()).await.unwrap();
+        let fetched_user = get_current_user_impl(principal.to_string()).unwrap();
         assert_eq!(&created_user.id(), &fetched_user.id());
         assert_eq!(&created_user.email, &fetched_user.email);
         assert!(&created_user.contacts.is_empty());
@@ -168,7 +168,7 @@ mod tests {
         };
         let add_contact_result = add_contact_impl(aca, &principal);
         assert!(add_contact_result.is_ok());
-        let fetched_user = get_current_user_impl(&principal).unwrap();
+        let fetched_user = get_current_user_impl(principal.to_string()).unwrap();
         assert!(fetched_user.contacts.len() == 1);
         assert!(fetched_user.contacts[0].id == contact_principal.to_text());
         assert_eq!(
@@ -184,7 +184,7 @@ mod tests {
         // update contact
         contact.email = Some("hey_my_first_email@hi.com".to_string());
         update_contact_impl(contact.clone(), &principal).unwrap();
-        let fetched_user = get_current_user_impl(&principal).unwrap();
+        let fetched_user = get_current_user_impl(principal.to_string()).unwrap();
         assert!(fetched_user.contacts.len() == 1);
         let contact = fetched_user.contacts[0].clone();
         assert_eq!(contact.email, Some("hey_my_first_email@hi.com".to_string()));
@@ -195,15 +195,15 @@ mod tests {
             email: Some("donald@ducktown.com".to_string()),
             user_type: fetched_user.user_type.clone(),
         };
-        update_user_impl(aua, &principal).unwrap();
-        let fetched_user = get_current_user_impl(&principal).unwrap();
+        update_user_impl(aua, principal.to_string()).unwrap();
+        let fetched_user = get_current_user_impl(principal.to_string()).unwrap();
         assert_eq!(fetched_user.email, Some("donald@ducktown.com".to_string()));
 
         // update login date
         let old_login_date = fetched_user.date_last_login().unwrap();
         std::thread::sleep(std::time::Duration::from_millis(1));
-        update_user_login_date_impl(&principal).unwrap();
-        let fetched_user = get_current_user_impl(&principal).unwrap();
+        update_user_login_date_impl(principal.to_string()).unwrap();
+        let fetched_user = get_current_user_impl(principal.to_string()).unwrap();
         let new_login_date = fetched_user.date_last_login().unwrap();
         assert!(new_login_date > old_login_date);
 
@@ -213,7 +213,7 @@ mod tests {
         assert_eq!(contact_list.len(), 0);
 
         // delete user
-        let _deleted_user = delete_user_impl(&principal);
+        let _deleted_user = delete_user_impl(principal.to_string());
 
         // assert that user is deleted
         USER_STORE.with(|ur: &RefCell<UserStore>| {
