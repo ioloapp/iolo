@@ -2,7 +2,7 @@ import type { Principal } from '@dfinity/principal';
 import type { ActorMethod } from '@dfinity/agent';
 
 export interface AddContactArgs {
-  'id' : Principal,
+  'id' : string,
   'user_type' : [] | [UserType],
   'name' : [] | [string],
   'email' : [] | [string],
@@ -35,12 +35,12 @@ export type LogicalOperator = { 'Or' : null } |
 export interface Policy {
   'id' : string,
   'date_created' : bigint,
-  'owner' : Principal,
+  'owner' : string,
   'name' : [] | [string],
   'conditions_logical_operator' : [] | [LogicalOperator],
   'secrets' : Array<string>,
   'conditions_status' : boolean,
-  'beneficiaries' : Array<Principal>,
+  'beneficiaries' : Array<string>,
   'key_box' : Array<[string, Uint8Array | number[]]>,
   'conditions' : Array<Condition>,
   'date_modified' : bigint,
@@ -51,19 +51,19 @@ export interface PolicyKeyDerviationArgs {
 }
 export interface PolicyListEntry {
   'id' : string,
-  'owner' : Principal,
+  'owner' : string,
   'condition_status' : boolean,
   'name' : [] | [string],
 }
 export interface PolicyResponse {
   'id' : string,
   'date_created' : bigint,
-  'owner' : Principal,
+  'owner' : string,
   'name' : [] | [string],
   'conditions_logical_operator' : [] | [LogicalOperator],
   'secrets' : Array<SecretListEntry>,
   'conditions_status' : boolean,
-  'beneficiaries' : Array<Principal>,
+  'beneficiaries' : Array<string>,
   'key_box' : Array<[string, Uint8Array | number[]]>,
   'conditions' : Array<Condition>,
   'date_modified' : bigint,
@@ -95,7 +95,7 @@ export interface Secret {
   'url' : [] | [string],
   'username' : [] | [Uint8Array | number[]],
   'date_created' : bigint,
-  'owner' : Principal,
+  'owner' : string,
   'password' : [] | [Uint8Array | number[]],
   'name' : [] | [string],
   'notes' : [] | [Uint8Array | number[]],
@@ -159,7 +159,7 @@ export interface User {
 }
 export type UserType = { 'Company' : null } |
   { 'Person' : null };
-export interface Validator { 'id' : Principal, 'status' : boolean }
+export interface Validator { 'id' : string, 'status' : boolean }
 export interface XOutOfYCondition {
   'id' : string,
   'condition_status' : boolean,
@@ -171,7 +171,7 @@ export interface _SERVICE {
   'add_policy' : ActorMethod<[AddPolicyArgs], Result_1>,
   'add_secret' : ActorMethod<[AddSecretArgs], Result_2>,
   'confirm_x_out_of_y_condition' : ActorMethod<
-    [Principal, string, boolean],
+    [string, string, boolean],
     Result
   >,
   'create_user' : ActorMethod<[AddOrUpdateUserArgs], Result_3>,
@@ -204,7 +204,7 @@ export interface _SERVICE {
   'get_secret_as_beneficiary' : ActorMethod<[string, string], Result_2>,
   'get_secret_list' : ActorMethod<[], Result_9>,
   'ibe_encryption_key' : ActorMethod<[], string>,
-  'remove_contact' : ActorMethod<[Principal], Result>,
+  'remove_contact' : ActorMethod<[string], Result>,
   'remove_policy' : ActorMethod<[string], Result>,
   'remove_secret' : ActorMethod<[string], Result>,
   'symmetric_key_verification_key' : ActorMethod<[], string>,

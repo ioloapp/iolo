@@ -358,7 +358,7 @@ class IoloService {
     }
 
     public async confirmXOutOfYCondition (testator: Principal, policyId: string, status: boolean): Promise<void> {
-        const result: Result_3 = await (await this.getActor()).confirm_x_out_of_y_condition(testator, policyId, status);
+        const result: Result_3 = await (await this.getActor()).confirm_x_out_of_y_condition(testator.toString(), policyId, status);
         if (result['Ok'] === null) {
             return;
         }
@@ -377,7 +377,7 @@ class IoloService {
 
         let addContactArgs: AddContactArgs = {
             email: contact.email ? [contact.email] : [],
-            id: Principal.fromText(contact.id),
+            id: contact.id,
             name: contact.name ? [contact.name] : [],
             user_type: contact.type ? [this.mapUiUserTypeToUserType(contact.type)] : [],
         }
@@ -408,13 +408,7 @@ class IoloService {
     }
 
     public async deleteContact(id: string) {
-        // Check if it's a valid principal
-        try {
-            Principal.fromText(id);
-        } catch (e) {
-            throw mapError(new Error('PrincipalCreationFailed'));
-        }
-        const result: Result = await (await this.getActor()).remove_contact(Principal.fromText(id));
+        const result: Result = await (await this.getActor()).remove_contact(id);
         if (result['Ok'] === null) {
             return;
         }
@@ -648,9 +642,7 @@ class IoloService {
     }
 
     private async mapUiPolicyToPolicy(uiPolicy: UiPolicy): Promise<Policy> {
-        const beneficiaries = uiPolicy.beneficiaries.map((item) => {
-            return Principal.fromText(item.id);
-        });
+        const beneficiaries = uiPolicy.beneficiaries.map((item) => item.id);
 
         // Get the uservault vetKey to decrypt the symmetric encryption key
         const uservaultVetKey: Uint8Array = await get_aes_256_gcm_key_for_uservault(await this.getUserPrincipal(), (await this.getActor()));
@@ -678,7 +670,7 @@ class IoloService {
             id: uiPolicy.id,
             beneficiaries: beneficiaries,
             name: [uiPolicy.name],
-            owner: Principal.fromText(uiPolicy.owner.id),
+            owner: uiPolicy.owner.id,
             secrets: uiPolicy.secrets.map((item) => item.toString()),
             key_box: keyBox,
             conditions_logical_operator: uiPolicy.conditionsLogicalOperator == LogicalOperator.And ? [{ 'And' : null }] : [{ 'Or' : null }],
@@ -709,7 +701,7 @@ class IoloService {
                 quorum: xCondition.quorum ? BigInt(xCondition.quorum): BigInt(xCondition.validators.length),
                 validators: xCondition.validators.map(v => {
                     return {
-                        id: Principal.fromText(v.user.id),
+                        id: v.user.id,
                         status: v.status
                     }
                 })

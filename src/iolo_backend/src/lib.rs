@@ -19,8 +19,6 @@ use crate::users::contact::Contact;
 use crate::users::user::AddOrUpdateUserArgs;
 use crate::users::user::PrincipalID;
 use crate::users::user::User;
-use candid::Principal;
-
 use crate::secrets::secret::{AddSecretArgs, Secret, UpdateSecretArgs};
 
 /// Contains common types, modules and methods

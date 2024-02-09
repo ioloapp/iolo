@@ -1,6 +1,5 @@
 use std::cell::RefCell;
 
-use candid::Principal;
 use ic_cdk::{post_upgrade, pre_upgrade};
 
 use crate::common::error::SmartVaultErr;
