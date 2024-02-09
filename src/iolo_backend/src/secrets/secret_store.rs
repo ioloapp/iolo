@@ -1,8 +1,8 @@
-use candid::Principal;
 use ic_stable_structures::StableBTreeMap;
 use serde::{Deserialize, Serialize};
 
 use crate::secrets::secret::UpdateSecretArgs;
+use crate::users::user::PrincipalID;
 use crate::{
     common::{
         error::SmartVaultErr,
@@ -62,7 +62,7 @@ impl SecretStore {
 
     pub fn update_secret(
         &mut self,
-        caller: &Principal,
+        caller: &PrincipalID,
         usa: UpdateSecretArgs,
     ) -> Result<Secret, SmartVaultErr> {
         let sid = usa.clone().id;
@@ -92,7 +92,7 @@ impl SecretStore {
 
     pub fn remove_secret(
         &mut self,
-        caller: &Principal,
+        caller: &PrincipalID,
         secret_id: &SecretID,
     ) -> Result<(), SmartVaultErr> {
         // Check if the secret exists

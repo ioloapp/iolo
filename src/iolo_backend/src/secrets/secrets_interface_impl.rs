@@ -33,8 +33,11 @@ pub async fn add_secret_impl(
     let new_secret_id: SecretID = UUID::new().await;
 
     // we generate the secret
-    let secret: Secret =
-        Secret::create_from_add_secret_args(*caller, new_secret_id.clone(), args.clone());
+    let secret: Secret = Secret::create_from_add_secret_args(
+        caller.to_string(),
+        new_secret_id.clone(),
+        args.clone(),
+    );
 
     // Add the secret to the secret store (secrets: StableBTreeMap<UUID, Secret, Memory>,)
     SECRET_STORE.with(
@@ -56,14 +59,14 @@ pub async fn add_secret_impl(
     Ok(secret)
 }
 
-pub fn get_secret_impl(sid: SecretID, _principal: &Principal) -> Result<Secret, SmartVaultErr> {
+pub fn get_secret_impl(sid: SecretID, caller: &Principal) -> Result<Secret, SmartVaultErr> {
     let secret = SECRET_STORE.with(|x| {
         let secret_store = x.borrow();
         secret_store.get(&sid.clone())
     });
 
     match secret {
-        Ok(s) if &s.owner() == _principal => Ok(s),
+        Ok(s) if &s.owner() == &caller.to_string() => Ok(s),
         Ok(s) => Err(SmartVaultErr::SecretDoesNotExist(s.id().to_string())),
         Err(e) => Err(e),
     }
@@ -97,7 +100,7 @@ pub fn update_secret_impl(
     SECRET_STORE.with(|x| {
         let mut secret_store = x.borrow_mut();
         // TODO: check if the secret is in the user vault
-        secret_store.update_secret(principal, usa)
+        secret_store.update_secret(&principal.to_string(), usa)
     })
 }
 
@@ -106,7 +109,7 @@ pub fn remove_secret_impl(secret_id: SecretID, principal: &Principal) -> Result<
     SECRET_STORE.with(
         |secret_store_rc: &RefCell<SecretStore>| -> Result<(), SmartVaultErr> {
             let mut secret_store = secret_store_rc.borrow_mut();
-            secret_store.remove_secret(principal, &secret_id)
+            secret_store.remove_secret(&principal.to_string(), &secret_id)
         },
     )?;
 

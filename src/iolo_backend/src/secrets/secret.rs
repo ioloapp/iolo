@@ -4,7 +4,7 @@ use candid::{CandidType, Decode, Deserialize, Encode, Principal};
 use ic_stable_structures::{storable::Bound, Storable};
 use serde::Serialize;
 
-use crate::{common::uuid::UUID, utils::time};
+use crate::{common::uuid::UUID, users::user::PrincipalID, utils::time};
 
 pub type SecretID = String;
 
@@ -18,7 +18,7 @@ pub enum SecretCategory {
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone, PartialEq)]
 pub struct Secret {
     pub id: SecretID,
-    owner: Principal,
+    owner: PrincipalID,
     date_created: u64,
     date_modified: u64,
     category: Option<SecretCategory>,
@@ -73,7 +73,7 @@ impl Secret {
         let now: u64 = time::get_current_time();
         Self {
             id: UUID::new().await,
-            owner: Principal::anonymous(),
+            owner: Principal::anonymous().to_string(),
             date_created: now,
             date_modified: now,
             category: None,
@@ -86,7 +86,7 @@ impl Secret {
     }
 
     pub fn create_from_add_secret_args(
-        owner: Principal,
+        owner: PrincipalID,
         secret_id: SecretID,
         asa: AddSecretArgs,
     ) -> Self {
@@ -107,7 +107,7 @@ impl Secret {
     }
 
     pub fn create_from_update_secret_args(
-        owner: Principal,
+        owner: PrincipalID,
         date_created: u64,
         usa: UpdateSecretArgs,
     ) -> Self {
@@ -147,8 +147,8 @@ impl Secret {
         self.name.clone()
     }
 
-    pub fn owner(&self) -> Principal {
-        self.owner
+    pub fn owner(&self) -> PrincipalID {
+        self.owner.clone()
     }
 
     pub fn set_name(&mut self, name: String) {
@@ -235,8 +235,11 @@ mod tests {
         };
 
         // let secret: Secret = args.into();
-        let secret: Secret =
-            Secret::create_from_add_secret_args(Principal::anonymous(), UUID::new().await, args);
+        let secret: Secret = Secret::create_from_add_secret_args(
+            Principal::anonymous().to_string(),
+            UUID::new().await,
+            args,
+        );
 
         assert_eq!(secret.category(), Some(SecretCategory::Password));
         assert_eq!(secret.name(), Some("test_name".to_string()));
