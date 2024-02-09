@@ -22,8 +22,6 @@ pub struct Policy {
     date_created: u64,
     pub date_modified: u64,
     pub beneficiaries: HashSet<PrincipalID>,
-    // References to the secrets contained in this policy
-    // Path to secret: owner -> owner uservault -> secret
     pub secrets: HashSet<SecretID>,
     /// Contains all the keys required to decrypt the secrets:
     /// Every secret is encrypted by using dedicated key.

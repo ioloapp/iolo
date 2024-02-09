@@ -27,7 +27,7 @@ export async function get_local_random_aes_256_gcm_key() {
     return new Uint8Array(rawKey);
 }
 
-export async function get_aes_256_gcm_key_for_uservault(principal: Principal, actor: ActorSubclass<_SERVICE>) {
+export async function get_aes_256_gcm_key_for_user(principal: Principal, actor: ActorSubclass<_SERVICE>) {
     const seed = window.crypto.getRandomValues(new Uint8Array(32));
     const tsk = new vetkd.TransportSecretKey(seed);
     const ek_bytes_hex = await actor.generate_vetkd_encrypted_symmetric_key_for_user(tsk.public_key());

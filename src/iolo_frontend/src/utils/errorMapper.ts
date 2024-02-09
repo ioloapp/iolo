@@ -13,8 +13,6 @@ import {
     UserAlreadyExists,
     UserDeletionFailed,
     UserDoesNotExist,
-    UserVaultCreationFailed,
-    UserVaultDoesNotExist
 } from "../error/Errors";
 
 export function mapError(input: Error): IoloError{
@@ -26,10 +24,6 @@ export function mapError(input: Error): IoloError{
             throw new UserDoesNotExist(input['UserDoesNotExist'])
         } else if (input.hasOwnProperty('UserDeletionFailed')) {
             throw new UserDeletionFailed(input['UserDeletionFailed'])
-        } else if (input.hasOwnProperty('UserVaultCreationFailed')) {
-            throw new UserVaultCreationFailed(input['UserVaultCreationFailed'])
-        } else if (input.hasOwnProperty('UserVaultDoesNotExist')) {
-            throw new UserVaultDoesNotExist(input['UserVaultDoesNotExist'])
         } else if (input.hasOwnProperty('SecretDoesNotExist')) {
             throw new SecretDoesNotExist(input['SecretDoesNotExist'])
         } else if (input.hasOwnProperty('SecretHasNoId')) {

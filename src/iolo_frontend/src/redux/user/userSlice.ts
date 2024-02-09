@@ -10,7 +10,6 @@ const ioloService = new IoloService();
 
 export interface UserLogin {
     principal: string,
-    userVaultExisting: boolean
 }
 
 export const loginUserThunk = createAsyncThunk<UiUser, void, { state: RootState }>(

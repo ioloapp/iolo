@@ -19,8 +19,6 @@ const identityTwo: Secp256k1KeyIdentity = createIdentity();
 const actorOne: ActorSubclass<_SERVICE> = createNewActor(identityOne, canisterId);
 const actorTwo: ActorSubclass<_SERVICE> = createNewActor(identityTwo, canisterId);
 
-const encrypted_symmetric_key = new TextEncoder().encode('mySuperKey'); // just a byte array, no symmetric key
-
 const addPolicyArgsOne: AddPolicyArgs = {
     name: [],
 }
@@ -50,7 +48,7 @@ describe("Policy Tests", () => {
         expect(Object.keys(resultAddPolicyOne['Ok']).length).toStrictEqual(11);
         expect(Number(resultAddPolicyOne['Ok'].id)).not.toStrictEqual("");
         expect(resultAddPolicyOne['Ok'].name).toStrictEqual(addPolicyArgsOne.name);
-        expect(resultAddPolicyOne['Ok'].owner).toStrictEqual(identityOne.getPrincipal());
+        expect(resultAddPolicyOne['Ok'].owner).toStrictEqual(identityOne.getPrincipal().toString());
         expect(resultAddPolicyOne['Ok'].secrets).toStrictEqual([]);
         expect(resultAddPolicyOne['Ok'].key_box).toStrictEqual([]);
         expect(resultAddPolicyOne['Ok'].beneficiaries).toStrictEqual([]);
@@ -67,7 +65,7 @@ describe("Policy Tests", () => {
         expect(Object.keys(resultAddPolicyTwo['Ok']).length).toStrictEqual(11);
         expect(Number(resultAddPolicyTwo['Ok'].id)).not.toStrictEqual("");
         expect(resultAddPolicyTwo['Ok'].name).toStrictEqual(addPolicyArgsTwo.name);
-        expect(resultAddPolicyTwo['Ok'].owner).toStrictEqual(identityOne.getPrincipal());
+        expect(resultAddPolicyTwo['Ok'].owner).toStrictEqual(identityOne.getPrincipal().toString());
         expect(resultAddPolicyTwo['Ok'].secrets).toStrictEqual([]);
         expect(resultAddPolicyTwo['Ok'].key_box).toStrictEqual([]);
         expect(resultAddPolicyTwo['Ok'].beneficiaries).toStrictEqual([]);
@@ -90,7 +88,7 @@ describe("Policy Tests", () => {
         expect(Object.keys(resultUpdatePolicyOne['Ok']).length).toStrictEqual(11);
         expect(Number(resultUpdatePolicyOne['Ok'].id)).not.toStrictEqual("");
         expect(resultUpdatePolicyOne['Ok'].name).toStrictEqual(policyOne.name);
-        expect(resultUpdatePolicyOne['Ok'].owner).toStrictEqual(identityOne.getPrincipal());
+        expect(resultUpdatePolicyOne['Ok'].owner).toStrictEqual(identityOne.getPrincipal().toString());
         expect(resultUpdatePolicyOne['Ok'].secrets).toStrictEqual([secretA.id]);
         expect(resultUpdatePolicyOne['Ok'].key_box).toStrictEqual([]);
         expect(resultUpdatePolicyOne['Ok'].beneficiaries).toStrictEqual([]);
@@ -111,7 +109,7 @@ describe("Policy Tests", () => {
     }, 60000); // Set timeout
 
     test("it must not update the owner of a policy", async () => {
-        policyTwo.owner = identityTwo.getPrincipal();
+        policyTwo.owner = identityTwo.getPrincipal().toString();
         const resultUpdatePolicyTwo: Result_1 = await actorOne.update_policy(policyTwo);
         expect(resultUpdatePolicyTwo).toHaveProperty('Err');
         expect(resultUpdatePolicyTwo['Err']).toHaveProperty('OnlyOwnerCanUpdatePolicy');

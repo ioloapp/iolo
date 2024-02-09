@@ -280,7 +280,6 @@ mod tests {
 
     #[tokio::test]
     async fn utest_user_store() {
-        // Create empty user_vault
         let principal: Principal = Principal::from_slice(&[
             1, 2, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         ]);

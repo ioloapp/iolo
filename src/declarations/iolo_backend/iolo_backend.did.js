@@ -1,7 +1,7 @@
 export const idlFactory = ({ IDL }) => {
   const UserType = IDL.Variant({ 'Company' : IDL.Null, 'Person' : IDL.Null });
   const AddContactArgs = IDL.Record({
-    'id' : IDL.Principal,
+    'id' : IDL.Text,
     'user_type' : IDL.Opt(UserType),
     'name' : IDL.Opt(IDL.Text),
     'email' : IDL.Opt(IDL.Text),
@@ -36,7 +36,7 @@ export const idlFactory = ({ IDL }) => {
     'condition_status' : IDL.Bool,
     'number_of_days_since_last_login' : IDL.Nat64,
   });
-  const Validator = IDL.Record({ 'id' : IDL.Principal, 'status' : IDL.Bool });
+  const Validator = IDL.Record({ 'id' : IDL.Text, 'status' : IDL.Bool });
   const XOutOfYCondition = IDL.Record({
     'id' : IDL.Text,
     'condition_status' : IDL.Bool,
@@ -50,12 +50,12 @@ export const idlFactory = ({ IDL }) => {
   const Policy = IDL.Record({
     'id' : IDL.Text,
     'date_created' : IDL.Nat64,
-    'owner' : IDL.Principal,
+    'owner' : IDL.Text,
     'name' : IDL.Opt(IDL.Text),
     'conditions_logical_operator' : IDL.Opt(LogicalOperator),
     'secrets' : IDL.Vec(IDL.Text),
     'conditions_status' : IDL.Bool,
-    'beneficiaries' : IDL.Vec(IDL.Principal),
+    'beneficiaries' : IDL.Vec(IDL.Text),
     'key_box' : IDL.Vec(IDL.Tuple(IDL.Text, IDL.Vec(IDL.Nat8))),
     'conditions' : IDL.Vec(Condition),
     'date_modified' : IDL.Nat64,
@@ -80,7 +80,7 @@ export const idlFactory = ({ IDL }) => {
     'url' : IDL.Opt(IDL.Text),
     'username' : IDL.Opt(IDL.Vec(IDL.Nat8)),
     'date_created' : IDL.Nat64,
-    'owner' : IDL.Principal,
+    'owner' : IDL.Text,
     'password' : IDL.Opt(IDL.Vec(IDL.Nat8)),
     'name' : IDL.Opt(IDL.Text),
     'notes' : IDL.Opt(IDL.Vec(IDL.Nat8)),
@@ -134,12 +134,12 @@ export const idlFactory = ({ IDL }) => {
   const PolicyResponse = IDL.Record({
     'id' : IDL.Text,
     'date_created' : IDL.Nat64,
-    'owner' : IDL.Principal,
+    'owner' : IDL.Text,
     'name' : IDL.Opt(IDL.Text),
     'conditions_logical_operator' : IDL.Opt(LogicalOperator),
     'secrets' : IDL.Vec(SecretListEntry),
     'conditions_status' : IDL.Bool,
-    'beneficiaries' : IDL.Vec(IDL.Principal),
+    'beneficiaries' : IDL.Vec(IDL.Text),
     'key_box' : IDL.Vec(IDL.Tuple(IDL.Text, IDL.Vec(IDL.Nat8))),
     'conditions' : IDL.Vec(Condition),
     'date_modified' : IDL.Nat64,
@@ -150,7 +150,7 @@ export const idlFactory = ({ IDL }) => {
   });
   const PolicyListEntry = IDL.Record({
     'id' : IDL.Text,
-    'owner' : IDL.Principal,
+    'owner' : IDL.Text,
     'condition_status' : IDL.Bool,
     'name' : IDL.Opt(IDL.Text),
   });
@@ -177,7 +177,7 @@ export const idlFactory = ({ IDL }) => {
     'add_policy' : IDL.Func([AddPolicyArgs], [Result_1], []),
     'add_secret' : IDL.Func([AddSecretArgs], [Result_2], []),
     'confirm_x_out_of_y_condition' : IDL.Func(
-        [IDL.Principal, IDL.Text, IDL.Bool],
+        [IDL.Text, IDL.Text, IDL.Bool],
         [Result],
         [],
       ),
@@ -219,7 +219,7 @@ export const idlFactory = ({ IDL }) => {
       ),
     'get_secret_list' : IDL.Func([], [Result_9], ['query']),
     'ibe_encryption_key' : IDL.Func([], [IDL.Text], []),
-    'remove_contact' : IDL.Func([IDL.Principal], [Result], []),
+    'remove_contact' : IDL.Func([IDL.Text], [Result], []),
     'remove_policy' : IDL.Func([IDL.Text], [Result], []),
     'remove_secret' : IDL.Func([IDL.Text], [Result], []),
     'symmetric_key_verification_key' : IDL.Func([], [IDL.Text], []),

@@ -331,7 +331,6 @@ mod tests {
 
     #[tokio::test]
     async fn itest_policy_lifecycle() {
-        // Create empty user_vault
         let _ = create_principal();
         let principal = create_principal();
         let beneficiary = create_principal();
