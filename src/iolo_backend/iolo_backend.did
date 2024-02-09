@@ -180,6 +180,7 @@ service : () -> {
   remove_contact : (text) -> (Result);
   remove_policy : (text) -> (Result);
   remove_secret : (text) -> (Result);
+  start_with_interval_secs : (nat64) -> ();
   symmetric_key_verification_key : () -> (text);
   update_contact : (Contact) -> (Result_10);
   update_policy : (Policy) -> (Result_1);
