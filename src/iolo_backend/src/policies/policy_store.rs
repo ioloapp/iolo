@@ -7,7 +7,7 @@ use crate::common::{
 };
 use crate::utils::time;
 
-use super::policy::Policy;
+use super::policy::{Policy, PolicyID};
 
 #[derive(Serialize, Deserialize)]
 pub struct PolicyStore {
@@ -15,10 +15,10 @@ pub struct PolicyStore {
     // be serialized/deserialized in upgrades, so we tell serde to skip it.
     #[serde(skip, default = "init_stable_data")]
     // users: StableBTreeMap<u128, u128, Memory>,
-    pub policies: StableBTreeMap<String, Policy, Memory>,
+    pub policies: StableBTreeMap<PolicyID, Policy, Memory>,
 }
 
-fn init_stable_data() -> StableBTreeMap<String, Policy, Memory> {
+fn init_stable_data() -> StableBTreeMap<PolicyID, Policy, Memory> {
     StableBTreeMap::init(get_stable_btree_memory_for_policies())
 }
 

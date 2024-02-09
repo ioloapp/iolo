@@ -155,7 +155,7 @@ pub fn get_policy_list_as_validator() -> Result<Vec<PolicyListEntry>, SmartVault
 
 #[ic_cdk_macros::update]
 pub fn update_policy(policy: Policy) -> Result<Policy, SmartVaultErr> {
-    update_policy_impl(policy, &get_caller())
+    update_policy_impl(policy, get_caller().to_string())
 }
 
 #[ic_cdk_macros::update]

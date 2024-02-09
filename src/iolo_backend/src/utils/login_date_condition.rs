@@ -1,13 +1,22 @@
-use std::cell::RefCell;
+use std::{cell::RefCell, time::Duration};
 
 use ic_cdk_timers::TimerId;
+
+use crate::{
+    policies::{
+        conditions::Condition,
+        policies_interface_impl::{get_policy_from_policy_store, update_policy_impl},
+    },
+    smart_vaults::smart_vault::USER_STORE,
+    users::{user::User, user_store::UserStore},
+};
 
 thread_local! {
     // The global vector to keep multiple timer IDs.
     static TIMER_IDS: RefCell<Vec<TimerId>> = RefCell::new(Vec::new());
 }
 
-/*#[ic_cdk_macros::update]
+#[ic_cdk_macros::update]
 fn start_with_interval_secs(secs: u64) {
     let secs = Duration::from_secs(secs);
 
@@ -18,54 +27,49 @@ fn start_with_interval_secs(secs: u64) {
     TIMER_IDS.with(|timer_ids| timer_ids.borrow_mut().push(timer_id));
 }
 
-
 // This function is called by the init macro from lib.rs
 pub fn init_condition() {
     start_with_interval_secs(60); // Every minute
-    //start_with_interval_secs(86400); // Every day
+                                  //start_with_interval_secs(86400); // Every day
 }
 
+/// This function is called every time the timer fires.
+/// It will check the last login date of all users and set the condition status of all policies
+/// to true if the last login date is older than the allowed number of days.
 fn periodic_task() {
     // read all users
-    let users = USER_STORE.with(
-        |ur: &RefCell<UserStore>| -> BTreeMap<Principal, User> {
-            let user_store = ur.borrow();
-            user_store.users().clone()
-        },
-    );
+    let users: Vec<User> = USER_STORE.with(|ur: &RefCell<UserStore>| -> Vec<User> {
+        let user_store = ur.borrow();
+        user_store.users()
+    });
 
     // iterate over all existing users
-    for user in users.values() {
-        // read all policies of a user
-        USER_VAULT_STORE.with(|ms: &RefCell<UserVaultStore>| -> () {
-            let mut user_vault_store = ms.borrow_mut();
-
-            // Get all policies for principal
-            let policies = user_vault_store.get_user_policy_list_mut(&user.user_vault_id.unwrap());
-            if let Err(e) = &policies {
-                ic_cdk::println!("ERROR: {:?}", e);
-            }
-
-            // Iterate over policies and update condition status
-            for policy in policies.unwrap() {
-
-                // iterate over policy.conditions
-                for i in 0..policy.conditions().conditions.len() {
-                    let condition = &policy.conditions().conditions[i]; // Immutable borrow here
-                    match condition {
-                        Condition::TimeBasedCondition(tb) => {
-                            if condition.evaluate(&user) {
-                                // Last login date earlier than allowed, set condition status of all user policies to true
-                                ic_cdk::println!("Last login date of user {:?} is older than {:?} days, condition status of all its policies is set to true", user.id.to_text(), tb.number_of_days_since_last_login);
-                                policy.set_condition_status(true);
-                            } else {
-                                ic_cdk::println!("Last login date of user {:?} is NOT older than {:?} days!", user.id.to_text(), tb.number_of_days_since_last_login);
-                            }
+    for user in users {
+        // iterate over all policies
+        for policy_id in user.policies() {
+            // get policy from policy store
+            let mut policy = get_policy_from_policy_store(policy_id).unwrap();
+            // iterate over policy conditions
+            for condition in policy.conditions().clone() {
+                match &condition {
+                    Condition::TimeBasedCondition(tb) => {
+                        if condition.evaluate(&user) {
+                            // Last login date earlier than allowed, set condition status of all user policies to true
+                            ic_cdk::println!("Last login date of user {:?} is older than {:?} days, condition status of all its policies is set to true", user.id, tb.number_of_days_since_last_login);
+                            policy.set_condition_status(true);
+                            // update policy in policy store
+                            update_policy_impl(policy.clone(), user.id.clone()).unwrap();
+                        } else {
+                            ic_cdk::println!(
+                                "Last login date of user {:?} is NOT older than {:?} days!",
+                                user.id,
+                                tb.number_of_days_since_last_login
+                            );
                         }
-                        _ => {}
                     }
+                    _ => {}
                 }
             }
-        });
+        }
     }
-}*/
+}

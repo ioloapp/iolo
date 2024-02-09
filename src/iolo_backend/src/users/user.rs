@@ -4,7 +4,10 @@ use candid::{CandidType, Decode, Encode, Principal};
 use ic_stable_structures::{storable::Bound, Storable};
 use serde::{Deserialize, Serialize};
 
-use crate::{common::error::SmartVaultErr, secrets::secret::SecretID, utils::time};
+use crate::{
+    common::error::SmartVaultErr, policies::policy::PolicyID, secrets::secret::SecretID,
+    utils::time,
+};
 
 use super::contact::Contact;
 
@@ -23,7 +26,7 @@ pub struct User {
     pub contacts: Vec<Contact>, // TODO: make hashset?
     // New: Secrets, KeyBox and policies are stored in the user
     pub secrets: Vec<SecretID>, // TODO: make hashset?
-    pub policies: Vec<String>,
+    pub policies: Vec<PolicyID>,
     pub key_box: KeyBox,
 }
 

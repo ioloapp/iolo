@@ -167,7 +167,7 @@ pub fn get_policy_list_as_validator_impl(
     })
 }
 
-pub fn update_policy_impl(policy: Policy, caller: &Principal) -> Result<Policy, SmartVaultErr> {
+pub fn update_policy_impl(policy: Policy, caller: PrincipalID) -> Result<Policy, SmartVaultErr> {
     // check if policy exists
     POLICY_STORE.with(|ps| {
         let policy_store = ps.borrow();
@@ -395,7 +395,7 @@ mod tests {
         added_policy.secrets.insert(added_secret.id().to_string());
         added_policy.key_box = KeyBox::new();
         added_policy.conditions = vec![time_based_condition.clone(), x_out_of_y_condition.clone()];
-        let added_policy = update_policy_impl(added_policy.clone(), &principal);
+        let added_policy = update_policy_impl(added_policy.clone(), principal.to_string());
         assert!(added_policy.is_ok());
         let mut added_policy = added_policy.unwrap();
 
@@ -462,7 +462,7 @@ mod tests {
         // UPDATE POLICY NAME and BENEFICIARIES
         added_policy.name = Some("new policy updates".to_string());
         added_policy.beneficiaries.insert(validator.to_string());
-        let updated_policy = update_policy_impl(added_policy.clone(), &principal);
+        let updated_policy = update_policy_impl(added_policy.clone(), principal.to_string());
         assert!(updated_policy.is_ok());
         let mut updated_policy = updated_policy.unwrap();
         assert_eq!(updated_policy.name(), added_policy.name());
@@ -490,7 +490,7 @@ mod tests {
             condition_status: false,
         });
         updated_policy.conditions = vec![time_based_condition, x_out_of_y_condition];
-        let updated_policy = update_policy_impl(updated_policy.clone(), &principal);
+        let updated_policy = update_policy_impl(updated_policy.clone(), principal.to_string());
         assert!(updated_policy.is_ok());
         // let updated_policy = updated_policy.unwrap();
         let policy_list_as_old_validator = get_policy_list_as_validator_impl(&validator);
