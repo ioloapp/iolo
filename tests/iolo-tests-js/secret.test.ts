@@ -93,7 +93,7 @@ describe("Secret Tests", () => {
         expect(resultAddSecretOne).toHaveProperty('Ok');
         expect(Object.keys(resultAddSecretOne['Ok']).length).toStrictEqual(10);
         expect(resultAddSecretOne['Ok'].id).not.toStrictEqual("");
-        expect(resultAddSecretOne['Ok'].owner).toStrictEqual(identityOne.getPrincipal());
+        expect(resultAddSecretOne['Ok'].owner).toStrictEqual(identityOne.getPrincipal().toString());
         expect(resultAddSecretOne['Ok'].name).toStrictEqual(addSecretArgsOne.name);
         expect(resultAddSecretOne['Ok'].url).toStrictEqual(addSecretArgsOne.url);
         expect(resultAddSecretOne['Ok'].username).toStrictEqual(addSecretArgsOne.username);
@@ -109,7 +109,7 @@ describe("Secret Tests", () => {
         expect(Object.keys(resultAddSecretTwo['Ok']).length).toStrictEqual(10);
         expect(resultAddSecretTwo['Ok'].id).not.toStrictEqual("");
         expect(resultAddSecretTwo['Ok'].id).not.toBe(secretOne.id);
-        expect(resultAddSecretTwo['Ok'].owner).toStrictEqual(identityOne.getPrincipal());
+        expect(resultAddSecretTwo['Ok'].owner).toStrictEqual(identityOne.getPrincipal().toString());
         expect(resultAddSecretTwo['Ok'].name).toStrictEqual(addSecretArgsTwo.name);
         expect(resultAddSecretTwo['Ok'].url).toStrictEqual(addSecretArgsTwo.url);
         expect(resultAddSecretTwo['Ok'].username).toStrictEqual(addSecretArgsTwo.username);
@@ -126,7 +126,7 @@ describe("Secret Tests", () => {
         expect(resultAddSecretThree['Ok'].id).not.toStrictEqual("");
         expect(resultAddSecretThree['Ok'].id).not.toBe(secretOne.id);
         expect(resultAddSecretThree['Ok'].id).not.toBe(secretTwo.id);
-        expect(resultAddSecretThree['Ok'].owner).toStrictEqual(identityTwo.getPrincipal());
+        expect(resultAddSecretThree['Ok'].owner).toStrictEqual(identityTwo.getPrincipal().toString());
         expect(resultAddSecretThree['Ok'].name).toStrictEqual(addSecretArgsThree.name);
         expect(resultAddSecretThree['Ok'].url).toStrictEqual(addSecretArgsThree.url);
         expect(resultAddSecretThree['Ok'].username).toStrictEqual(addSecretArgsThree.username);
@@ -144,7 +144,7 @@ describe("Secret Tests", () => {
         expect(resultAddSecretFour['Ok'].id).not.toBe(secretOne.id);
         expect(resultAddSecretFour['Ok'].id).not.toBe(secretTwo.id);
         expect(resultAddSecretFour['Ok'].id).not.toBe(secretThree.id);
-        expect(resultAddSecretFour['Ok'].owner).toStrictEqual(identityTwo.getPrincipal());
+        expect(resultAddSecretFour['Ok'].owner).toStrictEqual(identityTwo.getPrincipal().toString());
         expect(resultAddSecretFour['Ok'].name).toStrictEqual(addSecretArgsFour.name);
         expect(resultAddSecretFour['Ok'].url).toStrictEqual(addSecretArgsFour.url);
         expect(resultAddSecretFour['Ok'].username).toStrictEqual(addSecretArgsFour.username);
@@ -175,7 +175,7 @@ describe("Secret Tests", () => {
         expect(resultSecretOne).toHaveProperty('Ok');
         expect(Object.keys(resultSecretOne['Ok']).length).toStrictEqual(10);
         expect(resultSecretOne['Ok'].id).toStrictEqual(secretOne.id);
-        expect(resultSecretOne['Ok'].owner).toStrictEqual(identityOne.getPrincipal());
+        expect(resultSecretOne['Ok'].owner).toStrictEqual(identityOne.getPrincipal().toString());
         expect(resultSecretOne['Ok'].name).toStrictEqual(addSecretArgsOne.name);
         expect(resultSecretOne['Ok'].url).toStrictEqual(addSecretArgsOne.url);
         expect(resultSecretOne['Ok'].username).toStrictEqual(addSecretArgsOne.username);
@@ -279,7 +279,7 @@ describe("Secret Tests", () => {
         expect(resultUpdateSecretOne['Ok'].password).toStrictEqual(updateSecretArgsOne.password);
         expect(resultUpdateSecretOne['Ok'].notes).toStrictEqual(updateSecretArgsOne.notes);
         expect(resultUpdateSecretOne['Ok'].category).toStrictEqual(updateSecretArgsOne.category);
-        expect(resultUpdateSecretOne['Ok'].owner).toStrictEqual(identityOne.getPrincipal()); // Must not have changed
+        expect(resultUpdateSecretOne['Ok'].owner).toStrictEqual(identityOne.getPrincipal().toString()); // Must not have changed
         expect(resultUpdateSecretOne['Ok'].date_modified).toBeGreaterThan(secretOneDateModifiedBeforeUpdate);
         expect(resultUpdateSecretOne['Ok'].date_created).toStrictEqual(secretOneDateCreatedBeforeUpdate); // Must not have changed
 
