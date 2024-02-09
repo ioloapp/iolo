@@ -191,8 +191,8 @@ pub fn update_contact(c: Contact) -> Result<Contact, SmartVaultErr> {
 }
 
 #[ic_cdk_macros::update]
-pub fn remove_contact(contact: Principal) -> Result<(), SmartVaultErr> {
-    remove_contact_impl(contact.to_string(), &get_caller())
+pub fn remove_contact(contact: PrincipalID) -> Result<(), SmartVaultErr> {
+    remove_contact_impl(contact, &get_caller())
 }
 
 #[pre_upgrade]

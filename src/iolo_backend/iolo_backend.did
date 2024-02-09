@@ -177,7 +177,7 @@ service : () -> {
   get_secret_as_beneficiary : (text, text) -> (Result_2) query;
   get_secret_list : () -> (Result_9) query;
   ibe_encryption_key : () -> (text);
-  remove_contact : (principal) -> (Result);
+  remove_contact : (text) -> (Result);
   remove_policy : (text) -> (Result);
   remove_secret : (text) -> (Result);
   symmetric_key_verification_key : () -> (text);
