@@ -161,7 +161,7 @@ mod tests {
 
         // add contact
         let aca: AddContactArgs = AddContactArgs {
-            id: contact_principal,
+            id: contact_principal.to_string(),
             name: Some("my contact".to_string()),
             email: None,
             user_type: None,

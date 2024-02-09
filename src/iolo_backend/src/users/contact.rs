@@ -1,4 +1,4 @@
-use candid::{CandidType, Principal};
+use candid::CandidType;
 use serde::{Deserialize, Serialize};
 use std::hash::{Hash, Hasher};
 
@@ -14,7 +14,7 @@ pub struct Contact {
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct AddContactArgs {
-    pub id: Principal,
+    pub id: PrincipalID,
     pub name: Option<String>,
     pub email: Option<String>,
     pub user_type: Option<UserType>,
