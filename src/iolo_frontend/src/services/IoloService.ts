@@ -1,5 +1,4 @@
 import {ActorSubclass, HttpAgent, Identity} from "@dfinity/agent";
-import {v4 as uuidv4} from 'uuid';
 import {
     _SERVICE,
     AddPolicyArgs,
@@ -36,7 +35,7 @@ import {
     aes_gcm_decrypt,
     aes_gcm_encrypt,
     get_aes_256_gcm_key_for_policy,
-    get_aes_256_gcm_key_for_uservault,
+    get_aes_256_gcm_key_for_user,
     get_local_random_aes_256_gcm_key
 } from "../utils/crypto";
 import {
@@ -194,9 +193,9 @@ class IoloService {
         // Now you can use value1 and value2
         if (value1['Ok'] && value2['Ok']) {
             // Get the vetKey to decrypt the encryption key
-            const uservaultVetKey: Uint8Array = await get_aes_256_gcm_key_for_uservault(await this.getUserPrincipal(), (await this.getActor()));
+            const userVetKey: Uint8Array = await get_aes_256_gcm_key_for_user(await this.getUserPrincipal(), (await this.getActor()));
 
-            return this.mapEncryptedSecretToUiSecret(value1['Ok'], value2['Ok'], uservaultVetKey);
+            return this.mapEncryptedSecretToUiSecret(value1['Ok'], value2['Ok'], userVetKey);
         } else throw mapError(value1['Err']);
     }
 
@@ -247,10 +246,10 @@ class IoloService {
         }
 
         // Get the vetKey to decrypt the encryption key
-        const uservaultVetKey: Uint8Array = await get_aes_256_gcm_key_for_uservault(await this.getUserPrincipal(),(await this.getActor()));
+        const userVetKey: Uint8Array = await get_aes_256_gcm_key_for_user(await this.getUserPrincipal(),(await this.getActor()));
 
         // Decrypt symmetric key
-        const decryptedSymmetricKey = await aes_gcm_decrypt(encrypted_symmetric_key as Uint8Array, uservaultVetKey, this.ivLength);
+        const decryptedSymmetricKey = await aes_gcm_decrypt(encrypted_symmetric_key as Uint8Array, userVetKey, this.ivLength);
 
         // Encrypt updated secret args
         const encryptedUpdateSecretArgs: UpdateSecretArgs = await this.encryptExistingSecret(uiSecret, decryptedSymmetricKey, existingSecret);
@@ -522,8 +521,8 @@ class IoloService {
             // Encrypt the symmetric key
             const symmetricKey = await get_local_random_aes_256_gcm_key();
             const ivSymmetricKey = window.crypto.getRandomValues(new Uint8Array(this.ivLength)); // 96-bits; unique per message
-            const uservaultVetKey = await get_aes_256_gcm_key_for_uservault(await this.getUserPrincipal(), (await this.getActor()));
-            const encryptedSymmetricKey = await aes_gcm_encrypt(symmetricKey, uservaultVetKey, ivSymmetricKey);
+            const userVetKey = await get_aes_256_gcm_key_for_user(await this.getUserPrincipal(), (await this.getActor()));
+            const encryptedSymmetricKey = await aes_gcm_encrypt(symmetricKey, userVetKey, ivSymmetricKey);
 
             // Encrypt optional secret attributes
             let encryptedUsername = new Uint8Array(0);
@@ -644,8 +643,8 @@ class IoloService {
     private async mapUiPolicyToPolicy(uiPolicy: UiPolicy): Promise<Policy> {
         const beneficiaries = uiPolicy.beneficiaries.map((item) => item.id);
 
-        // Get the uservault vetKey to decrypt the symmetric encryption key
-        const uservaultVetKey: Uint8Array = await get_aes_256_gcm_key_for_uservault(await this.getUserPrincipal(), (await this.getActor()));
+        // Get the user vetKey to decrypt the symmetric encryption key
+        const userVetKey: Uint8Array = await get_aes_256_gcm_key_for_user(await this.getUserPrincipal(), (await this.getActor()));
 
         // Get vetkey for policies
         const policyVetKey = await get_aes_256_gcm_key_for_policy(uiPolicy.id, (await this.getActor()));
@@ -655,8 +654,8 @@ class IoloService {
         for (const item of uiPolicy.secrets) {
             const result: Result_6 = await (await this.getActor()).get_encrypted_symmetric_key(item);
             if (result['Ok']) {
-                // Decrypt symmetric key with uservault vetKey
-                const decryptedSymmetricKey = await aes_gcm_decrypt(result['Ok'].encrypted_symmetric_key as Uint8Array, uservaultVetKey, this.ivLength);
+                // Decrypt symmetric key with user vetKey
+                const decryptedSymmetricKey = await aes_gcm_decrypt(result['Ok'].encrypted_symmetric_key as Uint8Array, userVetKey, this.ivLength);
 
                 // Encrypt symmetric key with policy vetKey
                 const ivSymmetricKey = window.crypto.getRandomValues(new Uint8Array(12)); // 96-bits; unique per message

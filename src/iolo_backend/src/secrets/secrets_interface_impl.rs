@@ -209,7 +209,6 @@ mod tests {
 
     #[tokio::test]
     async fn itest_secret_lifecycle() {
-        // Create empty user_vault
         let principal = create_principal();
 
         // Create User and store it

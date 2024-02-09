@@ -32,22 +32,6 @@ export class UserDeletionFailed extends IoloError {
         this.name = "UserDeletionFailed";
     }
 }
-
-export class UserVaultCreationFailed extends IoloError {
-    constructor(message) {
-        super(message);
-        this.name = "UserVaultCreationFailed";
-    }
-
-}
-
-export class UserVaultDoesNotExist extends IoloError {
-    constructor(message) {
-        super(message);
-        this.name = "UserVaultDoesNotExist";
-    }
-}
-
 export class SecretDoesNotExist extends IoloError {
     constructor(message) {
         super(message);
