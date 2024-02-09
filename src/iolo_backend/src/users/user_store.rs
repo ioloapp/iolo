@@ -1,5 +1,3 @@
-use std::collections::BTreeMap;
-
 use candid::Principal;
 use ic_stable_structures::StableBTreeMap;
 use serde::{Deserialize, Serialize};
@@ -164,7 +162,7 @@ impl UserStore {
     }
 
     pub fn users(&self) -> Vec<User> {
-        self.users.iter().map(|(k, u)| u).collect::<Vec<_>>()
+        self.users.iter().map(|(_, u)| u).collect::<Vec<_>>()
     }
 
     pub fn delete_user(&mut self, user_id: &PrincipalID) -> Result<User, SmartVaultErr> {
