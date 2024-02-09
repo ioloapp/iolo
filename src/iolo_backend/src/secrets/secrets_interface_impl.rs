@@ -25,7 +25,10 @@ use super::{
  * 3. Add the secret to the secret store
  * 4. Add the secret id to the user vault's secret id list
  */
-pub async fn add_secret_impl(args: AddSecretArgs, caller: &Principal) -> Result<Secret, SmartVaultErr> {
+pub async fn add_secret_impl(
+    args: AddSecretArgs,
+    caller: &Principal,
+) -> Result<Secret, SmartVaultErr> {
     // generate a new UUID for the secret
     let new_secret_id: SecretID = UUID::new().await;
 
@@ -44,7 +47,11 @@ pub async fn add_secret_impl(args: AddSecretArgs, caller: &Principal) -> Result<
     // add the secret id to the user in the USER_STORE
     USER_STORE.with(|us| {
         let mut user_store = us.borrow_mut();
-        user_store.add_secret_to_user(&caller.to_string(), new_secret_id, args.encrypted_symmetric_key.clone())
+        user_store.add_secret_to_user(
+            &caller.to_string(),
+            new_secret_id,
+            args.encrypted_symmetric_key.clone(),
+        )
     })?;
     Ok(secret)
 }
@@ -83,7 +90,10 @@ pub fn get_secret_list_impl(principal: &Principal) -> Result<Vec<SecretListEntry
     Ok(secrets.into_iter().map(SecretListEntry::from).collect())
 }
 
-pub fn update_secret_impl(usa: UpdateSecretArgs, principal: &Principal) -> Result<Secret, SmartVaultErr> {
+pub fn update_secret_impl(
+    usa: UpdateSecretArgs,
+    principal: &Principal,
+) -> Result<Secret, SmartVaultErr> {
     SECRET_STORE.with(|x| {
         let mut secret_store = x.borrow_mut();
         // TODO: check if the secret is in the user vault
@@ -107,26 +117,31 @@ pub fn remove_secret_impl(secret_id: SecretID, principal: &Principal) -> Result<
     })
 }
 
-pub fn get_encrypted_symmetric_key_impl(sid: SecretID, principal: &Principal) -> Result<Vec<u8>, SmartVaultErr> {
+pub fn get_encrypted_symmetric_key_impl(
+    sid: SecretID,
+    principal: &Principal,
+) -> Result<Vec<u8>, SmartVaultErr> {
     // get encrypted symmetric key of a secret from user's keybox in the user store
-    USER_STORE.with(
-        |us| -> Result<Vec<u8>, SmartVaultErr> {
-            let user_store = us.borrow();
-            let user = user_store.get_user(&principal.to_string())?;
-            user.key_box()
-                .get(&sid)
-                .cloned()
-                .ok_or_else(|| SmartVaultErr::SecretDoesNotExist(sid.to_string()))
-        },
-    )
+    USER_STORE.with(|us| -> Result<Vec<u8>, SmartVaultErr> {
+        let user_store = us.borrow();
+        let user = user_store.get_user(&principal.to_string())?;
+        user.key_box()
+            .get(&sid)
+            .cloned()
+            .ok_or_else(|| SmartVaultErr::SecretDoesNotExist(sid.to_string()))
+    })
 }
 
-pub fn get_secret_as_beneficiary_impl(secret_id: SecretID, policy_id: PolicyID, caller: &Principal) -> Result<Secret, SmartVaultErr> {
+pub fn get_secret_as_beneficiary_impl(
+    secret_id: SecretID,
+    policy_id: PolicyID,
+    caller: &Principal,
+) -> Result<Secret, SmartVaultErr> {
     // fetch policy from policy store and check if caller is beneficiary
     let policy: Policy;
     if let Ok(p) = get_policy_from_policy_store(&policy_id) {
         // check if the caller is a beneficiary of the policy
-        if !p.beneficiaries().contains(caller) {
+        if !p.beneficiaries().contains(&caller.to_string()) {
             return Err(SmartVaultErr::CallerNotBeneficiary(policy_id));
         }
         policy = p;
@@ -146,12 +161,16 @@ pub fn get_secret_as_beneficiary_impl(secret_id: SecretID, policy_id: PolicyID, 
     Err(SmartVaultErr::InvalidPolicyCondition)
 }
 
-pub fn get_encrypted_symmetric_key_as_beneficiary_impl(secret_id: SecretID, policy_id: PolicyID, caller: &Principal) -> Result<Vec<u8>, SmartVaultErr> {
+pub fn get_encrypted_symmetric_key_as_beneficiary_impl(
+    secret_id: SecretID,
+    policy_id: PolicyID,
+    caller: &Principal,
+) -> Result<Vec<u8>, SmartVaultErr> {
     // fetch policy from policy store and check if caller is beneficiary
     let policy: Policy;
     if let Ok(p) = get_policy_from_policy_store(&policy_id) {
         // check if the caller is a beneficiary of the policy
-        if !p.beneficiaries().contains(caller) {
+        if !p.beneficiaries().contains(&caller.to_string()) {
             return Err(SmartVaultErr::CallerNotBeneficiary(policy_id));
         }
         policy = p;
@@ -176,8 +195,8 @@ mod tests {
         secrets::{
             secret::{AddSecretArgs, UpdateSecretArgs},
             secrets_interface_impl::{
-                add_secret_impl, get_secret_impl, get_secret_list_impl,
-                get_encrypted_symmetric_key_impl, remove_secret_impl, update_secret_impl,
+                add_secret_impl, get_encrypted_symmetric_key_impl, get_secret_impl,
+                get_secret_list_impl, remove_secret_impl, update_secret_impl,
             },
         },
         smart_vaults::smart_vault::SECRET_STORE,

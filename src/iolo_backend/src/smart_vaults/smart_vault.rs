@@ -14,19 +14,16 @@ use crate::policies::policy::PolicyResponse;
 use crate::policies::policy::{AddPolicyArgs, Policy, PolicyID, PolicyListEntry};
 use crate::policies::policy_registries::PolicyRegistries;
 use crate::policies::policy_store::PolicyStore;
-use crate::secrets::secret::{
-    AddSecretArgs, Secret, SecretID, SecretListEntry,
-    UpdateSecretArgs,
-};
+use crate::secrets::secret::{AddSecretArgs, Secret, SecretID, SecretListEntry, UpdateSecretArgs};
 use crate::secrets::secret_store::SecretStore;
 use crate::secrets::secrets_interface_impl::{
-    add_secret_impl, get_secret_as_beneficiary_impl, get_secret_impl, get_secret_list_impl,
-    get_encrypted_symmetric_key_as_beneficiary_impl,
-    get_encrypted_symmetric_key_impl, remove_secret_impl, update_secret_impl,
+    add_secret_impl, get_encrypted_symmetric_key_as_beneficiary_impl,
+    get_encrypted_symmetric_key_impl, get_secret_as_beneficiary_impl, get_secret_impl,
+    get_secret_list_impl, remove_secret_impl, update_secret_impl,
 };
 
 use crate::users::contact::{AddContactArgs, Contact};
-use crate::users::user::{AddOrUpdateUserArgs, User};
+use crate::users::user::{AddOrUpdateUserArgs, PrincipalID, User};
 use crate::users::user_store::UserStore;
 use crate::users::users_interface_impl::{
     add_contact_impl, create_user_impl, delete_user_impl, get_contact_list_impl,
@@ -102,9 +99,7 @@ pub fn get_secret_list() -> Result<Vec<SecretListEntry>, SmartVaultErr> {
 }
 
 #[ic_cdk_macros::query]
-pub fn get_encrypted_symmetric_key(
-    sid: SecretID,
-) -> Result<Vec<u8>, SmartVaultErr> {
+pub fn get_encrypted_symmetric_key(sid: SecretID) -> Result<Vec<u8>, SmartVaultErr> {
     get_encrypted_symmetric_key_impl(sid, &get_caller())
 }
 
@@ -170,7 +165,7 @@ pub fn remove_policy(policy_id: String) -> Result<(), SmartVaultErr> {
 
 #[ic_cdk_macros::update]
 pub fn confirm_x_out_of_y_condition(
-    policy_owner: Principal,
+    policy_owner: PrincipalID,
     policy_id: PolicyID,
     status: bool,
 ) -> Result<(), SmartVaultErr> {

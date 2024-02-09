@@ -9,6 +9,7 @@ use crate::{
         secrets_interface_impl::get_secret_impl,
     },
     smart_vaults::smart_vault::{POLICY_REGISTRIES, POLICY_STORE, SECRET_STORE, USER_STORE},
+    users::user::PrincipalID,
 };
 
 use super::{
@@ -25,7 +26,8 @@ pub async fn add_policy_impl(
     let new_policy_id: String = UUID::new().await;
 
     // create policy from AddPolicyArgs
-    let policy: Policy = Policy::from_add_policy_args(&new_policy_id, policy_owner, apa);
+    let policy: Policy =
+        Policy::from_add_policy_args(&new_policy_id, &policy_owner.to_string(), apa);
 
     // Add policy to the policy store (policies: StableBTreeMap<UUID, Policy, Memory>,)
     POLICY_STORE.with(
@@ -116,7 +118,7 @@ pub fn get_policy_as_beneficiary_impl(
     let policy: Policy = get_policy_from_policy_store(&policy_id)?;
 
     // Ensure beneficiary is in policy.beneficiaries
-    if !policy.beneficiaries().contains(beneficiary) {
+    if !policy.beneficiaries().contains(&beneficiary.to_string()) {
         return Err(SmartVaultErr::NoPolicyForBeneficiary(format!(
             "Beneficiary {:?} is not beneficient of policy {:?}",
             beneficiary, policy_id
@@ -151,7 +153,7 @@ pub fn get_policy_list_as_beneficiary_impl(
     // get all policy ids for caller by checking the policy registry index for beneficiaries
     POLICY_REGISTRIES.with(|pr| {
         let policy_registries = pr.borrow();
-        policy_registries.get_policy_ids_as_beneficiary(caller)
+        policy_registries.get_policy_ids_as_beneficiary(&caller.to_string())
     })
 }
 
@@ -161,7 +163,7 @@ pub fn get_policy_list_as_validator_impl(
     // get all policy ids for caller by checking the policy registry index for validators
     POLICY_REGISTRIES.with(|pr| -> Result<Vec<PolicyListEntry>, SmartVaultErr> {
         let policy_registries = pr.borrow();
-        policy_registries.get_policy_ids_as_validator(validator)
+        policy_registries.get_policy_ids_as_validator(&validator.to_string())
     })
 }
 
@@ -173,7 +175,7 @@ pub fn update_policy_impl(policy: Policy, caller: &Principal) -> Result<Policy, 
     })?;
 
     // check if caller is owner of policy
-    if policy.owner() != caller {
+    if policy.owner() != &caller.to_string() {
         return Err(SmartVaultErr::OnlyOwnerCanUpdatePolicy(format!(
             "Caller {:?} is not owner of policy {:?}",
             caller,
@@ -220,7 +222,7 @@ pub fn remove_policy_impl(policy_id: String, caller: &Principal) -> Result<(), S
     let policy: Policy = get_policy_from_policy_store(&policy_id)?;
 
     // check if caller is owner of policy
-    if policy.owner() != caller {
+    if policy.owner() != &caller.to_string() {
         return Err(SmartVaultErr::OnlyOwnerCanUpdatePolicy(format!(
             "Caller {:?} is not owner of policy {:?}",
             caller,
@@ -255,7 +257,7 @@ pub fn remove_policy_impl(policy_id: String, caller: &Principal) -> Result<(), S
 }
 
 pub fn confirm_x_out_of_y_condition_impl(
-    policy_owner: Principal,
+    policy_owner: PrincipalID,
     policy_id: PolicyID,
     status: bool,
     validator: &Principal,
@@ -273,7 +275,7 @@ pub fn confirm_x_out_of_y_condition_impl(
     }
 
     // Check that there is a XOutOfYCondition in the policy and that the caller is one of the confirmers
-    match policy.find_validator_mut(validator) {
+    match policy.find_validator_mut(&validator.to_string()) {
         Some(confirmer) => {
             // Modify the confirmer as needed
             confirmer.status = status;
@@ -317,7 +319,7 @@ mod tests {
             policy::{AddPolicyArgs, Policy, PolicyResponse},
         },
         secrets::{
-            secret::{AddSecretArgs},
+            secret::AddSecretArgs,
             secrets_interface_impl::{add_secret_impl, get_secret_as_beneficiary_impl},
         },
         smart_vaults::smart_vault::POLICY_STORE,
@@ -370,7 +372,7 @@ mod tests {
         let x_out_of_y_condition: Condition = Condition::XOutOfYCondition(XOutOfYCondition {
             id: "My X out of Y Condition".to_string(),
             validators: vec![Validator {
-                id: validator,
+                id: validator.to_string(),
                 status: false,
             }],
             quorum: 1,
@@ -389,7 +391,7 @@ mod tests {
         let mut added_policy: Policy = add_policy_impl(apa.clone(), &principal).await.unwrap();
 
         // Update policy with other attributes
-        added_policy.beneficiaries = [beneficiary].iter().cloned().collect();
+        added_policy.beneficiaries = [beneficiary.to_string()].iter().cloned().collect();
         added_policy.secrets.insert(added_secret.id().to_string());
         added_policy.key_box = KeyBox::new();
         added_policy.conditions = vec![time_based_condition.clone(), x_out_of_y_condition.clone()];
@@ -459,13 +461,17 @@ mod tests {
 
         // UPDATE POLICY NAME and BENEFICIARIES
         added_policy.name = Some("new policy updates".to_string());
-        added_policy.beneficiaries.insert(validator);
+        added_policy.beneficiaries.insert(validator.to_string());
         let updated_policy = update_policy_impl(added_policy.clone(), &principal);
         assert!(updated_policy.is_ok());
         let mut updated_policy = updated_policy.unwrap();
         assert_eq!(updated_policy.name(), added_policy.name());
-        assert!(updated_policy.beneficiaries().contains(&validator));
-        assert!(updated_policy.beneficiaries().contains(&beneficiary));
+        assert!(updated_policy
+            .beneficiaries()
+            .contains(&validator.to_string()));
+        assert!(updated_policy
+            .beneficiaries()
+            .contains(&beneficiary.to_string()));
 
         // UPDATE POLICY CONDITIONS
         let time_based_condition: Condition = Condition::TimeBasedCondition(TimeBasedCondition {
@@ -477,7 +483,7 @@ mod tests {
         let x_out_of_y_condition: Condition = Condition::XOutOfYCondition(XOutOfYCondition {
             id: "My X out of Y Condition".to_string(),
             validators: vec![Validator {
-                id: validator2,
+                id: validator2.to_string(),
                 status: false,
             }],
             quorum: 1,

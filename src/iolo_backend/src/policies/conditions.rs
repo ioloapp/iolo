@@ -2,10 +2,10 @@
 //! 1. Time based conditions - Checks whether a certain time threshold is reached
 //! 2. X out of Y conditions - Checks whether X out of Y validators have voted "yes" on the condition
 
-use candid::{CandidType, Deserialize, Principal};
+use candid::{CandidType, Deserialize};
 use serde::Serialize;
 
-use crate::users::user::User;
+use crate::users::user::{PrincipalID, User};
 use crate::utils::time;
 
 /// Defines the number of days since the last login of a user.
@@ -30,7 +30,7 @@ pub struct XOutOfYCondition {
 /// Validator is the role a user has when it is part of of a condition and has to vote for it
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct Validator {
-    pub id: Principal,
+    pub id: PrincipalID,
     pub status: bool,
 }
 

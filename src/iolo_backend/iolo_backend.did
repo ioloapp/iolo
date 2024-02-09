@@ -33,12 +33,12 @@ type LogicalOperator = variant { Or; And };
 type Policy = record {
   id : text;
   date_created : nat64;
-  owner : principal;
+  owner : text;
   name : opt text;
   conditions_logical_operator : opt LogicalOperator;
   secrets : vec text;
   conditions_status : bool;
-  beneficiaries : vec principal;
+  beneficiaries : vec text;
   key_box : vec record { text; vec nat8 };
   conditions : vec Condition;
   date_modified : nat64;
@@ -49,19 +49,19 @@ type PolicyKeyDerviationArgs = record {
 };
 type PolicyListEntry = record {
   id : text;
-  owner : principal;
+  owner : text;
   condition_status : bool;
   name : opt text;
 };
 type PolicyResponse = record {
   id : text;
   date_created : nat64;
-  owner : principal;
+  owner : text;
   name : opt text;
   conditions_logical_operator : opt LogicalOperator;
   secrets : vec SecretListEntry;
   conditions_status : bool;
-  beneficiaries : vec principal;
+  beneficiaries : vec text;
   key_box : vec record { text; vec nat8 };
   conditions : vec Condition;
   date_modified : nat64;
@@ -145,7 +145,7 @@ type User = record {
   policies : vec text;
 };
 type UserType = variant { Company; Person };
-type Validator = record { id : principal; status : bool };
+type Validator = record { id : text; status : bool };
 type XOutOfYCondition = record {
   id : text;
   condition_status : bool;
@@ -156,7 +156,7 @@ service : () -> {
   add_contact : (AddContactArgs) -> (Result);
   add_policy : (AddPolicyArgs) -> (Result_1);
   add_secret : (AddSecretArgs) -> (Result_2);
-  confirm_x_out_of_y_condition : (principal, text, bool) -> (Result);
+  confirm_x_out_of_y_condition : (text, text, bool) -> (Result);
   create_user : (AddOrUpdateUserArgs) -> (Result_3);
   delete_user : () -> (Result);
   encrypted_ibe_decryption_key_for_caller : (vec nat8) -> (text);

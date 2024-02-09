@@ -1,7 +1,7 @@
 use std::borrow::Cow;
 use std::collections::{BTreeMap, HashSet};
 
-use candid::{CandidType, Decode, Encode, Principal};
+use candid::{CandidType, Decode, Encode};
 use ic_stable_structures::storable::Bound;
 use ic_stable_structures::Storable;
 use serde::{Deserialize, Serialize};
@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 use crate::policies::conditions::{Condition, Validator};
 use crate::secrets::secret::SecretID;
 use crate::secrets::secret::SecretListEntry;
-use crate::users::user::KeyBox;
+use crate::users::user::{KeyBox, PrincipalID};
 use crate::utils::{caller::get_caller, time};
 
 pub type PolicyID = String;
@@ -17,11 +17,11 @@ pub type PolicyID = String;
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct Policy {
     pub id: PolicyID,
-    owner: Principal,
+    owner: PrincipalID,
     pub name: Option<String>,
     date_created: u64,
     pub date_modified: u64,
-    pub beneficiaries: HashSet<Principal>,
+    pub beneficiaries: HashSet<PrincipalID>,
     // References to the secrets contained in this policy
     // Path to secret: owner -> owner uservault -> secret
     pub secrets: HashSet<SecretID>,
@@ -62,7 +62,7 @@ pub struct AddPolicyArgs {
 pub struct PolicyListEntry {
     pub id: PolicyID,
     pub name: Option<String>,
-    pub owner: Principal,
+    pub owner: PrincipalID,
     pub condition_status: bool,
 }
 
@@ -78,14 +78,14 @@ impl From<Policy> for PolicyListEntry {
 }
 
 impl Policy {
-    pub fn new(id: String, owner: &Principal) -> Self {
+    pub fn new(id: String, owner: &PrincipalID) -> Self {
         let now: u64 = time::get_current_time();
         Self {
             id,
             name: None,
             date_created: now,
             date_modified: now,
-            owner: *owner,
+            owner: owner.to_string(),
             beneficiaries: HashSet::new(),
             secrets: HashSet::new(),
             key_box: BTreeMap::new(),
@@ -95,9 +95,9 @@ impl Policy {
         }
     }
 
-    pub fn from_add_policy_args(policy_id: &str, owner: &Principal, ata: AddPolicyArgs) -> Self {
+    pub fn from_add_policy_args(policy_id: &str, owner: &PrincipalID, ata: AddPolicyArgs) -> Self {
         let mut new_policy = Policy::new(policy_id.to_string(), owner);
-        new_policy.owner = *owner;
+        new_policy.owner = owner.to_string();
         new_policy.name = ata.name;
         new_policy.beneficiaries = HashSet::new();
         new_policy.secrets = HashSet::new();
@@ -120,7 +120,7 @@ impl Policy {
         &self.date_modified
     }
 
-    pub fn owner(&self) -> &Principal {
+    pub fn owner(&self) -> &PrincipalID {
         &self.owner
     }
 
@@ -128,7 +128,7 @@ impl Policy {
         &self.name
     }
 
-    pub fn beneficiaries(&self) -> &HashSet<Principal> {
+    pub fn beneficiaries(&self) -> &HashSet<PrincipalID> {
         &self.beneficiaries
     }
 
@@ -155,11 +155,11 @@ impl Policy {
     /// - If beneficiaries did not previously contain this beneficiary, true is returned.
     /// - If beneficiaries already contained this beneficiary, false is returned, and the set is not modified.
     ///   Original value is not replaced, and the value passed as argument is dropped.
-    pub fn add_beneficiary(&mut self, beneficiary: Principal) -> bool {
+    pub fn add_beneficiary(&mut self, beneficiary: PrincipalID) -> bool {
         self.beneficiaries.insert(beneficiary)
     }
 
-    pub fn remove_beneficiary(&mut self, beneficiary: &Principal) -> bool {
+    pub fn remove_beneficiary(&mut self, beneficiary: &PrincipalID) -> bool {
         self.beneficiaries.remove(beneficiary)
     }
 
@@ -185,7 +185,7 @@ impl Policy {
     }
 
     // Function to find a mutable reference to a validator if the given principal is one of them
-    pub fn find_validator_mut(&mut self, principal: &Principal) -> Option<&mut Validator> {
+    pub fn find_validator_mut(&mut self, principal: &PrincipalID) -> Option<&mut Validator> {
         for condition in &mut self.conditions {
             if let Condition::XOutOfYCondition(x_out_of_y) = condition {
                 for validator in &mut x_out_of_y.validators {
@@ -207,8 +207,8 @@ pub struct PolicyResponse {
     name: Option<String>,
     date_created: u64,
     date_modified: u64,
-    owner: Principal,
-    pub beneficiaries: HashSet<Principal>,
+    owner: PrincipalID,
+    pub beneficiaries: HashSet<PrincipalID>,
     secrets: HashSet<SecretListEntry>,
     key_box: KeyBox,
     conditions_status: bool,
@@ -224,7 +224,7 @@ impl PolicyResponse {
             name: None,
             date_created: now,
             date_modified: now,
-            owner: get_caller(),
+            owner: get_caller().to_string(),
             beneficiaries: HashSet::new(),
             secrets: HashSet::new(),
             key_box: BTreeMap::new(),

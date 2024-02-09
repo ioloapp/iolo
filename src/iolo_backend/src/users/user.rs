@@ -4,11 +4,7 @@ use candid::{CandidType, Decode, Encode, Principal};
 use ic_stable_structures::{storable::Bound, Storable};
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    common::error::SmartVaultErr,
-    secrets::secret::{SecretID},
-    utils::time,
-};
+use crate::{common::error::SmartVaultErr, secrets::secret::SecretID, utils::time};
 
 use super::contact::Contact;
 
@@ -110,11 +106,7 @@ impl User {
         &self.date_last_login
     }
 
-    pub fn add_secret(
-        &mut self,
-        secret_id: SecretID,
-        encrypted_symmetric_key: Vec<u8>,
-    ) {
+    pub fn add_secret(&mut self, secret_id: SecretID, encrypted_symmetric_key: Vec<u8>) {
         self.secrets.push(secret_id.clone());
         self.key_box.insert(secret_id, encrypted_symmetric_key);
         self.date_modified = time::get_current_time();

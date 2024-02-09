@@ -59,8 +59,8 @@ async fn generate_vetkd_encrypted_symmetric_key_for_policy(
     // Checks if one of the following conditions are met:
     // 1. Caller is the owner or
     // 2. Caller is a beneficiary and conditions are met
-    let key_can_be_generated = policy.owner() == &caller
-        || (policy.beneficiaries().contains(&caller) && *policy.conditions_status());
+    let key_can_be_generated = policy.owner() == &caller.to_string()
+        || (policy.beneficiaries().contains(&caller.to_string()) && *policy.conditions_status());
 
     if !key_can_be_generated {
         return Err(SmartVaultErr::KeyGenerationNotAllowed);
