@@ -222,6 +222,7 @@ export const idlFactory = ({ IDL }) => {
     'remove_contact' : IDL.Func([IDL.Text], [Result], []),
     'remove_policy' : IDL.Func([IDL.Text], [Result], []),
     'remove_secret' : IDL.Func([IDL.Text], [Result], []),
+    'start_with_interval_secs' : IDL.Func([IDL.Nat64], [], []),
     'symmetric_key_verification_key' : IDL.Func([], [IDL.Text], []),
     'update_contact' : IDL.Func([Contact], [Result_10], []),
     'update_policy' : IDL.Func([Policy], [Result_1], []),

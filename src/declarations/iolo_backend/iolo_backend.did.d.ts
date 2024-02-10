@@ -207,6 +207,7 @@ export interface _SERVICE {
   'remove_contact' : ActorMethod<[string], Result>,
   'remove_policy' : ActorMethod<[string], Result>,
   'remove_secret' : ActorMethod<[string], Result>,
+  'start_with_interval_secs' : ActorMethod<[bigint], undefined>,
   'symmetric_key_verification_key' : ActorMethod<[], string>,
   'update_contact' : ActorMethod<[Contact], Result_10>,
   'update_policy' : ActorMethod<[Policy], Result_1>,
