@@ -190,16 +190,10 @@ impl UserStore {
             .ok_or_else(|| SmartVaultErr::UserDeletionFailed(user_id.to_string()))
     }
 
-    pub fn get_all_last_login_dates(&self) -> Vec<(Principal, u64)> {
+    pub fn get_all_last_login_dates(&self) -> Vec<(PrincipalID, u64)> {
         self.users
             .iter()
-            .filter_map(|(principal_id, user)| {
-                if let Some(login_date) = user.date_last_login {
-                    Some((Principal::from_text(&principal_id).unwrap(), login_date))
-                } else {
-                    None
-                }
-            })
+            .filter_map(|(principal_id, user)| user.date_last_login.map(|dll| (principal_id, dll)))
             .collect()
     }
 

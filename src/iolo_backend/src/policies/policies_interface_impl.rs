@@ -446,10 +446,7 @@ mod tests {
         // get specific policy as beneficiary: this should fail, because policy has not yet been activated
         let policy_reponse =
             get_policy_as_beneficiary_impl(added_policy.id().clone(), beneficiary.to_string());
-        assert!(policy_reponse.is_err_and(|e| match e {
-            SmartVaultErr::InvalidPolicyCondition => true,
-            _ => false,
-        }));
+        assert!(policy_reponse.is_err_and(|e| matches!(e, SmartVaultErr::InvalidPolicyCondition)));
 
         // get policy list as validator
         let get_policy_list_as_validator =
@@ -465,10 +462,9 @@ mod tests {
         // get policy as validator: this souhld fail, because validator is not a beneficiary
         let policy_reponse =
             get_policy_as_beneficiary_impl(added_policy.id().clone(), validator.to_string());
-        assert!(policy_reponse.is_err_and(|e| match e {
-            SmartVaultErr::NoPolicyForBeneficiary(_) => true,
-            _ => false,
-        }));
+        assert!(
+            policy_reponse.is_err_and(|e| matches!(e, SmartVaultErr::NoPolicyForBeneficiary(_)))
+        );
 
         // UPDATE POLICY NAME and BENEFICIARIES
         added_policy.name = Some("new policy updates".to_string());
@@ -519,10 +515,8 @@ mod tests {
             updated_policy.id,
             beneficiary.to_string(),
         );
-        assert!(secret_as_beneficiary.is_err_and(|e| match e {
-            SmartVaultErr::InvalidPolicyCondition => true,
-            _ => false,
-        }));
+        assert!(secret_as_beneficiary
+            .is_err_and(|e| matches!(e, SmartVaultErr::InvalidPolicyCondition)));
     }
 
     fn create_principal() -> Principal {
