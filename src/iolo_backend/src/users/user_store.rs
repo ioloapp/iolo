@@ -191,15 +191,12 @@ impl UserStore {
     ) -> Result<(), SmartVaultErr> {
         // Only name, email and user_type can be updated
         if let Some(mut existing_user) = self.users.remove(user) {
-            // add user only if not exists yet
-            if existing_user.contacts.iter().any(|c| c.id == contact.id) {
+            if !existing_user.contacts.insert(contact.clone()) {
+                // If insert returns false, the contact already exists in the set.
                 return Err(SmartVaultErr::ContactAlreadyExists(contact.id.to_string()));
             }
 
-            // add contact to user
-            existing_user.contacts.push(contact);
-
-            // store user
+            // store the updated user
             self.users.insert(user.to_string(), existing_user);
         } else {
             return Err(SmartVaultErr::UserDoesNotExist(user.to_string()));
@@ -216,15 +213,14 @@ impl UserStore {
         // Only name, email and user_type can be updated
         if let Some(mut existing_user) = self.users.remove(user) {
             // check if contact exist in user contacts. if yes, update it. if not, throw error
-            if !existing_user.contacts.iter().any(|c| c.id == contact.id) {
+            if !existing_user.contacts.contains(&contact) {
                 return Err(SmartVaultErr::ContactDoesNotExist(contact.id.to_string()));
             }
 
             // update contact in user
-            existing_user.contacts.retain(|c| c.id != contact.id);
-            existing_user.contacts.push(contact.clone());
+            existing_user.contacts.replace(contact.clone());
 
-            // store user
+            // store updated user
             self.users.insert(user.to_string(), existing_user);
             Ok(contact)
         } else {
@@ -258,7 +254,7 @@ impl UserStore {
 
     pub fn get_contact_list(&self, user: &PrincipalID) -> Result<Vec<Contact>, SmartVaultErr> {
         if let Some(existing_user) = self.users.get(user) {
-            Ok(existing_user.contacts.clone())
+            Ok(existing_user.contacts.into_iter().collect::<Vec<Contact>>())
         } else {
             Err(SmartVaultErr::UserDoesNotExist(user.to_string()))
         }

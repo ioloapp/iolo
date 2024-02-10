@@ -1,6 +1,7 @@
 use candid::{CandidType, Decode, Encode, Principal};
 use ic_stable_structures::{storable::Bound, Storable};
 use serde::{Deserialize, Serialize};
+use std::collections::HashSet;
 use std::hash::{Hash, Hasher};
 use std::{borrow::Cow, collections::BTreeMap};
 
@@ -23,7 +24,7 @@ pub struct User {
     pub date_created: u64,
     pub date_modified: u64,
     pub date_last_login: Option<u64>,
-    pub contacts: Vec<Contact>, // TODO: make hashset?
+    pub contacts: HashSet<Contact>, // TODO: make hashset?
     // New: Secrets, KeyBox and policies are stored in the user
     pub secrets: Vec<SecretID>, // TODO: make hashset?
     pub policies: Vec<PolicyID>,
@@ -74,7 +75,7 @@ impl From<AddOrUpdateUserArgs> for User {
             date_created: now,
             date_modified: now,
             date_last_login: None,
-            contacts: Vec::new(),
+            contacts: HashSet::new(),
             secrets: Vec::new(),
             policies: Vec::new(),
             key_box: KeyBox::new(),
@@ -100,7 +101,7 @@ impl User {
             date_created: now,
             date_modified: now,
             date_last_login: Some(now),
-            contacts: Vec::new(),
+            contacts: HashSet::new(),
             secrets: Vec::new(),
             policies: Vec::new(),
             key_box: KeyBox::new(),

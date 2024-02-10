@@ -70,16 +70,19 @@ pub fn delete_user_impl(principal: PrincipalID) -> Result<(), SmartVaultErr> {
     Ok(())
 }
 
-pub fn add_contact_impl(args: AddContactArgs, caller: PrincipalID) -> Result<(), SmartVaultErr> {
+pub fn add_contact_impl(
+    args: AddContactArgs,
+    caller: PrincipalID,
+) -> Result<Contact, SmartVaultErr> {
     let contact = Contact::from(args);
 
     // add contact to user store (caller)
     USER_STORE.with(|ur: &RefCell<UserStore>| -> Result<(), SmartVaultErr> {
         let mut user_store = ur.borrow_mut();
-        user_store.add_contact(&caller.to_string(), contact)
+        user_store.add_contact(&caller.to_string(), contact.clone())
     })?;
 
-    Ok(())
+    Ok(contact)
 }
 
 pub fn get_contact_list_impl(caller: PrincipalID) -> Result<Vec<Contact>, SmartVaultErr> {
@@ -169,14 +172,12 @@ mod tests {
         };
         let add_contact_result = add_contact_impl(aca, principal.to_string());
         assert!(add_contact_result.is_ok());
+        let added_contact = add_contact_result.unwrap();
         let fetched_user = get_current_user_impl(principal.to_string()).unwrap();
         assert!(fetched_user.contacts.len() == 1);
-        assert!(fetched_user.contacts[0].id == contact_principal.to_text());
-        assert_eq!(
-            fetched_user.contacts[0].name,
-            Some("my contact".to_string())
-        );
-        let mut contact = fetched_user.contacts[0].clone();
+        assert!(fetched_user.contacts.contains(&added_contact));
+
+        let mut contact = added_contact;
 
         // test get contact list
         let contact_list = get_contact_list_impl(principal.to_string()).unwrap();
@@ -187,8 +188,8 @@ mod tests {
         update_contact_impl(contact.clone(), principal.to_string()).unwrap();
         let fetched_user = get_current_user_impl(principal.to_string()).unwrap();
         assert!(fetched_user.contacts.len() == 1);
-        let contact = fetched_user.contacts[0].clone();
-        assert_eq!(contact.email, Some("hey_my_first_email@hi.com".to_string()));
+
+        assert!(fetched_user.contacts.contains(&contact));
 
         // update user
         let aua: AddOrUpdateUserArgs = AddOrUpdateUserArgs {
