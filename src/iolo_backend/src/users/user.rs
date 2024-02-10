@@ -25,8 +25,8 @@ pub struct User {
     pub date_modified: u64,
     pub date_last_login: Option<u64>,
     pub contacts: HashSet<Contact>,
-    pub secrets: HashSet<SecretID>, // TODO: make hashset?
-    pub policies: Vec<PolicyID>,
+    pub secrets: HashSet<SecretID>,
+    pub policies: HashSet<PolicyID>,
     pub key_box: KeyBox,
 }
 
@@ -76,7 +76,7 @@ impl From<AddOrUpdateUserArgs> for User {
             date_last_login: None,
             contacts: HashSet::new(),
             secrets: HashSet::new(),
-            policies: Vec::new(),
+            policies: HashSet::new(),
             key_box: KeyBox::new(),
         }
     }
@@ -102,7 +102,7 @@ impl User {
             date_last_login: Some(now),
             contacts: HashSet::new(),
             secrets: HashSet::new(),
-            policies: Vec::new(),
+            policies: HashSet::new(),
             key_box: KeyBox::new(),
         }
     }
@@ -115,8 +115,8 @@ impl User {
         &self.key_box
     }
 
-    pub fn policies(&self) -> &Vec<String> {
-        &self.policies
+    pub fn policies(&self) -> Vec<String> {
+        self.policies.clone().into_iter().collect()
     }
 
     pub fn date_last_login(&self) -> &Option<u64> {
@@ -150,8 +150,23 @@ impl User {
     }
 
     pub fn add_policy(&mut self, policy_id: String) {
-        self.policies.push(policy_id);
+        self.policies.insert(policy_id);
         self.date_modified = time::get_current_time();
+    }
+
+    pub fn remove_policy(&mut self, policy_id: &PolicyID) -> Result<(), SmartVaultErr> {
+        if self.policies.contains(policy_id) {
+            // Remove the policy from both collections if it exists
+            self.policies.remove(policy_id);
+
+            // Update the date_modified
+            self.date_modified = time::get_current_time();
+
+            Ok(())
+        } else {
+            // Return an error if the secret does not exist in both collections
+            Err(SmartVaultErr::PolicyDoesNotExist(policy_id.to_string()))
+        }
     }
 
     pub fn update_login_date(&mut self) {

@@ -1,7 +1,9 @@
 use candid::Principal;
+
 use ic_stable_structures::StableBTreeMap;
 use serde::{Deserialize, Serialize};
 
+use crate::policies::policy::PolicyID;
 use crate::secrets::secret::SecretID;
 use crate::users::user::AddOrUpdateUserArgs;
 use crate::{
@@ -153,6 +155,23 @@ impl UserStore {
 
         self.users.insert(caller.to_string(), user);
         Ok(())
+    }
+
+    pub fn remove_policy_from_user(
+        &mut self,
+        caller: &PrincipalID,
+        policy_id: PolicyID,
+    ) -> Result<(), SmartVaultErr> {
+        let mut user = self
+            .users
+            .get(caller)
+            .ok_or_else(|| SmartVaultErr::UserDoesNotExist(caller.to_string()))?;
+
+        user.remove_policy(&policy_id)?;
+        match self.update_user_secrets(user, caller) {
+            Ok(_) => Ok(()),
+            Err(e) => Err(e),
+        }
     }
 
     pub fn get_user(&self, user_id: &PrincipalID) -> Result<User, SmartVaultErr> {

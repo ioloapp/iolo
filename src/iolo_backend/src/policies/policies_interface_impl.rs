@@ -251,6 +251,12 @@ pub fn remove_policy_impl(policy_id: String, caller: PrincipalID) -> Result<(), 
         }
     }
 
+    // remove policy from user
+    USER_STORE.with(|us| {
+        let mut user_store = us.borrow_mut();
+        user_store.remove_policy_from_user(&caller.to_string(), policy_id)
+    })?;
+
     Ok(())
 }
 
