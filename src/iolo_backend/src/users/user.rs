@@ -1,8 +1,8 @@
-use std::{borrow::Cow, collections::BTreeMap};
-
 use candid::{CandidType, Decode, Encode, Principal};
 use ic_stable_structures::{storable::Bound, Storable};
 use serde::{Deserialize, Serialize};
+use std::hash::{Hash, Hasher};
+use std::{borrow::Cow, collections::BTreeMap};
 
 use crate::{
     common::error::SmartVaultErr, policies::policy::PolicyID, secrets::secret::SecretID,
@@ -40,6 +40,20 @@ impl Storable for User {
     }
 
     const BOUND: Bound = Bound::Unbounded;
+}
+
+impl Hash for User {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.id.hash(state);
+    }
+}
+
+impl Eq for User {}
+
+impl PartialEq for User {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
+    }
 }
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
