@@ -1,4 +1,5 @@
 use std::borrow::Cow;
+use std::hash::{Hash, Hasher};
 
 use candid::{CandidType, Decode, Deserialize, Encode, Principal};
 use ic_stable_structures::{storable::Bound, Storable};
@@ -15,7 +16,7 @@ pub enum SecretCategory {
     Document,
 }
 
-#[derive(Debug, CandidType, Deserialize, Serialize, Clone, PartialEq)]
+#[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct Secret {
     pub id: SecretID,
     owner: PrincipalID,
@@ -65,6 +66,20 @@ impl From<Secret> for SecretListEntry {
             category: s.category(),
             name: s.name(),
         }
+    }
+}
+
+impl Hash for Secret {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.id.hash(state);
+    }
+}
+
+impl Eq for Secret {}
+
+impl PartialEq for Secret {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
     }
 }
 
