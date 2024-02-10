@@ -24,7 +24,7 @@ pub struct User {
     pub date_created: u64,
     pub date_modified: u64,
     pub date_last_login: Option<u64>,
-    pub contacts: HashSet<Contact>, // TODO: make hashset?
+    pub contacts: HashSet<Contact>,
     // New: Secrets, KeyBox and policies are stored in the user
     pub secrets: Vec<SecretID>, // TODO: make hashset?
     pub policies: Vec<PolicyID>,
