@@ -7,7 +7,7 @@ import {
     Condition,
     Policy,
     PolicyListEntry,
-    PolicyResponse,
+    PolicyWithSecretListEntries,
     Result, Result_10,
     Result_2,
     Result_3,
@@ -28,7 +28,7 @@ import {
 import {AuthClient} from "@dfinity/auth-client";
 import {createActor} from "../../../declarations/iolo_backend";
 import {mapError} from "../utils/errorMapper";
-import {IoloError, UserDoesNotExist} from "../error/Errors";
+import {IoloError} from "../error/Errors";
 import {Principal} from "@dfinity/principal";
 import {
     aes_gcm_decrypt,
@@ -44,7 +44,7 @@ import {
     UiPolicy,
     UiPolicyListEntry,
     UiPolicyListEntryRole,
-    UiPolicyResponse,
+    UiPolicyWithSecretListEntries,
     UiSecret,
     UiSecretCategory,
     UiSecretListEntry,
@@ -330,19 +330,19 @@ class IoloService {
         return policiesAsTestator.concat(policiesAsBeneficiary);
     }
 
-    public async getPolicyAsOwner(id: string): Promise<UiPolicyResponse> {
+    public async getPolicyAsOwner(id: string): Promise<UiPolicyWithSecretListEntries> {
         const result: Result_8 = await (await this.getActor()).get_policy_as_owner(id);
         console.debug('start get policies as owner', result);
         if (result['Ok']) {
-            return this.mapPolicyResponseToUiPolicyResponse(result['Ok'], UiPolicyListEntryRole.Owner);
+            return this.mapPolicyWithSecretListEntriesToUiPolicyWithSecretListEntries(result['Ok'], UiPolicyListEntryRole.Owner);
         }
         throw mapError(result['Err']);
     }
 
-    public async getPolicyAsBeneficiary(id: string): Promise<UiPolicyResponse> {
+    public async getPolicyAsBeneficiary(id: string): Promise<UiPolicyWithSecretListEntries> {
         const result: Result_8 = await (await this.getActor()).get_policy_as_beneficiary(id);
         if (result['Ok']) {
-            return this.mapPolicyResponseToUiPolicyResponse(result['Ok'], UiPolicyListEntryRole.Beneficiary);
+            return this.mapPolicyWithSecretListEntriesToUiPolicyWithSecretListEntries(result['Ok'], UiPolicyListEntryRole.Beneficiary);
         }
         throw mapError(result['Err']);
     }
@@ -751,7 +751,7 @@ class IoloService {
         }
     }
 
-    private mapPolicyResponseToUiPolicyResponse(policy: PolicyResponse, role: UiPolicyListEntryRole): UiPolicyResponse {
+    private mapPolicyWithSecretListEntriesToUiPolicyWithSecretListEntries(policy: PolicyWithSecretListEntries, role: UiPolicyListEntryRole): UiPolicyWithSecretListEntries {
         let secrets: UiSecretListEntry[] = policy.secrets.map((item) => {
             let category = undefined;
             if (item.category.length > 0) {

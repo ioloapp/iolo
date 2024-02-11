@@ -239,7 +239,7 @@ impl Policy {
 }
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
-pub struct PolicyResponse {
+pub struct PolicyWithSecretListEntries {
     id: PolicyID,
     name: Option<String>,
     date_created: u64,
@@ -253,7 +253,7 @@ pub struct PolicyResponse {
     pub conditions: Vec<Condition>,
 }
 
-impl PolicyResponse {
+impl PolicyWithSecretListEntries {
     pub fn new(id: String) -> Self {
         let now: u64 = time::get_current_time();
         Self {
@@ -276,9 +276,9 @@ impl PolicyResponse {
     }
 }
 
-impl From<Policy> for PolicyResponse {
+impl From<Policy> for PolicyWithSecretListEntries {
     fn from(t: Policy) -> Self {
-        let mut new_policies = PolicyResponse::new(t.id);
+        let mut new_policies = PolicyWithSecretListEntries::new(t.id);
         new_policies.name = t.name;
         new_policies.owner = t.owner;
         new_policies.beneficiaries = t.beneficiaries;

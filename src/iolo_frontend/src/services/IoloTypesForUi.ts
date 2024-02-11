@@ -41,7 +41,7 @@ export interface UiPolicy {
     dateModified?: string,
 }
 
-export interface UiPolicyResponse {
+export interface UiPolicyWithSecretListEntries {
     id?: string,
     name?: string,
     owner?: UiUser,

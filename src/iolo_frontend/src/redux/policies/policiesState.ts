@@ -1,8 +1,8 @@
-import {UiPolicyListEntry, UiPolicyResponse} from "../../services/IoloTypesForUi";
+import {UiPolicyListEntry, UiPolicyWithSecretListEntries} from "../../services/IoloTypesForUi";
 
 export interface PoliciesState {
     policyList: UiPolicyListEntry[],
-    dialogItem: UiPolicyResponse
+    dialogItem: UiPolicyWithSecretListEntries
     dialogItemState: string,
     loadingState: string,
     error?: string;

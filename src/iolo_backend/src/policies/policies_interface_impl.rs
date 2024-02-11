@@ -13,7 +13,7 @@ use crate::{
 
 use super::{
     conditions::Condition,
-    policy::{AddPolicyArgs, Policy, PolicyID, PolicyListEntry, PolicyResponse},
+    policy::{AddPolicyArgs, Policy, PolicyID, PolicyListEntry, PolicyWithSecretListEntries},
     policy_store::PolicyStore,
 };
 
@@ -65,13 +65,13 @@ pub async fn add_policy_impl(
 pub fn get_policy_as_owner_impl(
     policy_id: PolicyID,
     caller: PrincipalID,
-) -> Result<PolicyResponse, SmartVaultErr> {
+) -> Result<PolicyWithSecretListEntries, SmartVaultErr> {
     // get policy from policy store
     let policy: Policy = get_policy_from_policy_store(&policy_id)?;
 
     // TODO: check if caller is owner of policy
 
-    let mut policy_response = PolicyResponse::from(policy.clone());
+    let mut policy_response = PolicyWithSecretListEntries::from(policy.clone());
     for secret_id in policy.secrets() {
         // get secret from secret store
         let secret: Secret = get_secret_impl(secret_id.to_string(), caller.to_string())?;
@@ -112,7 +112,7 @@ pub fn get_policy_list_as_owner_impl(
 pub fn get_policy_as_beneficiary_impl(
     policy_id: PolicyID,
     beneficiary: PrincipalID,
-) -> Result<PolicyResponse, SmartVaultErr> {
+) -> Result<PolicyWithSecretListEntries, SmartVaultErr> {
     // get policy from policy store
     let policy: Policy = get_policy_from_policy_store(&policy_id)?;
 
@@ -127,7 +127,7 @@ pub fn get_policy_as_beneficiary_impl(
     // Check that beneficiary is allowed to read the policy
     if *policy.conditions_status() {
         // Get secrets from defined in policy
-        let mut policy_for_beneficiary = PolicyResponse::from(policy.clone());
+        let mut policy_for_beneficiary = PolicyWithSecretListEntries::from(policy.clone());
         for secret_ref in policy.secrets() {
             let secret = SECRET_STORE.with(|ss| {
                 let secret_store = ss.borrow();
@@ -326,7 +326,7 @@ mod tests {
                 get_policy_list_as_beneficiary_impl, get_policy_list_as_owner_impl,
                 get_policy_list_as_validator_impl, update_policy_impl,
             },
-            policy::{AddPolicyArgs, Policy, PolicyResponse},
+            policy::{AddPolicyArgs, Policy, PolicyWithSecretListEntries},
         },
         secrets::{
             secret::AddSecretArgs,
@@ -441,7 +441,7 @@ mod tests {
         assert_eq!(&policy_list[0].id, added_policy.id());
 
         // get specific policy from proper interface implementation
-        let mut fetched_policy: PolicyResponse =
+        let mut fetched_policy: PolicyWithSecretListEntries =
             get_policy_as_owner_impl(added_policy.id().clone(), principal.to_string()).unwrap();
         assert_eq!(fetched_policy.secrets().len(), 1);
         assert_eq!(

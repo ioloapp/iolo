@@ -10,7 +10,7 @@ use crate::policies::policies_interface_impl::{
     get_policy_list_as_validator_impl, remove_policy_impl, update_policy_impl,
 };
 use crate::policies::policy::{AddPolicyArgs, Policy, PolicyID, PolicyListEntry};
-use crate::policies::policy::{PolicyResponse, UpdatePolicyArgs};
+use crate::policies::policy::{PolicyWithSecretListEntries, UpdatePolicyArgs};
 use crate::policies::policy_registries::PolicyRegistries;
 use crate::policies::policy_store::PolicyStore;
 use crate::secrets::secret::{AddSecretArgs, Secret, SecretID, SecretListEntry, UpdateSecretArgs};
@@ -128,7 +128,7 @@ pub async fn add_policy(args: AddPolicyArgs) -> Result<Policy, SmartVaultErr> {
 }
 
 #[ic_cdk_macros::query]
-pub fn get_policy_as_owner(policy_id: PolicyID) -> Result<PolicyResponse, SmartVaultErr> {
+pub fn get_policy_as_owner(policy_id: PolicyID) -> Result<PolicyWithSecretListEntries, SmartVaultErr> {
     get_policy_as_owner_impl(policy_id, get_caller_id())
 }
 
@@ -138,7 +138,7 @@ pub fn get_policy_list_as_owner() -> Result<Vec<PolicyListEntry>, SmartVaultErr>
 }
 
 #[ic_cdk_macros::query]
-pub fn get_policy_as_beneficiary(policy_id: PolicyID) -> Result<PolicyResponse, SmartVaultErr> {
+pub fn get_policy_as_beneficiary(policy_id: PolicyID) -> Result<PolicyWithSecretListEntries, SmartVaultErr> {
     get_policy_as_beneficiary_impl(policy_id, get_caller_id())
 }
 
