@@ -11,6 +11,7 @@ use crate::policies::policy::Policy;
 use crate::policies::policy::PolicyID;
 use crate::policies::policy::PolicyListEntry;
 use crate::policies::policy::PolicyResponse;
+use crate::policies::policy::UpdatePolicyArgs;
 use crate::secrets::secret::SecretID;
 use crate::secrets::secret::SecretListEntry;
 use crate::smart_vaults::key_manager::PolicyKeyDerviationArgs;

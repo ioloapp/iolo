@@ -28,7 +28,7 @@ pub struct Policy {
     /// This key is itself encrypted using the policy decryption key,
     /// which itself is derived by vetkd.
     pub key_box: KeyBox,
-    conditions_status: bool,
+    pub conditions_status: bool,
     conditions_logical_operator: Option<LogicalOperator>,
     pub conditions: Vec<Condition>,
 }
@@ -70,6 +70,17 @@ pub struct AddPolicyArgs {
     pub name: Option<String>,
 }
 
+#[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
+pub struct UpdatePolicyArgs {
+    pub id: PolicyID,
+    pub name: Option<String>,
+    pub beneficiaries: HashSet<PrincipalID>,
+    pub secrets: HashSet<SecretID>,
+    pub key_box: KeyBox,
+    pub conditions_logical_operator: Option<LogicalOperator>,
+    pub conditions: Vec<Condition>,
+}
+
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone, PartialEq)]
 pub struct PolicyListEntry {
     pub id: PolicyID,
@@ -107,16 +118,30 @@ impl Policy {
         }
     }
 
-    pub fn from_add_policy_args(policy_id: &str, owner: &PrincipalID, ata: AddPolicyArgs) -> Self {
+    pub fn from_add_policy_args(policy_id: &str, owner: &PrincipalID, apa: AddPolicyArgs) -> Self {
         let mut new_policy = Policy::new(policy_id.to_string(), owner);
         new_policy.owner = owner.to_string();
-        new_policy.name = ata.name;
+        new_policy.name = apa.name;
         new_policy.beneficiaries = HashSet::new();
         new_policy.secrets = HashSet::new();
         new_policy.key_box = BTreeMap::new();
         new_policy.conditions = Vec::new();
         new_policy.conditions_logical_operator = None;
         new_policy.conditions_status = false;
+        new_policy
+    }
+
+    pub fn from_update_policy_args(policy_id: &str, owner: &PrincipalID, condition_status: bool, date_created: u64, upa: UpdatePolicyArgs) -> Self {
+        let mut new_policy = Policy::new(policy_id.to_string(), owner);
+        new_policy.owner = owner.to_string();
+        new_policy.name = upa.name;
+        new_policy.beneficiaries = upa.beneficiaries;
+        new_policy.secrets = upa.secrets;
+        new_policy.key_box = upa.key_box;
+        new_policy.conditions = upa.conditions;
+        new_policy.conditions_logical_operator = upa.conditions_logical_operator;
+        new_policy.conditions_status = condition_status;
+        new_policy.date_created = date_created;
         new_policy
     }
 

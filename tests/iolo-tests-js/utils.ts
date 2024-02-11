@@ -39,26 +39,31 @@ export function createNewActor(identity: Secp256k1KeyIdentity, canisterId: strin
     return actor;
 }
 
-export async function createAliceAndBob(actorOne: ActorSubclass<_SERVICE>, actorTwo: ActorSubclass<_SERVICE>) {
+export async function createIoloUsersInBackend(actors: Array<ActorSubclass<_SERVICE>>) {
+    if (actors.length > 3) {
+        throw new Error('Maximum 3 users possible currently!');
+    }
+
     const users = [
-        { name: 'Alice', email: 'alice@ioloapp.io', actor: actorOne },
-        { name: 'Bob', email: 'bob@ioloapp.io', actor: actorTwo },
+        { name: 'Alice', email: 'alice@ioloapp.io'},
+        { name: 'Bob', email: 'bob@ioloapp.io'},
+        { name: 'Charlie', email: 'charlie@ioloapp.io'},
     ];
 
-    for (const { name, email, actor } of users) {
+    for (let i = 0; i < actors.length; i++) {
         const addOrUpdateUserArgs: AddOrUpdateUserArgs = {
-            name: [name],
-            email: [email],
+            name: [users[i].name],
+            email: [users[i].email],
             user_type: [{ 'Person': null }],
         };
-        const result: Result_3 = await actor.create_user(addOrUpdateUserArgs);
+        const result: Result_3 = await actors[i].create_user(addOrUpdateUserArgs);
         if (!result['Ok']) {
-            throw new Error(`User creation failed for ${name}`);
+            throw new Error(`User creation failed for ${users[i].name}`);
         }
     }
 }
 
-export async function createSecret(prefix: string,  actor: ActorSubclass<_SERVICE>): Promise<Secret> {
+export async function createSecretInBackend(prefix: string, actor: ActorSubclass<_SERVICE>): Promise<Secret> {
     const encrypted_symmetric_key = new TextEncoder().encode('mySuperKey'); // just a byte array, no symmetric key
 
     let addSecretArgsOne: AddSecretArgs = {

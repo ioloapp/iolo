@@ -1,4 +1,3 @@
-import type { Principal } from '@dfinity/principal';
 import type { ActorMethod } from '@dfinity/agent';
 
 export interface AddContactArgs {
@@ -68,27 +67,27 @@ export interface PolicyResponse {
   'conditions' : Array<Condition>,
   'date_modified' : bigint,
 }
-export type Result = { 'Ok' : null } |
+export type Result = { 'Ok' : Contact } |
   { 'Err' : SmartVaultErr };
 export type Result_1 = { 'Ok' : Policy } |
   { 'Err' : SmartVaultErr };
-export type Result_10 = { 'Ok' : Contact } |
+export type Result_10 = { 'Ok' : Array<SecretListEntry> } |
   { 'Err' : SmartVaultErr };
 export type Result_2 = { 'Ok' : Secret } |
   { 'Err' : SmartVaultErr };
-export type Result_3 = { 'Ok' : User } |
+export type Result_3 = { 'Ok' : null } |
   { 'Err' : SmartVaultErr };
-export type Result_4 = { 'Ok' : string } |
+export type Result_4 = { 'Ok' : User } |
   { 'Err' : SmartVaultErr };
-export type Result_5 = { 'Ok' : Array<Contact> } |
+export type Result_5 = { 'Ok' : string } |
   { 'Err' : SmartVaultErr };
-export type Result_6 = { 'Ok' : Uint8Array | number[] } |
+export type Result_6 = { 'Ok' : Array<Contact> } |
   { 'Err' : SmartVaultErr };
-export type Result_7 = { 'Ok' : PolicyResponse } |
+export type Result_7 = { 'Ok' : Uint8Array | number[] } |
   { 'Err' : SmartVaultErr };
-export type Result_8 = { 'Ok' : Array<PolicyListEntry> } |
+export type Result_8 = { 'Ok' : PolicyResponse } |
   { 'Err' : SmartVaultErr };
-export type Result_9 = { 'Ok' : Array<SecretListEntry> } |
+export type Result_9 = { 'Ok' : Array<PolicyListEntry> } |
   { 'Err' : SmartVaultErr };
 export interface Secret {
   'id' : string,
@@ -117,7 +116,6 @@ export type SmartVaultErr = { 'ContactDoesNotExist' : string } |
   { 'UserDeletionFailed' : string } |
   { 'ContactAlreadyExists' : string } |
   { 'CallerNotBeneficiary' : string } |
-  { 'OnlyOwnerCanUpdatePolicy' : string } |
   { 'SecretDoesNotExist' : string } |
   { 'NoPolicyForBeneficiary' : string } |
   { 'CallerNotPolicyOwner' : string } |
@@ -134,6 +132,15 @@ export interface TimeBasedCondition {
   'id' : string,
   'condition_status' : boolean,
   'number_of_days_since_last_login' : bigint,
+}
+export interface UpdatePolicyArgs {
+  'id' : string,
+  'name' : [] | [string],
+  'conditions_logical_operator' : [] | [LogicalOperator],
+  'secrets' : Array<string>,
+  'beneficiaries' : Array<string>,
+  'key_box' : Array<[string, Uint8Array | number[]]>,
+  'conditions' : Array<Condition>,
 }
 export interface UpdateSecretArgs {
   'id' : string,
@@ -172,46 +179,46 @@ export interface _SERVICE {
   'add_secret' : ActorMethod<[AddSecretArgs], Result_2>,
   'confirm_x_out_of_y_condition' : ActorMethod<
     [string, string, boolean],
-    Result
+    Result_3
   >,
-  'create_user' : ActorMethod<[AddOrUpdateUserArgs], Result_3>,
-  'delete_user' : ActorMethod<[], Result>,
+  'create_user' : ActorMethod<[AddOrUpdateUserArgs], Result_4>,
+  'delete_user' : ActorMethod<[], Result_3>,
   'encrypted_ibe_decryption_key_for_caller' : ActorMethod<
     [Uint8Array | number[]],
     string
   >,
   'generate_vetkd_encrypted_symmetric_key_for_policy' : ActorMethod<
     [PolicyKeyDerviationArgs],
-    Result_4
+    Result_5
   >,
   'generate_vetkd_encrypted_symmetric_key_for_user' : ActorMethod<
     [Uint8Array | number[]],
     string
   >,
-  'get_contact_list' : ActorMethod<[], Result_5>,
-  'get_current_user' : ActorMethod<[], Result_3>,
-  'get_encrypted_symmetric_key' : ActorMethod<[string], Result_6>,
+  'get_contact_list' : ActorMethod<[], Result_6>,
+  'get_current_user' : ActorMethod<[], Result_4>,
+  'get_encrypted_symmetric_key' : ActorMethod<[string], Result_7>,
   'get_encrypted_symmetric_key_as_beneficiary' : ActorMethod<
     [string, string],
-    Result_6
+    Result_7
   >,
-  'get_policy_as_beneficiary' : ActorMethod<[string], Result_7>,
-  'get_policy_as_owner' : ActorMethod<[string], Result_7>,
-  'get_policy_list_as_beneficiary' : ActorMethod<[], Result_8>,
-  'get_policy_list_as_owner' : ActorMethod<[], Result_8>,
-  'get_policy_list_as_validator' : ActorMethod<[], Result_8>,
+  'get_policy_as_beneficiary' : ActorMethod<[string], Result_8>,
+  'get_policy_as_owner' : ActorMethod<[string], Result_8>,
+  'get_policy_list_as_beneficiary' : ActorMethod<[], Result_9>,
+  'get_policy_list_as_owner' : ActorMethod<[], Result_9>,
+  'get_policy_list_as_validator' : ActorMethod<[], Result_9>,
   'get_secret' : ActorMethod<[string], Result_2>,
   'get_secret_as_beneficiary' : ActorMethod<[string, string], Result_2>,
-  'get_secret_list' : ActorMethod<[], Result_9>,
+  'get_secret_list' : ActorMethod<[], Result_10>,
   'ibe_encryption_key' : ActorMethod<[], string>,
-  'remove_contact' : ActorMethod<[string], Result>,
-  'remove_policy' : ActorMethod<[string], Result>,
-  'remove_secret' : ActorMethod<[string], Result>,
+  'remove_contact' : ActorMethod<[string], Result_3>,
+  'remove_policy' : ActorMethod<[string], Result_3>,
+  'remove_secret' : ActorMethod<[string], Result_3>,
   'start_with_interval_secs' : ActorMethod<[bigint], undefined>,
   'symmetric_key_verification_key' : ActorMethod<[], string>,
-  'update_contact' : ActorMethod<[Contact], Result_10>,
-  'update_policy' : ActorMethod<[Policy], Result_1>,
+  'update_contact' : ActorMethod<[Contact], Result>,
+  'update_policy' : ActorMethod<[UpdatePolicyArgs], Result_1>,
   'update_secret' : ActorMethod<[UpdateSecretArgs], Result_2>,
-  'update_user' : ActorMethod<[AddOrUpdateUserArgs], Result_3>,
-  'update_user_login_date' : ActorMethod<[], Result_3>,
+  'update_user' : ActorMethod<[AddOrUpdateUserArgs], Result_4>,
+  'update_user_login_date' : ActorMethod<[], Result_4>,
 }

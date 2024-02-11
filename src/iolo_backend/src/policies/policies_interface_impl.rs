@@ -9,6 +9,7 @@ use crate::{
     smart_vaults::smart_vault::{POLICY_REGISTRIES, POLICY_STORE, SECRET_STORE, USER_STORE},
     users::user::PrincipalID,
 };
+use crate::policies::policy::UpdatePolicyArgs;
 
 use super::{
     conditions::Condition,
@@ -165,29 +166,29 @@ pub fn get_policy_list_as_validator_impl(
     })
 }
 
-pub fn update_policy_impl(policy: Policy, caller: PrincipalID) -> Result<Policy, SmartVaultErr> {
+pub fn update_policy_impl(upa: UpdatePolicyArgs, caller: PrincipalID) -> Result<Policy, SmartVaultErr> {
     // check if policy exists
-    POLICY_STORE.with(|ps| {
+    let existing_policy = POLICY_STORE.with(|ps| {
         let policy_store = ps.borrow();
-        policy_store.get(policy.id())
+        policy_store.get(&upa.id)
     })?;
 
     // check if caller is owner of policy
-    if policy.owner() != &caller.to_string() {
-        return Err(SmartVaultErr::OnlyOwnerCanUpdatePolicy(format!(
-            "Caller {:?} is not owner of policy {:?}",
-            caller,
-            policy.id()
-        )));
+    if existing_policy.owner() != &caller.to_string() {
+        return Err(SmartVaultErr::PolicyDoesNotExist(upa.id));
     }
 
     // check if secrets in policy exist in secret store
-    for secret_id in policy.secrets.iter() {
+    for secret_id in upa.secrets.iter() {
         SECRET_STORE.with(|ss| {
             let secret_store = ss.borrow();
             secret_store.get(secret_id)
         })?;
     }
+
+    // create policy from AddPolicyArgs
+    let policy: Policy =
+        Policy::from_update_policy_args(&upa.id, &existing_policy.owner().to_string(), existing_policy.conditions_status, existing_policy.date_created().clone(), upa.clone());
 
     // update policy in policy store
     let updated_policy = POLICY_STORE.with(|ps| {
@@ -221,11 +222,7 @@ pub fn remove_policy_impl(policy_id: String, caller: PrincipalID) -> Result<(), 
 
     // check if caller is owner of policy
     if policy.owner() != &caller.to_string() {
-        return Err(SmartVaultErr::OnlyOwnerCanUpdatePolicy(format!(
-            "Caller {:?} is not owner of policy {:?}",
-            caller,
-            policy.id()
-        )));
+        return Err(SmartVaultErr::PolicyDoesNotExist(policy.id));
     }
 
     // remove policy in policy store
@@ -307,7 +304,7 @@ pub fn get_policies_from_policy_store(
 
 #[cfg(test)]
 mod tests {
-
+    use std::collections::HashSet;
     use candid::Principal;
     use rand::Rng;
 
@@ -332,6 +329,7 @@ mod tests {
             users_interface_impl::create_user_impl,
         },
     };
+    use crate::policies::policy::UpdatePolicyArgs;
 
     #[tokio::test]
     async fn itest_policy_lifecycle() {
@@ -398,11 +396,18 @@ mod tests {
             .unwrap();
 
         // Update policy with other attributes
-        added_policy.beneficiaries = [beneficiary.to_string()].iter().cloned().collect();
-        added_policy.secrets.insert(added_secret.id().to_string());
-        added_policy.key_box = KeyBox::new();
-        added_policy.conditions = vec![time_based_condition.clone(), x_out_of_y_condition.clone()];
-        let added_policy = update_policy_impl(added_policy.clone(), principal.to_string());
+        let mut secrets = HashSet::new();
+        secrets.insert(added_secret.id().to_string());
+        let upa: UpdatePolicyArgs = UpdatePolicyArgs {
+            id: added_policy.id().to_string(),
+            name: added_policy.name,
+            beneficiaries: [beneficiary.to_string()].iter().cloned().collect(),
+            secrets,
+            key_box: KeyBox::new(),
+            conditions_logical_operator: None,
+            conditions: vec![time_based_condition.clone(), x_out_of_y_condition.clone()],
+        };
+        let added_policy = update_policy_impl(upa, principal.to_string());
         assert!(added_policy.is_ok());
         let mut added_policy = added_policy.unwrap();
 
@@ -467,9 +472,19 @@ mod tests {
         );
 
         // UPDATE POLICY NAME and BENEFICIARIES
-        added_policy.name = Some("new policy updates".to_string());
-        added_policy.beneficiaries.insert(validator.to_string());
-        let updated_policy = update_policy_impl(added_policy.clone(), principal.to_string());
+        let mut beneficiaries = HashSet::new();
+        beneficiaries.insert(validator.to_string());
+        let upa: UpdatePolicyArgs = UpdatePolicyArgs {
+            id: added_policy.id().to_string(),
+            name: Some("new policy updates".to_string()),
+            beneficiaries,
+            secrets: added_policy.secrets,
+            key_box: added_policy.key_box,
+            conditions_logical_operator: added_policy.conditions_logical_operator().clone(),
+            conditions: added_policy.conditions
+        };
+
+        let updated_policy = update_policy_impl(upa, principal.to_string());
         assert!(updated_policy.is_ok());
         let mut updated_policy = updated_policy.unwrap();
         assert_eq!(updated_policy.name(), added_policy.name());
@@ -496,8 +511,20 @@ mod tests {
             quorum: 1,
             condition_status: false,
         });
-        updated_policy.conditions = vec![time_based_condition, x_out_of_y_condition];
-        let updated_policy = update_policy_impl(updated_policy.clone(), principal.to_string());
+
+        let mut beneficiaries = HashSet::new();
+        beneficiaries.insert(validator.to_string());
+        let upa: UpdatePolicyArgs = UpdatePolicyArgs {
+            id: updated_policy.id().to_string(),
+            name: updated_policy.name,
+            beneficiaries: updated_policy.beneficiaries,
+            secrets: updated_policy.secrets,
+            key_box: updated_policy.key_box,
+            conditions_logical_operator: added_policy.conditions_logical_operator().clone(),
+            conditions: vec![time_based_condition, x_out_of_y_condition]
+        };
+
+        let updated_policy = update_policy_impl(upa, principal.to_string());
         assert!(updated_policy.is_ok());
         // let updated_policy = updated_policy.unwrap();
         let policy_list_as_old_validator = get_policy_list_as_validator_impl(validator.to_string());

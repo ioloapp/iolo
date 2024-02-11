@@ -9,7 +9,7 @@ use crate::policies::policies_interface_impl::{
     get_policy_as_owner_impl, get_policy_list_as_beneficiary_impl, get_policy_list_as_owner_impl,
     get_policy_list_as_validator_impl, remove_policy_impl, update_policy_impl,
 };
-use crate::policies::policy::PolicyResponse;
+use crate::policies::policy::{PolicyResponse, UpdatePolicyArgs};
 use crate::policies::policy::{AddPolicyArgs, Policy, PolicyID, PolicyListEntry};
 use crate::policies::policy_registries::PolicyRegistries;
 use crate::policies::policy_store::PolicyStore;
@@ -153,8 +153,8 @@ pub fn get_policy_list_as_validator() -> Result<Vec<PolicyListEntry>, SmartVault
 }
 
 #[ic_cdk_macros::update]
-pub fn update_policy(policy: Policy) -> Result<Policy, SmartVaultErr> {
-    update_policy_impl(policy, get_caller_id())
+pub fn update_policy(upa: UpdatePolicyArgs) -> Result<Policy, SmartVaultErr> {
+    update_policy_impl(upa, get_caller_id())
 }
 
 #[ic_cdk_macros::update]
