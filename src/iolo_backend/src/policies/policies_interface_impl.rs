@@ -1,5 +1,6 @@
 use std::{cell::RefCell, collections::HashSet};
 
+use crate::policies::policy::UpdatePolicyArgs;
 use crate::{
     common::{error::SmartVaultErr, uuid::UUID},
     secrets::{
@@ -9,7 +10,6 @@ use crate::{
     smart_vaults::smart_vault::{POLICY_REGISTRIES, POLICY_STORE, SECRET_STORE, USER_STORE},
     users::user::PrincipalID,
 };
-use crate::policies::policy::UpdatePolicyArgs;
 
 use super::{
     conditions::Condition,
@@ -166,7 +166,10 @@ pub fn get_policy_list_as_validator_impl(
     })
 }
 
-pub fn update_policy_impl(upa: UpdatePolicyArgs, caller: PrincipalID) -> Result<Policy, SmartVaultErr> {
+pub fn update_policy_impl(
+    upa: UpdatePolicyArgs,
+    caller: PrincipalID,
+) -> Result<Policy, SmartVaultErr> {
     // check if policy exists
     let existing_policy = POLICY_STORE.with(|ps| {
         let policy_store = ps.borrow();
@@ -187,8 +190,13 @@ pub fn update_policy_impl(upa: UpdatePolicyArgs, caller: PrincipalID) -> Result<
     }
 
     // create policy from AddPolicyArgs
-    let policy: Policy =
-        Policy::from_update_policy_args(&upa.id, &existing_policy.owner().to_string(), existing_policy.conditions_status, existing_policy.date_created().clone(), upa.clone());
+    let policy: Policy = Policy::from_update_policy_args(
+        &upa.id,
+        &existing_policy.owner().to_string(),
+        existing_policy.conditions_status,
+        *existing_policy.date_created(),
+        upa.clone(),
+    );
 
     // update policy in policy store
     let updated_policy = POLICY_STORE.with(|ps| {
@@ -304,10 +312,11 @@ pub fn get_policies_from_policy_store(
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashSet;
     use candid::Principal;
     use rand::Rng;
+    use std::collections::HashSet;
 
+    use crate::policies::policy::UpdatePolicyArgs;
     use crate::{
         common::error::SmartVaultErr,
         policies::{
@@ -329,7 +338,6 @@ mod tests {
             users_interface_impl::create_user_impl,
         },
     };
-    use crate::policies::policy::UpdatePolicyArgs;
 
     #[tokio::test]
     async fn itest_policy_lifecycle() {
@@ -391,7 +399,7 @@ mod tests {
             //conditions: vec![time_based_condition.clone(), x_out_of_y_condition.clone()],
         };
         //apa.secrets.insert(added_secret.id().to_string());
-        let mut added_policy: Policy = add_policy_impl(apa.clone(), principal.to_string())
+        let added_policy: Policy = add_policy_impl(apa.clone(), principal.to_string())
             .await
             .unwrap();
 
@@ -408,8 +416,9 @@ mod tests {
             conditions: vec![time_based_condition.clone(), x_out_of_y_condition.clone()],
         };
         let added_policy = update_policy_impl(upa, principal.to_string());
+
         assert!(added_policy.is_ok());
-        let mut added_policy = added_policy.unwrap();
+        let added_policy = added_policy.unwrap();
 
         // check if policy is in policy store and check if it contains the secret
         POLICY_STORE.with(|ps| {
@@ -473,21 +482,22 @@ mod tests {
 
         // UPDATE POLICY NAME and BENEFICIARIES
         let mut beneficiaries = HashSet::new();
+        beneficiaries.insert(beneficiary.to_string());
         beneficiaries.insert(validator.to_string());
         let upa: UpdatePolicyArgs = UpdatePolicyArgs {
             id: added_policy.id().to_string(),
             name: Some("new policy updates".to_string()),
             beneficiaries,
-            secrets: added_policy.secrets,
-            key_box: added_policy.key_box,
+            secrets: added_policy.secrets.clone(),
+            key_box: added_policy.key_box.clone(),
             conditions_logical_operator: added_policy.conditions_logical_operator().clone(),
-            conditions: added_policy.conditions
+            conditions: added_policy.conditions.clone(),
         };
 
-        let updated_policy = update_policy_impl(upa, principal.to_string());
+        let updated_policy = update_policy_impl(upa.clone(), principal.to_string());
         assert!(updated_policy.is_ok());
-        let mut updated_policy = updated_policy.unwrap();
-        assert_eq!(updated_policy.name(), added_policy.name());
+        let updated_policy = updated_policy.unwrap();
+        assert_eq!(updated_policy.name(), &upa.name);
         assert!(updated_policy
             .beneficiaries()
             .contains(&validator.to_string()));
@@ -521,7 +531,7 @@ mod tests {
             secrets: updated_policy.secrets,
             key_box: updated_policy.key_box,
             conditions_logical_operator: added_policy.conditions_logical_operator().clone(),
-            conditions: vec![time_based_condition, x_out_of_y_condition]
+            conditions: vec![time_based_condition, x_out_of_y_condition],
         };
 
         let updated_policy = update_policy_impl(upa, principal.to_string());
