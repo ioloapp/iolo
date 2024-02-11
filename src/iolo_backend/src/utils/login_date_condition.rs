@@ -5,11 +5,12 @@ use ic_cdk_timers::TimerId;
 use crate::{
     policies::{
         conditions::Condition,
-        policies_interface_impl::{get_policy_from_policy_store, update_policy_impl},
+        policies_interface_impl::{get_policy_from_policy_store},
     },
     smart_vaults::smart_vault::USER_STORE,
     users::{user::User, user_store::UserStore},
 };
+use crate::smart_vaults::smart_vault::POLICY_STORE;
 
 thread_local! {
     // The global vector to keep multiple timer IDs.
@@ -57,7 +58,10 @@ fn periodic_task() {
                         ic_cdk::println!("Last login date of user {:?} is older than {:?} days, condition status of all its policies is set to true", user.id, tb.number_of_days_since_last_login);
                         policy.set_condition_status(true);
                         // update policy in policy store
-                        update_policy_impl(policy.clone(), user.id.clone()).unwrap();
+                        let _ = POLICY_STORE.with(|ps| {
+                            let mut policy_store = ps.borrow_mut();
+                            policy_store.update_policy(policy.clone())
+                        });
                     } else {
                         ic_cdk::println!(
                             "Last login date of user {:?} is NOT older than {:?} days!",
