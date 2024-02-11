@@ -53,7 +53,7 @@ type PolicyListEntry = record {
   condition_status : bool;
   name : opt text;
 };
-type PolicyResponse = record {
+type PolicyWithSecretListEntries = record {
   id : text;
   date_created : nat64;
   owner : text;
@@ -75,7 +75,10 @@ type Result_4 = variant { Ok : User; Err : SmartVaultErr };
 type Result_5 = variant { Ok : text; Err : SmartVaultErr };
 type Result_6 = variant { Ok : vec Contact; Err : SmartVaultErr };
 type Result_7 = variant { Ok : vec nat8; Err : SmartVaultErr };
-type Result_8 = variant { Ok : PolicyResponse; Err : SmartVaultErr };
+type Result_8 = variant {
+  Ok : PolicyWithSecretListEntries;
+  Err : SmartVaultErr;
+};
 type Result_9 = variant { Ok : vec PolicyListEntry; Err : SmartVaultErr };
 type Secret = record {
   id : text;

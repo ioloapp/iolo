@@ -5,7 +5,7 @@ import {useSelector} from "react-redux";
 import {selectGroupedSecrets} from "../../redux/secrets/secretsSelectors";
 import {useAppDispatch} from "../../redux/hooks";
 import {FormControl, Typography} from "@mui/material";
-import {UiPolicyResponse, UiSecretListEntry, UiUser} from "../../services/IoloTypesForUi";
+import {UiPolicyWithSecretListEntries, UiSecretListEntry, UiUser} from "../../services/IoloTypesForUi";
 import {policiesActions} from "../../redux/policies/policiesSlice";
 import {selectPolicyDialogItem} from "../../redux/policies/policiesSelectors";
 import {selectContacts} from "../../redux/contacts/contactsSelectors";
@@ -28,7 +28,7 @@ interface SelectedSecret extends SelectListItem, UiSecretListEntry {
 export const PolicyDialogContent: FC<PolicyDialogContentProps> = ({readonly, viewSecret}) => {
     const dispatch = useAppDispatch();
     const { t } = useTranslation();
-    const dialogItem: UiPolicyResponse = useSelector(selectPolicyDialogItem);
+    const dialogItem: UiPolicyWithSecretListEntries = useSelector(selectPolicyDialogItem);
     const groupedSecretList = useSelector(selectGroupedSecrets);
     const contacts = useSelector(selectContacts);
     const [selectedSecrets, setSelectedSecrets] = React.useState<SelectedSecret[]>([]);
@@ -59,7 +59,7 @@ export const PolicyDialogContent: FC<PolicyDialogContentProps> = ({readonly, vie
         }
     }, [dialogItem]);
 
-    const updatePolicyToAdd = (policyResponse: UiPolicyResponse) => {
+    const updatePolicyToAdd = (policyResponse: UiPolicyWithSecretListEntries) => {
         dispatch(policiesActions.updateDialogItem(policyResponse))
     }
 
@@ -79,7 +79,7 @@ export const PolicyDialogContent: FC<PolicyDialogContentProps> = ({readonly, vie
         dispatch(policiesActions.updateDialogItem({
             ...dialogItem,
             secrets
-        } as UiPolicyResponse))
+        } as UiPolicyWithSecretListEntries))
     };
 
     const handleBeneficiaryChange = (beneficiary: SelectedBeneficiary) => {

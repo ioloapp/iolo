@@ -1,5 +1,6 @@
 use std::{cell::RefCell, collections::HashSet};
 
+use crate::policies::policy::UpdatePolicyArgs;
 use crate::{
     common::{error::SmartVaultErr, uuid::UUID},
     secrets::{
@@ -9,11 +10,10 @@ use crate::{
     smart_vaults::smart_vault::{POLICY_REGISTRIES, POLICY_STORE, SECRET_STORE, USER_STORE},
     users::user::PrincipalID,
 };
-use crate::policies::policy::UpdatePolicyArgs;
 
 use super::{
     conditions::Condition,
-    policy::{AddPolicyArgs, Policy, PolicyID, PolicyListEntry, PolicyResponse},
+    policy::{AddPolicyArgs, Policy, PolicyID, PolicyListEntry, PolicyWithSecretListEntries},
     policy_store::PolicyStore,
 };
 
@@ -65,13 +65,13 @@ pub async fn add_policy_impl(
 pub fn get_policy_as_owner_impl(
     policy_id: PolicyID,
     caller: PrincipalID,
-) -> Result<PolicyResponse, SmartVaultErr> {
+) -> Result<PolicyWithSecretListEntries, SmartVaultErr> {
     // get policy from policy store
     let policy: Policy = get_policy_from_policy_store(&policy_id)?;
 
     // TODO: check if caller is owner of policy
 
-    let mut policy_response = PolicyResponse::from(policy.clone());
+    let mut policy_response = PolicyWithSecretListEntries::from(policy.clone());
     for secret_id in policy.secrets() {
         // get secret from secret store
         let secret: Secret = get_secret_impl(secret_id.to_string(), caller.to_string())?;
@@ -112,7 +112,7 @@ pub fn get_policy_list_as_owner_impl(
 pub fn get_policy_as_beneficiary_impl(
     policy_id: PolicyID,
     beneficiary: PrincipalID,
-) -> Result<PolicyResponse, SmartVaultErr> {
+) -> Result<PolicyWithSecretListEntries, SmartVaultErr> {
     // get policy from policy store
     let policy: Policy = get_policy_from_policy_store(&policy_id)?;
 
@@ -127,7 +127,7 @@ pub fn get_policy_as_beneficiary_impl(
     // Check that beneficiary is allowed to read the policy
     if *policy.conditions_status() {
         // Get secrets from defined in policy
-        let mut policy_for_beneficiary = PolicyResponse::from(policy.clone());
+        let mut policy_for_beneficiary = PolicyWithSecretListEntries::from(policy.clone());
         for secret_ref in policy.secrets() {
             let secret = SECRET_STORE.with(|ss| {
                 let secret_store = ss.borrow();
@@ -166,7 +166,10 @@ pub fn get_policy_list_as_validator_impl(
     })
 }
 
-pub fn update_policy_impl(upa: UpdatePolicyArgs, caller: PrincipalID) -> Result<Policy, SmartVaultErr> {
+pub fn update_policy_impl(
+    upa: UpdatePolicyArgs,
+    caller: PrincipalID,
+) -> Result<Policy, SmartVaultErr> {
     // check if policy exists
     let existing_policy = POLICY_STORE.with(|ps| {
         let policy_store = ps.borrow();
@@ -187,8 +190,13 @@ pub fn update_policy_impl(upa: UpdatePolicyArgs, caller: PrincipalID) -> Result<
     }
 
     // create policy from AddPolicyArgs
-    let policy: Policy =
-        Policy::from_update_policy_args(&upa.id, &existing_policy.owner().to_string(), existing_policy.conditions_status, existing_policy.date_created().clone(), upa.clone());
+    let policy: Policy = Policy::from_update_policy_args(
+        &upa.id,
+        &existing_policy.owner().to_string(),
+        existing_policy.conditions_status,
+        *existing_policy.date_created(),
+        upa.clone(),
+    );
 
     // update policy in policy store
     let updated_policy = POLICY_STORE.with(|ps| {
@@ -304,10 +312,11 @@ pub fn get_policies_from_policy_store(
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashSet;
     use candid::Principal;
     use rand::Rng;
+    use std::collections::HashSet;
 
+    use crate::policies::policy::UpdatePolicyArgs;
     use crate::{
         common::error::SmartVaultErr,
         policies::{
@@ -317,7 +326,7 @@ mod tests {
                 get_policy_list_as_beneficiary_impl, get_policy_list_as_owner_impl,
                 get_policy_list_as_validator_impl, update_policy_impl,
             },
-            policy::{AddPolicyArgs, Policy, PolicyResponse},
+            policy::{AddPolicyArgs, Policy, PolicyWithSecretListEntries},
         },
         secrets::{
             secret::AddSecretArgs,
@@ -329,7 +338,6 @@ mod tests {
             users_interface_impl::create_user_impl,
         },
     };
-    use crate::policies::policy::UpdatePolicyArgs;
 
     #[tokio::test]
     async fn itest_policy_lifecycle() {
@@ -409,6 +417,7 @@ mod tests {
             conditions: vec![time_based_condition.clone(), x_out_of_y_condition.clone()],
         };
         let added_policy = update_policy_impl(upa, principal.to_string());
+
         assert!(added_policy.is_ok());
         let added_policy = added_policy.unwrap();
 
@@ -433,7 +442,7 @@ mod tests {
         assert_eq!(&policy_list[0].id, added_policy.id());
 
         // get specific policy from proper interface implementation
-        let mut fetched_policy: PolicyResponse =
+        let mut fetched_policy: PolicyWithSecretListEntries =
             get_policy_as_owner_impl(added_policy.id().clone(), principal.to_string()).unwrap();
         assert_eq!(fetched_policy.secrets().len(), 1);
         assert_eq!(
@@ -474,21 +483,22 @@ mod tests {
 
         // UPDATE POLICY NAME and BENEFICIARIES
         let mut beneficiaries = HashSet::new();
+        beneficiaries.insert(beneficiary.to_string());
         beneficiaries.insert(validator.to_string());
         let upa: UpdatePolicyArgs = UpdatePolicyArgs {
             id: added_policy.id().to_string(),
             name: Some("new policy updates".to_string()),
             beneficiaries,
-            secrets: added_policy.secrets,
-            key_box: added_policy.key_box,
+            secrets: added_policy.secrets.clone(),
+            key_box: added_policy.key_box.clone(),
             conditions_logical_operator: added_policy.conditions_logical_operator().clone(),
-            conditions: added_policy.conditions
+            conditions: added_policy.conditions.clone(),
         };
 
-        let updated_policy = update_policy_impl(upa, principal.to_string());
+        let updated_policy = update_policy_impl(upa.clone(), principal.to_string());
         assert!(updated_policy.is_ok());
         let updated_policy = updated_policy.unwrap();
-        assert_eq!(updated_policy.name(), added_policy.name());
+        assert_eq!(updated_policy.name(), &upa.name);
         assert!(updated_policy
             .beneficiaries()
             .contains(&validator.to_string()));
@@ -523,7 +533,7 @@ mod tests {
             secrets: updated_policy.secrets,
             key_box: updated_policy.key_box,
             conditions_logical_operator: added_policy.conditions_logical_operator().clone(),
-            conditions: vec![time_based_condition, x_out_of_y_condition]
+            conditions: vec![time_based_condition, x_out_of_y_condition],
         };
 
         let updated_policy = update_policy_impl(upa, principal.to_string());

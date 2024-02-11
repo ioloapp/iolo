@@ -7,7 +7,7 @@ import {
     UiPolicy,
     UiPolicyListEntry,
     UiPolicyListEntryRole,
-    UiPolicyResponse
+    UiPolicyWithSecretListEntries
 } from "../../services/IoloTypesForUi";
 import {mapError} from "../../utils/errorMapper";
 
@@ -25,7 +25,7 @@ export const addPolicyThunk = createAsyncThunk<UiPolicy, UiPolicy, { state: Root
     }
 );
 
-export const viewPolicyThunk = createAsyncThunk<UiPolicyResponse, UiPolicy, { state: RootState }>(
+export const viewPolicyThunk = createAsyncThunk<UiPolicyWithSecretListEntries, UiPolicy, { state: RootState }>(
     'policies/view',
     async (policy, {rejectWithValue}) => {
         try {
@@ -40,7 +40,7 @@ export const viewPolicyThunk = createAsyncThunk<UiPolicyResponse, UiPolicy, { st
     }
 );
 
-export const editPolicyThunk = createAsyncThunk<UiPolicyResponse, UiPolicy, { state: RootState }>(
+export const editPolicyThunk = createAsyncThunk<UiPolicyWithSecretListEntries, UiPolicy, { state: RootState }>(
     'policies/edit',
      async (policy, {rejectWithValue, getState}) => {
         try {
@@ -136,7 +136,7 @@ export const policiesSlice = createSlice({
             state.dialogItem = initialState.dialogItem;
             state.showDeleteDialog = false;
         },
-        updateDialogItem: (state, action: PayloadAction<UiPolicyResponse>) => {
+        updateDialogItem: (state, action: PayloadAction<UiPolicyWithSecretListEntries>) => {
             state.dialogItem = action.payload;
         },
         addConditionToDialogItem: (state, action: PayloadAction<UiCondition>) => {

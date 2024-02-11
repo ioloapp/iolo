@@ -55,7 +55,7 @@ export interface PolicyListEntry {
   'condition_status' : boolean,
   'name' : [] | [string],
 }
-export interface PolicyResponse {
+export interface PolicyWithSecretListEntries {
   'id' : string,
   'date_created' : bigint,
   'owner' : string,
@@ -86,7 +86,7 @@ export type Result_6 = { 'Ok' : Array<Contact> } |
   { 'Err' : SmartVaultErr };
 export type Result_7 = { 'Ok' : Uint8Array | number[] } |
   { 'Err' : SmartVaultErr };
-export type Result_8 = { 'Ok' : PolicyResponse } |
+export type Result_8 = { 'Ok' : PolicyWithSecretListEntries } |
   { 'Err' : SmartVaultErr };
 export type Result_9 = { 'Ok' : Array<PolicyListEntry> } |
   { 'Err' : SmartVaultErr };

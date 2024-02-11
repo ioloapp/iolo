@@ -12,10 +12,9 @@ import {
     UpdatePolicyArgs,
     XOutOfYCondition,
     Validator,
-    LogicalOperator
+    Secret
 } from "../../src/declarations/iolo_backend/iolo_backend.did";
 import {ActorSubclass} from "@dfinity/agent";
-
 
 const canisterId: string = determineBackendCanisterId();
 
@@ -87,12 +86,45 @@ describe("Policy Tests", () => {
     }, 60000); // Set timeout
 
     test("it must update policies properly", async () => {
-        const secretA = await createSecretInBackend('A', actorOne);
+
+        // Update policy with one secret, one beneficiary and one condition only and no logical operator
+        const secretA: Secret = await createSecretInBackend('A', actorOne);
         const timeBasedCondition: TimeBasedCondition = {
             id: "idOne",
             number_of_days_since_last_login: BigInt(10),
             condition_status: false,
         };
+        let updatePolicyArgsOne: UpdatePolicyArgs = {
+            id: policyOne.id,
+            name: ['policyA'],
+            beneficiaries: [identityTwo.getPrincipal().toString()],
+            conditions: [{'TimeBasedCondition': timeBasedCondition}],
+            conditions_logical_operator: [],
+            secrets: [secretA.id],
+            key_box: [[secretA.id, new Uint8Array([1, 2, 3])]], // Just a random key
+        }
+
+        let resultUpdatePolicyOne: Result_1 = await actorOne.update_policy(updatePolicyArgsOne);
+        expect(resultUpdatePolicyOne).toHaveProperty('Ok');
+        expect(Object.keys(resultUpdatePolicyOne['Ok']).length).toStrictEqual(11);
+        expect(Number(resultUpdatePolicyOne['Ok'].id)).not.toStrictEqual("");
+        expect(resultUpdatePolicyOne['Ok'].name).toStrictEqual(updatePolicyArgsOne.name);
+        expect(resultUpdatePolicyOne['Ok'].owner).toStrictEqual(identityOne.getPrincipal().toString());
+        expect(resultUpdatePolicyOne['Ok'].secrets).toHaveLength(1);
+        expect(resultUpdatePolicyOne['Ok'].secrets).toContainEqual(updatePolicyArgsOne.secrets[0]);
+        expect(resultUpdatePolicyOne['Ok'].key_box).toHaveLength(1);
+        expect(resultUpdatePolicyOne['Ok'].key_box).toContainEqual(updatePolicyArgsOne.key_box[0]);
+        expect(resultUpdatePolicyOne['Ok'].beneficiaries).toHaveLength(1);
+        expect(resultUpdatePolicyOne['Ok'].beneficiaries).toContainEqual(updatePolicyArgsOne.beneficiaries[0]);
+        expect(resultUpdatePolicyOne['Ok'].conditions).toHaveLength(1);
+        expect(resultUpdatePolicyOne['Ok'].conditions).toContainEqual(updatePolicyArgsOne.conditions[0]);
+        expect(resultUpdatePolicyOne['Ok'].conditions_logical_operator).toStrictEqual(updatePolicyArgsOne.conditions_logical_operator);
+        expect(resultUpdatePolicyOne['Ok'].conditions_status).toStrictEqual(false);
+        expect(resultUpdatePolicyOne['Ok'].date_created).toStrictEqual(policyOne.date_created);
+        expect(resultUpdatePolicyOne['Ok'].date_modified).toBeGreaterThan(policyOne.date_modified);
+        policyOne = resultUpdatePolicyOne['Ok'];
+
+        // Add another condition with a logical operator, a second secret and a second beneficiary
         const ValidatorOne: Validator = {
             id: identityOne.getPrincipal().toString(),
             status: false,
@@ -103,33 +135,48 @@ describe("Policy Tests", () => {
             validators: [ValidatorOne],
             condition_status: false,
         }
-
-        const updatePolicyArgsOne: UpdatePolicyArgs = {
+        let conditions: Array<Condition> = policyOne.conditions;
+        conditions.push({'XOutOfYCondition': xOutOfYCondition});
+        let secrets = policyOne.secrets;
+        const secretB: Secret = await createSecretInBackend('B', actorOne);
+        secrets.push(secretB.id);
+        let keyBox = policyOne.key_box;
+        keyBox.push([secretB.id, new Uint8Array([4, 5, 6])]);
+        let beneficiaries = policyOne.beneficiaries;
+        beneficiaries.push(identityThree.getPrincipal().toString());
+        updatePolicyArgsOne = {
             id: policyOne.id,
-            name: ['policyA'],
-            beneficiaries: [identityTwo.getPrincipal().toString()],
-            conditions: [{'TimeBasedCondition': timeBasedCondition}, {'XOutOfYCondition': xOutOfYCondition}],
+            name: ['policyAUpdated'],
+            beneficiaries: beneficiaries,
+            conditions: conditions,
             conditions_logical_operator: [{'And': null}],
-            secrets: [secretA.id],
-            key_box: [[secretA.id, new Uint8Array([1, 2, 3])]], // Just a random key
+            secrets: secrets,
+            key_box: keyBox
         }
 
-        const resultUpdatePolicyOne: Result_1 = await actorOne.update_policy(updatePolicyArgsOne);
+        resultUpdatePolicyOne = await actorOne.update_policy(updatePolicyArgsOne);
         expect(resultUpdatePolicyOne).toHaveProperty('Ok');
         expect(Object.keys(resultUpdatePolicyOne['Ok']).length).toStrictEqual(11);
         expect(Number(resultUpdatePolicyOne['Ok'].id)).not.toStrictEqual("");
         expect(resultUpdatePolicyOne['Ok'].name).toStrictEqual(updatePolicyArgsOne.name);
         expect(resultUpdatePolicyOne['Ok'].owner).toStrictEqual(identityOne.getPrincipal().toString());
-        expect(resultUpdatePolicyOne['Ok'].secrets).toStrictEqual(updatePolicyArgsOne.secrets);
-        expect(resultUpdatePolicyOne['Ok'].key_box).toStrictEqual(updatePolicyArgsOne.key_box);
-        expect(resultUpdatePolicyOne['Ok'].beneficiaries).toStrictEqual(updatePolicyArgsOne.beneficiaries);
-        expect(resultUpdatePolicyOne['Ok'].conditions).toStrictEqual(updatePolicyArgsOne.conditions);
+        expect(resultUpdatePolicyOne['Ok'].secrets).toHaveLength(2)
+        expect(resultUpdatePolicyOne['Ok'].secrets).toContainEqual(updatePolicyArgsOne.secrets[0]);
+        expect(resultUpdatePolicyOne['Ok'].secrets).toContainEqual(updatePolicyArgsOne.secrets[1]);
+        expect(resultUpdatePolicyOne['Ok'].key_box).toHaveLength(2);
+        expect(resultUpdatePolicyOne['Ok'].key_box).toContainEqual(updatePolicyArgsOne.key_box[0]);
+        expect(resultUpdatePolicyOne['Ok'].key_box).toContainEqual(updatePolicyArgsOne.key_box[1]);
+        expect(resultUpdatePolicyOne['Ok'].beneficiaries).toHaveLength(2);
+        expect(resultUpdatePolicyOne['Ok'].beneficiaries).toContainEqual(updatePolicyArgsOne.beneficiaries[0]);
+        expect(resultUpdatePolicyOne['Ok'].beneficiaries).toContainEqual(updatePolicyArgsOne.beneficiaries[1]);
+        expect(resultUpdatePolicyOne['Ok'].conditions).toHaveLength(2);
+        expect(resultUpdatePolicyOne['Ok'].conditions).toContainEqual(updatePolicyArgsOne.conditions[0]);
+        expect(resultUpdatePolicyOne['Ok'].conditions).toContainEqual(updatePolicyArgsOne.conditions[1]);
         expect(resultUpdatePolicyOne['Ok'].conditions_logical_operator).toStrictEqual(updatePolicyArgsOne.conditions_logical_operator);
         expect(resultUpdatePolicyOne['Ok'].conditions_status).toStrictEqual(false);
         expect(resultUpdatePolicyOne['Ok'].date_created).toStrictEqual(policyOne.date_created);
         expect(resultUpdatePolicyOne['Ok'].date_modified).toBeGreaterThan(policyOne.date_modified);
 
-        // TODO: Multiple conditions
     }, 60000); // Set timeout
 
     test("it must not update a non-existing policy", async () => {

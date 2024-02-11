@@ -11,14 +11,14 @@ import {
 import {selectCurrentUser} from "../../redux/user/userSelectors";
 import {BasicDialog} from "../dialog/basic-dialog";
 import {PolicyDialogContent} from './policy-dialog-content';
-import {UiPolicyResponse} from "../../services/IoloTypesForUi";
+import {UiPolicyWithSecretListEntries} from "../../services/IoloTypesForUi";
 import {useTranslation} from "react-i18next";
 
 export default function EditPolicyDialog() {
     const dispatch = useAppDispatch();
     const { t } = useTranslation();
     const showEditPolicyDialog = useSelector(selectShowEditPolicyDialog);
-    const dialogItem: UiPolicyResponse = useSelector(selectPolicyDialogItem);
+    const dialogItem: UiPolicyWithSecretListEntries = useSelector(selectPolicyDialogItem);
     const policyError = useSelector(selectPolicyError);
     const dialogItemState = useSelector(selectPolicyDialogItemState);
     const currentUser = useSelector(selectCurrentUser);

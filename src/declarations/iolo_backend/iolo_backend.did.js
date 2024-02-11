@@ -132,7 +132,7 @@ export const idlFactory = ({ IDL }) => {
     'name' : IDL.Opt(IDL.Text),
     'category' : IDL.Opt(SecretCategory),
   });
-  const PolicyResponse = IDL.Record({
+  const PolicyWithSecretListEntries = IDL.Record({
     'id' : IDL.Text,
     'date_created' : IDL.Nat64,
     'owner' : IDL.Text,
@@ -146,7 +146,7 @@ export const idlFactory = ({ IDL }) => {
     'date_modified' : IDL.Nat64,
   });
   const Result_8 = IDL.Variant({
-    'Ok' : PolicyResponse,
+    'Ok' : PolicyWithSecretListEntries,
     'Err' : SmartVaultErr,
   });
   const PolicyListEntry = IDL.Record({

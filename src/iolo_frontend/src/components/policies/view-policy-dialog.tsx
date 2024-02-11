@@ -12,7 +12,7 @@ import {BasicDialog} from "../dialog/basic-dialog";
 import {PolicyDialogContent} from './policy-dialog-content';
 import {SelectListItem} from "../selectlist/select-list";
 import {getSecretInViewModeThunk} from "../../redux/secrets/secretsSlice";
-import {UiPolicyResponse} from "../../services/IoloTypesForUi";
+import {UiPolicyWithSecretListEntries} from "../../services/IoloTypesForUi";
 import {useTranslation} from "react-i18next";
 
 export default function ViewPolicyDialog() {
@@ -21,7 +21,7 @@ export default function ViewPolicyDialog() {
     const showViewPolicyDialog = useSelector(selectShowViewPolicyDialog);
     const policyError = useSelector(selectPolicyError);
     const dialogItemState = useSelector(selectPolicyDialogItemState);
-    const dialogItem: UiPolicyResponse = useSelector(selectPolicyDialogItem);
+    const dialogItem: UiPolicyWithSecretListEntries = useSelector(selectPolicyDialogItem);
 
     const handleClose = () => {
         dispatch(policiesActions.closeViewDialog());

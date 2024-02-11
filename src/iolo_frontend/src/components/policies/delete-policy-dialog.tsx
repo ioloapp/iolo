@@ -9,14 +9,14 @@ import {
 } from "../../redux/policies/policiesSelectors";
 import {deletePolicyThunk, policiesActions} from "../../redux/policies/policiesSlice";
 import {BasicDialog} from "../dialog/basic-dialog";
-import {UiPolicyResponse} from "../../services/IoloTypesForUi";
+import {UiPolicyWithSecretListEntries} from "../../services/IoloTypesForUi";
 import {Trans, useTranslation} from "react-i18next";
 
 export default function DeletePolicyDialog() {
     const dispatch = useAppDispatch();
     const { t } = useTranslation();
     const showDeletePolicyDialog: boolean = useSelector(selectShowDeletePolicyDialog);
-    const dialogItem: UiPolicyResponse = useSelector(selectPolicyDialogItem);
+    const dialogItem: UiPolicyWithSecretListEntries = useSelector(selectPolicyDialogItem);
     const policyError = useSelector(selectPolicyError);
     const dialogItemState = useSelector(selectPolicyDialogItemState);
 
