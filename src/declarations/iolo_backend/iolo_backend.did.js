@@ -44,6 +44,7 @@ export const idlFactory = ({ IDL }) => {
   const Validator = IDL.Record({ 'id' : IDL.Text, 'status' : IDL.Bool });
   const XOutOfYCondition = IDL.Record({
     'id' : IDL.Text,
+    'question' : IDL.Text,
     'condition_status' : IDL.Bool,
     'quorum' : IDL.Nat64,
     'validators' : IDL.Vec(Validator),

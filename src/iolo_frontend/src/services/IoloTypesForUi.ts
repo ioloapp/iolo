@@ -78,7 +78,8 @@ export interface UiTimeBasedCondition extends UiCondition{
 }
 
 export interface UiXOutOfYCondition extends UiCondition {
-    type: ConditionType.XOutOfYCondition
+    type: ConditionType.XOutOfYCondition,
+    question: string,
     quorum: number,
     validators: Array<UiValidator>,
 }

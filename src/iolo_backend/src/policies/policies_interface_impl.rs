@@ -379,6 +379,7 @@ mod tests {
                 status: false,
             }],
             quorum: 1,
+            question: "When will you be happy?".to_string(),
             condition_status: false,
         });
 
@@ -391,7 +392,7 @@ mod tests {
             //conditions: vec![time_based_condition.clone(), x_out_of_y_condition.clone()],
         };
         //apa.secrets.insert(added_secret.id().to_string());
-        let mut added_policy: Policy = add_policy_impl(apa.clone(), principal.to_string())
+        let added_policy: Policy = add_policy_impl(apa.clone(), principal.to_string())
             .await
             .unwrap();
 
@@ -409,7 +410,7 @@ mod tests {
         };
         let added_policy = update_policy_impl(upa, principal.to_string());
         assert!(added_policy.is_ok());
-        let mut added_policy = added_policy.unwrap();
+        let added_policy = added_policy.unwrap();
 
         // check if policy is in policy store and check if it contains the secret
         POLICY_STORE.with(|ps| {
@@ -486,7 +487,7 @@ mod tests {
 
         let updated_policy = update_policy_impl(upa, principal.to_string());
         assert!(updated_policy.is_ok());
-        let mut updated_policy = updated_policy.unwrap();
+        let updated_policy = updated_policy.unwrap();
         assert_eq!(updated_policy.name(), added_policy.name());
         assert!(updated_policy
             .beneficiaries()
@@ -509,6 +510,7 @@ mod tests {
                 status: false,
             }],
             quorum: 1,
+            question: "Do I live on the moon?".to_string(),
             condition_status: false,
         });
 

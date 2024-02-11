@@ -67,8 +67,14 @@
     "button": {
       "add": "Add condition"
     },
-    "max-logout-time": "Max. time in days where you haven't been logged in to IOLO",
-    "x-out-of-y": "Confirmers of your condition"
+    "timebased": {
+      "max-logout-time": "Max. time in days where you haven't been logged in to IOLO"
+    },
+    "xoutofy": {
+      "question": "What question do your validators need to confirm?",
+      "min-validators": "How many validators need to confirm it in minimum?",
+      "valdiators": "Validators of your condition"
+    }
   },
   "validators": {
     "button":{

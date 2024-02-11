@@ -49,7 +49,7 @@ export const ConditionTimebased: FC<ConditionTimebasedProps> = ({condition, read
                         autoFocus
                         margin="dense"
                         id="max-time"
-                        label={t('conditions.max-logout-time')}
+                        label={t('conditions.timebased.max-logout-time')}
                         InputLabelProps={{shrink: true}}
                         fullWidth
                         variant="standard"

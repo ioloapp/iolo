@@ -70,15 +70,10 @@ export const userSlice = createSlice({
         },
         changeMode: (state, action: PayloadAction<'dark' | 'light'>) => {
             state.mode = action.payload
-        }
+        },
     },
     extraReducers: (builder) => {
         builder
-            .addCase(REHYDRATE, (state) => {
-                if (state.loginStatus !== 'succeeded') {
-                    state.loginStatus = 'init';
-                }
-            })
             .addCase(loginUserThunk.pending, (state) => {
                 state.loginStatus = 'pending';
             })

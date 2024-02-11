@@ -156,6 +156,7 @@ type UserType = variant { Company; Person };
 type Validator = record { id : text; status : bool };
 type XOutOfYCondition = record {
   id : text;
+  question : text;
   condition_status : bool;
   quorum : nat64;
   validators : vec Validator;

@@ -23,6 +23,7 @@ pub struct TimeBasedCondition {
 pub struct XOutOfYCondition {
     pub id: ConditionID,
     pub validators: Vec<Validator>,
+    pub question: String,
     pub quorum: u64, // in absolute numbers
     pub condition_status: bool,
 }

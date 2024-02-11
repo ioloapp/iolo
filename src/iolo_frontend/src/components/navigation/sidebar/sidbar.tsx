@@ -1,7 +1,7 @@
-import {Divider, Drawer, List, ListItem, ListItemIcon, ListItemText} from "@mui/material";
+import {Divider, Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText} from "@mui/material";
 import * as React from "react";
 import LockOpenOutlinedIcon from "@mui/icons-material/LockOpenOutlined";
-import {Link} from "react-router-dom";
+import {Link, matchRoutes, useLocation} from "react-router-dom";
 import HistoryEduOutlinedIcon from "@mui/icons-material/HistoryEduOutlined";
 import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
 import SendIcon from '@mui/icons-material/Send';
@@ -19,6 +19,7 @@ export const SideBar = () => {
 
     const dispatch = useAppDispatch();
     const {t} = useTranslation();
+    const location = useLocation()
 
     const handleLogout = () => {
         dispatch(userActions.logOut());
@@ -41,12 +42,12 @@ export const SideBar = () => {
         >
             <IoloLogo/>
             <List>
-                <ListItem component={Link} to={ROUTE_SECRETS}>
+                <ListItemButton component={Link} to={ROUTE_SECRETS} selected={matchRoutes([{ path: ROUTE_SECRETS}], location) != undefined}>
                     <ListItemIcon>
                         <LockOpenOutlinedIcon className="navigation-icon"/>
                     </ListItemIcon>
                     <ListItemText primary={t('secrets.title')} className="sidebar-link"/>
-                </ListItem>
+                </ListItemButton>
                 <ListItem component={Link} to={ROUTE_POLICIES}>
                     <ListItemIcon>
                         <HistoryEduOutlinedIcon className="navigation-icon"/>

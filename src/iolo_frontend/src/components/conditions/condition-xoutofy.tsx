@@ -2,7 +2,7 @@ import * as React from 'react';
 import {FC} from 'react';
 import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
-import {UiUser, UiValidator, UiXOutOfYCondition} from "../../services/IoloTypesForUi";
+import {UiTimeBasedCondition, UiUser, UiValidator, UiXOutOfYCondition} from "../../services/IoloTypesForUi";
 import Collapse from "@mui/material/Collapse";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -19,6 +19,7 @@ import IconButton from "@mui/material/IconButton";
 import AddIcon from "@mui/icons-material/Add";
 import {MenuItem, Select} from "@mui/material";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import TextField from "@mui/material/TextField";
 
 export interface ConditionXOutOfYProps {
     condition: UiXOutOfYCondition
@@ -82,6 +83,10 @@ export const ConditionXOutOfY: FC<ConditionXOutOfYProps> = ({condition, readonly
         return user.id
     }
 
+    const updateCondition = (condition: UiXOutOfYCondition) => {
+        dispatch(policiesActions.updateConditionOfDialogItem(condition))
+    }
+
     if (readonly) {
         return (
             <TableRow>
@@ -89,7 +94,19 @@ export const ConditionXOutOfY: FC<ConditionXOutOfYProps> = ({condition, readonly
                     <Collapse in={open} timeout="auto" unmountOnExit>
                         <Box sx={{margin: 1}}>
                             <Typography variant="body2">
-                                {t('conditions.x-out-of-y')}
+                                {t('conditions.xoutofy.question')}
+                            </Typography>
+                            <div>
+                                {condition?.question}
+                            </div>
+                            <Typography variant="body2">
+                                {t('conditions.xoutofy.min-validators')}
+                            </Typography>
+                            <div>
+                                {condition?.quorum}
+                            </div>
+                            <Typography variant="body2">
+                                {t('conditions.xoutofy.valdiators')}
                             </Typography>
                             <Table size="small" aria-label="purchases">
                                 <TableHead>
@@ -121,8 +138,36 @@ export const ConditionXOutOfY: FC<ConditionXOutOfYProps> = ({condition, readonly
             <TableCell style={{paddingBottom: 0, paddingTop: 0}} colSpan={6}>
                 <Collapse in={open} timeout="auto" unmountOnExit>
                     <Box sx={{margin: 1}}>
+                        <TextField
+                            autoFocus
+                            margin="dense"
+                            id="question"
+                            label={t('conditions.xoutofy.question')}
+                            InputLabelProps={{shrink: true}}
+                            fullWidth
+                            variant="standard"
+                            value={condition.question}
+                            onChange={e => updateCondition({
+                                ...condition,
+                                question: e.target.value
+                            })}
+                        />
+                        <TextField
+                            autoFocus
+                            margin="dense"
+                            id="question"
+                            label={t('conditions.xoutofy.min-validators')}
+                            InputLabelProps={{shrink: true}}
+                            fullWidth
+                            variant="standard"
+                            value={condition.quorum}
+                            onChange={e => updateCondition({
+                                ...condition,
+                                quorum: Number(e.target.value)
+                            })}
+                        />
                         <Typography variant="body2">
-                            {t('conditions.x-out-of-y')}
+                            {t('conditions.xoutofy.valdiators')}
                         </Typography>
                         <Table size="small" aria-label="purchases">
                             <TableHead>

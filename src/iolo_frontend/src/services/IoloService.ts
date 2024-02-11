@@ -79,14 +79,14 @@ class IoloService {
         });
     }
 
-    private async getActor(){
-        if(this.actor){
+    private async getActor() {
+        if (this.actor) {
             return this.actor;
         }
-        try{
+        try {
             await this.initClient();
             return this.actor;
-        }catch (e) {
+        } catch (e) {
             throw new IoloError("User not logged in");
         }
     }
@@ -123,7 +123,7 @@ class IoloService {
         let args: AddOrUpdateUserArgs = {
             email: uiUser.email ? [uiUser.email] : [],
             name: uiUser.name ? [uiUser.name] : [],
-            user_type: uiUser.type ? (uiUser.type === UiUserType.Person ? [{ 'Person' : null }] : [{ 'Company' : null }]) : []
+            user_type: uiUser.type ? (uiUser.type === UiUserType.Person ? [{'Person': null}] : [{'Company': null}]) : []
         }
         const result: Result_4 = await (await this.getActor()).create_user(args);
         if (result['Ok']) {
@@ -137,7 +137,7 @@ class IoloService {
         if (result['Ok']) {
             return this.mapUserToUiUser(result['Ok']);
         }
-        if(result['Err'].hasOwnProperty('UserDoesNotExist') && principal){
+        if (result['Err'].hasOwnProperty('UserDoesNotExist') && principal) {
             //onboarding
             return {
                 id: principal.toString()
@@ -150,7 +150,7 @@ class IoloService {
         const addOrUpdateUserArgs: AddOrUpdateUserArgs = {
             email: uiUser.email ? [uiUser.email] : [],
             name: uiUser.name ? [uiUser.name] : [],
-            user_type: uiUser.type ? (uiUser.type === UiUserType.Person ? [{ 'Person' : null }] : [{ 'Company' : null }]) : []
+            user_type: uiUser.type ? (uiUser.type === UiUserType.Person ? [{'Person': null}] : [{'Company': null}]) : []
         }
         let result: Result_4 = await (await this.getActor()).update_user(addOrUpdateUserArgs);
         if (result['Ok']) {
@@ -245,7 +245,7 @@ class IoloService {
         }
 
         // Get the vetKey to decrypt the encryption key
-        const userVetKey: Uint8Array = await get_aes_256_gcm_key_for_user(await this.getUserPrincipal(),(await this.getActor()));
+        const userVetKey: Uint8Array = await get_aes_256_gcm_key_for_user(await this.getUserPrincipal(), (await this.getActor()));
 
         // Decrypt symmetric key
         const decryptedSymmetricKey = await aes_gcm_decrypt(encrypted_symmetric_key as Uint8Array, userVetKey, this.ivLength);
@@ -299,11 +299,11 @@ class IoloService {
         const resultAsTestator: Result_9 = await (await this.getActor()).get_policy_list_as_owner();
         let policiesAsTestator: UiPolicyListEntry[] = [];
         if (resultAsTestator['Ok']) {
-            policiesAsTestator = resultAsTestator['Ok'].map((item: PolicyListEntry): UiPolicyListEntry  => {
+            policiesAsTestator = resultAsTestator['Ok'].map((item: PolicyListEntry): UiPolicyListEntry => {
                 return {
                     id: item.id,
                     name: item.name?.length > 0 ? item.name[0] : undefined,
-                    owner: { id: item.owner?.toString()},
+                    owner: {id: item.owner?.toString()},
                     role: UiPolicyListEntryRole.Owner,
                     conditionStatus: item.condition_status,
                 }
@@ -313,13 +313,13 @@ class IoloService {
         }
 
         const resultAsBeneficiary: Result_9 = await (await this.getActor()).get_policy_list_as_beneficiary();
-        let policiesAsBeneficiary: UiPolicyListEntry[] =  [];
+        let policiesAsBeneficiary: UiPolicyListEntry[] = [];
         if (resultAsBeneficiary['Ok'] && resultAsBeneficiary['Ok'].length > 0) {
-            policiesAsBeneficiary = resultAsBeneficiary['Ok'].map((item: PolicyListEntry): UiPolicyListEntry  => {
+            policiesAsBeneficiary = resultAsBeneficiary['Ok'].map((item: PolicyListEntry): UiPolicyListEntry => {
                 return {
                     id: item.id,
                     name: item.name?.length > 0 ? item.name[0] : undefined,
-                    owner: { id: item.owner?.toString()},
+                    owner: {id: item.owner?.toString()},
                     role: UiPolicyListEntryRole.Beneficiary,
                     conditionStatus: item.condition_status,
                 }
@@ -355,7 +355,7 @@ class IoloService {
         throw mapError(result['Err']);
     }
 
-    public async confirmXOutOfYCondition (testator: Principal, policyId: string, status: boolean): Promise<void> {
+    public async confirmXOutOfYCondition(testator: Principal, policyId: string, status: boolean): Promise<void> {
         const result: Result_3 = await (await this.getActor()).confirm_x_out_of_y_condition(testator.toString(), policyId, status);
         if (result['Ok'] === null) {
             return;
@@ -390,7 +390,7 @@ class IoloService {
     public async getContactsList(): Promise<UiUser[]> {
         const result: Result_6 = await (await this.getActor()).get_contact_list();
         if (result['Ok']) {
-            return result['Ok'].map((item) => this.mapUserToUiUser(item)) ;
+            return result['Ok'].map((item) => this.mapUserToUiUser(item));
         }
         throw mapError(result['Err']);
     }
@@ -414,7 +414,7 @@ class IoloService {
     }
 
     private mapUserToUiUser(user: User): UiUser {
-        let uiUser: UiUser =  {
+        let uiUser: UiUser = {
             id: user.id,
             name: user.name.length > 0 ? user.name[0] : undefined,
             email: user.email.length > 0 ? user.email[0] : undefined,
@@ -445,7 +445,7 @@ class IoloService {
             user_type: uiUser.type ? [this.mapUiUserTypeToUserType(uiUser.type)] : [],
             date_created: uiUser.dateCreated ? this.dateToNanosecondsInBigint(uiUser.dateCreated) : 0n,
             name: uiUser.name ? [uiUser.name] : [],
-            date_last_login: uiUser.dateLastLogin? [this.dateToNanosecondsInBigint(uiUser.dateLastLogin)] : [],
+            date_last_login: uiUser.dateLastLogin ? [this.dateToNanosecondsInBigint(uiUser.dateLastLogin)] : [],
             email: uiUser.email ? [uiUser.email] : [],
             date_modified: uiUser.dateCreated ? this.dateToNanosecondsInBigint(uiUser.dateModified) : 0n,
             contacts: [],
@@ -477,10 +477,10 @@ class IoloService {
 
     private async mapSecretToUiSecret(secret: Secret, username: string, password: string, notes: string): Promise<UiSecret> {
 
-       let uiSecret: UiSecret = {
+        let uiSecret: UiSecret = {
             id: secret.id.toString(),
             name: secret.name.length > 0 ? secret.name[0] : undefined,
-            url: secret.url.length > 0 ? secret.url[0]: undefined,
+            url: secret.url.length > 0 ? secret.url[0] : undefined,
             username: username,
             password: password,
             notes: notes,
@@ -493,8 +493,8 @@ class IoloService {
         } else if (secret.category[0].hasOwnProperty(UiSecretCategory.Password)) {
             uiSecret.category = UiSecretCategory.Password;
             //TODO reactivate
-        // } else if (secret.category[0].hasOwnProperty(UiSecretCategory.Document)) {
-        //     uiSecret.category = UiSecretCategory.Document;
+            // } else if (secret.category[0].hasOwnProperty(UiSecretCategory.Document)) {
+            //     uiSecret.category = UiSecretCategory.Document;
         } else if (secret.category[0].hasOwnProperty(UiSecretCategory.Note)) {
             uiSecret.category = UiSecretCategory.Note;
         } else {
@@ -556,7 +556,7 @@ class IoloService {
         }
     }
 
-    private async encryptExistingSecret(uiSecret: UiSecret, symmetricKey:  Uint8Array, existingSecret: Secret): Promise<UpdateSecretArgs> {
+    private async encryptExistingSecret(uiSecret: UiSecret, symmetricKey: Uint8Array, existingSecret: Secret): Promise<UpdateSecretArgs> {
         // When updating existing secrets the existing encryption key and the existing ivs must be used
         try {
             // Encrypt optional secret attributes
@@ -628,14 +628,14 @@ class IoloService {
         }
     }
 
-    private mapSecretCategoryToUiSecretCategory(category: SecretCategory) :UiSecretCategory {
+    private mapSecretCategoryToUiSecretCategory(category: SecretCategory): UiSecretCategory {
         if (category.hasOwnProperty('Password')) {
             return UiSecretCategory.Password;
         } else if (category.hasOwnProperty('Note')) {
-            return  UiSecretCategory.Note;
+            return UiSecretCategory.Note;
             //TODO reactivate
-        // } else if (category.hasOwnProperty('Document')) {
-        //     return  UiSecretCategory.Document;
+            // } else if (category.hasOwnProperty('Document')) {
+            //     return  UiSecretCategory.Document;
         }
     }
 
@@ -653,15 +653,22 @@ class IoloService {
         for (const item of uiPolicy.secrets) {
             const result: Result_7 = await (await this.getActor()).get_encrypted_symmetric_key(item);
             if (result['Ok']) {
+                if (result['Ok'].encrypted_symmetric_key == undefined) {
+                    throw new IoloError('encrypted_symmetric_key not present')
+                }
                 // Decrypt symmetric key with user vetKey
+                console.log('encrypted_symmetric_key', result['Ok'].encrypted_symmetric_key)
                 const decryptedSymmetricKey = await aes_gcm_decrypt(result['Ok'].encrypted_symmetric_key as Uint8Array, userVetKey, this.ivLength);
 
                 // Encrypt symmetric key with policy vetKey
                 const ivSymmetricKey = window.crypto.getRandomValues(new Uint8Array(12)); // 96-bits; unique per message
                 const encryptedSymmetricKey = await aes_gcm_encrypt(decryptedSymmetricKey, policyVetKey, ivSymmetricKey);
 
-                keyBox.push([item,  encryptedSymmetricKey]);
-            } else throw mapError(result['Err']);
+                keyBox.push([item, encryptedSymmetricKey]);
+            } else {
+                throw mapError(result['Err'])
+            }
+            ;
         }
 
         return {
@@ -670,29 +677,30 @@ class IoloService {
             name: [uiPolicy.name],
             secrets: uiPolicy.secrets.map((item) => item.toString()),
             key_box: keyBox,
-            conditions_logical_operator: uiPolicy.conditionsLogicalOperator == LogicalOperator.And ? [{ 'And' : null }] : [{ 'Or' : null }],
+            conditions_logical_operator: uiPolicy.conditionsLogicalOperator == LogicalOperator.And ? [{'And': null}] : [{'Or': null}],
             conditions: uiPolicy.conditions.map(uiCondition => this.mapUiConditionToCondition(uiCondition)),
         }
     }
 
     private mapUiConditionToCondition(uiCondition: UiCondition): Condition {
-        if(uiCondition.type === ConditionType.TimeBasedCondition){
+        if (uiCondition.type === ConditionType.TimeBasedCondition) {
             const tCondition = uiCondition as UiTimeBasedCondition;
             const timeBasedCondition = {
                 id: tCondition.id,
                 condition_status: tCondition.conditionStatus,
-                number_of_days_since_last_login: tCondition.numberOfDaysSinceLastLogin ? BigInt(tCondition.numberOfDaysSinceLastLogin): BigInt(100)
+                number_of_days_since_last_login: tCondition.numberOfDaysSinceLastLogin ? BigInt(tCondition.numberOfDaysSinceLastLogin) : BigInt(100)
             } as TimeBasedCondition
             return {
                 TimeBasedCondition: timeBasedCondition
             }
         }
-        if(uiCondition.type === ConditionType.XOutOfYCondition){
+        if (uiCondition.type === ConditionType.XOutOfYCondition) {
             const xCondition = uiCondition as UiXOutOfYCondition;
             const xOutOfYCondition: XOutOfYCondition = {
                 id: xCondition.id,
                 condition_status: xCondition.conditionStatus,
-                quorum: xCondition.quorum ? BigInt(xCondition.quorum): BigInt(xCondition.validators.length),
+                question: xCondition.question,
+                quorum: xCondition.quorum ? BigInt(xCondition.quorum) : BigInt(xCondition.validators.length),
                 validators: xCondition.validators.map(v => {
                     return {
                         id: v.user.id,
@@ -710,9 +718,11 @@ class IoloService {
         return {
             id: policy.id,
             name: policy.name.length > 0 ? policy.name[0] : undefined,
-            owner: { id: policy.owner.toString() },
+            owner: {id: policy.owner.toString()},
             secrets: policy.secrets,
-            beneficiaries: policy.beneficiaries.map((item) => {return {id: item.toString()}}),
+            beneficiaries: policy.beneficiaries.map((item) => {
+                return {id: item.toString()}
+            }),
             conditionsLogicalOperator: policy.conditions_logical_operator.hasOwnProperty('And') ? LogicalOperator.And : LogicalOperator.Or,
             conditionsStatus: policy.conditions_status,
             conditions: policy.conditions.map(condition => this.mapConditionToUiCondition(condition)),
@@ -722,22 +732,23 @@ class IoloService {
         };
     }
 
-    private mapConditionToUiCondition(condition: Condition): UiTimeBasedCondition | UiXOutOfYCondition{
-        if(condition.hasOwnProperty(ConditionType.TimeBasedCondition)){
+    private mapConditionToUiCondition(condition: Condition): UiTimeBasedCondition | UiXOutOfYCondition {
+        if (condition.hasOwnProperty(ConditionType.TimeBasedCondition)) {
             const timeBasedCondition: TimeBasedCondition = condition[ConditionType.TimeBasedCondition];
-            return  {
+            return {
                 id: timeBasedCondition.id,
                 type: ConditionType.TimeBasedCondition,
                 conditionStatus: timeBasedCondition.condition_status,
                 numberOfDaysSinceLastLogin: Number(timeBasedCondition.number_of_days_since_last_login)
             } as UiTimeBasedCondition
         }
-        if(condition.hasOwnProperty(ConditionType.XOutOfYCondition)){
+        if (condition.hasOwnProperty(ConditionType.XOutOfYCondition)) {
             const xOutOfYCondition: XOutOfYCondition = condition[ConditionType.XOutOfYCondition];
-            return  {
+            return {
                 id: xOutOfYCondition.id,
                 type: ConditionType.XOutOfYCondition,
                 conditionStatus: xOutOfYCondition.condition_status,
+                question: xOutOfYCondition.question,
                 quorum: Number(xOutOfYCondition.quorum),
                 validators: xOutOfYCondition.validators.map(v => {
                     return {
@@ -760,8 +771,8 @@ class IoloService {
                 } else if (item.category[0].hasOwnProperty('Note')) {
                     category = UiSecretCategory.Note;
                     //TODO reactivate
-                // } else if (item.category[0].hasOwnProperty('Document')) {
-                //     category = UiSecretCategory.Document;
+                    // } else if (item.category[0].hasOwnProperty('Document')) {
+                    //     category = UiSecretCategory.Document;
                 }
             }
             return {
@@ -773,9 +784,11 @@ class IoloService {
         return {
             id: policy.id,
             name: policy.name.length > 0 ? policy.name[0] : undefined,
-            owner: { id: policy.owner.toString() },
+            owner: {id: policy.owner.toString()},
             secrets: secrets,
-            beneficiaries: policy.beneficiaries.map((item) => {return {id: item.toString()}}),
+            beneficiaries: policy.beneficiaries.map((item) => {
+                return {id: item.toString()}
+            }),
             conditionsLogicalOperator: policy.conditions_logical_operator.hasOwnProperty('And') ? LogicalOperator.And : LogicalOperator.Or,
             conditionsStatus: policy.conditions_status,
             conditions: policy.conditions.map(condition => this.mapConditionToUiCondition(condition)),

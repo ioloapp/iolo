@@ -170,6 +170,7 @@ export type UserType = { 'Company' : null } |
 export interface Validator { 'id' : string, 'status' : boolean }
 export interface XOutOfYCondition {
   'id' : string,
+  'question' : string,
   'condition_status' : boolean,
   'quorum' : bigint,
   'validators' : Array<Validator>,

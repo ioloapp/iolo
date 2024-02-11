@@ -5,6 +5,7 @@ import {userReducer} from './user/userSlice';
 import {secretsReducer} from "./secrets/secretsSlice";
 import {policiesReducer} from "./policies/policiesSlice";
 import {contactsReducer} from "./contacts/contactsSlice";
+import {REHYDRATE} from "redux-persist/es/constants";
 
 const persistConfig = {
     key: 'iolo',
@@ -22,6 +23,19 @@ const rootReducer = (state, action) => {
     if (action.type === "user/logOut") {
         storage.removeItem('persist:root')
         return appReducer(undefined, action)
+    }
+    if(action.type === REHYDRATE) {
+        const incomingState = action.payload;
+        if (incomingState.user.loginStatus === 'pending') {
+            return {
+                ...incomingState,
+                user: {
+                    ...incomingState.user,
+                    loginStatus: "init"
+                }
+            }
+        }
+        return incomingState;
     }
     return appReducer(state, action)
 }
