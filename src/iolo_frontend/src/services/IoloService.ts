@@ -24,7 +24,7 @@ import {
     User,
     UserType,
     XOutOfYCondition,
-    AddContactArgs
+    AddContactArgs, Result_1, UpdatePolicyArgs
 } from "../../../declarations/iolo_backend/iolo_backend.did";
 import {AuthClient} from "@dfinity/auth-client";
 import {createActor} from "../../../declarations/iolo_backend";
@@ -278,7 +278,7 @@ class IoloService {
         }
 
         // Add policy to get an id
-        const result = await (await this.getActor()).add_policy(addPolicyArgs);
+        const result: Result_1 = await (await this.getActor()).add_policy(addPolicyArgs);
         if (result['Ok']) {
             uiPolicy.id = result['Ok'].id; // Use created policy id
             return await this.updatePolicy(uiPolicy); // Update created policy with all other attributes
@@ -287,10 +287,10 @@ class IoloService {
 
     public async updatePolicy(uiPolicy: UiPolicy): Promise<UiPolicy> {
         console.debug('start updating policy...')
-        const policy: Policy = await this.mapUiPolicyToPolicy(uiPolicy);
+        const updatePolicyArgs: UpdatePolicyArgs = await this.mapUiPolicyToUpdatePolicyArgs(uiPolicy);
 
         // Update policy
-        const result = await (await this.getActor()).update_policy(policy);
+        const result: Result_1 = await (await this.getActor()).update_policy(updatePolicyArgs);
         if (result['Ok']) {
             return this.mapPolicyToUiPolicy(result['Ok'], UiPolicyListEntryRole.Owner);
         } else throw mapError(result['Err']);
@@ -640,7 +640,7 @@ class IoloService {
         }
     }
 
-    private async mapUiPolicyToPolicy(uiPolicy: UiPolicy): Promise<Policy> {
+    private async mapUiPolicyToUpdatePolicyArgs(uiPolicy: UiPolicy): Promise<UpdatePolicyArgs> {
         const beneficiaries = uiPolicy.beneficiaries.map((item) => item.id);
 
         // Get the user vetKey to decrypt the symmetric encryption key
@@ -669,14 +669,10 @@ class IoloService {
             id: uiPolicy.id,
             beneficiaries: beneficiaries,
             name: [uiPolicy.name],
-            owner: uiPolicy.owner.id,
             secrets: uiPolicy.secrets.map((item) => item.toString()),
             key_box: keyBox,
             conditions_logical_operator: uiPolicy.conditionsLogicalOperator == LogicalOperator.And ? [{ 'And' : null }] : [{ 'Or' : null }],
-            conditions_status: uiPolicy.conditionsStatus,
             conditions: uiPolicy.conditions.map(uiCondition => this.mapUiConditionToCondition(uiCondition)),
-            date_created: uiPolicy.dateCreated ? this.dateToNanosecondsInBigint(uiPolicy.dateCreated) : 0n,
-            date_modified: uiPolicy.dateModified ? this.dateToNanosecondsInBigint(uiPolicy.dateModified) : 0n,
         }
     }
 

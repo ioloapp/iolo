@@ -117,7 +117,6 @@ export type SmartVaultErr = { 'ContactDoesNotExist' : string } |
   { 'UserDeletionFailed' : string } |
   { 'ContactAlreadyExists' : string } |
   { 'CallerNotBeneficiary' : string } |
-  { 'OnlyOwnerCanUpdatePolicy' : string } |
   { 'SecretDoesNotExist' : string } |
   { 'NoPolicyForBeneficiary' : string } |
   { 'CallerNotPolicyOwner' : string } |
@@ -134,6 +133,15 @@ export interface TimeBasedCondition {
   'id' : string,
   'condition_status' : boolean,
   'number_of_days_since_last_login' : bigint,
+}
+export interface UpdatePolicyArgs {
+  'id' : string,
+  'name' : [] | [string],
+  'conditions_logical_operator' : [] | [LogicalOperator],
+  'secrets' : Array<string>,
+  'beneficiaries' : Array<string>,
+  'key_box' : Array<[string, Uint8Array | number[]]>,
+  'conditions' : Array<Condition>,
 }
 export interface UpdateSecretArgs {
   'id' : string,
@@ -210,7 +218,7 @@ export interface _SERVICE {
   'start_with_interval_secs' : ActorMethod<[bigint], undefined>,
   'symmetric_key_verification_key' : ActorMethod<[], string>,
   'update_contact' : ActorMethod<[Contact], Result_10>,
-  'update_policy' : ActorMethod<[Policy], Result_1>,
+  'update_policy' : ActorMethod<[UpdatePolicyArgs], Result_1>,
   'update_secret' : ActorMethod<[UpdateSecretArgs], Result_2>,
   'update_user' : ActorMethod<[AddOrUpdateUserArgs], Result_3>,
   'update_user_login_date' : ActorMethod<[], Result_3>,

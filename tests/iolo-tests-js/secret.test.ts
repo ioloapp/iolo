@@ -1,6 +1,6 @@
 import {beforeAll, describe, expect, test} from 'vitest';
 import {
-    createAliceAndBob,
+    createIoloUsersInBackend,
     createIdentity,
     createNewActor,
     determineBackendCanisterId,
@@ -84,7 +84,7 @@ let secretFour: Secret = structuredClone(secretOne); // byValue instead of byRef
  */
 
 beforeAll(async () => {
-    await createAliceAndBob(actorOne, actorTwo);
+    await createIoloUsersInBackend([actorOne, actorTwo]);
 });
 
 describe("Secret Tests", () => {

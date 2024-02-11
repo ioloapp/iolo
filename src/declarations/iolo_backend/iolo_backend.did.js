@@ -14,7 +14,6 @@ export const idlFactory = ({ IDL }) => {
     'UserDeletionFailed' : IDL.Text,
     'ContactAlreadyExists' : IDL.Text,
     'CallerNotBeneficiary' : IDL.Text,
-    'OnlyOwnerCanUpdatePolicy' : IDL.Text,
     'SecretDoesNotExist' : IDL.Text,
     'NoPolicyForBeneficiary' : IDL.Text,
     'CallerNotPolicyOwner' : IDL.Text,
@@ -163,6 +162,15 @@ export const idlFactory = ({ IDL }) => {
     'Err' : SmartVaultErr,
   });
   const Result_10 = IDL.Variant({ 'Ok' : Contact, 'Err' : SmartVaultErr });
+  const UpdatePolicyArgs = IDL.Record({
+    'id' : IDL.Text,
+    'name' : IDL.Opt(IDL.Text),
+    'conditions_logical_operator' : IDL.Opt(LogicalOperator),
+    'secrets' : IDL.Vec(IDL.Text),
+    'beneficiaries' : IDL.Vec(IDL.Text),
+    'key_box' : IDL.Vec(IDL.Tuple(IDL.Text, IDL.Vec(IDL.Nat8))),
+    'conditions' : IDL.Vec(Condition),
+  });
   const UpdateSecretArgs = IDL.Record({
     'id' : IDL.Text,
     'url' : IDL.Opt(IDL.Text),
@@ -225,7 +233,7 @@ export const idlFactory = ({ IDL }) => {
     'start_with_interval_secs' : IDL.Func([IDL.Nat64], [], []),
     'symmetric_key_verification_key' : IDL.Func([], [IDL.Text], []),
     'update_contact' : IDL.Func([Contact], [Result_10], []),
-    'update_policy' : IDL.Func([Policy], [Result_1], []),
+    'update_policy' : IDL.Func([UpdatePolicyArgs], [Result_1], []),
     'update_secret' : IDL.Func([UpdateSecretArgs], [Result_2], []),
     'update_user' : IDL.Func([AddOrUpdateUserArgs], [Result_3], []),
     'update_user_login_date' : IDL.Func([], [Result_3], []),

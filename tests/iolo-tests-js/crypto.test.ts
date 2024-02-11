@@ -1,6 +1,6 @@
 import {beforeAll, describe, expect, test} from 'vitest';
 import {
-    createAliceAndBob,
+    createIoloUsersInBackend,
     createIdentity,
     createNewActor,
     determineBackendCanisterId,
@@ -61,7 +61,7 @@ beforeAll(async () => {
     vetKeyOne = await get_aes_256_gcm_key_for_user(identityOne.getPrincipal(), actorOne);
     vetKeyTwo = await get_aes_256_gcm_key_for_user(identityTwo.getPrincipal(), actorTwo);
 
-    await createAliceAndBob(actorOne, actorTwo);
+    await createIoloUsersInBackend([actorOne, actorTwo]);
 }, 30000);
 
 
