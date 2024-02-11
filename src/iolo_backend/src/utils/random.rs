@@ -7,11 +7,11 @@ cfg_if::cfg_if! {
         // local rust, dummy mockup implementation.
         async fn get_random_array() -> [u8;16] {
             // create 16 random u8
-            let mut random_array: [u8; 16] = [0; 16];
-            for i in 0..16 {
-                random_array[i] = rand::random();
-            }
-            random_array
+            (0..16)
+                .map(|_| rand::random::<u8>())
+                .collect::<Vec<u8>>()
+                .try_into()
+                .unwrap_or([0; 16])
         }
 
     } else {

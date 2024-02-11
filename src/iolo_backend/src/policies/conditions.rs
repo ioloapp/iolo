@@ -53,26 +53,16 @@ impl Condition {
                 //let max_last_login_time: u64 = tb.number_of_days_since_last_login * 86400 * 1000000000; // in nanoseconds
                 let max_last_login_time: u64 =
                     condition.number_of_days_since_last_login * 1000000000; // in nanoseconds
-                return if &user.date_last_login.unwrap()
-                    < &current_time.saturating_sub(max_last_login_time)
-                {
-                    true
-                } else {
-                    false
-                };
+                user.date_last_login.unwrap() < current_time.saturating_sub(max_last_login_time)
             }
             Condition::XOutOfYCondition(condition) => {
                 let mut i = 0;
                 for confirmer in &condition.validators {
-                    if confirmer.status == true {
+                    if confirmer.status {
                         i += 1;
                     }
                 }
-                if i >= condition.quorum {
-                    true
-                } else {
-                    false
-                }
+                i >= condition.quorum
             }
         }
     }

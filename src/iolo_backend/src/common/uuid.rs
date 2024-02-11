@@ -8,6 +8,7 @@ use crate::utils::random::get_new_random;
 )]
 pub struct UUID;
 impl UUID {
+    #[allow(clippy::new_ret_no_self)]
     pub async fn new() -> String {
         let random_array = get_new_random().await;
         let result_string = random_array

@@ -51,23 +51,20 @@ fn periodic_task() {
             let mut policy = get_policy_from_policy_store(&policy_id).unwrap();
             // iterate over policy conditions
             for condition in policy.conditions().clone() {
-                match &condition {
-                    Condition::TimeBasedCondition(tb) => {
-                        if condition.evaluate(&user) {
-                            // Last login date earlier than allowed, set condition status of all user policies to true
-                            ic_cdk::println!("Last login date of user {:?} is older than {:?} days, condition status of all its policies is set to true", user.id, tb.number_of_days_since_last_login);
-                            policy.set_condition_status(true);
-                            // update policy in policy store
-                            update_policy_impl(policy.clone(), user.id.clone()).unwrap();
-                        } else {
-                            ic_cdk::println!(
-                                "Last login date of user {:?} is NOT older than {:?} days!",
-                                user.id,
-                                tb.number_of_days_since_last_login
-                            );
-                        }
+                if let Condition::TimeBasedCondition(tb) = &condition {
+                    if condition.evaluate(&user) {
+                        // Last login date earlier than allowed, set condition status of all user policies to true
+                        ic_cdk::println!("Last login date of user {:?} is older than {:?} days, condition status of all its policies is set to true", user.id, tb.number_of_days_since_last_login);
+                        policy.set_condition_status(true);
+                        // update policy in policy store
+                        update_policy_impl(policy.clone(), user.id.clone()).unwrap();
+                    } else {
+                        ic_cdk::println!(
+                            "Last login date of user {:?} is NOT older than {:?} days!",
+                            user.id,
+                            tb.number_of_days_since_last_login
+                        );
                     }
-                    _ => {}
                 }
             }
         }
