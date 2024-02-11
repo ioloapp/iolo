@@ -11,7 +11,6 @@ import {
     Result, Result_10,
     Result_2,
     Result_3,
-    Result_5,
     Result_6,
     Result_7,
     Result_8,
@@ -24,7 +23,7 @@ import {
     User,
     UserType,
     XOutOfYCondition,
-    AddContactArgs, Result_1, UpdatePolicyArgs
+    AddContactArgs, Result_1, UpdatePolicyArgs, Result_4
 } from "../../../declarations/iolo_backend/iolo_backend.did";
 import {AuthClient} from "@dfinity/auth-client";
 import {createActor} from "../../../declarations/iolo_backend";
@@ -126,7 +125,7 @@ class IoloService {
             name: uiUser.name ? [uiUser.name] : [],
             user_type: uiUser.type ? (uiUser.type === UiUserType.Person ? [{ 'Person' : null }] : [{ 'Company' : null }]) : []
         }
-        const result: Result_3 = await (await this.getActor()).create_user(args);
+        const result: Result_4 = await (await this.getActor()).create_user(args);
         if (result['Ok']) {
             return this.mapUserToUiUser(result['Ok']);
         }
@@ -134,7 +133,7 @@ class IoloService {
     }
 
     public async getCurrentUser(principal?: Principal): Promise<UiUser> {
-        const result: Result_3 = await (await this.getActor()).get_current_user();
+        const result: Result_4 = await (await this.getActor()).get_current_user();
         if (result['Ok']) {
             return this.mapUserToUiUser(result['Ok']);
         }
@@ -153,7 +152,7 @@ class IoloService {
             name: uiUser.name ? [uiUser.name] : [],
             user_type: uiUser.type ? (uiUser.type === UiUserType.Person ? [{ 'Person' : null }] : [{ 'Company' : null }]) : []
         }
-        let result: Result_3 = await (await this.getActor()).update_user(addOrUpdateUserArgs);
+        let result: Result_4 = await (await this.getActor()).update_user(addOrUpdateUserArgs);
         if (result['Ok']) {
             return this.mapUserToUiUser(result['Ok']);
         }
@@ -161,7 +160,7 @@ class IoloService {
     }
 
     public async updateUserLoginDate(): Promise<UiUser> {
-        let result: Result_3 = await (await this.getActor()).update_user_login_date();
+        let result: Result_4 = await (await this.getActor()).update_user_login_date();
         if (result['Ok']) {
             return this.mapUserToUiUser(result['Ok']);
         }
@@ -169,7 +168,7 @@ class IoloService {
     }
 
     public async getSecretList(): Promise<UiSecretListEntry[]> {
-        const result: Result_9 = await (await this.getActor()).get_secret_list();
+        const result: Result_10 = await (await this.getActor()).get_secret_list();
         if (result['Ok']) {
             return result['Ok'].map((secretListEntry: SecretListEntry): UiSecretListEntry => {
                 return {
@@ -185,7 +184,7 @@ class IoloService {
     public async getSecret(secretId: string): Promise<UiSecret> {
         console.debug('start getting secret...')
         const result1: Result_2 = await (await this.getActor()).get_secret(secretId);
-        const result2: Result_6 = await (await this.getActor()).get_encrypted_symmetric_key(secretId);
+        const result2: Result_7 = await (await this.getActor()).get_encrypted_symmetric_key(secretId);
 
         // Wait for both promises to complete
         const [value1, value2] = await Promise.all([result1, result2]);
@@ -202,7 +201,7 @@ class IoloService {
     public async getSecretAsBeneficiary(secretId: string, policyId: string): Promise<UiSecret> {
         console.debug('start getting secret for beneficiary...')
         const result1: Result_2 = await (await this.getActor()).get_secret_as_beneficiary(secretId.toString(), policyId);
-        const result2: Result_6 = await (await this.getActor()).get_encrypted_symmetric_key_as_beneficiary(secretId, policyId);
+        const result2: Result_7 = await (await this.getActor()).get_encrypted_symmetric_key_as_beneficiary(secretId, policyId);
 
         // Wait for both promises to complete
         const [value1, value2] = await Promise.all([result1, result2]);
@@ -227,7 +226,7 @@ class IoloService {
 
     public async updateSecret(uiSecret: UiSecret): Promise<UiSecret> {
         console.debug('start updating secret...')
-        const resultEncryptedSymmetricKey: Result_6 = await (await this.getActor()).get_encrypted_symmetric_key(uiSecret.id);
+        const resultEncryptedSymmetricKey: Result_7 = await (await this.getActor()).get_encrypted_symmetric_key(uiSecret.id);
 
         let encrypted_symmetric_key: Uint8Array;
         if (resultEncryptedSymmetricKey['Ok']) {
@@ -297,7 +296,7 @@ class IoloService {
     }
 
     public async getPolicyList(): Promise<UiPolicyListEntry[]> {
-        const resultAsTestator: Result_8 = await (await this.getActor()).get_policy_list_as_owner();
+        const resultAsTestator: Result_9 = await (await this.getActor()).get_policy_list_as_owner();
         let policiesAsTestator: UiPolicyListEntry[] = [];
         if (resultAsTestator['Ok']) {
             policiesAsTestator = resultAsTestator['Ok'].map((item: PolicyListEntry): UiPolicyListEntry  => {
@@ -313,7 +312,7 @@ class IoloService {
             throw mapError(resultAsTestator['Err']);
         }
 
-        const resultAsBeneficiary: Result_8 = await (await this.getActor()).get_policy_list_as_beneficiary();
+        const resultAsBeneficiary: Result_9 = await (await this.getActor()).get_policy_list_as_beneficiary();
         let policiesAsBeneficiary: UiPolicyListEntry[] =  [];
         if (resultAsBeneficiary['Ok'] && resultAsBeneficiary['Ok'].length > 0) {
             policiesAsBeneficiary = resultAsBeneficiary['Ok'].map((item: PolicyListEntry): UiPolicyListEntry  => {
@@ -332,7 +331,7 @@ class IoloService {
     }
 
     public async getPolicyAsOwner(id: string): Promise<UiPolicyResponse> {
-        const result: Result_7 = await (await this.getActor()).get_policy_as_owner(id);
+        const result: Result_8 = await (await this.getActor()).get_policy_as_owner(id);
         console.debug('start get policies as owner', result);
         if (result['Ok']) {
             return this.mapPolicyResponseToUiPolicyResponse(result['Ok'], UiPolicyListEntryRole.Owner);
@@ -341,7 +340,7 @@ class IoloService {
     }
 
     public async getPolicyAsBeneficiary(id: string): Promise<UiPolicyResponse> {
-        const result: Result_7 = await (await this.getActor()).get_policy_as_beneficiary(id);
+        const result: Result_8 = await (await this.getActor()).get_policy_as_beneficiary(id);
         if (result['Ok']) {
             return this.mapPolicyResponseToUiPolicyResponse(result['Ok'], UiPolicyListEntryRole.Beneficiary);
         }
@@ -389,7 +388,7 @@ class IoloService {
     }
 
     public async getContactsList(): Promise<UiUser[]> {
-        const result: Result_5 = await (await this.getActor()).get_contact_list();
+        const result: Result_6 = await (await this.getActor()).get_contact_list();
         if (result['Ok']) {
             return result['Ok'].map((item) => this.mapUserToUiUser(item)) ;
         }
@@ -398,7 +397,7 @@ class IoloService {
 
     public async updateContact(contact: UiUser): Promise<UiUser> {
         const user = this.mapUiUserToUser(contact);
-        const result: Result_10 = await (await this.getActor()).update_contact(user);
+        const result: Result = await (await this.getActor()).update_contact(user);
 
         if (result['Ok']) {
             return this.mapUserToUiUser(result['Ok']);
@@ -652,7 +651,7 @@ class IoloService {
         // Create key_box by encrypting symmetric secrets key with policy vetKey
         let keyBox = new Array<[string, Uint8Array]>;
         for (const item of uiPolicy.secrets) {
-            const result: Result_6 = await (await this.getActor()).get_encrypted_symmetric_key(item);
+            const result: Result_7 = await (await this.getActor()).get_encrypted_symmetric_key(item);
             if (result['Ok']) {
                 // Decrypt symmetric key with user vetKey
                 const decryptedSymmetricKey = await aes_gcm_decrypt(result['Ok'].encrypted_symmetric_key as Uint8Array, userVetKey, this.ivLength);

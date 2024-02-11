@@ -103,7 +103,6 @@ type SmartVaultErr = variant {
   UserDeletionFailed : text;
   ContactAlreadyExists : text;
   CallerNotBeneficiary : text;
-  OnlyOwnerCanUpdatePolicy : text;
   SecretDoesNotExist : text;
   NoPolicyForBeneficiary : text;
   CallerNotPolicyOwner : text;
@@ -121,6 +120,15 @@ type TimeBasedCondition = record {
   id : text;
   condition_status : bool;
   number_of_days_since_last_login : nat64;
+};
+type UpdatePolicyArgs = record {
+  id : text;
+  name : opt text;
+  conditions_logical_operator : opt LogicalOperator;
+  secrets : vec text;
+  beneficiaries : vec text;
+  key_box : vec record { text; vec nat8 };
+  conditions : vec Condition;
 };
 type UpdateSecretArgs = record {
   id : text;
@@ -183,7 +191,7 @@ service : () -> {
   start_with_interval_secs : (nat64) -> ();
   symmetric_key_verification_key : () -> (text);
   update_contact : (Contact) -> (Result);
-  update_policy : (Policy) -> (Result_1);
+  update_policy : (UpdatePolicyArgs) -> (Result_1);
   update_secret : (UpdateSecretArgs) -> (Result_2);
   update_user : (AddOrUpdateUserArgs) -> (Result_4);
   update_user_login_date : () -> (Result_4);

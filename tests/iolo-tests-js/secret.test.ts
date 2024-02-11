@@ -8,9 +8,9 @@ import {
 import {Secp256k1KeyIdentity} from "@dfinity/identity-secp256k1";
 import {
     AddSecretArgs,
-    Result,
+    Result_3,
     Secret,
-    Result_9, Result_6, Result_2, UpdateSecretArgs, _SERVICE
+    Result_10, Result_7, Result_2, UpdateSecretArgs, _SERVICE
 } from "../../src/declarations/iolo_backend/iolo_backend.did";
 import {ActorSubclass} from "@dfinity/agent";
 
@@ -164,7 +164,7 @@ describe("Secret Tests", () => {
         expect(resultAddSecretOne['Ok'].id).not.toBe(secretOne.id);
 
         // Delete it again
-        const resultRemoveSecretOne: Result = await actorOne.remove_secret(resultAddSecretOne['Ok'].id);
+        const resultRemoveSecretOne: Result_3 = await actorOne.remove_secret(resultAddSecretOne['Ok'].id);
         expect(resultRemoveSecretOne).toHaveProperty('Ok');
 
     }, 15000); // Set timeout
@@ -220,7 +220,7 @@ describe("Secret Tests", () => {
     test("it must read the secret list properly", async () => {
 
         // Check created secret of identity one via getSecretList
-        const resultSecretListOne: Result_9 = await actorOne.get_secret_list();
+        const resultSecretListOne: Result_10 = await actorOne.get_secret_list();
         expect(resultSecretListOne).toHaveProperty('Ok');
         expect(Array.isArray(resultSecretListOne['Ok'])).toBe(true);
         resultSecretListOne['Ok'].sort((a, b) => {
@@ -237,7 +237,7 @@ describe("Secret Tests", () => {
         expect(resultSecretListOne['Ok'][1].category).toStrictEqual(addSecretArgsTwo.category);
 
         // Check created secret of identity two via getSecretList
-        const resultSecretListTwo: Result_9 = await actorTwo.get_secret_list();
+        const resultSecretListTwo: Result_10 = await actorTwo.get_secret_list();
         expect(resultSecretListTwo).toHaveProperty('Ok');
         expect(Array.isArray(resultSecretListTwo['Ok'])).toBe(true);
         resultSecretListTwo['Ok'].sort((a, b) => {
@@ -326,25 +326,25 @@ describe("Secret Tests", () => {
     }, 15000); // Set timeout
 
     test("it must read the encrypted symmetric key properly", async () => {
-        const resultEncryptedSymmetricKeyOne: Result_6 = await actorOne.get_encrypted_symmetric_key(secretOne.id);
+        const resultEncryptedSymmetricKeyOne: Result_7 = await actorOne.get_encrypted_symmetric_key(secretOne.id);
         expect(resultEncryptedSymmetricKeyOne).toHaveProperty('Ok');
         expect(resultEncryptedSymmetricKeyOne['Ok']).toStrictEqual(encrypted_symmetric_key);
     }, 15000); // Set timeout
 
     test("it must not be possible to read the encrypted symmetric key from a different user", async () => {
-        const resultEncryptedSecretKeyOne: Result_6 = await actorTwo.get_encrypted_symmetric_key(secretOne.id);
+        const resultEncryptedSecretKeyOne: Result_7 = await actorTwo.get_encrypted_symmetric_key(secretOne.id);
         expect(resultEncryptedSecretKeyOne).toHaveProperty('Err');
         expect(resultEncryptedSecretKeyOne['Err']).toHaveProperty('SecretDoesNotExist');
     }, 15000); // Set timeout
 
     test("it must delete secrets properly", async () => {
         // Deleting secretOne with userOne must work
-        const resultRemoveSecretOne: Result = await actorOne.remove_secret(secretOne.id);
+        const resultRemoveSecretOne: Result_3 = await actorOne.remove_secret(secretOne.id);
         expect(resultRemoveSecretOne).toHaveProperty('Ok');
         expect(resultRemoveSecretOne['Ok']).toBeNull();
 
         // Only one secret must exist in the backend now
-        const resultSecretListOne: Result_9 = await actorOne.get_secret_list();
+        const resultSecretListOne: Result_10 = await actorOne.get_secret_list();
         expect(resultSecretListOne).toHaveProperty('Ok');
         expect(Array.isArray(resultSecretListOne['Ok'])).toBe(true);
         expect(resultSecretListOne['Ok']).toHaveLength(1);
@@ -353,7 +353,7 @@ describe("Secret Tests", () => {
 
     test("it must not delete secrets of a different user", async () => {
         // Deleting secretThree with userOne must not work
-        const resultRemoveSecretThree: Result = await actorOne.remove_secret(secretThree.id);
+        const resultRemoveSecretThree: Result_3 = await actorOne.remove_secret(secretThree.id);
         expect(resultRemoveSecretThree).toHaveProperty('Err');
         expect(resultRemoveSecretThree['Err']).toHaveProperty('SecretDoesNotExist');
 

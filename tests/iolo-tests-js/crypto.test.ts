@@ -9,7 +9,7 @@ import {Secp256k1KeyIdentity} from "@dfinity/identity-secp256k1";
 import {
     AddSecretArgs,
     Secret,
-    SecretCategory, Result_2, Result_6, _SERVICE
+    SecretCategory, Result_2, Result_7, _SERVICE
 } from "../../src/declarations/iolo_backend/iolo_backend.did";
 import {v4 as uuidv4} from 'uuid';
 import {UiSecret, UiSecretCategory} from "../../src/iolo_frontend/src/services/IoloTypesForUi";
@@ -85,7 +85,7 @@ describe("Encryption and Decryption Tests", () => {
         expect(resultSecretOne).toHaveProperty('Ok');
 
         // Get crypto material for secret
-        const resultEncryptedSymmetricKeyOne: Result_6 = await actorOne.get_encrypted_symmetric_key(secretOne.id);
+        const resultEncryptedSymmetricKeyOne: Result_7 = await actorOne.get_encrypted_symmetric_key(secretOne.id);
         expect(resultEncryptedSymmetricKeyOne).toHaveProperty('Ok');
 
         const decryptedSecretOne: UiSecret = await decryptSecret(resultSecretOne['Ok'], resultEncryptedSymmetricKeyOne['Ok'], vetKeyOne);
@@ -102,7 +102,7 @@ describe("Encryption and Decryption Tests", () => {
         expect(resultSecretOne).toHaveProperty('Ok');
 
         // Get crypto material for secret
-        const resultSymmetricCryptoMaterialOne: Result_6 = await actorOne.get_encrypted_symmetric_key(secretOne.id);
+        const resultSymmetricCryptoMaterialOne: Result_7 = await actorOne.get_encrypted_symmetric_key(secretOne.id);
         expect(resultSymmetricCryptoMaterialOne).toHaveProperty('Ok');
 
         // Try with vetKeyTwo, must fail
