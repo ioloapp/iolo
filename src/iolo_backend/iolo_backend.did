@@ -66,17 +66,17 @@ type PolicyResponse = record {
   conditions : vec Condition;
   date_modified : nat64;
 };
-type Result = variant { Ok; Err : SmartVaultErr };
+type Result = variant { Ok : Contact; Err : SmartVaultErr };
 type Result_1 = variant { Ok : Policy; Err : SmartVaultErr };
-type Result_10 = variant { Ok : Contact; Err : SmartVaultErr };
+type Result_10 = variant { Ok : vec SecretListEntry; Err : SmartVaultErr };
 type Result_2 = variant { Ok : Secret; Err : SmartVaultErr };
-type Result_3 = variant { Ok : User; Err : SmartVaultErr };
-type Result_4 = variant { Ok : text; Err : SmartVaultErr };
-type Result_5 = variant { Ok : vec Contact; Err : SmartVaultErr };
-type Result_6 = variant { Ok : vec nat8; Err : SmartVaultErr };
-type Result_7 = variant { Ok : PolicyResponse; Err : SmartVaultErr };
-type Result_8 = variant { Ok : vec PolicyListEntry; Err : SmartVaultErr };
-type Result_9 = variant { Ok : vec SecretListEntry; Err : SmartVaultErr };
+type Result_3 = variant { Ok; Err : SmartVaultErr };
+type Result_4 = variant { Ok : User; Err : SmartVaultErr };
+type Result_5 = variant { Ok : text; Err : SmartVaultErr };
+type Result_6 = variant { Ok : vec Contact; Err : SmartVaultErr };
+type Result_7 = variant { Ok : vec nat8; Err : SmartVaultErr };
+type Result_8 = variant { Ok : PolicyResponse; Err : SmartVaultErr };
+type Result_9 = variant { Ok : vec PolicyListEntry; Err : SmartVaultErr };
 type Secret = record {
   id : text;
   url : opt text;
@@ -103,6 +103,7 @@ type SmartVaultErr = variant {
   UserDeletionFailed : text;
   ContactAlreadyExists : text;
   CallerNotBeneficiary : text;
+  OnlyOwnerCanUpdatePolicy : text;
   SecretDoesNotExist : text;
   NoPolicyForBeneficiary : text;
   CallerNotPolicyOwner : text;
@@ -120,15 +121,6 @@ type TimeBasedCondition = record {
   id : text;
   condition_status : bool;
   number_of_days_since_last_login : nat64;
-};
-type UpdatePolicyArgs = record {
-  id : text;
-  name : opt text;
-  conditions_logical_operator : opt LogicalOperator;
-  secrets : vec text;
-  beneficiaries : vec text;
-  key_box : vec record { text; vec nat8 };
-  conditions : vec Condition;
 };
 type UpdateSecretArgs = record {
   id : text;
@@ -164,35 +156,35 @@ service : () -> {
   add_contact : (AddContactArgs) -> (Result);
   add_policy : (AddPolicyArgs) -> (Result_1);
   add_secret : (AddSecretArgs) -> (Result_2);
-  confirm_x_out_of_y_condition : (text, text, bool) -> (Result);
-  create_user : (AddOrUpdateUserArgs) -> (Result_3);
-  delete_user : () -> (Result);
+  confirm_x_out_of_y_condition : (text, text, bool) -> (Result_3);
+  create_user : (AddOrUpdateUserArgs) -> (Result_4);
+  delete_user : () -> (Result_3);
   encrypted_ibe_decryption_key_for_caller : (vec nat8) -> (text);
   generate_vetkd_encrypted_symmetric_key_for_policy : (
       PolicyKeyDerviationArgs,
-    ) -> (Result_4);
+    ) -> (Result_5);
   generate_vetkd_encrypted_symmetric_key_for_user : (vec nat8) -> (text);
-  get_contact_list : () -> (Result_5) query;
-  get_current_user : () -> (Result_3) query;
-  get_encrypted_symmetric_key : (text) -> (Result_6) query;
-  get_encrypted_symmetric_key_as_beneficiary : (text, text) -> (Result_6) query;
-  get_policy_as_beneficiary : (text) -> (Result_7) query;
-  get_policy_as_owner : (text) -> (Result_7) query;
-  get_policy_list_as_beneficiary : () -> (Result_8) query;
-  get_policy_list_as_owner : () -> (Result_8) query;
-  get_policy_list_as_validator : () -> (Result_8) query;
+  get_contact_list : () -> (Result_6) query;
+  get_current_user : () -> (Result_4) query;
+  get_encrypted_symmetric_key : (text) -> (Result_7) query;
+  get_encrypted_symmetric_key_as_beneficiary : (text, text) -> (Result_7) query;
+  get_policy_as_beneficiary : (text) -> (Result_8) query;
+  get_policy_as_owner : (text) -> (Result_8) query;
+  get_policy_list_as_beneficiary : () -> (Result_9) query;
+  get_policy_list_as_owner : () -> (Result_9) query;
+  get_policy_list_as_validator : () -> (Result_9) query;
   get_secret : (text) -> (Result_2) query;
   get_secret_as_beneficiary : (text, text) -> (Result_2) query;
-  get_secret_list : () -> (Result_9) query;
+  get_secret_list : () -> (Result_10) query;
   ibe_encryption_key : () -> (text);
-  remove_contact : (text) -> (Result);
-  remove_policy : (text) -> (Result);
-  remove_secret : (text) -> (Result);
+  remove_contact : (text) -> (Result_3);
+  remove_policy : (text) -> (Result_3);
+  remove_secret : (text) -> (Result_3);
   start_with_interval_secs : (nat64) -> ();
   symmetric_key_verification_key : () -> (text);
-  update_contact : (Contact) -> (Result_10);
-  update_policy : (UpdatePolicyArgs) -> (Result_1);
+  update_contact : (Contact) -> (Result);
+  update_policy : (Policy) -> (Result_1);
   update_secret : (UpdateSecretArgs) -> (Result_2);
-  update_user : (AddOrUpdateUserArgs) -> (Result_3);
-  update_user_login_date : () -> (Result_3);
+  update_user : (AddOrUpdateUserArgs) -> (Result_4);
+  update_user_login_date : () -> (Result_4);
 }

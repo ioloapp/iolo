@@ -1,10 +1,10 @@
-use std::borrow::Cow;
-use std::collections::{BTreeMap, HashSet};
-
 use candid::{CandidType, Decode, Encode};
 use ic_stable_structures::storable::Bound;
 use ic_stable_structures::Storable;
 use serde::{Deserialize, Serialize};
+use std::borrow::Cow;
+use std::collections::{BTreeMap, HashSet};
+use std::hash::{Hash, Hasher};
 
 use crate::policies::conditions::{Condition, Validator};
 use crate::secrets::secret::SecretID;
@@ -31,6 +31,20 @@ pub struct Policy {
     pub conditions_status: bool,
     conditions_logical_operator: Option<LogicalOperator>,
     pub conditions: Vec<Condition>,
+}
+
+impl Hash for Policy {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.id.hash(state);
+    }
+}
+
+impl Eq for Policy {}
+
+impl PartialEq for Policy {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
+    }
 }
 
 impl Storable for Policy {

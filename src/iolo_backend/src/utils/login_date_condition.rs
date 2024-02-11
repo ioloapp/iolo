@@ -49,7 +49,7 @@ fn periodic_task() {
         // iterate over all policies
         for policy_id in user.policies() {
             // get policy from policy store
-            let mut policy = get_policy_from_policy_store(policy_id).unwrap();
+            let mut policy = get_policy_from_policy_store(&policy_id).unwrap();
             // iterate over policy conditions
             for condition in policy.conditions().clone() {
                 match &condition {

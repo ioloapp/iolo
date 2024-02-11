@@ -76,7 +76,7 @@ pub fn get_secret_list_impl(principal: PrincipalID) -> Result<Vec<SecretListEntr
     let secret_ids: Vec<SecretID> = USER_STORE.with(|us| {
         let user_store = us.borrow();
         let user = user_store.get_user(&principal.to_string()).unwrap();
-        user.secrets.clone()
+        user.secrets.into_iter().collect()
     });
 
     // get all the corresponding secrets
@@ -257,7 +257,7 @@ mod tests {
             let user_store = us.borrow();
             let user = user_store.get_user(&principal.to_string()).unwrap();
             assert_eq!(user.secrets.len(), 1, "suer should hold 1 secret now");
-            assert_eq!(user.secrets[0], added_secret.id());
+            assert!(user.secrets.contains(&added_secret.id()));
         });
 
         // get secret from proper interface implementation

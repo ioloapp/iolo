@@ -175,7 +175,7 @@ pub fn confirm_x_out_of_y_condition(
  * Contact CRUD
  */
 #[ic_cdk_macros::update]
-pub fn add_contact(args: AddContactArgs) -> Result<(), SmartVaultErr> {
+pub fn add_contact(args: AddContactArgs) -> Result<Contact, SmartVaultErr> {
     add_contact_impl(args, get_caller_id())
 }
 

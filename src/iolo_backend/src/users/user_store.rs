@@ -1,7 +1,9 @@
 use candid::Principal;
+
 use ic_stable_structures::StableBTreeMap;
 use serde::{Deserialize, Serialize};
 
+use crate::policies::policy::PolicyID;
 use crate::secrets::secret::SecretID;
 use crate::users::user::AddOrUpdateUserArgs;
 use crate::{
@@ -155,6 +157,23 @@ impl UserStore {
         Ok(())
     }
 
+    pub fn remove_policy_from_user(
+        &mut self,
+        caller: &PrincipalID,
+        policy_id: PolicyID,
+    ) -> Result<(), SmartVaultErr> {
+        let mut user = self
+            .users
+            .get(caller)
+            .ok_or_else(|| SmartVaultErr::UserDoesNotExist(caller.to_string()))?;
+
+        user.remove_policy(&policy_id)?;
+        match self.update_user_secrets(user, caller) {
+            Ok(_) => Ok(()),
+            Err(e) => Err(e),
+        }
+    }
+
     pub fn get_user(&self, user_id: &PrincipalID) -> Result<User, SmartVaultErr> {
         self.users
             .get(user_id)
@@ -171,16 +190,10 @@ impl UserStore {
             .ok_or_else(|| SmartVaultErr::UserDeletionFailed(user_id.to_string()))
     }
 
-    pub fn get_all_last_login_dates(&self) -> Vec<(Principal, u64)> {
+    pub fn get_all_last_login_dates(&self) -> Vec<(PrincipalID, u64)> {
         self.users
             .iter()
-            .filter_map(|(principal_id, user)| {
-                if let Some(login_date) = user.date_last_login {
-                    Some((Principal::from_text(&principal_id).unwrap(), login_date))
-                } else {
-                    None
-                }
-            })
+            .filter_map(|(principal_id, user)| user.date_last_login.map(|dll| (principal_id, dll)))
             .collect()
     }
 
@@ -191,15 +204,12 @@ impl UserStore {
     ) -> Result<(), SmartVaultErr> {
         // Only name, email and user_type can be updated
         if let Some(mut existing_user) = self.users.remove(user) {
-            // add user only if not exists yet
-            if existing_user.contacts.iter().any(|c| c.id == contact.id) {
+            if !existing_user.contacts.insert(contact.clone()) {
+                // If insert returns false, the contact already exists in the set.
                 return Err(SmartVaultErr::ContactAlreadyExists(contact.id.to_string()));
             }
 
-            // add contact to user
-            existing_user.contacts.push(contact);
-
-            // store user
+            // store the updated user
             self.users.insert(user.to_string(), existing_user);
         } else {
             return Err(SmartVaultErr::UserDoesNotExist(user.to_string()));
@@ -216,15 +226,14 @@ impl UserStore {
         // Only name, email and user_type can be updated
         if let Some(mut existing_user) = self.users.remove(user) {
             // check if contact exist in user contacts. if yes, update it. if not, throw error
-            if !existing_user.contacts.iter().any(|c| c.id == contact.id) {
+            if !existing_user.contacts.contains(&contact) {
                 return Err(SmartVaultErr::ContactDoesNotExist(contact.id.to_string()));
             }
 
             // update contact in user
-            existing_user.contacts.retain(|c| c.id != contact.id);
-            existing_user.contacts.push(contact.clone());
+            existing_user.contacts.replace(contact.clone());
 
-            // store user
+            // store updated user
             self.users.insert(user.to_string(), existing_user);
             Ok(contact)
         } else {
@@ -258,7 +267,7 @@ impl UserStore {
 
     pub fn get_contact_list(&self, user: &PrincipalID) -> Result<Vec<Contact>, SmartVaultErr> {
         if let Some(existing_user) = self.users.get(user) {
-            Ok(existing_user.contacts.clone())
+            Ok(existing_user.contacts.into_iter().collect::<Vec<Contact>>())
         } else {
             Err(SmartVaultErr::UserDoesNotExist(user.to_string()))
         }
