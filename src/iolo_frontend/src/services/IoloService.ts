@@ -653,12 +653,8 @@ class IoloService {
         for (const item of uiPolicy.secrets) {
             const result: Result_7 = await (await this.getActor()).get_encrypted_symmetric_key(item);
             if (result['Ok']) {
-                if (result['Ok'].encrypted_symmetric_key == undefined) {
-                    throw new IoloError('encrypted_symmetric_key not present')
-                }
                 // Decrypt symmetric key with user vetKey
-                console.log('encrypted_symmetric_key', result['Ok'].encrypted_symmetric_key)
-                const decryptedSymmetricKey = await aes_gcm_decrypt(result['Ok'].encrypted_symmetric_key as Uint8Array, userVetKey, this.ivLength);
+                const decryptedSymmetricKey = await aes_gcm_decrypt(result['Ok'] as Uint8Array, userVetKey, this.ivLength);
 
                 // Encrypt symmetric key with policy vetKey
                 const ivSymmetricKey = window.crypto.getRandomValues(new Uint8Array(12)); // 96-bits; unique per message
