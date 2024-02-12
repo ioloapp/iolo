@@ -206,6 +206,24 @@ pub fn update_policy_impl(
         }
     }
 
+    // Check that beneficiaries exist in user store
+    let mut error = None;
+    USER_STORE.with(|us| {
+        let user_store = us.borrow();
+        for beneficiary in upa.beneficiaries.iter() {
+            match user_store.get_user(&beneficiary.to_string()) {
+                Ok(u) => (),
+                Err(e) => {
+                    error = Some(SmartVaultErr::UserDoesNotExist(beneficiary.to_string()));
+                    break;
+                },
+            }
+        }
+    });
+    if let Some(err) = error {
+        return Err(err);
+    }
+
     // create policy from AddPolicyArgs
     let policy: Policy = Policy::from_update_policy_args(
         &upa.id,
