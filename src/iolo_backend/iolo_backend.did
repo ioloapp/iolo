@@ -104,11 +104,13 @@ type SmartVaultErr = variant {
   OnlyOwnerCanDeleteSecret : text;
   SecretHasNoId;
   UserDeletionFailed : text;
+  KeyBoxEntryDoesNotExistForSecret : text;
   ContactAlreadyExists : text;
   CallerNotBeneficiary : text;
   SecretDoesNotExist : text;
   NoPolicyForBeneficiary : text;
   CallerNotPolicyOwner : text;
+  SecretEntryDoesNotExistForKeyBoxEntry : text;
   Unauthorized;
   UserUpdateFailed : text;
   NoPolicyForValidator : text;

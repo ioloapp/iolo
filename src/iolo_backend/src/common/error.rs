@@ -4,23 +4,29 @@ use candid::{CandidType, Deserialize};
 
 #[derive(Debug, CandidType, PartialEq, Eq, Deserialize)]
 pub enum SmartVaultErr {
+    // User errors
     UserAlreadyExists(String),
     UserDoesNotExist(String),
     UserDeletionFailed(String),
     UserUpdateFailed(String),
     ContactAlreadyExists(String),
     ContactDoesNotExist(String),
+    // Secret errors
     SecretDoesNotExist(String),
-    CallerNotBeneficiary(String),
     OnlyOwnerCanDeleteSecret(String),
     SecretHasNoId,
     SecretAlreadyExists(String),
+    // Policy errors
     PolicyAlreadyExists(String),
     CallerNotPolicyOwner(String),
     PolicyDoesNotExist(String),
     InvalidPolicyCondition,
     NoPolicyForBeneficiary(String),
     NoPolicyForValidator(String),
+    KeyBoxEntryDoesNotExistForSecret(String),
+    SecretEntryDoesNotExistForKeyBoxEntry(String),
+    // Various errors
+    CallerNotBeneficiary(String),
     KeyGenerationNotAllowed,
     Unauthorized,
 }
@@ -81,6 +87,12 @@ impl Display for SmartVaultErr {
             }
             SmartVaultErr::PolicyDoesNotExist(id) => {
                 write!(f, "Failed to read policy with the following id: {}", id)
+            }
+            SmartVaultErr::KeyBoxEntryDoesNotExistForSecret(id) => {
+                write!(f, "No key_box entry for secret: {}", id)
+            }
+            SmartVaultErr::SecretEntryDoesNotExistForKeyBoxEntry(id) => {
+                write!(f, "No secret for key_box entry: {}", id)
             }
             SmartVaultErr::NoPolicyForBeneficiary(id) => {
                 write!(f, "Failed to read policy for beneficiary: {}", id)

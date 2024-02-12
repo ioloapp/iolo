@@ -115,11 +115,13 @@ export type SmartVaultErr = { 'ContactDoesNotExist' : string } |
   { 'OnlyOwnerCanDeleteSecret' : string } |
   { 'SecretHasNoId' : null } |
   { 'UserDeletionFailed' : string } |
+  { 'KeyBoxEntryDoesNotExistForSecret' : string } |
   { 'ContactAlreadyExists' : string } |
   { 'CallerNotBeneficiary' : string } |
   { 'SecretDoesNotExist' : string } |
   { 'NoPolicyForBeneficiary' : string } |
   { 'CallerNotPolicyOwner' : string } |
+  { 'SecretEntryDoesNotExistForKeyBoxEntry' : string } |
   { 'Unauthorized' : null } |
   { 'UserUpdateFailed' : string } |
   { 'NoPolicyForValidator' : string } |

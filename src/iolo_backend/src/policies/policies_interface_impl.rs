@@ -181,7 +181,9 @@ pub fn update_policy_impl(
         return Err(SmartVaultErr::PolicyDoesNotExist(upa.id));
     }
 
-    // check if secrets in policy exist in secret store and that caller is owner of the secrets
+    // check if secrets in policy exist in secret store
+    // check that caller is owner of the secrets
+    // check that each secret is related in the key box
     for secret_id in upa.secrets.iter() {
         let s = SECRET_STORE.with(|ss| {
             let secret_store = ss.borrow();
@@ -190,6 +192,17 @@ pub fn update_policy_impl(
 
         if &s.owner() != &caller.to_string() {
             return Err(SmartVaultErr::SecretDoesNotExist(s.id.to_string()));
+        }
+
+        if !upa.key_box.contains_key(secret_id) {
+            return Err(SmartVaultErr::KeyBoxEntryDoesNotExistForSecret(secret_id.to_string()));
+        }
+    }
+
+    // Check that each key_box_id in the update policy args exists in the secrets
+    for key_box_id in upa.key_box.keys() {
+        if !upa.secrets.contains(key_box_id) {
+            return Err(SmartVaultErr::SecretEntryDoesNotExistForKeyBoxEntry(key_box_id.to_string()));
         }
     }
 
