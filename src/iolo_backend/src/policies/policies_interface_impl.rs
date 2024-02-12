@@ -181,12 +181,16 @@ pub fn update_policy_impl(
         return Err(SmartVaultErr::PolicyDoesNotExist(upa.id));
     }
 
-    // check if secrets in policy exist in secret store
+    // check if secrets in policy exist in secret store and that caller is owner of the secrets
     for secret_id in upa.secrets.iter() {
-        SECRET_STORE.with(|ss| {
+        let s = SECRET_STORE.with(|ss| {
             let secret_store = ss.borrow();
             secret_store.get(secret_id)
         })?;
+
+        if &s.owner() != &caller.to_string() {
+            return Err(SmartVaultErr::SecretDoesNotExist(s.id.to_string()));
+        }
     }
 
     // create policy from AddPolicyArgs
