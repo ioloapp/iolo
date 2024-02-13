@@ -13,6 +13,8 @@ use super::{
     policy::PolicyID,
 };
 
+/// This function is called every time a policy condition is updated (by the login date condition checks or through XooY validation).
+/// It will check the overall condition status of the policy and set it to true if all conditions are met.
 pub fn evaluate_overall_conditions_status(policy_id: &PolicyID) -> Result<(), SmartVaultErr> {
     let mut policy = get_policy_from_policy_store(policy_id).unwrap();
     let mut overall_conditions_status = false;
