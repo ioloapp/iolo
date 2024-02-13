@@ -131,7 +131,13 @@ impl Policy {
         new_policy
     }
 
-    pub fn from_update_policy_args(policy_id: &str, owner: &PrincipalID, condition_status: bool, date_created: u64, upa: UpdatePolicyArgs) -> Self {
+    pub fn from_update_policy_args(
+        policy_id: &str,
+        owner: &PrincipalID,
+        condition_status: bool,
+        date_created: u64,
+        upa: UpdatePolicyArgs,
+    ) -> Self {
         let mut new_policy = Policy::new(policy_id.to_string(), owner);
         new_policy.owner = owner.to_string();
         new_policy.name = upa.name;
@@ -175,6 +181,10 @@ impl Policy {
 
     pub fn conditions(&self) -> &Vec<Condition> {
         &self.conditions
+    }
+
+    pub fn conditions_mut(&mut self) -> &mut Vec<Condition> {
+        &mut self.conditions
     }
 
     pub fn conditions_status(&self) -> &bool {

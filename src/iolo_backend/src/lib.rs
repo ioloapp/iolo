@@ -3,6 +3,7 @@
 //! This is the iolo backend implementation. It contains all the types, modules and methods provided to the front-end.
 //!
 use ic_cdk_macros::export_candid;
+use utils::login_date_condition::init_login_date_conditions_checks;
 
 // for the candid file creation
 use crate::common::error::SmartVaultErr;
@@ -14,13 +15,13 @@ use crate::policies::policy::PolicyWithSecretListEntries;
 use crate::policies::policy::UpdatePolicyArgs;
 use crate::secrets::secret::SecretID;
 use crate::secrets::secret::SecretListEntry;
+use crate::secrets::secret::{AddSecretArgs, Secret, UpdateSecretArgs};
 use crate::smart_vaults::key_manager::PolicyKeyDerviationArgs;
 use crate::users::contact::AddContactArgs;
 use crate::users::contact::Contact;
 use crate::users::user::AddOrUpdateUserArgs;
 use crate::users::user::PrincipalID;
 use crate::users::user::User;
-use crate::secrets::secret::{AddSecretArgs, Secret, UpdateSecretArgs};
 
 /// Contains common types, modules and methods
 pub mod common;
@@ -36,6 +37,8 @@ pub mod users;
 pub mod utils;
 
 #[ic_cdk_macros::init]
-fn init() {}
+fn init() {
+    init_login_date_conditions_checks();
+}
 
 export_candid!();

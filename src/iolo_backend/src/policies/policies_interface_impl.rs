@@ -324,11 +324,16 @@ pub fn confirm_x_out_of_y_condition_impl(
         Some(confirmer) => {
             // Modify the confirmer as needed
             confirmer.status = status;
+            update_policy_in_policy_store(policy.clone())?;
             Ok(())
         }
         None => Err(SmartVaultErr::Unauthorized),
     }
 }
+
+/**
+ * Helper functions
+ */
 
 pub fn get_policy_from_policy_store(policy_id: &PolicyID) -> Result<Policy, SmartVaultErr> {
     POLICY_STORE.with(|ps| -> Result<Policy, SmartVaultErr> {
@@ -344,6 +349,14 @@ pub fn get_policies_from_policy_store(
         .iter()
         .map(get_policy_from_policy_store)
         .collect()
+}
+
+/// TREAT WITH CAUTION
+pub fn update_policy_in_policy_store(policy: Policy) -> Result<Policy, SmartVaultErr> {
+    POLICY_STORE.with(|ps| {
+        let mut policy_store = ps.borrow_mut();
+        policy_store.update_policy(policy.clone())
+    })
 }
 
 #[cfg(test)]

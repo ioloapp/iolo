@@ -44,6 +44,30 @@ pub enum Condition {
     XOutOfYCondition(XOutOfYCondition),
 }
 
+trait ConditionStatus {
+    fn set_condition_status(&mut self, status: bool);
+    fn get_condition_status(&self) -> bool;
+}
+
+impl ConditionStatus for TimeBasedCondition {
+    fn set_condition_status(&mut self, status: bool) {
+        self.condition_status = status;
+    }
+
+    fn get_condition_status(&self) -> bool {
+        self.condition_status
+    }
+}
+
+impl ConditionStatus for XOutOfYCondition {
+    fn set_condition_status(&mut self, status: bool) {
+        self.condition_status = status;
+    }
+    fn get_condition_status(&self) -> bool {
+        self.condition_status
+    }
+}
+
 impl Condition {
     pub fn evaluate(&self, user: &User) -> bool {
         match self {
@@ -65,6 +89,20 @@ impl Condition {
                 }
                 i >= condition.quorum
             }
+        }
+    }
+
+    pub fn set_condition_status(&mut self, status: bool) {
+        match self {
+            Condition::TimeBasedCondition(c) => c.set_condition_status(status),
+            Condition::XOutOfYCondition(c) => c.set_condition_status(status),
+        }
+    }
+
+    pub fn get_condition_status(&self) -> bool {
+        match self {
+            Condition::TimeBasedCondition(c) => c.get_condition_status(),
+            Condition::XOutOfYCondition(c) => c.get_condition_status(),
         }
     }
 }
