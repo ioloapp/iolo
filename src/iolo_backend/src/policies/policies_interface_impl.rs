@@ -235,10 +235,7 @@ pub fn update_policy_impl(
     );
 
     // update policy in policy store
-    let updated_policy = POLICY_STORE.with(|ps| {
-        let mut policy_store = ps.borrow_mut();
-        policy_store.update_policy(policy.clone())
-    })?;
+    let updated_policy = update_policy_in_policy_store(policy.clone())?;
 
     // Update registry for beneficiaries (reverse index)
     POLICY_REGISTRIES.with(|pr| -> Result<(), SmartVaultErr> {
