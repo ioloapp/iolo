@@ -28,7 +28,8 @@ mod tests {
 
     #[tokio::test]
     async fn test_uuid() {
-        let id = UUID::new().await;
-        dbg!(id);
+        let id1 = UUID::new().await;
+        let id2 = UUID::new().await;
+        assert_ne!(id1, id2);
     }
 }

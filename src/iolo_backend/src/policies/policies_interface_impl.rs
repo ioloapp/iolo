@@ -190,19 +190,23 @@ pub fn update_policy_impl(
             secret_store.get(secret_id)
         })?;
 
-        if &s.owner() != &caller.to_string() {
+        if s.owner() != caller {
             return Err(SmartVaultErr::SecretDoesNotExist(s.id.to_string()));
         }
 
         if !upa.key_box.contains_key(secret_id) {
-            return Err(SmartVaultErr::KeyBoxEntryDoesNotExistForSecret(secret_id.to_string()));
+            return Err(SmartVaultErr::KeyBoxEntryDoesNotExistForSecret(
+                secret_id.to_string(),
+            ));
         }
     }
 
     // Check that each key_box_id in the update policy args exists in the secrets
     for key_box_id in upa.key_box.keys() {
         if !upa.secrets.contains(key_box_id) {
-            return Err(SmartVaultErr::SecretEntryDoesNotExistForKeyBoxEntry(key_box_id.to_string()));
+            return Err(SmartVaultErr::SecretEntryDoesNotExistForKeyBoxEntry(
+                key_box_id.to_string(),
+            ));
         }
     }
 
@@ -211,12 +215,9 @@ pub fn update_policy_impl(
     USER_STORE.with(|us| {
         let user_store = us.borrow();
         for beneficiary in upa.beneficiaries.iter() {
-            match user_store.get_user(&beneficiary.to_string()) {
-                Ok(u) => (),
-                Err(e) => {
-                    error = Some(SmartVaultErr::UserDoesNotExist(beneficiary.to_string()));
-                    break;
-                },
+            if user_store.get_user(&beneficiary.to_string()).is_err() {
+                error = Some(SmartVaultErr::UserDoesNotExist(beneficiary.to_string()));
+                break;
             }
         }
     });
@@ -383,12 +384,20 @@ mod tests {
         let validator2 = create_principal();
 
         // Create User and store it
-        let aua: AddOrUpdateUserArgs = AddOrUpdateUserArgs {
-            name: Some("donald".to_string()),
+        let mut aua: AddOrUpdateUserArgs = AddOrUpdateUserArgs {
+            name: Some("Alice the main user".to_string()),
             email: None,
             user_type: None,
         };
-        let _new_user = create_user_impl(aua, principal.to_string()).await.unwrap();
+        let _user_main = create_user_impl(aua.clone(), principal.to_string())
+            .await
+            .unwrap();
+        aua.name = Some("Bob the beneficiary".to_string());
+        let _user_alice = create_user_impl(aua.clone(), beneficiary.to_string()).await;
+        aua.name = Some("Vic the validator".to_string());
+        let _user_victor = create_user_impl(aua.clone(), validator.to_string()).await;
+        aua.name = Some("Valeria the validator".to_string());
+        let _user_valeria = create_user_impl(aua.clone(), validator2.to_string()).await;
 
         // Create a Secret
         let encrypted_symmetric_key: Vec<u8> = vec![1, 2, 3];
@@ -441,18 +450,19 @@ mod tests {
 
         // Update policy with other attributes
         let mut secrets = HashSet::new();
+        let mut kb: KeyBox = KeyBox::new();
+        kb.insert(added_secret.id().to_string(), vec![1, 2, 3]);
         secrets.insert(added_secret.id().to_string());
         let upa: UpdatePolicyArgs = UpdatePolicyArgs {
             id: added_policy.id().to_string(),
             name: added_policy.name,
             beneficiaries: [beneficiary.to_string()].iter().cloned().collect(),
             secrets,
-            key_box: KeyBox::new(),
+            key_box: kb,
             conditions_logical_operator: None,
             conditions: vec![time_based_condition.clone(), x_out_of_y_condition.clone()],
         };
         let added_policy = update_policy_impl(upa, principal.to_string());
-
         assert!(added_policy.is_ok());
         let added_policy = added_policy.unwrap();
 

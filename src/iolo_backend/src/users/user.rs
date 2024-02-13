@@ -12,6 +12,11 @@ use crate::{
 
 use super::contact::Contact;
 
+/// Keybox stores the encrypted symmetric key (SK) needed to decrypt the secret's fields (e.g. password)
+/// For every secret, a vector of u8 is stored. The vector has the following format:
+/// vec := [IV | Cipher] where
+/// ... IV is the initialization vector used to encrypt the symmetric key SK
+/// ... Cipher = Enc_{vetkd}(SK, IV) is the encrytped symmetric key SK (derived locally and then encrypted using the user's vetkd and the IV)
 pub type KeyBox = BTreeMap<SecretID, Vec<u8>>;
 pub type PrincipalID = String;
 

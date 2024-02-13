@@ -24,9 +24,15 @@ pub struct Secret {
     date_modified: u64,
     category: Option<SecretCategory>,
     name: Option<String>,
+    /// username stores the encrypted username, along with it's initiatlization vector (IV) used to generate the cipher
+    /// Vec := [IV_username | Cipher] where Cipher = Enc_{SK}(username_plain, IV_username)
     username: Option<Vec<u8>>,
+    /// password stores the encrypted password, along with it's initiatlization vector (IV) used to generate the cipher
+    /// Vec := [IV_password | Cipher] where Cipher = Enc_{SK}(password_plain, IV_password)
     password: Option<Vec<u8>>,
     url: Option<String>,
+    /// notes stores the encrypted notes, along with it's initiatlization vector (IV) used to generate the cipher
+    /// Vec := [IV_notes | Cipher] where Cipher = Enc_{SK}(notes_plain, IV_notes
     notes: Option<Vec<u8>>,
 }
 
