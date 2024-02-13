@@ -14,7 +14,7 @@ use super::{
 };
 
 pub fn evaluate_overall_conditions_status(policy_id: &PolicyID) -> Result<(), SmartVaultErr> {
-    let mut policy = get_policy_from_policy_store(&policy_id).unwrap();
+    let mut policy = get_policy_from_policy_store(policy_id).unwrap();
     let mut overall_conditions_status = false;
     let logical_operator = policy.conditions_logical_operator().clone();
 
