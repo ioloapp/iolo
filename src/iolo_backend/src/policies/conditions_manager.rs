@@ -13,7 +13,7 @@ use super::{
     policy::PolicyID,
 };
 
-pub fn evaluate_overall_conditions_status(policy_id: PolicyID) -> Result<(), SmartVaultErr> {
+pub fn evaluate_overall_conditions_status(policy_id: &PolicyID) -> Result<(), SmartVaultErr> {
     let mut policy = get_policy_from_policy_store(&policy_id).unwrap();
     let mut overall_conditions_status = false;
     let logical_operator = policy.conditions_logical_operator().clone();
@@ -85,7 +85,7 @@ pub fn check_login_date_conditions() {
             // update policy in policy store?
             if policy_needs_update {
                 update_policy_in_policy_store(policy.clone()).ok();
-                evaluate_overall_conditions_status(policy_id).ok();
+                evaluate_overall_conditions_status(&policy_id).ok();
             }
         }
     }

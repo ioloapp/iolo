@@ -11,6 +11,7 @@ use crate::{
     users::user::PrincipalID,
 };
 
+use super::conditions_manager::evaluate_overall_conditions_status;
 use super::{
     conditions::Condition,
     policy::{AddPolicyArgs, Policy, PolicyID, PolicyListEntry, PolicyWithSecretListEntries},
@@ -322,6 +323,9 @@ pub fn confirm_x_out_of_y_condition_impl(
             // Modify the confirmer as needed
             confirmer.status = status;
             update_policy_in_policy_store(policy.clone())?;
+
+            // check whether that status changed actually triggered the complete policy status to become true
+            evaluate_overall_conditions_status(policy.id())?;
             Ok(())
         }
         None => Err(SmartVaultErr::Unauthorized),
