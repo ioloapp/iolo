@@ -67,3 +67,5 @@ killall icx-proxy
 lsof -i :4943
 kill -9 <PID>
 ```
+
+yea
