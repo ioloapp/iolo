@@ -23,7 +23,7 @@ import {
     User,
     UserType,
     XOutOfYCondition,
-    AddContactArgs, Result_1, UpdatePolicyArgs, Result_4
+    AddContactArgs, Result_1, UpdatePolicyArgs, Result_4, ConfirmXOutOfYConditionArgs
 } from "../../../declarations/iolo_backend/iolo_backend.did";
 import {AuthClient} from "@dfinity/auth-client";
 import {createActor} from "../../../declarations/iolo_backend";
@@ -355,8 +355,12 @@ class IoloService {
         throw mapError(result['Err']);
     }
 
-    public async confirmXOutOfYCondition(testator: Principal, policyId: string, status: boolean): Promise<void> {
-        const result: Result_3 = await (await this.getActor()).confirm_x_out_of_y_condition(testator.toString(), policyId, status);
+    public async confirmXOutOfYCondition(policyId: string, status: boolean): Promise<void> {
+        let confirmXOutOfYConditionArgs: ConfirmXOutOfYConditionArgs = {
+            policy_id: policyId,
+            status: status
+        }
+        const result: Result_3 = await (await this.getActor()).confirm_x_out_of_y_condition(confirmXOutOfYConditionArgs);
         if (result['Ok'] === null) {
             return;
         }

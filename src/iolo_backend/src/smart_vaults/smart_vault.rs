@@ -3,7 +3,7 @@ use std::cell::RefCell;
 use ic_cdk::{post_upgrade, pre_upgrade};
 
 use crate::common::error::SmartVaultErr;
-
+use crate::policies::conditions::ConfirmXOutOfYConditionArgs;
 use crate::policies::policies_interface_impl::{
     add_policy_impl, confirm_x_out_of_y_condition_impl, get_policy_as_beneficiary_impl,
     get_policy_as_owner_impl, get_policy_list_as_beneficiary_impl, get_policy_list_as_owner_impl,
@@ -164,11 +164,9 @@ pub fn remove_policy(policy_id: String) -> Result<(), SmartVaultErr> {
 
 #[ic_cdk_macros::update]
 pub fn confirm_x_out_of_y_condition(
-    policy_owner: PrincipalID,
-    policy_id: PolicyID,
-    status: bool,
+    args: ConfirmXOutOfYConditionArgs,
 ) -> Result<(), SmartVaultErr> {
-    confirm_x_out_of_y_condition_impl(policy_owner, policy_id, status, get_caller_id())
+    confirm_x_out_of_y_condition_impl(args, get_caller_id())
 }
 
 /**

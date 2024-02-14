@@ -22,6 +22,7 @@ use crate::users::contact::Contact;
 use crate::users::user::AddOrUpdateUserArgs;
 use crate::users::user::PrincipalID;
 use crate::users::user::User;
+use crate::policies::conditions::ConfirmXOutOfYConditionArgs;
 
 /// Contains common types, modules and methods
 pub mod common;

@@ -24,6 +24,10 @@ export interface AddSecretArgs {
 }
 export type Condition = { 'TimeBasedCondition' : TimeBasedCondition } |
   { 'XOutOfYCondition' : XOutOfYCondition };
+export interface ConfirmXOutOfYConditionArgs {
+  'status' : boolean,
+  'policy_id' : string,
+}
 export interface Contact {
   'id' : string,
   'user_type' : [] | [UserType],
@@ -182,7 +186,7 @@ export interface _SERVICE {
   'add_policy' : ActorMethod<[AddPolicyArgs], Result_1>,
   'add_secret' : ActorMethod<[AddSecretArgs], Result_2>,
   'confirm_x_out_of_y_condition' : ActorMethod<
-    [string, string, boolean],
+    [ConfirmXOutOfYConditionArgs],
     Result_3
   >,
   'create_user' : ActorMethod<[AddOrUpdateUserArgs], Result_4>,

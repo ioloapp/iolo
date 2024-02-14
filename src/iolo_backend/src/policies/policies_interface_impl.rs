@@ -1,6 +1,7 @@
 use std::collections::HashSet;
 
 use crate::policies::policy::UpdatePolicyArgs;
+use crate::policies::conditions::ConfirmXOutOfYConditionArgs;
 use crate::{
     common::{error::SmartVaultErr, uuid::UUID},
     secrets::{
@@ -294,28 +295,22 @@ pub fn remove_policy_impl(policy_id: String, caller: PrincipalID) -> Result<(), 
 }
 
 pub fn confirm_x_out_of_y_condition_impl(
-    policy_owner: PrincipalID,
-    policy_id: PolicyID,
-    status: bool,
+    args: ConfirmXOutOfYConditionArgs,
     validator: PrincipalID,
 ) -> Result<(), SmartVaultErr> {
     // fetch policy from policy store and check if caller is beneficiary
     let mut policy: Policy;
-    if let Ok(p) = get_policy_from_policy_store(&policy_id) {
-        // check if the caller is a beneficiary of the policy
-        if !p.owner().eq(&policy_owner) {
-            return Err(SmartVaultErr::CallerNotPolicyOwner(policy_id));
-        }
+    if let Ok(p) = get_policy_from_policy_store(&args.policy_id) {
         policy = p;
     } else {
-        return Err(SmartVaultErr::PolicyDoesNotExist(policy_id));
+        return Err(SmartVaultErr::PolicyDoesNotExist(args.policy_id));
     }
 
     // Check that there is a XOutOfYCondition in the policy and that the caller is one of the confirmers
     match policy.find_validator_mut(&validator.to_string()) {
         Some(confirmer) => {
             // Modify the confirmer as needed
-            confirmer.status = status;
+            confirmer.status = args.status;
             update_policy_in_policy_store(policy.clone())?;
 
             // check whether that status changed actually triggered the complete policy status to become true
