@@ -4,6 +4,7 @@
 
 use candid::{CandidType, Deserialize};
 use serde::Serialize;
+use crate::policies::policy::PolicyID;
 
 use crate::users::user::{PrincipalID, User};
 use crate::utils::time;
@@ -105,4 +106,10 @@ impl Condition {
             Condition::XOutOfYCondition(c) => c.get_condition_status(),
         }
     }
+}
+
+#[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
+pub struct ConfirmXOutOfYConditionArgs {
+    pub policy_id: PolicyID,
+    pub status: bool,
 }

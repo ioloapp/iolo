@@ -23,6 +23,7 @@ type Condition = variant {
   TimeBasedCondition : TimeBasedCondition;
   XOutOfYCondition : XOutOfYCondition;
 };
+type ConfirmXOutOfYConditionArgs = record { status : bool; policy_id : text };
 type Contact = record {
   id : text;
   user_type : opt UserType;
@@ -170,7 +171,7 @@ service : () -> {
   add_contact : (AddContactArgs) -> (Result);
   add_policy : (AddPolicyArgs) -> (Result_1);
   add_secret : (AddSecretArgs) -> (Result_2);
-  confirm_x_out_of_y_condition : (text, text, bool) -> (Result_3);
+  confirm_x_out_of_y_condition : (ConfirmXOutOfYConditionArgs) -> (Result_3);
   create_user : (AddOrUpdateUserArgs) -> (Result_4);
   delete_user : () -> (Result_3);
   encrypted_ibe_decryption_key_for_caller : (vec nat8) -> (text);

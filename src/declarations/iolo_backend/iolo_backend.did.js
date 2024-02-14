@@ -96,6 +96,10 @@ export const idlFactory = ({ IDL }) => {
     'date_modified' : IDL.Nat64,
   });
   const Result_2 = IDL.Variant({ 'Ok' : Secret, 'Err' : SmartVaultErr });
+  const ConfirmXOutOfYConditionArgs = IDL.Record({
+    'status' : IDL.Bool,
+    'policy_id' : IDL.Text,
+  });
   const Result_3 = IDL.Variant({ 'Ok' : IDL.Null, 'Err' : SmartVaultErr });
   const AddOrUpdateUserArgs = IDL.Record({
     'user_type' : IDL.Opt(UserType),
@@ -188,7 +192,7 @@ export const idlFactory = ({ IDL }) => {
     'add_policy' : IDL.Func([AddPolicyArgs], [Result_1], []),
     'add_secret' : IDL.Func([AddSecretArgs], [Result_2], []),
     'confirm_x_out_of_y_condition' : IDL.Func(
-        [IDL.Text, IDL.Text, IDL.Bool],
+        [ConfirmXOutOfYConditionArgs],
         [Result_3],
         [],
       ),
