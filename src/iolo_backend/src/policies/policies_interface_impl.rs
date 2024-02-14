@@ -1,4 +1,4 @@
-use std::{cell::RefCell, collections::HashSet};
+use std::collections::HashSet;
 
 use crate::policies::policy::UpdatePolicyArgs;
 use crate::{
@@ -15,7 +15,6 @@ use super::conditions_manager::evaluate_overall_conditions_status;
 use super::{
     conditions::Condition,
     policy::{AddPolicyArgs, Policy, PolicyID, PolicyListEntry, PolicyWithSecretListEntries},
-    policy_store::PolicyStore,
 };
 
 pub async fn add_policy_impl(
@@ -30,12 +29,7 @@ pub async fn add_policy_impl(
         Policy::from_add_policy_args(&new_policy_id, &policy_owner.to_string(), apa);
 
     // Add policy to the policy store (policies: StableBTreeMap<UUID, Policy, Memory>,)
-    POLICY_STORE.with(
-        |policy_store_rc: &RefCell<PolicyStore>| -> Result<Policy, SmartVaultErr> {
-            let mut policy_store = policy_store_rc.borrow_mut();
-            policy_store.add_policy(policy.clone())
-        },
-    )?;
+    add_policy_to_policy_store(policy.clone())?;
 
     // add the policy id to the user in the USER_STORE
     USER_STORE.with(|us| {
@@ -333,8 +327,15 @@ pub fn confirm_x_out_of_y_condition_impl(
 }
 
 /**
- * Helper functions
+ * Helper CRUD functions
  */
+
+pub fn add_policy_to_policy_store(policy: Policy) -> Result<Policy, SmartVaultErr> {
+    POLICY_STORE.with(|ps| {
+        let mut policy_store = ps.borrow_mut();
+        policy_store.add_policy(policy.clone())
+    })
+}
 
 pub fn get_policy_from_policy_store(policy_id: &PolicyID) -> Result<Policy, SmartVaultErr> {
     POLICY_STORE.with(|ps| -> Result<Policy, SmartVaultErr> {
@@ -352,7 +353,6 @@ pub fn get_policies_from_policy_store(
         .collect()
 }
 
-/// TREAT WITH CAUTION
 pub fn update_policy_in_policy_store(policy: Policy) -> Result<Policy, SmartVaultErr> {
     POLICY_STORE.with(|ps| {
         let mut policy_store = ps.borrow_mut();
