@@ -102,7 +102,7 @@ impl PolicyRegistries {
 
     pub fn add_policy_to_validators(&mut self, validators: &Vec<Validator>, policy_id: &PolicyID) {
         for validator in validators {
-            match self.validator_to_policies.get(&validator.id) {
+            match self.validator_to_policies.get(&validator.principal_id) {
                 Some(mut sphs) => {
                     // entry for validator already exists
                     sphs.0.insert(policy_id.clone());
@@ -112,8 +112,10 @@ impl PolicyRegistries {
                     let mut hs: HashSet<PolicyID> = HashSet::new();
                     hs.insert(policy_id.clone());
 
-                    self.validator_to_policies
-                        .insert(validator.id.to_string(), PolicyHashSetStorable(hs));
+                    self.validator_to_policies.insert(
+                        validator.principal_id.to_string(),
+                        PolicyHashSetStorable(hs),
+                    );
                 }
             };
         }
@@ -125,12 +127,14 @@ impl PolicyRegistries {
         policy_id: &PolicyID,
     ) {
         for validator in validator {
-            if let Some(mut policy_hash_set) = self.validator_to_policies.get(&validator.id) {
+            if let Some(mut policy_hash_set) =
+                self.validator_to_policies.get(&validator.principal_id)
+            {
                 policy_hash_set.0.remove(policy_id);
 
                 // re-insert the policy_hash_set
                 self.validator_to_policies
-                    .insert(validator.id.to_string(), policy_hash_set);
+                    .insert(validator.principal_id.to_string(), policy_hash_set);
             }
         }
     }

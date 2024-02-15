@@ -309,6 +309,8 @@ pub fn remove_policy_impl(policy_id: String, caller: PrincipalID) -> Result<(), 
     Ok(())
 }
 
+/// A validator confirming the status of the policy
+/// ConfirmXOutOfYConditionArgs contains policy_id (PolicyID) and status (bool)
 pub fn confirm_x_out_of_y_condition_impl(
     args: ConfirmXOutOfYConditionArgs,
     validator: PrincipalID,
@@ -321,19 +323,27 @@ pub fn confirm_x_out_of_y_condition_impl(
         return Err(SmartVaultErr::PolicyDoesNotExist(args.policy_id));
     }
 
-    // Check that there is a XOutOfYCondition in the policy and that the caller is one of the confirmers
-    match policy.find_validator_mut(&validator.to_string()) {
-        Some(confirmer) => {
-            // Modify the confirmer as needed
-            confirmer.status = args.status;
-            update_policy_in_policy_store(policy.clone())?;
-
-            // check whether that status changed actually triggered the complete policy status to become true
-            evaluate_overall_conditions_status(policy.id())?;
-            Ok(())
+    let mut policy_needs_update = false;
+    for condition in &mut policy.conditions {
+        if let Condition::XOutOfYCondition(x_out_of_y) = condition {
+            for v in &mut x_out_of_y.validators {
+                if v.principal_id == validator {
+                    // there is a condition for which the validator is authorized validator
+                    v.status = args.status;
+                    policy_needs_update = true;
+                }
+            }
         }
-        None => Err(SmartVaultErr::Unauthorized),
+        // check if the XooY condition has reached quorum
+        condition.evaluate(None);
     }
+
+    if policy_needs_update {
+        update_policy_in_policy_store(policy.clone())?;
+        evaluate_overall_conditions_status(policy.id())?;
+    };
+
+    Ok(())
 }
 
 /**
@@ -451,7 +461,7 @@ mod tests {
         let x_out_of_y_condition: Condition = Condition::XOutOfYCondition(XOutOfYCondition {
             id: "My X out of Y Condition".to_string(),
             validators: vec![Validator {
-                id: validator.to_string(),
+                principal_id: validator.to_string(),
                 status: false,
             }],
             quorum: 1,
@@ -585,7 +595,7 @@ mod tests {
         let x_out_of_y_condition: Condition = Condition::XOutOfYCondition(XOutOfYCondition {
             id: "My X out of Y Condition".to_string(),
             validators: vec![Validator {
-                id: validator2.to_string(),
+                principal_id: validator2.to_string(),
                 status: false,
             }],
             quorum: 1,

@@ -236,7 +236,7 @@ impl Policy {
         for condition in &mut self.conditions {
             if let Condition::XOutOfYCondition(x_out_of_y) = condition {
                 for validator in &mut x_out_of_y.validators {
-                    if &validator.id == principal {
+                    if &validator.principal_id == principal {
                         // Return a mutable reference to the confirmer
                         return Some(validator);
                     }

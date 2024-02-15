@@ -2,9 +2,9 @@
 //! 1. Time based conditions - Checks whether a certain time threshold is reached
 //! 2. X out of Y conditions - Checks whether X out of Y validators have voted "yes" on the condition
 
+use crate::policies::policy::PolicyID;
 use candid::{CandidType, Deserialize};
 use serde::Serialize;
-use crate::policies::policy::PolicyID;
 
 use crate::users::user::{PrincipalID, User};
 use crate::utils::time;
@@ -32,7 +32,7 @@ pub struct XOutOfYCondition {
 /// Validator is the role a user has when it is part of of a condition and has to vote for it
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct Validator {
-    pub id: PrincipalID,
+    pub principal_id: PrincipalID,
     pub status: bool,
 }
 
@@ -70,7 +70,7 @@ impl ConditionStatus for XOutOfYCondition {
 }
 
 impl Condition {
-    pub fn evaluate(&self, user: &User) -> bool {
+    pub fn evaluate(&self, user: Option<&User>) -> bool {
         match self {
             Condition::TimeBasedCondition(condition) => {
                 let current_time: u64 = time::get_current_time();
@@ -79,7 +79,8 @@ impl Condition {
                 //let max_last_login_time: u64 = tb.number_of_days_since_last_login * 86400 * 1000000000; // in nanoseconds
                 let max_last_login_time: u64 =
                     condition.number_of_days_since_last_login * 1000000000; // in nanoseconds
-                user.date_last_login.unwrap() < current_time.saturating_sub(max_last_login_time)
+                user.unwrap().date_last_login.unwrap()
+                    < current_time.saturating_sub(max_last_login_time)
             }
             Condition::XOutOfYCondition(condition) => {
                 let mut i = 0;
