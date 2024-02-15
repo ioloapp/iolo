@@ -1,7 +1,5 @@
-use std::collections::HashSet;
-
-use crate::policies::policy::UpdatePolicyArgs;
 use crate::policies::conditions::ConfirmXOutOfYConditionArgs;
+use crate::policies::policy::UpdatePolicyArgs;
 use crate::{
     common::{error::SmartVaultErr, uuid::UUID},
     secrets::{
@@ -92,19 +90,11 @@ pub fn get_policy_list_as_owner_impl(
     });
 
     // get all the corresponding policies
-    let policies: Vec<Policy> = POLICY_STORE.with(|ps| {
-        let policy_store = ps.borrow();
-        let policies: Vec<Policy> = policy_ids
-            .iter()
-            .map(|pid| policy_store.get(pid).unwrap())
-            .collect();
-        policies
-    });
+    let policies = get_policies_from_policy_store(policy_ids)?;
 
     Ok(policies.into_iter().map(PolicyListEntry::from).collect())
 }
 
-///
 pub fn get_policy_as_beneficiary_impl(
     policy_id: PolicyID,
     beneficiary: PrincipalID,
@@ -140,6 +130,31 @@ pub fn get_policy_as_beneficiary_impl(
     } else {
         Err(SmartVaultErr::InvalidPolicyCondition)
     }
+}
+
+pub fn get_policy_as_validator_impl(
+    policy_id: PolicyID,
+    validator: PrincipalID,
+) -> Result<PolicyListEntry, SmartVaultErr> {
+    // get policy from policy store
+    let policy: Policy = get_policy_from_policy_store(&policy_id)?;
+
+    // Get all the policies for the validator
+    let validator_policies =
+        POLICY_REGISTRIES.with(|pr| -> Result<Vec<PolicyListEntry>, SmartVaultErr> {
+            let policy_registries = pr.borrow();
+            policy_registries.get_policy_ids_as_validator(&validator.to_string())
+        })?;
+
+    if !validator_policies.into_iter().any(|p| p.id == policy_id) {
+        // caller is not a validator of policy
+        return Err(SmartVaultErr::NoPolicyForValidator(format!(
+            "Validator {:?} is not validator of policy {:?}",
+            validator, policy_id
+        )));
+    };
+
+    Ok(PolicyListEntry::from(policy))
 }
 
 pub fn get_policy_list_as_beneficiary_impl(
@@ -340,7 +355,7 @@ pub fn get_policy_from_policy_store(policy_id: &PolicyID) -> Result<Policy, Smar
 }
 
 pub fn get_policies_from_policy_store(
-    policy_ids: HashSet<String>,
+    policy_ids: Vec<String>,
 ) -> Result<Vec<Policy>, SmartVaultErr> {
     policy_ids
         .iter()

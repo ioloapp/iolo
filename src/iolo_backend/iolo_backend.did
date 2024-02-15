@@ -69,7 +69,8 @@ type PolicyWithSecretListEntries = record {
 };
 type Result = variant { Ok : Contact; Err : SmartVaultErr };
 type Result_1 = variant { Ok : Policy; Err : SmartVaultErr };
-type Result_10 = variant { Ok : vec SecretListEntry; Err : SmartVaultErr };
+type Result_10 = variant { Ok : vec PolicyListEntry; Err : SmartVaultErr };
+type Result_11 = variant { Ok : vec SecretListEntry; Err : SmartVaultErr };
 type Result_2 = variant { Ok : Secret; Err : SmartVaultErr };
 type Result_3 = variant { Ok; Err : SmartVaultErr };
 type Result_4 = variant { Ok : User; Err : SmartVaultErr };
@@ -80,7 +81,7 @@ type Result_8 = variant {
   Ok : PolicyWithSecretListEntries;
   Err : SmartVaultErr;
 };
-type Result_9 = variant { Ok : vec PolicyListEntry; Err : SmartVaultErr };
+type Result_9 = variant { Ok : PolicyListEntry; Err : SmartVaultErr };
 type Secret = record {
   id : text;
   url : opt text;
@@ -185,12 +186,13 @@ service : () -> {
   get_encrypted_symmetric_key_as_beneficiary : (text, text) -> (Result_7) query;
   get_policy_as_beneficiary : (text) -> (Result_8) query;
   get_policy_as_owner : (text) -> (Result_8) query;
-  get_policy_list_as_beneficiary : () -> (Result_9) query;
-  get_policy_list_as_owner : () -> (Result_9) query;
-  get_policy_list_as_validator : () -> (Result_9) query;
+  get_policy_as_validator : (text) -> (Result_9) query;
+  get_policy_list_as_beneficiary : () -> (Result_10) query;
+  get_policy_list_as_owner : () -> (Result_10) query;
+  get_policy_list_as_validator : () -> (Result_10) query;
   get_secret : (text) -> (Result_2) query;
   get_secret_as_beneficiary : (text, text) -> (Result_2) query;
-  get_secret_list : () -> (Result_10) query;
+  get_secret_list : () -> (Result_11) query;
   ibe_encryption_key : () -> (text);
   remove_contact : (text) -> (Result_3);
   remove_policy : (text) -> (Result_3);

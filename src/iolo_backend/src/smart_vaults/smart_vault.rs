@@ -6,8 +6,9 @@ use crate::common::error::SmartVaultErr;
 use crate::policies::conditions::ConfirmXOutOfYConditionArgs;
 use crate::policies::policies_interface_impl::{
     add_policy_impl, confirm_x_out_of_y_condition_impl, get_policy_as_beneficiary_impl,
-    get_policy_as_owner_impl, get_policy_list_as_beneficiary_impl, get_policy_list_as_owner_impl,
-    get_policy_list_as_validator_impl, remove_policy_impl, update_policy_impl,
+    get_policy_as_owner_impl, get_policy_as_validator_impl, get_policy_list_as_beneficiary_impl,
+    get_policy_list_as_owner_impl, get_policy_list_as_validator_impl, remove_policy_impl,
+    update_policy_impl,
 };
 use crate::policies::policy::{AddPolicyArgs, Policy, PolicyID, PolicyListEntry};
 use crate::policies::policy::{PolicyWithSecretListEntries, UpdatePolicyArgs};
@@ -128,18 +129,27 @@ pub async fn add_policy(args: AddPolicyArgs) -> Result<Policy, SmartVaultErr> {
 }
 
 #[ic_cdk_macros::query]
-pub fn get_policy_as_owner(policy_id: PolicyID) -> Result<PolicyWithSecretListEntries, SmartVaultErr> {
+pub fn get_policy_as_owner(
+    policy_id: PolicyID,
+) -> Result<PolicyWithSecretListEntries, SmartVaultErr> {
     get_policy_as_owner_impl(policy_id, get_caller_id())
+}
+
+#[ic_cdk_macros::query]
+pub fn get_policy_as_beneficiary(
+    policy_id: PolicyID,
+) -> Result<PolicyWithSecretListEntries, SmartVaultErr> {
+    get_policy_as_beneficiary_impl(policy_id, get_caller_id())
+}
+
+#[ic_cdk_macros::query]
+pub fn get_policy_as_validator(policy_id: PolicyID) -> Result<PolicyListEntry, SmartVaultErr> {
+    get_policy_as_validator_impl(policy_id, get_caller_id())
 }
 
 #[ic_cdk_macros::query]
 pub fn get_policy_list_as_owner() -> Result<Vec<PolicyListEntry>, SmartVaultErr> {
     get_policy_list_as_owner_impl(get_caller_id())
-}
-
-#[ic_cdk_macros::query]
-pub fn get_policy_as_beneficiary(policy_id: PolicyID) -> Result<PolicyWithSecretListEntries, SmartVaultErr> {
-    get_policy_as_beneficiary_impl(policy_id, get_caller_id())
 }
 
 #[ic_cdk_macros::query]
