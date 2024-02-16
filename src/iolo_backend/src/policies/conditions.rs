@@ -52,7 +52,7 @@ pub type ConditionID = String;
 pub enum Condition {
     LastLogin(LastLoginTimeCondition),
     XOutOfY(XOutOfYCondition),
-    FutureTime(FixedDateTimeCondition),
+    FixedDateTime(FixedDateTimeCondition),
 }
 
 trait ConditionStatus {
@@ -110,7 +110,7 @@ impl Condition {
                 }
                 i >= condition.quorum
             }
-            Condition::FutureTime(condition) => {
+            Condition::FixedDateTime(condition) => {
                 let current_time: u64 = time::get_current_time();
                 current_time >= condition.time
             }
@@ -121,7 +121,7 @@ impl Condition {
         match self {
             Condition::LastLogin(c) => c.set_condition_status(status),
             Condition::XOutOfY(c) => c.set_condition_status(status),
-            Condition::FutureTime(c) => c.set_condition_status(status),
+            Condition::FixedDateTime(c) => c.set_condition_status(status),
         }
     }
 
@@ -129,7 +129,7 @@ impl Condition {
         match self {
             Condition::LastLogin(c) => c.get_condition_status(),
             Condition::XOutOfY(c) => c.get_condition_status(),
-            Condition::FutureTime(c) => c.get_condition_status(),
+            Condition::FixedDateTime(c) => c.get_condition_status(),
         }
     }
 }
