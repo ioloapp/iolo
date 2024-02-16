@@ -44,6 +44,11 @@ type Policy = record {
   conditions : vec Condition;
   date_modified : nat64;
 };
+type PolicyForValidator = record {
+  id : text;
+  xooy_conditions : vec Condition;
+  owner : text;
+};
 type PolicyKeyDerviationArgs = record {
   encryption_public_key : vec nat8;
   policy_id : text;
@@ -81,7 +86,7 @@ type Result_8 = variant {
   Ok : PolicyWithSecretListEntries;
   Err : SmartVaultErr;
 };
-type Result_9 = variant { Ok : PolicyListEntry; Err : SmartVaultErr };
+type Result_9 = variant { Ok : PolicyForValidator; Err : SmartVaultErr };
 type Secret = record {
   id : text;
   url : opt text;
@@ -160,7 +165,7 @@ type User = record {
   policies : vec text;
 };
 type UserType = variant { Company; Person };
-type Validator = record { id : text; status : bool };
+type Validator = record { status : bool; principal_id : text };
 type XOutOfYCondition = record {
   id : text;
   question : text;
