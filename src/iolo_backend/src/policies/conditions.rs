@@ -11,14 +11,23 @@ use crate::utils::time;
 
 /// Defines the number of days since the last login of a user.
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
-pub struct TimeBasedCondition {
+pub struct LastLoginTimeCondition {
     pub id: ConditionID,
     pub number_of_days_since_last_login: u64,
     pub condition_status: bool,
 }
 
+/// Defines a moment in time in the future upon which a condition is valid
+#[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
+pub struct FixedTimeCondition {
+    pub id: ConditionID,
+    pub time: u64,
+    pub condition_status: bool,
+}
+
 /// The X out of Y condition contains a set of validators and defines a quorum.
-///
+/// Each validator has its own status (true or false) and the condition is valid if the quorum is reached.
+/// Each Validator has to vote for the condition and the condition is valid if the quorum is reached.
 /// The overall condition status defines the status of the condition.
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct XOutOfYCondition {
@@ -41,8 +50,9 @@ pub type ConditionID = String;
 /// The condition enum contains the two types of conditions: TimeBasedCondition and XOutOfYCondition
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub enum Condition {
-    TimeBasedCondition(TimeBasedCondition),
+    LastLoginCondition(LastLoginTimeCondition),
     XOutOfYCondition(XOutOfYCondition),
+    FutureTimeCondition(FixedTimeCondition),
 }
 
 trait ConditionStatus {
@@ -50,7 +60,7 @@ trait ConditionStatus {
     fn get_condition_status(&self) -> bool;
 }
 
-impl ConditionStatus for TimeBasedCondition {
+impl ConditionStatus for LastLoginTimeCondition {
     fn set_condition_status(&mut self, status: bool) {
         self.condition_status = status;
     }
@@ -69,10 +79,19 @@ impl ConditionStatus for XOutOfYCondition {
     }
 }
 
+impl ConditionStatus for FixedTimeCondition {
+    fn set_condition_status(&mut self, status: bool) {
+        self.condition_status = status;
+    }
+    fn get_condition_status(&self) -> bool {
+        self.condition_status
+    }
+}
+
 impl Condition {
     pub fn evaluate(&self, user: Option<&User>) -> bool {
         match self {
-            Condition::TimeBasedCondition(condition) => {
+            Condition::LastLoginCondition(condition) => {
                 let current_time: u64 = time::get_current_time();
 
                 // Check last login date
@@ -91,20 +110,26 @@ impl Condition {
                 }
                 i >= condition.quorum
             }
+            Condition::FutureTimeCondition(condition) => {
+                let current_time: u64 = time::get_current_time();
+                current_time >= condition.time
+            }
         }
     }
 
     pub fn set_condition_status(&mut self, status: bool) {
         match self {
-            Condition::TimeBasedCondition(c) => c.set_condition_status(status),
+            Condition::LastLoginCondition(c) => c.set_condition_status(status),
             Condition::XOutOfYCondition(c) => c.set_condition_status(status),
+            Condition::FutureTimeCondition(c) => c.set_condition_status(status),
         }
     }
 
     pub fn get_condition_status(&self) -> bool {
         match self {
-            Condition::TimeBasedCondition(c) => c.get_condition_status(),
+            Condition::LastLoginCondition(c) => c.get_condition_status(),
             Condition::XOutOfYCondition(c) => c.get_condition_status(),
+            Condition::FutureTimeCondition(c) => c.get_condition_status(),
         }
     }
 }

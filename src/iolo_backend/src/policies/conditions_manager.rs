@@ -67,7 +67,7 @@ pub fn check_login_date_conditions() {
 
             // iterate over policy conditions
             for condition in policy.conditions_mut().iter_mut() {
-                if let Condition::TimeBasedCondition(tb) = &condition {
+                if let Condition::LastLoginCondition(tb) = &condition {
                     if condition.evaluate(Some(&user)) {
                         // Last login date earlier than allowed, set condition status of all user policies to true
                         ic_cdk::println!("Last login date of user {:?} is older than {:?} days, condition status of all its policies is set to true", user.id, tb.number_of_days_since_last_login);

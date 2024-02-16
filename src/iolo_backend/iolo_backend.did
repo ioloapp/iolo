@@ -20,8 +20,9 @@ type AddSecretArgs = record {
   category : opt SecretCategory;
 };
 type Condition = variant {
-  TimeBasedCondition : TimeBasedCondition;
   XOutOfYCondition : XOutOfYCondition;
+  FutureTimeCondition : FixedTimeCondition;
+  LastLoginCondition : LastLoginTimeCondition;
 };
 type ConfirmXOutOfYConditionArgs = record { status : bool; policy_id : text };
 type Contact = record {
@@ -29,6 +30,16 @@ type Contact = record {
   user_type : opt UserType;
   name : opt text;
   email : opt text;
+};
+type FixedTimeCondition = record {
+  id : text;
+  condition_status : bool;
+  time : nat64;
+};
+type LastLoginTimeCondition = record {
+  id : text;
+  condition_status : bool;
+  number_of_days_since_last_login : nat64;
 };
 type LogicalOperator = variant { Or; And };
 type Policy = record {
@@ -127,11 +138,6 @@ type SmartVaultErr = variant {
   SecretAlreadyExists : text;
   InvalidPolicyCondition;
   KeyGenerationNotAllowed;
-};
-type TimeBasedCondition = record {
-  id : text;
-  condition_status : bool;
-  number_of_days_since_last_login : nat64;
 };
 type UpdatePolicyArgs = record {
   id : text;

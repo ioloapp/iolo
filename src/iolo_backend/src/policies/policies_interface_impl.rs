@@ -412,7 +412,7 @@ mod tests {
     use crate::{
         common::error::SmartVaultErr,
         policies::{
-            conditions::{Condition, TimeBasedCondition, Validator, XOutOfYCondition},
+            conditions::{Condition, LastLoginTimeCondition, Validator, XOutOfYCondition},
             policies_interface_impl::{
                 add_policy_impl, get_policy_as_beneficiary_impl, get_policy_as_owner_impl,
                 get_policy_list_as_beneficiary_impl, get_policy_list_as_owner_impl,
@@ -474,11 +474,12 @@ mod tests {
             .unwrap();
 
         // create a policy with a time based condition
-        let time_based_condition: Condition = Condition::TimeBasedCondition(TimeBasedCondition {
-            id: "My Time Based Condition".to_string(),
-            number_of_days_since_last_login: 0,
-            condition_status: false,
-        });
+        let time_based_condition: Condition =
+            Condition::LastLoginCondition(LastLoginTimeCondition {
+                id: "My Time Based Condition".to_string(),
+                number_of_days_since_last_login: 0,
+                condition_status: false,
+            });
 
         let x_out_of_y_condition: Condition = Condition::XOutOfYCondition(XOutOfYCondition {
             id: "My X out of Y Condition".to_string(),
@@ -608,11 +609,12 @@ mod tests {
             .contains(&beneficiary.to_string()));
 
         // UPDATE POLICY CONDITIONS
-        let time_based_condition: Condition = Condition::TimeBasedCondition(TimeBasedCondition {
-            id: "My Time Based Condition number two".to_string(),
-            number_of_days_since_last_login: 100,
-            condition_status: false,
-        });
+        let time_based_condition: Condition =
+            Condition::LastLoginCondition(LastLoginTimeCondition {
+                id: "My Time Based Condition number two".to_string(),
+                number_of_days_since_last_login: 100,
+                condition_status: false,
+            });
 
         let x_out_of_y_condition: Condition = Condition::XOutOfYCondition(XOutOfYCondition {
             id: "My X out of Y Condition".to_string(),
