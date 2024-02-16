@@ -23,7 +23,7 @@ import {
     User,
     UserType,
     XOutOfYCondition,
-    AddContactArgs, Result_1, UpdatePolicyArgs, Result_4, ConfirmXOutOfYConditionArgs
+    AddContactArgs, Result_1, UpdatePolicyArgs, Result_4, ConfirmXOutOfYConditionArgs, Result_11
 } from "../../../declarations/iolo_backend/iolo_backend.did";
 import {AuthClient} from "@dfinity/auth-client";
 import {createActor} from "../../../declarations/iolo_backend";
@@ -50,7 +50,7 @@ import {
     UiSecretListEntry,
     UiTimeBasedCondition,
     UiUser,
-    UiUserType,
+    UiUserType, UiValidator,
     UiXOutOfYCondition
 } from "./IoloTypesForUi";
 
@@ -168,11 +168,11 @@ class IoloService {
     }
 
     public async getSecretList(): Promise<UiSecretListEntry[]> {
-        const result: Result_10 = await (await this.getActor()).get_secret_list();
+        const result: Result_11 = await (await this.getActor()).get_secret_list();
         if (result['Ok']) {
             return result['Ok'].map((secretListEntry: SecretListEntry): UiSecretListEntry => {
                 return {
-                    id: secretListEntry.id.toString(),
+                    id: secretListEntry.id,
                     name: secretListEntry.name.length > 0 ? secretListEntry.name[0] : undefined,
                     category: secretListEntry.category.length > 0 ? this.mapSecretCategoryToUiSecretCategory(secretListEntry.category[0]) : undefined,
                 };
@@ -200,7 +200,7 @@ class IoloService {
 
     public async getSecretAsBeneficiary(secretId: string, policyId: string): Promise<UiSecret> {
         console.debug('start getting secret for beneficiary...')
-        const result1: Result_2 = await (await this.getActor()).get_secret_as_beneficiary(secretId.toString(), policyId);
+        const result1: Result_2 = await (await this.getActor()).get_secret_as_beneficiary(secretId, policyId);
         const result2: Result_7 = await (await this.getActor()).get_encrypted_symmetric_key_as_beneficiary(secretId, policyId);
 
         // Wait for both promises to complete
@@ -295,31 +295,34 @@ class IoloService {
         } else throw mapError(result['Err']);
     }
 
-    public async getPolicyList(): Promise<UiPolicyListEntry[]> {
-        const resultAsTestator: Result_9 = await (await this.getActor()).get_policy_list_as_owner();
-        let policiesAsTestator: UiPolicyListEntry[] = [];
-        if (resultAsTestator['Ok']) {
-            policiesAsTestator = resultAsTestator['Ok'].map((item: PolicyListEntry): UiPolicyListEntry => {
+    public async getPolicyListOfUser(): Promise<UiPolicyListEntry[]> {
+        const resultAsOwner: Result_10 = await (await this.getActor()).get_policy_list_as_owner();
+        let policiesAsOwner: UiPolicyListEntry[] = [];
+        if (resultAsOwner['Ok']) {
+            policiesAsOwner = resultAsOwner['Ok'].map((item: PolicyListEntry): UiPolicyListEntry => {
                 return {
                     id: item.id,
                     name: item.name?.length > 0 ? item.name[0] : undefined,
-                    owner: {id: item.owner?.toString()},
+                    owner: {id: item.owner},
                     role: UiPolicyListEntryRole.Owner,
                     conditionStatus: item.condition_status,
                 }
             });
         } else {
-            throw mapError(resultAsTestator['Err']);
+            throw mapError(resultAsOwner['Err']);
         }
+        return policiesAsOwner;
+    }
 
-        const resultAsBeneficiary: Result_9 = await (await this.getActor()).get_policy_list_as_beneficiary();
+    public async getPolicyListWhereUserIsBeneficiary(): Promise<UiPolicyListEntry[]> {
+        const resultAsBeneficiary: Result_10 = await (await this.getActor()).get_policy_list_as_beneficiary();
         let policiesAsBeneficiary: UiPolicyListEntry[] = [];
         if (resultAsBeneficiary['Ok'] && resultAsBeneficiary['Ok'].length > 0) {
             policiesAsBeneficiary = resultAsBeneficiary['Ok'].map((item: PolicyListEntry): UiPolicyListEntry => {
                 return {
                     id: item.id,
                     name: item.name?.length > 0 ? item.name[0] : undefined,
-                    owner: {id: item.owner?.toString()},
+                    owner: {id: item.owner},
                     role: UiPolicyListEntryRole.Beneficiary,
                     conditionStatus: item.condition_status,
                 }
@@ -327,7 +330,26 @@ class IoloService {
         } else if (resultAsBeneficiary['Err']) {
             throw mapError(resultAsBeneficiary['Err']);
         }
-        return policiesAsTestator.concat(policiesAsBeneficiary);
+        return policiesAsBeneficiary;
+    }
+
+    public async getPolicyListWhereUserIsValidator(): Promise<UiPolicyListEntry[]> {
+        const resultAsValidator: Result_10 = await (await this.getActor()).get_policy_list_as_validator();
+        let policiesAsValidator: UiPolicyListEntry[] = [];
+        if (resultAsValidator['Ok'] && resultAsValidator['Ok'].length > 0) {
+            policiesAsValidator = resultAsValidator['Ok'].map((item: PolicyListEntry): UiPolicyListEntry => {
+                return {
+                    id: item.id,
+                    name: item.name?.length > 0 ? item.name[0] : undefined,
+                    owner: {id: item.owner},
+                    role: UiPolicyListEntryRole.Validator,
+                    conditionStatus: item.condition_status,
+                }
+            });
+        } else if (resultAsValidator['Err']) {
+            throw mapError(resultAsValidator['Err']);
+        }
+        return policiesAsValidator;
     }
 
     public async getPolicyAsOwner(id: string): Promise<UiPolicyWithSecretListEntries> {
@@ -347,6 +369,14 @@ class IoloService {
         throw mapError(result['Err']);
     }
 
+    public async getPolicyAsValidator(id: string): Promise<UiPolicyWithSecretListEntries> {
+        const result: Result_9 = await (await this.getActor()).get_policy_as_validator(id);
+        if (result['Ok']) {
+            return this.mapPolicyWithSecretListEntriesToUiPolicyWithSecretListEntries(result['Ok'], UiPolicyListEntryRole.Beneficiary);
+        }
+        throw mapError(result['Err']);
+    }
+
     public async deletePolicy(id: string): Promise<void> {
         const result: Result_3 = await (await this.getActor()).remove_policy(id);
         if (result['Ok'] === null) {
@@ -356,11 +386,7 @@ class IoloService {
     }
 
     public async confirmXOutOfYCondition(policyId: string, status: boolean): Promise<void> {
-        let confirmXOutOfYConditionArgs: ConfirmXOutOfYConditionArgs = {
-            policy_id: policyId,
-            status: status
-        }
-        const result: Result_3 = await (await this.getActor()).confirm_x_out_of_y_condition(confirmXOutOfYConditionArgs);
+        const result: Result_3 = await (await this.getActor()).confirm_x_out_of_y_condition({status, policy_id: policyId});
         if (result['Ok'] === null) {
             return;
         }
@@ -482,7 +508,7 @@ class IoloService {
     private async mapSecretToUiSecret(secret: Secret, username: string, password: string, notes: string): Promise<UiSecret> {
 
         let uiSecret: UiSecret = {
-            id: secret.id.toString(),
+            id: secret.id,
             name: secret.name.length > 0 ? secret.name[0] : undefined,
             url: secret.url.length > 0 ? secret.url[0] : undefined,
             username: username,
@@ -675,7 +701,7 @@ class IoloService {
             id: uiPolicy.id,
             beneficiaries: beneficiaries,
             name: [uiPolicy.name],
-            secrets: uiPolicy.secrets.map((item) => item.toString()),
+            secrets: uiPolicy.secrets,
             key_box: keyBox,
             conditions_logical_operator: uiPolicy.conditionsLogicalOperator == LogicalOperator.And ? [{'And': null}] : [{'Or': null}],
             conditions: uiPolicy.conditions.map(uiCondition => this.mapUiConditionToCondition(uiCondition)),
@@ -703,7 +729,7 @@ class IoloService {
                 quorum: xCondition.quorum ? BigInt(xCondition.quorum) : BigInt(xCondition.validators.length),
                 validators: xCondition.validators.map(v => {
                     return {
-                        id: v.user.id,
+                        principal_id: v.user.id,
                         status: v.status
                     }
                 })
@@ -718,10 +744,10 @@ class IoloService {
         return {
             id: policy.id,
             name: policy.name.length > 0 ? policy.name[0] : undefined,
-            owner: {id: policy.owner.toString()},
+            owner: {id: policy.owner},
             secrets: policy.secrets,
             beneficiaries: policy.beneficiaries.map((item) => {
-                return {id: item.toString()}
+                return {id: item}
             }),
             conditionsLogicalOperator: policy.conditions_logical_operator.hasOwnProperty('And') ? LogicalOperator.And : LogicalOperator.Or,
             conditionsStatus: policy.conditions_status,
@@ -754,7 +780,7 @@ class IoloService {
                     return {
                         status: v.status,
                         user: {
-                            id: v.id.toString()
+                            id: v.principal_id
                         }
                     }
                 })
@@ -776,7 +802,7 @@ class IoloService {
                 }
             }
             return {
-                id: item.id.toString(),
+                id: item.id,
                 name: item.name.length > 0 ? item.name[0] : undefined,
                 category: category,
             }
@@ -784,10 +810,10 @@ class IoloService {
         return {
             id: policy.id,
             name: policy.name.length > 0 ? policy.name[0] : undefined,
-            owner: {id: policy.owner.toString()},
+            owner: {id: policy.owner},
             secrets: secrets,
             beneficiaries: policy.beneficiaries.map((item) => {
-                return {id: item.toString()}
+                return {id: item}
             }),
             conditionsLogicalOperator: policy.conditions_logical_operator.hasOwnProperty('And') ? LogicalOperator.And : LogicalOperator.Or,
             conditionsStatus: policy.conditions_status,

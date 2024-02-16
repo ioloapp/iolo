@@ -2,6 +2,11 @@
   "policies": {
     "title": "Policies",
     "beneficiary": "Beneficiary",
+    "list": {
+      "owner": "Your policies",
+      "beneficiary": "Beneficiary policies",
+      "validator": "Validator policies"
+    },
     "dialog": {
       "add": {
         "title": "Add policy",

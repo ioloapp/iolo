@@ -33,11 +33,12 @@ export const PolicyDialogContent: FC<PolicyDialogContentProps> = ({readonly, vie
     const contacts = useSelector(selectContacts);
     const [selectedSecrets, setSelectedSecrets] = React.useState<SelectedSecret[]>([]);
     const [selectedContacts, setSelectedContacts] = React.useState<SelectedBeneficiary[]>([]);
+    console.log('dialogItem', dialogItem)
 
     useEffect(() => {
         if (readonly){
             setSelectedSecrets(dialogItem.secrets);
-            const beneficiaries = dialogItem.beneficiaries.map(b => {
+            const beneficiaries = dialogItem.beneficiaries?.map(b => {
                 if(contacts){
                     const c = contacts.find(c => c.id === b.id);
                     return c ? c: b;
@@ -47,7 +48,7 @@ export const PolicyDialogContent: FC<PolicyDialogContentProps> = ({readonly, vie
             setSelectedContacts(beneficiaries);
         } else {
             const contactsSelection = contacts.map(h => {
-                const beneficiary = dialogItem.beneficiaries.find(dh => dh.id === h.id);
+                const beneficiary = dialogItem.beneficiaries?.find(dh => dh.id === h.id);
                 return beneficiary ? {...h, selected: true} : {...h, selected: false};
             })
             setSelectedContacts(contactsSelection)

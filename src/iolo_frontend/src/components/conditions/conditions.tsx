@@ -24,6 +24,7 @@ export interface ConditionsProps {
 export const Conditions: FC<ConditionsProps> = ({conditions, readonly}) => {
     const {t} = useTranslation();
     const dispatch = useAppDispatch();
+    console.log('conditions', conditions)
 
     const addCondition = () => {
         dispatch(policiesActions.addConditionToDialogItem({
@@ -46,7 +47,7 @@ export const Conditions: FC<ConditionsProps> = ({conditions, readonly}) => {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {conditions.map((condition) => (
+                        {conditions?.map((condition) => (
                             <Condition key={condition.id} condition={condition} readonly={readonly}/>
                         ))}
                     </TableBody>

@@ -9,7 +9,6 @@ import {
     UiPolicyListEntryRole,
     UiPolicyWithSecretListEntries
 } from "../../services/IoloTypesForUi";
-import {mapError} from "../../utils/errorMapper";
 
 const ioloService = new IoloService();
 
@@ -25,12 +24,16 @@ export const addPolicyThunk = createAsyncThunk<UiPolicy, UiPolicy, { state: Root
     }
 );
 
-export const viewPolicyThunk = createAsyncThunk<UiPolicyWithSecretListEntries, UiPolicy, { state: RootState }>(
+export const viewPolicyThunk = createAsyncThunk<UiPolicyWithSecretListEntries | unknown, UiPolicy, {
+    state: RootState
+}>(
     'policies/view',
-    async (policy, {rejectWithValue}) => {
+    async (policy, {rejectWithValue, getState}) => {
         try {
             if (policy.role === UiPolicyListEntryRole.Owner) {
                 return await ioloService.getPolicyAsOwner(policy.id);
+            } else if (policy.role === UiPolicyListEntryRole.Validator) {
+                return await ioloService.getPolicyAsValidator(policy.id);
             } else {
                 return await ioloService.getPolicyAsBeneficiary(policy.id);
             }
@@ -42,7 +45,7 @@ export const viewPolicyThunk = createAsyncThunk<UiPolicyWithSecretListEntries, U
 
 export const editPolicyThunk = createAsyncThunk<UiPolicyWithSecretListEntries, UiPolicy, { state: RootState }>(
     'policies/edit',
-     async (policy, {rejectWithValue, getState}) => {
+    async (policy, {rejectWithValue}) => {
         try {
             if (policy.role === UiPolicyListEntryRole.Owner) {
                 return await ioloService.getPolicyAsOwner(policy.id);
@@ -57,7 +60,8 @@ export const editPolicyThunk = createAsyncThunk<UiPolicyWithSecretListEntries, U
 );
 
 export const updatePolicyThunk = createAsyncThunk<UiPolicy, UiPolicy, {
-    state: RootState }
+    state: RootState
+}
 >('policies/update',
     async (policy, {rejectWithValue}) => {
         try {
@@ -84,10 +88,34 @@ export const deletePolicyThunk = createAsyncThunk<string, string, {
 
 export const loadPoliciesThunk = createAsyncThunk<UiPolicyListEntry[], void, {
     state: RootState
-}>('policies/load',
+}>('policies/load-list',
     async (_, {rejectWithValue}) => {
         try {
-            return await ioloService.getPolicyList();
+            return await ioloService.getPolicyListOfUser();
+        } catch (e) {
+            return rejectWithValue(e)
+        }
+    }
+);
+
+export const loadPoliciesWhereUserIsValidatorThunk = createAsyncThunk<UiPolicyListEntry[], void, {
+    state: RootState
+}>('policies/load-validator-list',
+    async (_, {rejectWithValue}) => {
+        try {
+            return await ioloService.getPolicyListWhereUserIsValidator();
+        } catch (e) {
+            return rejectWithValue(e)
+        }
+    }
+);
+
+export const loadPoliciesWhereUserIsBeneficiaryThunk = createAsyncThunk<UiPolicyListEntry[], void, {
+    state: RootState
+}>('policies/load-beneficiary-list',
+    async (_, {rejectWithValue}) => {
+        try {
+            return await ioloService.getPolicyListWhereUserIsBeneficiary();
         } catch (e) {
             return rejectWithValue(e)
         }
@@ -175,6 +203,30 @@ export const policiesSlice = createSlice({
                 state.loadingState = 'failed';
                 state.error = action.error.message;
             })
+            .addCase(loadPoliciesWhereUserIsBeneficiaryThunk.pending, (state) => {
+                state.loadingState = 'pending';
+                state.error = undefined;
+            })
+            .addCase(loadPoliciesWhereUserIsBeneficiaryThunk.fulfilled, (state, action) => {
+                state.loadingState = 'succeeded';
+                state.policyBeneficiaryList = action.payload
+            })
+            .addCase(loadPoliciesWhereUserIsBeneficiaryThunk.rejected, (state, action) => {
+                state.loadingState = 'failed';
+                state.error = action.error.message;
+            })
+            .addCase(loadPoliciesWhereUserIsValidatorThunk.pending, (state) => {
+                state.loadingState = 'pending';
+                state.error = undefined;
+            })
+            .addCase(loadPoliciesWhereUserIsValidatorThunk.fulfilled, (state, action) => {
+                state.loadingState = 'succeeded';
+                state.policyValidatorList = action.payload
+            })
+            .addCase(loadPoliciesWhereUserIsValidatorThunk.rejected, (state, action) => {
+                state.loadingState = 'failed';
+                state.error = action.error.message;
+            })
             .addCase(addPolicyThunk.pending, (state) => {
                 state.dialogItemState = 'pending';
                 state.error = undefined;
@@ -250,7 +302,7 @@ export const policiesSlice = createSlice({
 export const replaceConditions = (conditions: UiCondition[], condition: UiCondition): UiCondition[] => {
     const newConditions = [];
     conditions.forEach(c => {
-        if(c.id === condition.id){
+        if (c.id === condition.id) {
             newConditions.push(condition);
         } else {
             newConditions.push(c);

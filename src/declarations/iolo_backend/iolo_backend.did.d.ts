@@ -49,6 +49,11 @@ export interface Policy {
   'conditions' : Array<Condition>,
   'date_modified' : bigint,
 }
+export interface PolicyForValidator {
+  'id' : string,
+  'xooy_conditions' : Array<Condition>,
+  'owner' : string,
+}
 export interface PolicyKeyDerviationArgs {
   'encryption_public_key' : Uint8Array | number[],
   'policy_id' : string,
@@ -76,7 +81,9 @@ export type Result = { 'Ok' : Contact } |
   { 'Err' : SmartVaultErr };
 export type Result_1 = { 'Ok' : Policy } |
   { 'Err' : SmartVaultErr };
-export type Result_10 = { 'Ok' : Array<SecretListEntry> } |
+export type Result_10 = { 'Ok' : Array<PolicyListEntry> } |
+  { 'Err' : SmartVaultErr };
+export type Result_11 = { 'Ok' : Array<SecretListEntry> } |
   { 'Err' : SmartVaultErr };
 export type Result_2 = { 'Ok' : Secret } |
   { 'Err' : SmartVaultErr };
@@ -92,7 +99,7 @@ export type Result_7 = { 'Ok' : Uint8Array | number[] } |
   { 'Err' : SmartVaultErr };
 export type Result_8 = { 'Ok' : PolicyWithSecretListEntries } |
   { 'Err' : SmartVaultErr };
-export type Result_9 = { 'Ok' : Array<PolicyListEntry> } |
+export type Result_9 = { 'Ok' : PolicyForValidator } |
   { 'Err' : SmartVaultErr };
 export interface Secret {
   'id' : string,
@@ -173,7 +180,7 @@ export interface User {
 }
 export type UserType = { 'Company' : null } |
   { 'Person' : null };
-export interface Validator { 'id' : string, 'status' : boolean }
+export interface Validator { 'status' : boolean, 'principal_id' : string }
 export interface XOutOfYCondition {
   'id' : string,
   'question' : string,
@@ -212,12 +219,13 @@ export interface _SERVICE {
   >,
   'get_policy_as_beneficiary' : ActorMethod<[string], Result_8>,
   'get_policy_as_owner' : ActorMethod<[string], Result_8>,
-  'get_policy_list_as_beneficiary' : ActorMethod<[], Result_9>,
-  'get_policy_list_as_owner' : ActorMethod<[], Result_9>,
-  'get_policy_list_as_validator' : ActorMethod<[], Result_9>,
+  'get_policy_as_validator' : ActorMethod<[string], Result_9>,
+  'get_policy_list_as_beneficiary' : ActorMethod<[], Result_10>,
+  'get_policy_list_as_owner' : ActorMethod<[], Result_10>,
+  'get_policy_list_as_validator' : ActorMethod<[], Result_10>,
   'get_secret' : ActorMethod<[string], Result_2>,
   'get_secret_as_beneficiary' : ActorMethod<[string, string], Result_2>,
-  'get_secret_list' : ActorMethod<[], Result_10>,
+  'get_secret_list' : ActorMethod<[], Result_11>,
   'ibe_encryption_key' : ActorMethod<[], string>,
   'remove_contact' : ActorMethod<[string], Result_3>,
   'remove_policy' : ActorMethod<[string], Result_3>,

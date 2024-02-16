@@ -43,7 +43,10 @@ export const idlFactory = ({ IDL }) => {
     'condition_status' : IDL.Bool,
     'number_of_days_since_last_login' : IDL.Nat64,
   });
-  const Validator = IDL.Record({ 'id' : IDL.Text, 'status' : IDL.Bool });
+  const Validator = IDL.Record({
+    'status' : IDL.Bool,
+    'principal_id' : IDL.Text,
+  });
   const XOutOfYCondition = IDL.Record({
     'id' : IDL.Text,
     'question' : IDL.Text,
@@ -155,17 +158,26 @@ export const idlFactory = ({ IDL }) => {
     'Ok' : PolicyWithSecretListEntries,
     'Err' : SmartVaultErr,
   });
+  const PolicyForValidator = IDL.Record({
+    'id' : IDL.Text,
+    'xooy_conditions' : IDL.Vec(Condition),
+    'owner' : IDL.Text,
+  });
+  const Result_9 = IDL.Variant({
+    'Ok' : PolicyForValidator,
+    'Err' : SmartVaultErr,
+  });
   const PolicyListEntry = IDL.Record({
     'id' : IDL.Text,
     'owner' : IDL.Text,
     'condition_status' : IDL.Bool,
     'name' : IDL.Opt(IDL.Text),
   });
-  const Result_9 = IDL.Variant({
+  const Result_10 = IDL.Variant({
     'Ok' : IDL.Vec(PolicyListEntry),
     'Err' : SmartVaultErr,
   });
-  const Result_10 = IDL.Variant({
+  const Result_11 = IDL.Variant({
     'Ok' : IDL.Vec(SecretListEntry),
     'Err' : SmartVaultErr,
   });
@@ -223,16 +235,17 @@ export const idlFactory = ({ IDL }) => {
       ),
     'get_policy_as_beneficiary' : IDL.Func([IDL.Text], [Result_8], ['query']),
     'get_policy_as_owner' : IDL.Func([IDL.Text], [Result_8], ['query']),
-    'get_policy_list_as_beneficiary' : IDL.Func([], [Result_9], ['query']),
-    'get_policy_list_as_owner' : IDL.Func([], [Result_9], ['query']),
-    'get_policy_list_as_validator' : IDL.Func([], [Result_9], ['query']),
+    'get_policy_as_validator' : IDL.Func([IDL.Text], [Result_9], ['query']),
+    'get_policy_list_as_beneficiary' : IDL.Func([], [Result_10], ['query']),
+    'get_policy_list_as_owner' : IDL.Func([], [Result_10], ['query']),
+    'get_policy_list_as_validator' : IDL.Func([], [Result_10], ['query']),
     'get_secret' : IDL.Func([IDL.Text], [Result_2], ['query']),
     'get_secret_as_beneficiary' : IDL.Func(
         [IDL.Text, IDL.Text],
         [Result_2],
         ['query'],
       ),
-    'get_secret_list' : IDL.Func([], [Result_10], ['query']),
+    'get_secret_list' : IDL.Func([], [Result_11], ['query']),
     'ibe_encryption_key' : IDL.Func([], [IDL.Text], []),
     'remove_contact' : IDL.Func([IDL.Text], [Result_3], []),
     'remove_policy' : IDL.Func([IDL.Text], [Result_3], []),

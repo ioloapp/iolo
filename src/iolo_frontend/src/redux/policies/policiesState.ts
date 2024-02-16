@@ -2,6 +2,8 @@ import {UiPolicyListEntry, UiPolicyWithSecretListEntries} from "../../services/I
 
 export interface PoliciesState {
     policyList: UiPolicyListEntry[],
+    policyBeneficiaryList: UiPolicyListEntry[],
+    policyValidatorList: UiPolicyListEntry[],
     dialogItem: UiPolicyWithSecretListEntries
     dialogItemState: string,
     loadingState: string,
@@ -15,6 +17,8 @@ export interface PoliciesState {
 // Define the initial state using that type
 export const initialState: PoliciesState = {
     policyList: [],
+    policyBeneficiaryList: [],
+    policyValidatorList: [],
     dialogItem: {
         name: '',
         secrets: [],
