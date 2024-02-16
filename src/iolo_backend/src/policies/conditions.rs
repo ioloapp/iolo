@@ -50,9 +50,9 @@ pub type ConditionID = String;
 /// The condition enum contains the two types of conditions: TimeBasedCondition and XOutOfYCondition
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub enum Condition {
-    LastLoginCondition(LastLoginTimeCondition),
-    XOutOfYCondition(XOutOfYCondition),
-    FutureTimeCondition(FixedTimeCondition),
+    LastLogin(LastLoginTimeCondition),
+    XOutOfY(XOutOfYCondition),
+    FutureTime(FixedTimeCondition),
 }
 
 trait ConditionStatus {
@@ -91,7 +91,7 @@ impl ConditionStatus for FixedTimeCondition {
 impl Condition {
     pub fn evaluate(&self, user: Option<&User>) -> bool {
         match self {
-            Condition::LastLoginCondition(condition) => {
+            Condition::LastLogin(condition) => {
                 let current_time: u64 = time::get_current_time();
 
                 // Check last login date
@@ -101,7 +101,7 @@ impl Condition {
                 user.unwrap().date_last_login.unwrap()
                     < current_time.saturating_sub(max_last_login_time)
             }
-            Condition::XOutOfYCondition(condition) => {
+            Condition::XOutOfY(condition) => {
                 let mut i = 0;
                 for confirmer in &condition.validators {
                     if confirmer.status {
@@ -110,7 +110,7 @@ impl Condition {
                 }
                 i >= condition.quorum
             }
-            Condition::FutureTimeCondition(condition) => {
+            Condition::FutureTime(condition) => {
                 let current_time: u64 = time::get_current_time();
                 current_time >= condition.time
             }
@@ -119,17 +119,17 @@ impl Condition {
 
     pub fn set_condition_status(&mut self, status: bool) {
         match self {
-            Condition::LastLoginCondition(c) => c.set_condition_status(status),
-            Condition::XOutOfYCondition(c) => c.set_condition_status(status),
-            Condition::FutureTimeCondition(c) => c.set_condition_status(status),
+            Condition::LastLogin(c) => c.set_condition_status(status),
+            Condition::XOutOfY(c) => c.set_condition_status(status),
+            Condition::FutureTime(c) => c.set_condition_status(status),
         }
     }
 
     pub fn get_condition_status(&self) -> bool {
         match self {
-            Condition::LastLoginCondition(c) => c.get_condition_status(),
-            Condition::XOutOfYCondition(c) => c.get_condition_status(),
-            Condition::FutureTimeCondition(c) => c.get_condition_status(),
+            Condition::LastLogin(c) => c.get_condition_status(),
+            Condition::XOutOfY(c) => c.get_condition_status(),
+            Condition::FutureTime(c) => c.get_condition_status(),
         }
     }
 }

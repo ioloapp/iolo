@@ -241,7 +241,7 @@ impl Policy {
     // Function to find a mutable reference to a validator if the given principal is one of them
     pub fn find_validator_mut(&mut self, principal: &PrincipalID) -> Option<&mut Validator> {
         for condition in &mut self.conditions {
-            if let Condition::XOutOfYCondition(x_out_of_y) = condition {
+            if let Condition::XOutOfY(x_out_of_y) = condition {
                 for validator in &mut x_out_of_y.validators {
                     if &validator.principal_id == principal {
                         // Return a mutable reference to the confirmer

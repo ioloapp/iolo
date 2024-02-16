@@ -20,9 +20,9 @@ type AddSecretArgs = record {
   category : opt SecretCategory;
 };
 type Condition = variant {
-  XOutOfYCondition : XOutOfYCondition;
-  FutureTimeCondition : FixedTimeCondition;
-  LastLoginCondition : LastLoginTimeCondition;
+  LastLogin : LastLoginTimeCondition;
+  XOutOfY : XOutOfYCondition;
+  FutureTime : FixedTimeCondition;
 };
 type ConfirmXOutOfYConditionArgs = record { status : bool; policy_id : text };
 type Contact = record {
