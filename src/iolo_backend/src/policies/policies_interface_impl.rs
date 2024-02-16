@@ -10,7 +10,9 @@ use crate::{
     users::user::PrincipalID,
 };
 
+use super::conditions;
 use super::conditions_manager::evaluate_overall_conditions_status;
+use super::policy::PolicyForValidator;
 use super::{
     conditions::Condition,
     policy::{AddPolicyArgs, Policy, PolicyID, PolicyListEntry, PolicyWithSecretListEntries},
@@ -135,7 +137,7 @@ pub fn get_policy_as_beneficiary_impl(
 pub fn get_policy_as_validator_impl(
     policy_id: PolicyID,
     validator: PrincipalID,
-) -> Result<PolicyListEntry, SmartVaultErr> {
+) -> Result<PolicyForValidator, SmartVaultErr> {
     // get policy from policy store
     let policy: Policy = get_policy_from_policy_store(&policy_id)?;
 
@@ -154,7 +156,27 @@ pub fn get_policy_as_validator_impl(
         )));
     };
 
-    Ok(PolicyListEntry::from(policy))
+    // we return only the xooy conditions and filter out some fields
+    let filtered_xooy_conditions: Vec<Condition> = policy
+        .conditions()
+        .into_iter()
+        .filter_map(|c| match c {
+            Condition::XOutOfYCondition(xooy) => {
+                let mut xooy_clone = xooy.clone();
+                xooy_clone.validators = vec![]; // Reset the validators to an empty vector
+                Some(Condition::XOutOfYCondition(xooy_clone)) // Return the modified condition
+            }
+            _ => None,
+        })
+        .collect();
+
+    let pfv: PolicyForValidator = PolicyForValidator {
+        id: policy.id().to_string(),
+        owner: policy.owner().to_string(),
+        xooy_conditions: filtered_xooy_conditions,
+    };
+
+    Ok(pfv)
 }
 
 pub fn get_policy_list_as_beneficiary_impl(

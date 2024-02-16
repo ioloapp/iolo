@@ -7,8 +7,10 @@ use utils::login_date_condition::init_login_date_conditions_checks;
 
 // for the candid file creation
 use crate::common::error::SmartVaultErr;
+use crate::policies::conditions::ConfirmXOutOfYConditionArgs;
 use crate::policies::policy::AddPolicyArgs;
 use crate::policies::policy::Policy;
+use crate::policies::policy::PolicyForValidator;
 use crate::policies::policy::PolicyID;
 use crate::policies::policy::PolicyListEntry;
 use crate::policies::policy::PolicyWithSecretListEntries;
@@ -22,7 +24,6 @@ use crate::users::contact::Contact;
 use crate::users::user::AddOrUpdateUserArgs;
 use crate::users::user::PrincipalID;
 use crate::users::user::User;
-use crate::policies::conditions::ConfirmXOutOfYConditionArgs;
 
 /// Contains common types, modules and methods
 pub mod common;

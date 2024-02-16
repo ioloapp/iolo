@@ -89,6 +89,13 @@ pub struct PolicyListEntry {
     pub condition_status: bool,
 }
 
+#[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
+pub struct PolicyForValidator {
+    pub id: PolicyID,
+    pub owner: PrincipalID,
+    pub xooy_conditions: Vec<Condition>,
+}
+
 impl From<Policy> for PolicyListEntry {
     fn from(t: Policy) -> Self {
         PolicyListEntry {

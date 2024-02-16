@@ -10,7 +10,9 @@ use crate::policies::policies_interface_impl::{
     get_policy_list_as_owner_impl, get_policy_list_as_validator_impl, remove_policy_impl,
     update_policy_impl,
 };
-use crate::policies::policy::{AddPolicyArgs, Policy, PolicyID, PolicyListEntry};
+use crate::policies::policy::{
+    AddPolicyArgs, Policy, PolicyForValidator, PolicyID, PolicyListEntry,
+};
 use crate::policies::policy::{PolicyWithSecretListEntries, UpdatePolicyArgs};
 use crate::policies::policy_registries::PolicyRegistries;
 use crate::policies::policy_store::PolicyStore;
@@ -143,7 +145,8 @@ pub fn get_policy_as_beneficiary(
 }
 
 #[ic_cdk_macros::query]
-pub fn get_policy_as_validator(policy_id: PolicyID) -> Result<PolicyListEntry, SmartVaultErr> {
+// TODO: Nein da brauche ich id, owner, conditions. Aber bei den conditions wiederum nur die xoutofy, dafür mit details aber ohne validatoren
+pub fn get_policy_as_validator(policy_id: PolicyID) -> Result<PolicyForValidator, SmartVaultErr> {
     get_policy_as_validator_impl(policy_id, get_caller_id())
 }
 
