@@ -19,7 +19,7 @@ pub struct LastLoginTimeCondition {
 
 /// Defines a moment in time in the future upon which a condition is valid
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
-pub struct FixedTimeCondition {
+pub struct FixedDateTimeCondition {
     pub id: ConditionID,
     pub time: u64,
     pub condition_status: bool,
@@ -52,7 +52,7 @@ pub type ConditionID = String;
 pub enum Condition {
     LastLogin(LastLoginTimeCondition),
     XOutOfY(XOutOfYCondition),
-    FutureTime(FixedTimeCondition),
+    FutureTime(FixedDateTimeCondition),
 }
 
 trait ConditionStatus {
@@ -79,7 +79,7 @@ impl ConditionStatus for XOutOfYCondition {
     }
 }
 
-impl ConditionStatus for FixedTimeCondition {
+impl ConditionStatus for FixedDateTimeCondition {
     fn set_condition_status(&mut self, status: bool) {
         self.condition_status = status;
     }

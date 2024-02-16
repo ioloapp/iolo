@@ -22,7 +22,7 @@ type AddSecretArgs = record {
 type Condition = variant {
   LastLogin : LastLoginTimeCondition;
   XOutOfY : XOutOfYCondition;
-  FutureTime : FixedTimeCondition;
+  FutureTime : FixedDateTimeCondition;
 };
 type ConfirmXOutOfYConditionArgs = record { status : bool; policy_id : text };
 type Contact = record {
@@ -31,7 +31,7 @@ type Contact = record {
   name : opt text;
   email : opt text;
 };
-type FixedTimeCondition = record {
+type FixedDateTimeCondition = record {
   id : text;
   condition_status : bool;
   time : nat64;
