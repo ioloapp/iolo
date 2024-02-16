@@ -38,7 +38,7 @@ export const idlFactory = ({ IDL }) => {
   const Result = IDL.Variant({ 'Ok' : Contact, 'Err' : SmartVaultErr });
   const AddPolicyArgs = IDL.Record({ 'name' : IDL.Opt(IDL.Text) });
   const LogicalOperator = IDL.Variant({ 'Or' : IDL.Null, 'And' : IDL.Null });
-  const TimeBasedCondition = IDL.Record({
+  const LastLoginTimeCondition = IDL.Record({
     'id' : IDL.Text,
     'condition_status' : IDL.Bool,
     'number_of_days_since_last_login' : IDL.Nat64,
@@ -54,9 +54,15 @@ export const idlFactory = ({ IDL }) => {
     'quorum' : IDL.Nat64,
     'validators' : IDL.Vec(Validator),
   });
+  const FixedDateTimeCondition = IDL.Record({
+    'id' : IDL.Text,
+    'condition_status' : IDL.Bool,
+    'time' : IDL.Nat64,
+  });
   const Condition = IDL.Variant({
-    'TimeBasedCondition' : TimeBasedCondition,
-    'XOutOfYCondition' : XOutOfYCondition,
+    'LastLogin' : LastLoginTimeCondition,
+    'XOutOfY' : XOutOfYCondition,
+    'FutureTime' : FixedDateTimeCondition,
   });
   const Policy = IDL.Record({
     'id' : IDL.Text,

@@ -84,10 +84,10 @@ export const Condition: FC<ConditionProps> = ({condition, readonly}) => {
                     }
                 </TableCell>
             </TableRow>
-            {condition.type === ConditionType.TimeBasedCondition &&
+            {condition.type === ConditionType.LastLogin &&
                 <ConditionTimebased condition={condition as UiTimeBasedCondition} readonly={readonly} open={open}/>
             }
-            {condition.type === ConditionType.XOutOfYCondition &&
+            {condition.type === ConditionType.XOutOfY &&
                 <ConditionXOutOfY condition={condition as UiXOutOfYCondition} readonly={readonly} open={open}/>
             }
 

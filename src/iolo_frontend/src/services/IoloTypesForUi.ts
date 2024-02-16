@@ -68,17 +68,23 @@ export interface UiCondition {
 
 export enum ConditionType{
     Undefined = "Undefined",
-    TimeBasedCondition= "TimeBasedCondition",
-    XOutOfYCondition = "XOutOfYCondition"
+    LastLogin= "LastLogin",
+    XOutOfY = "XOutOfY",
+    FutureTime = "FutureTime"
 }
 
 export interface UiTimeBasedCondition extends UiCondition{
-    type: ConditionType.TimeBasedCondition
+    type: ConditionType.LastLogin
     numberOfDaysSinceLastLogin: number,
 }
 
+export interface UiFutureTimeCondition extends UiCondition{
+    type: ConditionType.FutureTime
+    time: number,
+}
+
 export interface UiXOutOfYCondition extends UiCondition {
-    type: ConditionType.XOutOfYCondition,
+    type: ConditionType.XOutOfY,
     question: string,
     quorum: number,
     validators: Array<UiValidator>,

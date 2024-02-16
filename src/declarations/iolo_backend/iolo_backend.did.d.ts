@@ -22,8 +22,9 @@ export interface AddSecretArgs {
   'notes' : [] | [Uint8Array | number[]],
   'category' : [] | [SecretCategory],
 }
-export type Condition = { 'TimeBasedCondition' : TimeBasedCondition } |
-  { 'XOutOfYCondition' : XOutOfYCondition };
+export type Condition = { 'LastLogin' : LastLoginTimeCondition } |
+  { 'XOutOfY' : XOutOfYCondition } |
+  { 'FutureTime' : FixedDateTimeCondition };
 export interface ConfirmXOutOfYConditionArgs {
   'status' : boolean,
   'policy_id' : string,
@@ -33,6 +34,16 @@ export interface Contact {
   'user_type' : [] | [UserType],
   'name' : [] | [string],
   'email' : [] | [string],
+}
+export interface FixedDateTimeCondition {
+  'id' : string,
+  'condition_status' : boolean,
+  'time' : bigint,
+}
+export interface LastLoginTimeCondition {
+  'id' : string,
+  'condition_status' : boolean,
+  'number_of_days_since_last_login' : bigint,
 }
 export type LogicalOperator = { 'Or' : null } |
   { 'And' : null };
@@ -142,11 +153,6 @@ export type SmartVaultErr = { 'ContactDoesNotExist' : string } |
   { 'SecretAlreadyExists' : string } |
   { 'InvalidPolicyCondition' : null } |
   { 'KeyGenerationNotAllowed' : null };
-export interface TimeBasedCondition {
-  'id' : string,
-  'condition_status' : boolean,
-  'number_of_days_since_last_login' : bigint,
-}
 export interface UpdatePolicyArgs {
   'id' : string,
   'name' : [] | [string],
