@@ -47,7 +47,7 @@ pub async fn add_policy_impl(
 
     // Add entry to policy registry for validators (reverse index) if there is a XOutOfYCondition
     for condition in policy.conditions().iter() {
-        if let Condition::XOutOfYCondition(xoutofy) = condition {
+        if let Condition::XOutOfY(xoutofy) = condition {
             POLICY_REGISTRIES.with(|x| {
                 let mut policy_registries = x.borrow_mut();
                 policy_registries.add_policy_to_validators(&xoutofy.validators, policy.id());
@@ -161,10 +161,10 @@ pub fn get_policy_as_validator_impl(
         .conditions()
         .into_iter()
         .filter_map(|c| match c {
-            Condition::XOutOfYCondition(xooy) => {
+            Condition::XOutOfY(xooy) => {
                 let mut xooy_clone = xooy.clone();
                 xooy_clone.validators = vec![]; // Reset the validators to an empty vector
-                Some(Condition::XOutOfYCondition(xooy_clone)) // Return the modified condition
+                Some(Condition::XOutOfY(xooy_clone)) // Return the modified condition
             }
             _ => None,
         })
@@ -279,7 +279,7 @@ pub fn update_policy_impl(
 
     // Update policy registry for validators (reverse index) if there is a XOutOfYCondition
     for condition in policy.conditions().iter() {
-        if let Condition::XOutOfYCondition(xoutofy) = condition {
+        if let Condition::XOutOfY(xoutofy) = condition {
             POLICY_REGISTRIES.with(|x| {
                 let mut policy_registries = x.borrow_mut();
                 policy_registries.update_policy_to_validators(&xoutofy.validators, policy.id());
@@ -314,7 +314,7 @@ pub fn remove_policy_impl(policy_id: String, caller: PrincipalID) -> Result<(), 
 
     // remove policy from registry for validators (reverse index) if there is a XOutOfYCondition
     for condition in policy.conditions().iter() {
-        if let Condition::XOutOfYCondition(xoutofy) = condition {
+        if let Condition::XOutOfY(xoutofy) = condition {
             POLICY_REGISTRIES.with(|x| {
                 let mut policy_registries = x.borrow_mut();
                 policy_registries.remove_policy_from_validators(&xoutofy.validators, policy.id());
@@ -347,7 +347,7 @@ pub fn confirm_x_out_of_y_condition_impl(
 
     let mut policy_needs_update = false;
     for condition in &mut policy.conditions {
-        if let Condition::XOutOfYCondition(x_out_of_y) = condition {
+        if let Condition::XOutOfY(x_out_of_y) = condition {
             for v in &mut x_out_of_y.validators {
                 if v.principal_id == validator {
                     // there is a condition for which the validator is authorized validator
@@ -412,7 +412,7 @@ mod tests {
     use crate::{
         common::error::SmartVaultErr,
         policies::{
-            conditions::{Condition, TimeBasedCondition, Validator, XOutOfYCondition},
+            conditions::{Condition, LastLoginTimeCondition, Validator, XOutOfYCondition},
             policies_interface_impl::{
                 add_policy_impl, get_policy_as_beneficiary_impl, get_policy_as_owner_impl,
                 get_policy_list_as_beneficiary_impl, get_policy_list_as_owner_impl,
@@ -474,13 +474,13 @@ mod tests {
             .unwrap();
 
         // create a policy with a time based condition
-        let time_based_condition: Condition = Condition::TimeBasedCondition(TimeBasedCondition {
+        let time_based_condition: Condition = Condition::LastLogin(LastLoginTimeCondition {
             id: "My Time Based Condition".to_string(),
             number_of_days_since_last_login: 0,
             condition_status: false,
         });
 
-        let x_out_of_y_condition: Condition = Condition::XOutOfYCondition(XOutOfYCondition {
+        let x_out_of_y_condition: Condition = Condition::XOutOfY(XOutOfYCondition {
             id: "My X out of Y Condition".to_string(),
             validators: vec![Validator {
                 principal_id: validator.to_string(),
@@ -608,13 +608,13 @@ mod tests {
             .contains(&beneficiary.to_string()));
 
         // UPDATE POLICY CONDITIONS
-        let time_based_condition: Condition = Condition::TimeBasedCondition(TimeBasedCondition {
+        let time_based_condition: Condition = Condition::LastLogin(LastLoginTimeCondition {
             id: "My Time Based Condition number two".to_string(),
             number_of_days_since_last_login: 100,
             condition_status: false,
         });
 
-        let x_out_of_y_condition: Condition = Condition::XOutOfYCondition(XOutOfYCondition {
+        let x_out_of_y_condition: Condition = Condition::XOutOfY(XOutOfYCondition {
             id: "My X out of Y Condition".to_string(),
             validators: vec![Validator {
                 principal_id: validator2.to_string(),
