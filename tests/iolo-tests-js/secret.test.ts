@@ -10,7 +10,7 @@ import {
     AddSecretArgs,
     Result_3,
     Secret,
-    Result_10, Result_7, Result_2, UpdateSecretArgs, _SERVICE
+    Result_11, Result_7, Result_2, UpdateSecretArgs, _SERVICE
 } from "../../src/declarations/iolo_backend/iolo_backend.did";
 import {ActorSubclass} from "@dfinity/agent";
 
@@ -87,7 +87,7 @@ beforeAll(async () => {
     await createIoloUsersInBackend([actorOne, actorTwo]);
 });
 
-describe("Secret Tests", () => {
+describe("SECRET - create_secret()", () => {
     test("it must create secrets properly", async () => {
         const resultAddSecretOne: Result_2 = await actorOne.add_secret(addSecretArgsOne);
         expect(resultAddSecretOne).toHaveProperty('Ok');
@@ -169,6 +169,9 @@ describe("Secret Tests", () => {
 
     }, 15000); // Set timeout
 
+});
+
+describe("SECRET - get_secret()", () => {
     test("it must read secrets properly", async () => {
         // Check created secret via getSecret
         const resultSecretOne: Result_2 = await actorOne.get_secret(secretOne.id);
@@ -216,11 +219,13 @@ describe("Secret Tests", () => {
         expect(resultSecretOne['Err']).toHaveProperty('SecretDoesNotExist');
 
     }, 30000); // Set timeout
+});
 
+describe("SECRET - get_secret_list()", () => {
     test("it must read the secret list properly", async () => {
 
         // Check created secret of identity one via getSecretList
-        const resultSecretListOne: Result_10 = await actorOne.get_secret_list();
+        const resultSecretListOne: Result_11 = await actorOne.get_secret_list();
         expect(resultSecretListOne).toHaveProperty('Ok');
         expect(Array.isArray(resultSecretListOne['Ok'])).toBe(true);
         resultSecretListOne['Ok'].sort((a, b) => {
@@ -237,7 +242,7 @@ describe("Secret Tests", () => {
         expect(resultSecretListOne['Ok'][1].category).toStrictEqual(addSecretArgsTwo.category);
 
         // Check created secret of identity two via getSecretList
-        const resultSecretListTwo: Result_10 = await actorTwo.get_secret_list();
+        const resultSecretListTwo: Result_11 = await actorTwo.get_secret_list();
         expect(resultSecretListTwo).toHaveProperty('Ok');
         expect(Array.isArray(resultSecretListTwo['Ok'])).toBe(true);
         resultSecretListTwo['Ok'].sort((a, b) => {
@@ -255,6 +260,9 @@ describe("Secret Tests", () => {
 
     }, 10000); // Set timeout
 
+});
+
+describe("SECRET - update_secret()", () => {
     test("it must update secrets properly", async () => {
         let secretOneDateCreatedBeforeUpdate: bigint = secretOne.date_created;
         let secretOneDateModifiedBeforeUpdate: bigint = secretOne.date_modified;
@@ -325,6 +333,9 @@ describe("Secret Tests", () => {
         expect(resultUpdateSecretOne['Err']).toHaveProperty('SecretDoesNotExist');
     }, 15000); // Set timeout
 
+});
+
+describe("SECRET - get_encrypted_symmetric_key()", () => {
     test("it must read the encrypted symmetric key properly", async () => {
         const resultEncryptedSymmetricKeyOne: Result_7 = await actorOne.get_encrypted_symmetric_key(secretOne.id);
         expect(resultEncryptedSymmetricKeyOne).toHaveProperty('Ok');
@@ -337,6 +348,9 @@ describe("Secret Tests", () => {
         expect(resultEncryptedSecretKeyOne['Err']).toHaveProperty('SecretDoesNotExist');
     }, 15000); // Set timeout
 
+});
+
+describe("SECRET - delete_secret()", () => {
     test("it must delete secrets properly", async () => {
         // Deleting secretOne with userOne must work
         const resultRemoveSecretOne: Result_3 = await actorOne.remove_secret(secretOne.id);
@@ -344,7 +358,7 @@ describe("Secret Tests", () => {
         expect(resultRemoveSecretOne['Ok']).toBeNull();
 
         // Only one secret must exist in the backend now
-        const resultSecretListOne: Result_10 = await actorOne.get_secret_list();
+        const resultSecretListOne: Result_11 = await actorOne.get_secret_list();
         expect(resultSecretListOne).toHaveProperty('Ok');
         expect(Array.isArray(resultSecretListOne['Ok'])).toBe(true);
         expect(resultSecretListOne['Ok']).toHaveLength(1);

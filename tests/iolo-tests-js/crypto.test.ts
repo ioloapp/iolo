@@ -65,7 +65,7 @@ beforeAll(async () => {
 }, 30000);
 
 
-describe("Encryption and Decryption Tests", () => {
+describe("CRYPTO - Encryption and Decryption Tests", () => {
 
     test("it should create encrypted secrets properly", async () => {
 
