@@ -3,7 +3,7 @@ use std::cell::RefCell;
 use crate::{common::error::SmartVaultErr, smart_vaults::smart_vault::USER_STORE};
 
 use super::{
-    contact::{CreateContactArgs, Contact},
+    contact::{Contact, CreateContactArgs},
     user::{AddOrUpdateUserArgs, PrincipalID, User},
     user_store::UserStore,
 };
@@ -30,13 +30,7 @@ pub async fn create_user_impl(
 
 pub fn get_current_user_impl(user: PrincipalID) -> Result<User, SmartVaultErr> {
     // get current user
-    USER_STORE.with(|ur: &RefCell<UserStore>| -> Result<User, SmartVaultErr> {
-        let user_store = ur.borrow();
-        match user_store.get_user(&user.to_string()) {
-            Ok(u) => Ok(u.clone()),
-            Err(e) => Err(e),
-        }
-    })
+    get_user_from_user_store(&user)
 }
 
 pub fn update_user_impl(
@@ -119,6 +113,17 @@ pub fn delete_contact_impl(
     Ok(())
 }
 
+/**
+ * Helper CRUD functions
+ */
+
+pub fn get_user_from_user_store(user_id: &PrincipalID) -> Result<User, SmartVaultErr> {
+    USER_STORE.with(|us_ref| -> Result<User, SmartVaultErr> {
+        let user_store = us_ref.borrow();
+        user_store.get_user(user_id)
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use std::cell::RefCell;
@@ -134,9 +139,9 @@ mod tests {
             user::AddOrUpdateUserArgs,
             user_store::UserStore,
             users_interface_impl::{
-                crate_contact_impl, create_user_impl, delete_user_impl, get_contact_list_impl,
-                get_current_user_impl, delete_contact_impl, update_contact_impl, update_user_impl,
-                update_user_login_date_impl,
+                crate_contact_impl, create_user_impl, delete_contact_impl, delete_user_impl,
+                get_contact_list_impl, get_current_user_impl, update_contact_impl,
+                update_user_impl, update_user_login_date_impl,
             },
         },
     };

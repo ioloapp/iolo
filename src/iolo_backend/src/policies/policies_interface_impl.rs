@@ -4,6 +4,7 @@ use crate::policies::conditions::{
 };
 use crate::policies::policy::UpdatePolicyArgs;
 use crate::secrets::secrets_interface_impl::get_secret_from_secret_store;
+use crate::users::users_interface_impl::get_user_from_user_store;
 use crate::{
     common::{error::SmartVaultErr, uuid::UUID},
     secrets::{
@@ -242,18 +243,10 @@ pub async fn update_policy_impl(
     }
 
     // Check that beneficiaries exist in user store
-    let mut error = None;
-    USER_STORE.with(|us| {
-        let user_store = us.borrow();
-        for beneficiary in upa.beneficiaries.iter() {
-            if user_store.get_user(&beneficiary.to_string()).is_err() {
-                error = Some(SmartVaultErr::UserDoesNotExist(beneficiary.to_string()));
-                break;
-            }
+    for beneficiary in upa.beneficiaries.iter() {
+        if get_user_from_user_store(&beneficiary.to_string()).is_err() {
+            return Err(SmartVaultErr::UserDoesNotExist(beneficiary.to_string()));
         }
-    });
-    if let Some(err) = error {
-        return Err(err);
     }
 
     // Handle conditions
