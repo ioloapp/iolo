@@ -191,6 +191,17 @@ pub fn get_encrypted_symmetric_key_as_beneficiary_impl(
     Err(SmartVaultErr::InvalidPolicyCondition)
 }
 
+/**
+ * Helper CRUD functions
+ */
+
+pub fn get_secret_from_secret_store(secret_id: &SecretID) -> Result<Secret, SmartVaultErr> {
+    SECRET_STORE.with(|ss_ref| -> Result<Secret, SmartVaultErr> {
+        let secret_store = ss_ref.borrow();
+        secret_store.get(secret_id)
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use candid::Principal;
@@ -200,8 +211,8 @@ mod tests {
         secrets::{
             secret::{CreateSecretArgs, UpdateSecretArgs},
             secrets_interface_impl::{
-                create_secret_impl, get_encrypted_symmetric_key_impl, get_secret_impl,
-                get_secret_list_impl, delete_secret_impl, update_secret_impl,
+                create_secret_impl, delete_secret_impl, get_encrypted_symmetric_key_impl,
+                get_secret_impl, get_secret_list_impl, update_secret_impl,
             },
         },
         smart_vaults::smart_vault::SECRET_STORE,
