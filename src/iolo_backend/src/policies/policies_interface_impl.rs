@@ -16,6 +16,7 @@ use crate::{
 };
 use std::collections::HashSet;
 
+use super::conditions::ConditionID;
 use super::conditions_manager::evaluate_overall_conditions_status;
 use super::policy::PolicyForValidator;
 use super::{
@@ -253,15 +254,8 @@ pub async fn update_policy_impl(
     let mut new_conditions: Vec<Condition> = vec![];
 
     // Update and collect conditions already existing in the policy
-    let existing_ids: HashSet<_> = existing_policy
-        .conditions
-        .iter()
-        .map(|c| match c {
-            Condition::LastLogin(cond) => cond.id.clone(),
-            Condition::XOutOfY(cond) => cond.id.clone(),
-            Condition::FixedDateTime(cond) => cond.id.clone(),
-        })
-        .collect();
+    let existing_ids: HashSet<ConditionID> =
+        existing_policy.conditions.iter().map(|c| c.id()).collect();
 
     for update in upa.conditions.iter() {
         match update {

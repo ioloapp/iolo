@@ -37,7 +37,6 @@ pub struct UpdateFixedDateTimeCondition {
     pub time: u64,
 }
 
-
 /// The X out of Y condition contains a set of validators and defines a quorum.
 /// Each validator has its own status (true or false) and the condition is valid if the quorum is reached.
 /// Each Validator has to vote for the condition and the condition is valid if the quorum is reached.
@@ -158,6 +157,14 @@ impl Condition {
             Condition::LastLogin(c) => c.get_condition_status(),
             Condition::XOutOfY(c) => c.get_condition_status(),
             Condition::FixedDateTime(c) => c.get_condition_status(),
+        }
+    }
+
+    pub fn id(&self) -> ConditionID {
+        match self {
+            Condition::LastLogin(cond) => cond.id.clone(),
+            Condition::XOutOfY(cond) => cond.id.clone(),
+            Condition::FixedDateTime(cond) => cond.id.clone(),
         }
     }
 }
