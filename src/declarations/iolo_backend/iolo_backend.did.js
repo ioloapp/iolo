@@ -43,6 +43,11 @@ export const idlFactory = ({ IDL }) => {
     'condition_status' : IDL.Bool,
     'number_of_days_since_last_login' : IDL.Nat64,
   });
+  const FixedDateTimeCondition = IDL.Record({
+    'id' : IDL.Text,
+    'condition_status' : IDL.Bool,
+    'time' : IDL.Nat64,
+  });
   const Validator = IDL.Record({
     'status' : IDL.Bool,
     'principal_id' : IDL.Text,
@@ -54,15 +59,10 @@ export const idlFactory = ({ IDL }) => {
     'quorum' : IDL.Nat64,
     'validators' : IDL.Vec(Validator),
   });
-  const FixedDateTimeCondition = IDL.Record({
-    'id' : IDL.Text,
-    'condition_status' : IDL.Bool,
-    'time' : IDL.Nat64,
-  });
   const Condition = IDL.Variant({
     'LastLogin' : LastLoginTimeCondition,
+    'FixedDateTime' : FixedDateTimeCondition,
     'XOutOfY' : XOutOfYCondition,
-    'FutureTime' : FixedDateTimeCondition,
   });
   const Policy = IDL.Record({
     'id' : IDL.Text,
@@ -187,6 +187,25 @@ export const idlFactory = ({ IDL }) => {
     'Ok' : IDL.Vec(SecretListEntry),
     'Err' : SmartVaultErr,
   });
+  const UpdateLastLoginTimeCondition = IDL.Record({
+    'id' : IDL.Text,
+    'number_of_days_since_last_login' : IDL.Nat64,
+  });
+  const UpdateFixedDateTimeCondition = IDL.Record({
+    'id' : IDL.Text,
+    'time' : IDL.Nat64,
+  });
+  const UpdateXOutOfYCondition = IDL.Record({
+    'id' : IDL.Text,
+    'question' : IDL.Text,
+    'quorum' : IDL.Nat64,
+    'validators' : IDL.Vec(Validator),
+  });
+  const UpdateCondition = IDL.Variant({
+    'LastLogin' : UpdateLastLoginTimeCondition,
+    'FixedDateTime' : UpdateFixedDateTimeCondition,
+    'XOutOfY' : UpdateXOutOfYCondition,
+  });
   const UpdatePolicyArgs = IDL.Record({
     'id' : IDL.Text,
     'name' : IDL.Opt(IDL.Text),
@@ -194,7 +213,7 @@ export const idlFactory = ({ IDL }) => {
     'secrets' : IDL.Vec(IDL.Text),
     'beneficiaries' : IDL.Vec(IDL.Text),
     'key_box' : IDL.Vec(IDL.Tuple(IDL.Text, IDL.Vec(IDL.Nat8))),
-    'conditions' : IDL.Vec(Condition),
+    'conditions' : IDL.Vec(UpdateCondition),
   });
   const UpdateSecretArgs = IDL.Record({
     'id' : IDL.Text,

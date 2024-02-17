@@ -2,7 +2,7 @@ import * as React from 'react';
 import {FC} from 'react';
 import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
-import {UiTimeBasedCondition} from "../../services/IoloTypesForUi";
+import {UiLastLoginTimeCondition} from "../../services/IoloTypesForUi";
 import Collapse from "@mui/material/Collapse";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -12,7 +12,7 @@ import {policiesActions} from "../../redux/policies/policiesSlice";
 import TextField from "@mui/material/TextField";
 
 export interface ConditionTimebasedProps {
-    condition: UiTimeBasedCondition
+    condition: UiLastLoginTimeCondition
     readonly?: boolean,
     open: boolean
 }
@@ -21,7 +21,7 @@ export const ConditionTimebased: FC<ConditionTimebasedProps> = ({condition, read
     const {t} = useTranslation();
     const dispatch = useAppDispatch();
 
-    const updateCondition = (condition: UiTimeBasedCondition) => {
+    const updateCondition = (condition: UiLastLoginTimeCondition) => {
         dispatch(policiesActions.updateConditionOfDialogItem(condition))
     }
 
@@ -32,7 +32,7 @@ export const ConditionTimebased: FC<ConditionTimebasedProps> = ({condition, read
                     <Collapse in={open} timeout="auto" unmountOnExit>
                         <Box sx={{margin: 1}}>
                             <Typography variant="body2">
-                                {t('conditions.max-logout-time')}: {(condition as UiTimeBasedCondition).numberOfDaysSinceLastLogin}
+                                {t('conditions.max-logout-time')}: {(condition as UiLastLoginTimeCondition).numberOfDaysSinceLastLogin}
                             </Typography>
                         </Box>
                     </Collapse>

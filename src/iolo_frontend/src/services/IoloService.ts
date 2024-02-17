@@ -23,7 +23,7 @@ import {
     User,
     UserType,
     XOutOfYCondition,
-    AddContactArgs, Result_1, UpdatePolicyArgs, Result_4, ConfirmXOutOfYConditionArgs, Result_11, FixedDateTimeCondition
+    AddContactArgs, Result_1, UpdatePolicyArgs, Result_4, Result_11, FixedDateTimeCondition
 } from "../../../declarations/iolo_backend/iolo_backend.did";
 import {AuthClient} from "@dfinity/auth-client";
 import {createActor} from "../../../declarations/iolo_backend";
@@ -40,7 +40,7 @@ import {
 import {
     ConditionType,
     LogicalOperator,
-    UiCondition, UiFutureTimeCondition,
+    UiCondition, UiFixedDateTimeCondition,
     UiPolicy,
     UiPolicyListEntry,
     UiPolicyListEntryRole,
@@ -48,9 +48,9 @@ import {
     UiSecret,
     UiSecretCategory,
     UiSecretListEntry,
-    UiTimeBasedCondition,
+    UiLastLoginTimeCondition,
     UiUser,
-    UiUserType, UiValidator,
+    UiUserType,
     UiXOutOfYCondition
 } from "./IoloTypesForUi";
 
@@ -694,7 +694,6 @@ class IoloService {
             } else {
                 throw mapError(result['Err'])
             }
-            ;
         }
 
         return {
@@ -704,13 +703,13 @@ class IoloService {
             secrets: uiPolicy.secrets,
             key_box: keyBox,
             conditions_logical_operator: uiPolicy.conditionsLogicalOperator == LogicalOperator.And ? [{'And': null}] : [{'Or': null}],
-            conditions: uiPolicy.conditions.map(uiCondition => this.mapUiConditionToCondition(uiCondition)),
+            conditions: uiPolicy.conditions.map(uiCondition => this.mapUiConditionToUpdateCondition(uiCondition)),
         }
     }
 
-    private mapUiConditionToCondition(uiCondition: UiCondition): Condition {
+    private mapUiConditionToUpdateCondition(uiCondition: UiCondition): Condition {
         if (uiCondition.type === ConditionType.LastLogin) {
-            const tCondition = uiCondition as UiTimeBasedCondition;
+            const tCondition = uiCondition as UiLastLoginTimeCondition;
             const lastLoginTimeCondition = {
                 id: tCondition.id,
                 condition_status: tCondition.conditionStatus,
@@ -720,15 +719,15 @@ class IoloService {
                 LastLogin: lastLoginTimeCondition
             }
         }
-        if (uiCondition.type === ConditionType.FutureTime) {
-            const tCondition = uiCondition as UiFutureTimeCondition;
+        if (uiCondition.type === ConditionType.FixedDateTime) {
+            const tCondition = uiCondition as UiFixedDateTimeCondition;
             const futureTimeCondition = {
                 id: tCondition.id,
                 condition_status: tCondition.conditionStatus,
                 time: tCondition.time ? BigInt(tCondition.time) : BigInt(100)
             } as FixedDateTimeCondition
             return {
-                FutureTime: futureTimeCondition
+                FixedDateTime: futureTimeCondition
             }
         }
         if (uiCondition.type === ConditionType.XOutOfY) {
@@ -769,7 +768,7 @@ class IoloService {
         };
     }
 
-    private mapConditionToUiCondition(condition: Condition): UiTimeBasedCondition | UiXOutOfYCondition | UiFutureTimeCondition {
+    private mapConditionToUiCondition(condition: Condition): UiLastLoginTimeCondition | UiXOutOfYCondition | UiFixedDateTimeCondition {
         if (condition.hasOwnProperty(ConditionType.LastLogin)) {
             const timeBasedCondition: LastLoginTimeCondition = condition[ConditionType.LastLogin];
             return {
@@ -777,16 +776,16 @@ class IoloService {
                 type: ConditionType.LastLogin,
                 conditionStatus: timeBasedCondition.condition_status,
                 numberOfDaysSinceLastLogin: Number(timeBasedCondition.number_of_days_since_last_login)
-            } as UiTimeBasedCondition
+            } as UiLastLoginTimeCondition
         }
-        if (condition.hasOwnProperty(ConditionType.FutureTime)) {
-            const futureTimeCondition: FixedDateTimeCondition = condition[ConditionType.FutureTime];
+        if (condition.hasOwnProperty(ConditionType.FixedDateTime)) {
+            const futureTimeCondition: FixedDateTimeCondition = condition[ConditionType.FixedDateTime];
             return {
                 id: futureTimeCondition.id,
-                type: ConditionType.FutureTime,
+                type: ConditionType.FixedDateTime,
                 conditionStatus: futureTimeCondition.condition_status,
                 time: Number(futureTimeCondition.time)
-            } as UiFutureTimeCondition
+            } as UiFixedDateTimeCondition
         }
         if (condition.hasOwnProperty(ConditionType.XOutOfY)) {
             const xOutOfYCondition: XOutOfYCondition = condition[ConditionType.XOutOfY];

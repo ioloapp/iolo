@@ -166,8 +166,8 @@ pub fn get_policy_list_as_validator() -> Result<Vec<PolicyListEntry>, SmartVault
 }
 
 #[ic_cdk_macros::update]
-pub fn update_policy(upa: UpdatePolicyArgs) -> Result<Policy, SmartVaultErr> {
-    update_policy_impl(upa, get_caller_id())
+pub async fn update_policy(upa: UpdatePolicyArgs) -> Result<Policy, SmartVaultErr> {
+    update_policy_impl(upa, get_caller_id()).await
 }
 
 #[ic_cdk_macros::update]

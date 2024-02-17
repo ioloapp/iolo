@@ -23,8 +23,8 @@ export interface AddSecretArgs {
   'category' : [] | [SecretCategory],
 }
 export type Condition = { 'LastLogin' : LastLoginTimeCondition } |
-  { 'XOutOfY' : XOutOfYCondition } |
-  { 'FutureTime' : FixedDateTimeCondition };
+  { 'FixedDateTime' : FixedDateTimeCondition } |
+  { 'XOutOfY' : XOutOfYCondition };
 export interface ConfirmXOutOfYConditionArgs {
   'status' : boolean,
   'policy_id' : string,
@@ -153,6 +153,14 @@ export type SmartVaultErr = { 'ContactDoesNotExist' : string } |
   { 'SecretAlreadyExists' : string } |
   { 'InvalidPolicyCondition' : null } |
   { 'KeyGenerationNotAllowed' : null };
+export type UpdateCondition = { 'LastLogin' : UpdateLastLoginTimeCondition } |
+  { 'FixedDateTime' : UpdateFixedDateTimeCondition } |
+  { 'XOutOfY' : UpdateXOutOfYCondition };
+export interface UpdateFixedDateTimeCondition { 'id' : string, 'time' : bigint }
+export interface UpdateLastLoginTimeCondition {
+  'id' : string,
+  'number_of_days_since_last_login' : bigint,
+}
 export interface UpdatePolicyArgs {
   'id' : string,
   'name' : [] | [string],
@@ -160,7 +168,7 @@ export interface UpdatePolicyArgs {
   'secrets' : Array<string>,
   'beneficiaries' : Array<string>,
   'key_box' : Array<[string, Uint8Array | number[]]>,
-  'conditions' : Array<Condition>,
+  'conditions' : Array<UpdateCondition>,
 }
 export interface UpdateSecretArgs {
   'id' : string,
@@ -170,6 +178,12 @@ export interface UpdateSecretArgs {
   'name' : [] | [string],
   'notes' : [] | [Uint8Array | number[]],
   'category' : [] | [SecretCategory],
+}
+export interface UpdateXOutOfYCondition {
+  'id' : string,
+  'question' : string,
+  'quorum' : bigint,
+  'validators' : Array<Validator>,
 }
 export interface User {
   'id' : string,

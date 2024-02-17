@@ -139,6 +139,16 @@ type SmartVaultErr = variant {
   InvalidPolicyCondition;
   KeyGenerationNotAllowed;
 };
+type UpdateCondition = variant {
+  LastLogin : UpdateLastLoginTimeCondition;
+  FixedDateTime : UpdateFixedDateTimeCondition;
+  XOutOfY : UpdateXOutOfYCondition;
+};
+type UpdateFixedDateTimeCondition = record { id : text; time : nat64 };
+type UpdateLastLoginTimeCondition = record {
+  id : text;
+  number_of_days_since_last_login : nat64;
+};
 type UpdatePolicyArgs = record {
   id : text;
   name : opt text;
@@ -146,7 +156,7 @@ type UpdatePolicyArgs = record {
   secrets : vec text;
   beneficiaries : vec text;
   key_box : vec record { text; vec nat8 };
-  conditions : vec Condition;
+  conditions : vec UpdateCondition;
 };
 type UpdateSecretArgs = record {
   id : text;
@@ -156,6 +166,12 @@ type UpdateSecretArgs = record {
   name : opt text;
   notes : opt vec nat8;
   category : opt SecretCategory;
+};
+type UpdateXOutOfYCondition = record {
+  id : text;
+  question : text;
+  quorum : nat64;
+  validators : vec Validator;
 };
 type User = record {
   id : text;

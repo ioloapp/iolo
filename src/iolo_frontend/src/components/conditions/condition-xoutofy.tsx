@@ -2,7 +2,7 @@ import * as React from 'react';
 import {FC} from 'react';
 import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
-import {UiTimeBasedCondition, UiUser, UiValidator, UiXOutOfYCondition} from "../../services/IoloTypesForUi";
+import {UiLastLoginTimeCondition, UiUser, UiValidator, UiXOutOfYCondition} from "../../services/IoloTypesForUi";
 import Collapse from "@mui/material/Collapse";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";

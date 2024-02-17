@@ -6,7 +6,7 @@ use std::borrow::Cow;
 use std::collections::{BTreeMap, HashSet};
 use std::hash::{Hash, Hasher};
 
-use crate::policies::conditions::{Condition, Validator};
+use crate::policies::conditions::{Condition, UpdateCondition, Validator};
 use crate::secrets::secret::SecretID;
 use crate::secrets::secret::SecretListEntry;
 use crate::users::user::{KeyBox, PrincipalID};
@@ -78,7 +78,7 @@ pub struct UpdatePolicyArgs {
     pub secrets: HashSet<SecretID>,
     pub key_box: KeyBox,
     pub conditions_logical_operator: Option<LogicalOperator>,
-    pub conditions: Vec<Condition>,
+    pub conditions: Vec<UpdateCondition>,
 }
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone, PartialEq)]
@@ -143,15 +143,20 @@ impl Policy {
         owner: &PrincipalID,
         condition_status: bool,
         date_created: u64,
+        new_conditions: Vec<Condition>,
         upa: UpdatePolicyArgs,
     ) -> Self {
+
+
+
+
         let mut new_policy = Policy::new(policy_id.to_string(), owner);
         new_policy.owner = owner.to_string();
         new_policy.name = upa.name;
         new_policy.beneficiaries = upa.beneficiaries;
         new_policy.secrets = upa.secrets;
         new_policy.key_box = upa.key_box;
-        new_policy.conditions = upa.conditions;
+        new_policy.conditions = new_conditions;
         new_policy.conditions_logical_operator = upa.conditions_logical_operator;
         new_policy.conditions_status = condition_status;
         new_policy.date_created = date_created;

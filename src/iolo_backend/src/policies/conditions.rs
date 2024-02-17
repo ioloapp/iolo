@@ -17,6 +17,12 @@ pub struct LastLoginTimeCondition {
     pub condition_status: bool,
 }
 
+#[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
+pub struct UpdateLastLoginTimeCondition {
+    pub id: ConditionID,
+    pub number_of_days_since_last_login: u64,
+}
+
 /// Defines a moment in time in the future upon which a condition is valid
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct FixedDateTimeCondition {
@@ -24,6 +30,13 @@ pub struct FixedDateTimeCondition {
     pub time: u64,
     pub condition_status: bool,
 }
+
+#[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
+pub struct UpdateFixedDateTimeCondition {
+    pub id: ConditionID,
+    pub time: u64,
+}
+
 
 /// The X out of Y condition contains a set of validators and defines a quorum.
 /// Each validator has its own status (true or false) and the condition is valid if the quorum is reached.
@@ -36,6 +49,14 @@ pub struct XOutOfYCondition {
     pub question: String,
     pub quorum: u64, // in absolute numbers
     pub condition_status: bool,
+}
+
+#[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
+pub struct UpdateXOutOfYCondition {
+    pub id: ConditionID,
+    pub validators: Vec<Validator>,
+    pub question: String,
+    pub quorum: u64, // in absolute numbers
 }
 
 /// Validator is the role a user has when it is part of of a condition and has to vote for it
@@ -53,6 +74,13 @@ pub enum Condition {
     LastLogin(LastLoginTimeCondition),
     XOutOfY(XOutOfYCondition),
     FixedDateTime(FixedDateTimeCondition),
+}
+
+#[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
+pub enum UpdateCondition {
+    LastLogin(UpdateLastLoginTimeCondition),
+    XOutOfY(UpdateXOutOfYCondition),
+    FixedDateTime(UpdateFixedDateTimeCondition),
 }
 
 trait ConditionStatus {

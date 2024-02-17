@@ -70,16 +70,16 @@ export enum ConditionType{
     Undefined = "Undefined",
     LastLogin= "LastLogin",
     XOutOfY = "XOutOfY",
-    FutureTime = "FutureTime"
+    FixedDateTime = "FixedDateTime",
 }
 
-export interface UiTimeBasedCondition extends UiCondition{
+export interface UiLastLoginTimeCondition extends UiCondition{
     type: ConditionType.LastLogin
     numberOfDaysSinceLastLogin: number,
 }
 
-export interface UiFutureTimeCondition extends UiCondition{
-    type: ConditionType.FutureTime
+export interface UiFixedDateTimeCondition extends UiCondition{
+    type: ConditionType.FixedDateTime
     time: number,
 }
 

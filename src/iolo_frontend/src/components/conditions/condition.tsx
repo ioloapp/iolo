@@ -5,7 +5,7 @@ import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import {ConditionType, UiCondition, UiTimeBasedCondition, UiXOutOfYCondition} from "../../services/IoloTypesForUi";
+import {ConditionType, UiCondition, UiLastLoginTimeCondition, UiXOutOfYCondition} from "../../services/IoloTypesForUi";
 import {useTranslation} from "react-i18next";
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import {useAppDispatch} from "../../redux/hooks";
@@ -85,7 +85,7 @@ export const Condition: FC<ConditionProps> = ({condition, readonly}) => {
                 </TableCell>
             </TableRow>
             {condition.type === ConditionType.LastLogin &&
-                <ConditionTimebased condition={condition as UiTimeBasedCondition} readonly={readonly} open={open}/>
+                <ConditionTimebased condition={condition as UiLastLoginTimeCondition} readonly={readonly} open={open}/>
             }
             {condition.type === ConditionType.XOutOfY &&
                 <ConditionXOutOfY condition={condition as UiXOutOfYCondition} readonly={readonly} open={open}/>

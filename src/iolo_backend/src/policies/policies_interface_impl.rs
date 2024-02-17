@@ -1,4 +1,5 @@
-use crate::policies::conditions::ConfirmXOutOfYConditionArgs;
+use std::collections::HashSet;
+use crate::policies::conditions::{ConfirmXOutOfYConditionArgs, FixedDateTimeCondition, LastLoginTimeCondition, UpdateCondition, XOutOfYCondition};
 use crate::policies::policy::UpdatePolicyArgs;
 use crate::{
     common::{error::SmartVaultErr, uuid::UUID},
@@ -10,7 +11,6 @@ use crate::{
     users::user::PrincipalID,
 };
 
-use super::conditions;
 use super::conditions_manager::evaluate_overall_conditions_status;
 use super::policy::PolicyForValidator;
 use super::{
@@ -199,7 +199,7 @@ pub fn get_policy_list_as_validator_impl(
     })
 }
 
-pub fn update_policy_impl(
+pub async fn update_policy_impl(
     upa: UpdatePolicyArgs,
     caller: PrincipalID,
 ) -> Result<Policy, SmartVaultErr> {
@@ -258,12 +258,113 @@ pub fn update_policy_impl(
         return Err(err);
     }
 
+
+    // Handle conditions
+    let mut new_conditions: Vec<Condition> = vec![];
+
+    // Update and collect conditions already existing in the policy
+    let existing_ids: HashSet<_> = existing_policy.conditions.iter().map(|c| match c {
+        Condition::LastLogin(cond) => cond.id.clone(),
+        Condition::XOutOfY(cond) => cond.id.clone(),
+        Condition::FixedDateTime(cond) => cond.id.clone(),
+    }).collect();
+
+    for update in upa.conditions.iter() {
+        match update {
+            UpdateCondition::LastLogin(update) => {
+                if existing_ids.contains(&update.id) {
+                    let condition = Condition::LastLogin(LastLoginTimeCondition {
+                        id: update.id.clone(),
+                        number_of_days_since_last_login: update.number_of_days_since_last_login,
+                        condition_status: existing_policy.conditions.iter().find_map(|c| match c {
+                            Condition::LastLogin(cond) if cond.id == update.id => Some(cond.condition_status),
+                            _ => None,
+                        }).unwrap_or(false), // Default to false if not found, adjust as needed
+                    });
+                    new_conditions.push(condition);
+                } else {
+                    // If the condition is new, generate a new ID and create the condition
+                    let new_condition_id = UUID::new().await; // Simulate async ID generation
+                    let condition = Condition::LastLogin(LastLoginTimeCondition {
+                        id: new_condition_id,
+                        number_of_days_since_last_login: update.number_of_days_since_last_login,
+                        condition_status: false,
+                    });
+                    new_conditions.push(condition);
+                }
+            },
+            // Repeat the similar logic for XOutOfY and FixedDateTime
+            UpdateCondition::XOutOfY(update) => {
+                if existing_ids.contains(&update.id) {
+                    let condition = Condition::XOutOfY(XOutOfYCondition {
+                        id: update.id.clone(),
+                        validators: update.validators.clone(),
+                        quorum: update.quorum,
+                        question: update.question.clone(),
+                        condition_status: existing_policy.conditions.iter().find_map(|c| match c {
+                            Condition::XOutOfY(cond) if cond.id == update.id => Some(cond.condition_status),
+                            _ => None,
+                        }).unwrap_or(false), // Default to false if not found, adjust as needed
+                    });
+                    new_conditions.push(condition);
+                } else {
+                    // If the condition is new, generate a new ID and create the condition
+                    let new_condition_id = UUID::new().await; // Simulate async ID generation
+                    let condition = Condition::XOutOfY(XOutOfYCondition {
+                        id: new_condition_id,
+                        validators: update.validators.clone(),
+                        quorum: update.quorum,
+                        question: update.question.clone(),
+                        condition_status: false,
+                    });
+                    new_conditions.push(condition);
+                }
+            },
+            UpdateCondition::FixedDateTime(update) => {
+                if existing_ids.contains(&update.id) {
+                    let condition = Condition::FixedDateTime(FixedDateTimeCondition {
+                        id: update.id.clone(),
+                        time: update.time,
+                        condition_status: existing_policy.conditions.iter().find_map(|c| match c {
+                            Condition::FixedDateTime(cond) if cond.id == update.id => Some(cond.condition_status),
+                            _ => None,
+                        }).unwrap_or(false), // Default to false if not found, adjust as needed
+                    });
+                    new_conditions.push(condition);
+                } else {
+                    // If the condition is new, generate a new ID and create the condition
+                    let new_condition_id = UUID::new().await; // Simulate async ID generation
+                    let condition = Condition::FixedDateTime(FixedDateTimeCondition {
+                        id: new_condition_id,
+                        time: update.time,
+                        condition_status: false,
+                    });
+                    new_conditions.push(condition);
+                }
+            },
+        }
+    }
+
+    // Add conditions that are not updated to the new_conditions list
+    for cond in existing_policy.conditions.iter() {
+        let cond_id = match &cond {
+            Condition::LastLogin(cond) => cond.id.clone(),
+            Condition::XOutOfY(cond) => cond.id.clone(),
+            Condition::FixedDateTime(cond) => cond.id.clone(),
+        };
+
+        if !existing_ids.contains(&cond_id) {
+            new_conditions.push(cond.clone());
+        }
+    }
+
     // create policy from AddPolicyArgs
     let policy: Policy = Policy::from_update_policy_args(
         &upa.id,
         &existing_policy.owner().to_string(),
         existing_policy.conditions_status,
         *existing_policy.date_created(),
+        new_conditions,
         upa.clone(),
     );
 
@@ -430,6 +531,7 @@ mod tests {
             users_interface_impl::create_user_impl,
         },
     };
+    use crate::policies::conditions::{UpdateCondition, UpdateXOutOfYCondition, UpdateLastLoginTimeCondition, UpdateFixedDateTimeCondition};
 
     #[tokio::test]
     async fn itest_policy_lifecycle() {
@@ -474,13 +576,12 @@ mod tests {
             .unwrap();
 
         // create a policy with a time based condition
-        let time_based_condition: Condition = Condition::LastLogin(LastLoginTimeCondition {
+        let last_login_time_condition: UpdateCondition = UpdateCondition::LastLogin(UpdateLastLoginTimeCondition {
             id: "My Time Based Condition".to_string(),
             number_of_days_since_last_login: 0,
-            condition_status: false,
         });
 
-        let x_out_of_y_condition: Condition = Condition::XOutOfY(XOutOfYCondition {
+        let x_out_of_y_condition: UpdateCondition = UpdateCondition::XOutOfY(UpdateXOutOfYCondition {
             id: "My X out of Y Condition".to_string(),
             validators: vec![Validator {
                 principal_id: validator.to_string(),
@@ -488,18 +589,11 @@ mod tests {
             }],
             quorum: 1,
             question: "When will you be happy?".to_string(),
-            condition_status: false,
         });
 
         let apa: AddPolicyArgs = AddPolicyArgs {
             name: Some("Policy#1".to_string()),
-            //beneficiaries: [beneficiary].iter().cloned().collect(),
-            //secrets: HashSet::new(),
-            //key_box: KeyBox::new(),
-            //conditions_logical_operator: LogicalOperator::And,
-            //conditions: vec![time_based_condition.clone(), x_out_of_y_condition.clone()],
         };
-        //apa.secrets.insert(added_secret.id().to_string());
         let added_policy: Policy = add_policy_impl(apa.clone(), principal.to_string())
             .await
             .unwrap();
@@ -516,11 +610,11 @@ mod tests {
             secrets,
             key_box: kb,
             conditions_logical_operator: None,
-            conditions: vec![time_based_condition.clone(), x_out_of_y_condition.clone()],
+            conditions: vec![last_login_time_condition.clone(), x_out_of_y_condition.clone()],
         };
         let added_policy = update_policy_impl(upa, principal.to_string());
-        assert!(added_policy.is_ok());
-        let added_policy = added_policy.unwrap();
+        assert!(added_policy.await.is_ok());
+        let added_policy = added_policy.await.unwrap();
 
         // check if policy is in policy store and check if it contains the secret
         POLICY_STORE.with(|ps| {
@@ -560,9 +654,9 @@ mod tests {
         assert_eq!(&policy_list_as_beneficiary[0].id, added_policy.id());
 
         // get specific policy as beneficiary: this should fail, because policy has not yet been activated
-        let policy_reponse =
+        let policy_response =
             get_policy_as_beneficiary_impl(added_policy.id().clone(), beneficiary.to_string());
-        assert!(policy_reponse.is_err_and(|e| matches!(e, SmartVaultErr::InvalidPolicyCondition)));
+        assert!(policy_response.is_err_and(|e| matches!(e, SmartVaultErr::InvalidPolicyCondition)));
 
         // get policy list as validator
         let get_policy_list_as_validator =
@@ -575,17 +669,38 @@ mod tests {
             get_policy_list_as_validator_impl(beneficiary.to_string());
         assert_eq!(get_policy_list_as_validator.unwrap().len(), 0);
 
-        // get policy as validator: this souhld fail, because validator is not a beneficiary
-        let policy_reponse =
+        // get policy as validator: this should fail, because validator is not a beneficiary
+        let policy_response =
             get_policy_as_beneficiary_impl(added_policy.id().clone(), validator.to_string());
         assert!(
-            policy_reponse.is_err_and(|e| matches!(e, SmartVaultErr::NoPolicyForBeneficiary(_)))
+            policy_response.is_err_and(|e| matches!(e, SmartVaultErr::NoPolicyForBeneficiary(_)))
         );
 
         // UPDATE POLICY NAME and BENEFICIARIES
         let mut beneficiaries = HashSet::new();
         beneficiaries.insert(beneficiary.to_string());
         beneficiaries.insert(validator.to_string());
+
+        let update_conditions: Vec<UpdateCondition> = added_policy.conditions.iter().map(|condition| {
+            match condition {
+                Condition::LastLogin(last_login) => UpdateCondition::LastLogin(UpdateLastLoginTimeCondition {
+                    id: last_login.id.clone(),
+                    number_of_days_since_last_login: last_login.number_of_days_since_last_login,
+                }),
+                Condition::XOutOfY(x_out_of_y) => UpdateCondition::XOutOfY(UpdateXOutOfYCondition {
+                    id: x_out_of_y.id.clone(),
+                    validators: x_out_of_y.validators.clone(),
+                    question: x_out_of_y.question.clone(),
+                    quorum: x_out_of_y.quorum,
+                }),
+                Condition::FixedDateTime(fixed_date_time) => UpdateCondition::FixedDateTime(UpdateFixedDateTimeCondition {
+                    id: fixed_date_time.id.clone(),
+                    time: fixed_date_time.time,
+                }),
+            }
+        }).collect();
+
+
         let upa: UpdatePolicyArgs = UpdatePolicyArgs {
             id: added_policy.id().to_string(),
             name: Some("new policy updates".to_string()),
@@ -593,12 +708,12 @@ mod tests {
             secrets: added_policy.secrets.clone(),
             key_box: added_policy.key_box.clone(),
             conditions_logical_operator: added_policy.conditions_logical_operator().clone(),
-            conditions: added_policy.conditions.clone(),
+            conditions: update_conditions,
         };
 
         let updated_policy = update_policy_impl(upa.clone(), principal.to_string());
-        assert!(updated_policy.is_ok());
-        let updated_policy = updated_policy.unwrap();
+        assert!(updated_policy.await.is_ok());
+        let updated_policy = updated_policy.await.unwrap();
         assert_eq!(updated_policy.name(), &upa.name);
         assert!(updated_policy
             .beneficiaries()
@@ -608,13 +723,12 @@ mod tests {
             .contains(&beneficiary.to_string()));
 
         // UPDATE POLICY CONDITIONS
-        let time_based_condition: Condition = Condition::LastLogin(LastLoginTimeCondition {
+        let last_login_time_condition: UpdateCondition = UpdateCondition::LastLogin(UpdateLastLoginTimeCondition {
             id: "My Time Based Condition number two".to_string(),
             number_of_days_since_last_login: 100,
-            condition_status: false,
         });
 
-        let x_out_of_y_condition: Condition = Condition::XOutOfY(XOutOfYCondition {
+        let x_out_of_y_condition: UpdateCondition = UpdateCondition::XOutOfY(UpdateXOutOfYCondition {
             id: "My X out of Y Condition".to_string(),
             validators: vec![Validator {
                 principal_id: validator2.to_string(),
@@ -622,7 +736,6 @@ mod tests {
             }],
             quorum: 1,
             question: "Do I live on the moon?".to_string(),
-            condition_status: false,
         });
 
         let mut beneficiaries = HashSet::new();
@@ -634,18 +747,18 @@ mod tests {
             secrets: updated_policy.secrets,
             key_box: updated_policy.key_box,
             conditions_logical_operator: added_policy.conditions_logical_operator().clone(),
-            conditions: vec![time_based_condition, x_out_of_y_condition],
+            conditions: vec![last_login_time_condition, x_out_of_y_condition],
         };
 
         let updated_policy = update_policy_impl(upa, principal.to_string());
-        assert!(updated_policy.is_ok());
+        assert!(updated_policy.await.is_ok());
         // let updated_policy = updated_policy.unwrap();
         let policy_list_as_old_validator = get_policy_list_as_validator_impl(validator.to_string());
         let policy_list_as_new_validator =
             get_policy_list_as_validator_impl(validator2.to_string());
         assert_eq!(policy_list_as_old_validator.unwrap().len(), 0);
         assert_eq!(policy_list_as_new_validator.unwrap().len(), 1);
-        let updated_policy = updated_policy.unwrap();
+        let updated_policy = updated_policy.await.unwrap();
 
         // test get secret as beneficiary
 
