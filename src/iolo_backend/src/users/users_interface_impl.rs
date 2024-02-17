@@ -3,7 +3,7 @@ use std::cell::RefCell;
 use crate::{common::error::SmartVaultErr, smart_vaults::smart_vault::USER_STORE};
 
 use super::{
-    contact::{AddContactArgs, Contact},
+    contact::{CreateContactArgs, Contact},
     user::{AddOrUpdateUserArgs, PrincipalID, User},
     user_store::UserStore,
 };
@@ -70,8 +70,8 @@ pub fn delete_user_impl(principal: PrincipalID) -> Result<(), SmartVaultErr> {
     Ok(())
 }
 
-pub fn add_contact_impl(
-    args: AddContactArgs,
+pub fn crate_contact_impl(
+    args: CreateContactArgs,
     caller: PrincipalID,
 ) -> Result<Contact, SmartVaultErr> {
     let contact = Contact::from(args);
@@ -79,7 +79,7 @@ pub fn add_contact_impl(
     // add contact to user store (caller)
     USER_STORE.with(|ur: &RefCell<UserStore>| -> Result<(), SmartVaultErr> {
         let mut user_store = ur.borrow_mut();
-        user_store.add_contact(&caller.to_string(), contact.clone())
+        user_store.create_contact(&caller.to_string(), contact.clone())
     })?;
 
     Ok(contact)
@@ -107,13 +107,13 @@ pub fn update_contact_impl(
     )
 }
 
-pub fn remove_contact_impl(
+pub fn delete_contact_impl(
     contact_id: PrincipalID,
     caller: PrincipalID,
 ) -> Result<(), SmartVaultErr> {
     USER_STORE.with(|ur: &RefCell<UserStore>| -> Result<(), SmartVaultErr> {
         let mut user_store = ur.borrow_mut();
-        user_store.remove_contact(&caller.to_string(), contact_id)
+        user_store.delete_contact(&caller.to_string(), contact_id)
     })?;
 
     Ok(())
@@ -130,12 +130,12 @@ mod tests {
         common::error::SmartVaultErr,
         smart_vaults::smart_vault::USER_STORE,
         users::{
-            contact::AddContactArgs,
+            contact::CreateContactArgs,
             user::AddOrUpdateUserArgs,
             user_store::UserStore,
             users_interface_impl::{
-                add_contact_impl, create_user_impl, delete_user_impl, get_contact_list_impl,
-                get_current_user_impl, remove_contact_impl, update_contact_impl, update_user_impl,
+                crate_contact_impl, create_user_impl, delete_user_impl, get_contact_list_impl,
+                get_current_user_impl, delete_contact_impl, update_contact_impl, update_user_impl,
                 update_user_login_date_impl,
             },
         },
@@ -164,13 +164,13 @@ mod tests {
         assert_eq!(contact_list.len(), 0);
 
         // add contact
-        let aca: AddContactArgs = AddContactArgs {
+        let aca: CreateContactArgs = CreateContactArgs {
             id: contact_principal.to_string(),
             name: Some("my contact".to_string()),
             email: None,
             user_type: None,
         };
-        let add_contact_result = add_contact_impl(aca, principal.to_string());
+        let add_contact_result = crate_contact_impl(aca, principal.to_string());
         assert!(add_contact_result.is_ok());
         let added_contact = add_contact_result.unwrap();
         let fetched_user = get_current_user_impl(principal.to_string()).unwrap();
@@ -209,8 +209,8 @@ mod tests {
         let new_login_date = fetched_user.date_last_login().unwrap();
         assert!(new_login_date > old_login_date);
 
-        // remove contact
-        remove_contact_impl(contact.id, principal.to_string()).unwrap();
+        // delete contact
+        delete_contact_impl(contact.id, principal.to_string()).unwrap();
         let contact_list = get_contact_list_impl(principal.to_string()).unwrap();
         assert_eq!(contact_list.len(), 0);
 

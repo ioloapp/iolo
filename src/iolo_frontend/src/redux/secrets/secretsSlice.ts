@@ -12,7 +12,7 @@ export const addSecretThunk = createAsyncThunk<UiSecret, UiSecret, {
 }>('secrets/add',
     async (uiSecret: UiSecret, {rejectWithValue}) => {
         try {
-            return await ioloService.addSecret(uiSecret);
+            return await ioloService.createSecret(uiSecret);
         } catch (e) {
             return rejectWithValue(e)
         }

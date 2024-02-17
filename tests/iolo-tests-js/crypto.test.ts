@@ -7,9 +7,9 @@ import {
 } from "./utils";
 import {Secp256k1KeyIdentity} from "@dfinity/identity-secp256k1";
 import {
-    AddSecretArgs,
+    CreateSecretArgs,
     Secret,
-    SecretCategory, Result_2, Result_7, _SERVICE
+    SecretCategory, Result_3, Result_7, _SERVICE
 } from "../../src/declarations/iolo_backend/iolo_backend.did";
 import {v4 as uuidv4} from 'uuid';
 import {UiSecret, UiSecretCategory} from "../../src/iolo_frontend/src/services/IoloTypesForUi";
@@ -70,9 +70,9 @@ describe("CRYPTO - Encryption and Decryption Tests", () => {
     test("it should create encrypted secrets properly", async () => {
 
         // Add secrets
-        const addSecretArgsOne: AddSecretArgs = await encryptNewSecret(secretOne, vetKeyOne);
+        const addSecretArgsOne: CreateSecretArgs = await encryptNewSecret(secretOne, vetKeyOne);
 
-        const resultAddSecretOne: Result_2 = await actorOne.add_secret(addSecretArgsOne);
+        const resultAddSecretOne: Result_3 = await actorOne.create_secret(addSecretArgsOne);
         expect(resultAddSecretOne).toHaveProperty('Ok');
         secretOne.id = resultAddSecretOne['Ok'].id;
 
@@ -81,7 +81,7 @@ describe("CRYPTO - Encryption and Decryption Tests", () => {
     test("it should decrypt created secrets properly", async () => {
 
         // Get secret
-        const resultSecretOne: Result_2 = await actorOne.get_secret(secretOne.id);
+        const resultSecretOne: Result_3 = await actorOne.get_secret(secretOne.id);
         expect(resultSecretOne).toHaveProperty('Ok');
 
         // Get crypto material for secret
@@ -98,7 +98,7 @@ describe("CRYPTO - Encryption and Decryption Tests", () => {
     test("it must not be possible to decrypt secrets with a vetkey of a different user", async () => {
 
         // Get secret
-        const resultSecretOne: Result_2= await actorOne.get_secret(secretOne.id);
+        const resultSecretOne: Result_3= await actorOne.get_secret(secretOne.id);
         expect(resultSecretOne).toHaveProperty('Ok');
 
         // Get crypto material for secret
@@ -113,7 +113,7 @@ describe("CRYPTO - Encryption and Decryption Tests", () => {
 });
 
 
-async function encryptNewSecret(uiSecret: UiSecret, vetKey: Uint8Array): Promise<AddSecretArgs> {
+async function encryptNewSecret(uiSecret: UiSecret, vetKey: Uint8Array): Promise<CreateSecretArgs> {
 
     // Encrypt the symmetric key
     const symmetricKey = await get_local_random_aes_256_gcm_key();

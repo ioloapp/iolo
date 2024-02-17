@@ -7,10 +7,11 @@ import {
 } from "./utils";
 import {Secp256k1KeyIdentity} from "@dfinity/identity-secp256k1";
 import {
-    AddSecretArgs,
+    CreateSecretArgs,
+    Result,
     Result_3,
     Secret,
-    Result_11, Result_7, Result_2, UpdateSecretArgs, _SERVICE
+    Result_11, Result_7, UpdateSecretArgs, _SERVICE
 } from "../../src/declarations/iolo_backend/iolo_backend.did";
 import {ActorSubclass} from "@dfinity/agent";
 
@@ -24,7 +25,7 @@ const actorTwo: ActorSubclass<_SERVICE> = createNewActor(identityTwo, canisterId
 
 const encrypted_symmetric_key = new TextEncoder().encode('mySuperKey'); // just a byte array, no symmetric key
 
-const addSecretArgsOne: AddSecretArgs = {
+const addSecretArgsOne: CreateSecretArgs = {
     name: ['secretA'],
     url: ['https://urlOne'],
     category: [{'Password': null}],
@@ -33,7 +34,7 @@ const addSecretArgsOne: AddSecretArgs = {
     notes: [new TextEncoder().encode('notesOne')], // arbitrary byte array
     encrypted_symmetric_key: encrypted_symmetric_key,
 };
-const addSecretArgsTwo: AddSecretArgs = {
+const addSecretArgsTwo: CreateSecretArgs = {
     name: ['secretB'],
     url: ['https://urlTwo'],
     category: [{'Note': null}],
@@ -42,7 +43,7 @@ const addSecretArgsTwo: AddSecretArgs = {
     notes: [new TextEncoder().encode('notesTwo')], // arbitrary byte array
     encrypted_symmetric_key: encrypted_symmetric_key,
 };
-const addSecretArgsThree: AddSecretArgs = {
+const addSecretArgsThree: CreateSecretArgs = {
     name: ['secretC'],
     url: [],
     category: [{'Document': null}],
@@ -51,7 +52,7 @@ const addSecretArgsThree: AddSecretArgs = {
     notes: [new TextEncoder().encode('notesThree')], // arbitrary byte array
     encrypted_symmetric_key: encrypted_symmetric_key,
 };
-const addSecretArgsFour: AddSecretArgs = {
+const addSecretArgsFour: CreateSecretArgs = {
     name: [],
     url: [],
     category: [],
@@ -89,7 +90,7 @@ beforeAll(async () => {
 
 describe("SECRET - create_secret()", () => {
     test("it must create secrets properly", async () => {
-        const resultAddSecretOne: Result_2 = await actorOne.add_secret(addSecretArgsOne);
+        const resultAddSecretOne: Result_3 = await actorOne.create_secret(addSecretArgsOne);
         expect(resultAddSecretOne).toHaveProperty('Ok');
         expect(Object.keys(resultAddSecretOne['Ok']).length).toStrictEqual(10);
         expect(resultAddSecretOne['Ok'].id).not.toStrictEqual("");
@@ -104,7 +105,7 @@ describe("SECRET - create_secret()", () => {
         expect(resultAddSecretOne['Ok'].date_created).toStrictEqual(resultAddSecretOne['Ok'].date_modified);
         secretOne = resultAddSecretOne['Ok']; // Overwrite id with correct value generated from backend
 
-        const resultAddSecretTwo: Result_2 = await actorOne.add_secret(addSecretArgsTwo);
+        const resultAddSecretTwo: Result_3 = await actorOne.create_secret(addSecretArgsTwo);
         expect(resultAddSecretTwo).toHaveProperty('Ok');
         expect(Object.keys(resultAddSecretTwo['Ok']).length).toStrictEqual(10);
         expect(resultAddSecretTwo['Ok'].id).not.toStrictEqual("");
@@ -120,7 +121,7 @@ describe("SECRET - create_secret()", () => {
         expect(resultAddSecretTwo['Ok'].date_created).toStrictEqual(resultAddSecretTwo['Ok'].date_modified);
         secretTwo = resultAddSecretTwo['Ok']; // Overwrite id with correct value generated from backend
 
-        const resultAddSecretThree: Result_2 = await actorTwo.add_secret(addSecretArgsThree);
+        const resultAddSecretThree: Result_3 = await actorTwo.create_secret(addSecretArgsThree);
         expect(resultAddSecretThree).toHaveProperty('Ok');
         expect(Object.keys(resultAddSecretThree['Ok']).length).toStrictEqual(10);
         expect(resultAddSecretThree['Ok'].id).not.toStrictEqual("");
@@ -137,7 +138,7 @@ describe("SECRET - create_secret()", () => {
         expect(resultAddSecretThree['Ok'].date_created).toStrictEqual(resultAddSecretThree['Ok'].date_modified);
         secretThree = resultAddSecretThree['Ok']; // Overwrite id with correct value generated from backend
 
-        const resultAddSecretFour: Result_2 = await actorTwo.add_secret(addSecretArgsFour);
+        const resultAddSecretFour: Result_3 = await actorTwo.create_secret(addSecretArgsFour);
         expect(resultAddSecretFour).toHaveProperty('Ok');
         expect(Object.keys(resultAddSecretFour['Ok']).length).toStrictEqual(10);
         expect(resultAddSecretFour['Ok'].id).not.toStrictEqual("");
@@ -159,12 +160,12 @@ describe("SECRET - create_secret()", () => {
 
     test("it must create the same secret twice", async () => {
         // Adding a new secret with the same attributes must work
-        const resultAddSecretOne: Result_2 = await actorOne.add_secret(addSecretArgsOne);
+        const resultAddSecretOne: Result_3 = await actorOne.create_secret(addSecretArgsOne);
         expect(resultAddSecretOne).toHaveProperty('Ok');
         expect(resultAddSecretOne['Ok'].id).not.toBe(secretOne.id);
 
         // Delete it again
-        const resultRemoveSecretOne: Result_3 = await actorOne.remove_secret(resultAddSecretOne['Ok'].id);
+        const resultRemoveSecretOne: Result = await actorOne.delete_secret(resultAddSecretOne['Ok'].id);
         expect(resultRemoveSecretOne).toHaveProperty('Ok');
 
     }, 15000); // Set timeout
@@ -174,7 +175,7 @@ describe("SECRET - create_secret()", () => {
 describe("SECRET - get_secret()", () => {
     test("it must read secrets properly", async () => {
         // Check created secret via getSecret
-        const resultSecretOne: Result_2 = await actorOne.get_secret(secretOne.id);
+        const resultSecretOne: Result_3 = await actorOne.get_secret(secretOne.id);
         expect(resultSecretOne).toHaveProperty('Ok');
         expect(Object.keys(resultSecretOne['Ok']).length).toStrictEqual(10);
         expect(resultSecretOne['Ok'].id).toStrictEqual(secretOne.id);
@@ -189,7 +190,7 @@ describe("SECRET - get_secret()", () => {
         expect(resultSecretOne['Ok'].date_modified).toStrictEqual(secretOne.date_modified);
         expect(resultSecretOne['Ok'].date_created).toStrictEqual(resultSecretOne['Ok'].date_modified);
 
-        const resultSecretTwo: Result_2 = await actorOne.get_secret(secretTwo.id);
+        const resultSecretTwo: Result_3 = await actorOne.get_secret(secretTwo.id);
         expect(resultSecretTwo).toHaveProperty('Ok');
         // Only validate differences to secretOne
         expect(resultSecretTwo['Ok'].username).toStrictEqual([]);
@@ -197,13 +198,13 @@ describe("SECRET - get_secret()", () => {
         expect(resultSecretTwo['Ok'].notes).toHaveLength(1);
         expect(resultSecretTwo['Ok'].category).toStrictEqual(addSecretArgsTwo.category);
 
-        const resultSecretThree: Result_2 = await actorTwo.get_secret(secretThree.id);
+        const resultSecretThree: Result_3 = await actorTwo.get_secret(secretThree.id);
         expect(resultSecretThree).toHaveProperty('Ok');
         // Only validate differences to secretOne and secretTwo
         expect(resultSecretThree['Ok'].url).toStrictEqual([]);
         expect(resultSecretThree['Ok'].category).toStrictEqual(addSecretArgsThree.category);
 
-        const resultSecretFour: Result_2 = await actorTwo.get_secret(secretFour.id);
+        const resultSecretFour: Result_3 = await actorTwo.get_secret(secretFour.id);
         expect(resultSecretFour).toHaveProperty('Ok');
         // Only validate differences to secretOne, secretTwo and secretThree
         expect(resultSecretFour['Ok'].name).toStrictEqual([]);
@@ -214,7 +215,7 @@ describe("SECRET - get_secret()", () => {
 
     test("it must not read secrets from other users", async () => {
         // Check created secret via getSecret
-        const resultSecretOne: Result_2 = await actorOne.get_secret(secretThree.id);
+        const resultSecretOne: Result_3 = await actorOne.get_secret(secretThree.id);
         expect(resultSecretOne).toHaveProperty('Err');
         expect(resultSecretOne['Err']).toHaveProperty('SecretDoesNotExist');
 
@@ -278,7 +279,7 @@ describe("SECRET - update_secret()", () => {
             username: [new TextEncoder().encode('myUpdatedUsernameOne')]
         };
 
-        const resultUpdateSecretOne: Result_2 = await actorOne.update_secret(updateSecretArgsOne);
+        const resultUpdateSecretOne: Result_3 = await actorOne.update_secret(updateSecretArgsOne);
         expect(resultUpdateSecretOne).toHaveProperty('Ok');
         expect(resultUpdateSecretOne['Ok'].id).toStrictEqual(secretOne.id);
         expect(resultUpdateSecretOne['Ok'].name).toStrictEqual(updateSecretArgsOne.name);
@@ -302,7 +303,7 @@ describe("SECRET - update_secret()", () => {
             username: [new TextEncoder().encode('myUpdatedUsernameTwo')] // add username
         };
 
-        const resultUpdateSecretTwo: Result_2 = await actorOne.update_secret(updateSecretArgsTwo);
+        const resultUpdateSecretTwo: Result_3 = await actorOne.update_secret(updateSecretArgsTwo);
         expect(resultUpdateSecretTwo).toHaveProperty('Ok');
         // Only validate updated attributes
         expect(resultUpdateSecretTwo['Ok'].url).toStrictEqual([]);
@@ -320,7 +321,7 @@ describe("SECRET - update_secret()", () => {
             password: secretThree.password,
             username: secretThree.username,
         };
-        const resultUpdateSecretThree: Result_2 = await actorTwo.update_secret(updateSecretArgsThree);
+        const resultUpdateSecretThree: Result_3 = await actorTwo.update_secret(updateSecretArgsThree);
         expect(resultUpdateSecretThree).toHaveProperty('Err');
         expect(resultUpdateSecretThree['Err']).toHaveProperty('SecretDoesNotExist');
 
@@ -328,7 +329,7 @@ describe("SECRET - update_secret()", () => {
 
     test("it must not update secrets of a different user", async () => {
         // Update secret
-        const resultUpdateSecretOne: Result_2 = await actorTwo.update_secret(secretOne);
+        const resultUpdateSecretOne: Result_3 = await actorTwo.update_secret(secretOne);
         expect(resultUpdateSecretOne).toHaveProperty('Err');
         expect(resultUpdateSecretOne['Err']).toHaveProperty('SecretDoesNotExist');
     }, 15000); // Set timeout
@@ -353,7 +354,7 @@ describe("SECRET - get_encrypted_symmetric_key()", () => {
 describe("SECRET - delete_secret()", () => {
     test("it must delete secrets properly", async () => {
         // Deleting secretOne with userOne must work
-        const resultRemoveSecretOne: Result_3 = await actorOne.remove_secret(secretOne.id);
+        const resultRemoveSecretOne: Result = await actorOne.delete_secret(secretOne.id);
         expect(resultRemoveSecretOne).toHaveProperty('Ok');
         expect(resultRemoveSecretOne['Ok']).toBeNull();
 
@@ -367,7 +368,7 @@ describe("SECRET - delete_secret()", () => {
 
     test("it must not delete secrets of a different user", async () => {
         // Deleting secretThree with userOne must not work
-        const resultRemoveSecretThree: Result_3 = await actorOne.remove_secret(secretThree.id);
+        const resultRemoveSecretThree: Result = await actorOne.delete_secret(secretThree.id);
         expect(resultRemoveSecretThree).toHaveProperty('Err');
         expect(resultRemoveSecretThree['Err']).toHaveProperty('SecretDoesNotExist');
 

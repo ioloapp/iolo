@@ -15,11 +15,11 @@ use super::conditions_manager::evaluate_overall_conditions_status;
 use super::policy::PolicyForValidator;
 use super::{
     conditions::Condition,
-    policy::{AddPolicyArgs, Policy, PolicyID, PolicyListEntry, PolicyWithSecretListEntries},
+    policy::{CreatePolicyArgs, Policy, PolicyID, PolicyListEntry, PolicyWithSecretListEntries},
 };
 
-pub async fn add_policy_impl(
-    apa: AddPolicyArgs,
+pub async fn create_policy_impl(
+    apa: CreatePolicyArgs,
     policy_owner: PrincipalID,
 ) -> Result<Policy, SmartVaultErr> {
     // we create the policy id in the backend
@@ -27,10 +27,10 @@ pub async fn add_policy_impl(
 
     // create policy from AddPolicyArgs
     let policy: Policy =
-        Policy::from_add_policy_args(&new_policy_id, &policy_owner.to_string(), apa);
+        Policy::from_create_policy_args(&new_policy_id, &policy_owner.to_string(), apa);
 
     // Add policy to the policy store (policies: StableBTreeMap<UUID, Policy, Memory>,)
-    add_policy_to_policy_store(policy.clone())?;
+    create_policy_in_policy_store(policy.clone())?;
 
     // add the policy id to the user in the USER_STORE
     USER_STORE.with(|us| {
@@ -358,7 +358,7 @@ pub async fn update_policy_impl(
         }
     }
 
-    // create policy from AddPolicyArgs
+    // create policy from UpdatePolicyArgs
     let policy: Policy = Policy::from_update_policy_args(
         &upa.id,
         &existing_policy.owner().to_string(),
@@ -391,7 +391,7 @@ pub async fn update_policy_impl(
     Ok(updated_policy)
 }
 
-pub fn remove_policy_impl(policy_id: String, caller: PrincipalID) -> Result<(), SmartVaultErr> {
+pub fn delete_policy_impl(policy_id: String, caller: PrincipalID) -> Result<(), SmartVaultErr> {
     // check if policy exists
     let policy: Policy = get_policy_from_policy_store(&policy_id)?;
 
@@ -400,10 +400,10 @@ pub fn remove_policy_impl(policy_id: String, caller: PrincipalID) -> Result<(), 
         return Err(SmartVaultErr::PolicyDoesNotExist(policy.id));
     }
 
-    // remove policy in policy store
+    // delete policy in policy store
     POLICY_STORE.with(|ps| {
         let mut policy_store = ps.borrow_mut();
-        policy_store.remove_policy(&policy_id)
+        policy_store.delete_policy(&policy_id)
     })?;
 
     // remove policy from registry for beneficiaries (reverse index)
@@ -473,7 +473,7 @@ pub fn confirm_x_out_of_y_condition_impl(
  * Helper CRUD functions
  */
 
-pub fn add_policy_to_policy_store(policy: Policy) -> Result<Policy, SmartVaultErr> {
+pub fn create_policy_in_policy_store(policy: Policy) -> Result<Policy, SmartVaultErr> {
     POLICY_STORE.with(|ps| {
         let mut policy_store = ps.borrow_mut();
         policy_store.add_policy(policy.clone())
@@ -515,15 +515,15 @@ mod tests {
         policies::{
             conditions::{Condition, LastLoginTimeCondition, Validator, XOutOfYCondition},
             policies_interface_impl::{
-                add_policy_impl, get_policy_as_beneficiary_impl, get_policy_as_owner_impl,
+                create_policy_impl, get_policy_as_beneficiary_impl, get_policy_as_owner_impl,
                 get_policy_list_as_beneficiary_impl, get_policy_list_as_owner_impl,
                 get_policy_list_as_validator_impl, update_policy_impl,
             },
-            policy::{AddPolicyArgs, Policy, PolicyWithSecretListEntries},
+            policy::{CreatePolicyArgs, Policy, PolicyWithSecretListEntries},
         },
         secrets::{
-            secret::AddSecretArgs,
-            secrets_interface_impl::{add_secret_impl, get_secret_as_beneficiary_impl},
+            secret::CreateSecretArgs,
+            secrets_interface_impl::{create_secret_impl, get_secret_as_beneficiary_impl},
         },
         smart_vaults::smart_vault::POLICY_STORE,
         users::{
@@ -560,7 +560,7 @@ mod tests {
         // Create a Secret
         let encrypted_symmetric_key: Vec<u8> = vec![1, 2, 3];
 
-        let asa: AddSecretArgs = AddSecretArgs {
+        let asa: CreateSecretArgs = CreateSecretArgs {
             category: None,
             name: Some("Google".to_string()),
             username: Some(vec![1, 2, 3]),
@@ -571,7 +571,7 @@ mod tests {
         };
 
         // Add Secret
-        let added_secret = add_secret_impl(asa.clone(), principal.to_string())
+        let added_secret = create_secret_impl(asa.clone(), principal.to_string())
             .await
             .unwrap();
 
@@ -591,10 +591,10 @@ mod tests {
             question: "When will you be happy?".to_string(),
         });
 
-        let apa: AddPolicyArgs = AddPolicyArgs {
+        let apa: CreatePolicyArgs = CreatePolicyArgs {
             name: Some("Policy#1".to_string()),
         };
-        let added_policy: Policy = add_policy_impl(apa.clone(), principal.to_string())
+        let added_policy: Policy = create_policy_impl(apa.clone(), principal.to_string())
             .await
             .unwrap();
 

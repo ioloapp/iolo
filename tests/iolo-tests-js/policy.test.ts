@@ -7,7 +7,7 @@ import {
 } from "./utils";
 import {Secp256k1KeyIdentity} from "@dfinity/identity-secp256k1";
 import {
-    Result_1, AddPolicyArgs, Policy, _SERVICE,
+    Result_3, CreatePolicyArgs, Policy, _SERVICE, Result_2,
     UpdatePolicyArgs,
     UpdateXOutOfYCondition,
     Validator,
@@ -26,11 +26,11 @@ const actorOne: ActorSubclass<_SERVICE> = createNewActor(identityOne, canisterId
 const actorTwo: ActorSubclass<_SERVICE> = createNewActor(identityTwo, canisterId);
 const actorThree: ActorSubclass<_SERVICE> = createNewActor(identityThree, canisterId);
 
-const addPolicyArgsOne: AddPolicyArgs = {
+const addPolicyArgsOne: CreatePolicyArgs = {
     name: [],
 }
 
-const addPolicyArgsTwo: AddPolicyArgs = {
+const addPolicyArgsTwo: CreatePolicyArgs = {
     name: ['policyB'],
 }
 
@@ -50,7 +50,7 @@ beforeAll(async () => {
 describe("POLICY - create_policy()", () => {
     test("it must create policies properly", async () => {
         // Minimal policy without name
-        const resultAddPolicyOne: Result_1 = await actorOne.add_policy(addPolicyArgsOne);
+        const resultAddPolicyOne: Result_2 = await actorOne.create_policy(addPolicyArgsOne);
         expect(resultAddPolicyOne).toHaveProperty('Ok');
         expect(Object.keys(resultAddPolicyOne['Ok']).length).toStrictEqual(11);
         expect(Number(resultAddPolicyOne['Ok'].id)).not.toStrictEqual("");
@@ -67,7 +67,7 @@ describe("POLICY - create_policy()", () => {
         policyOne = resultAddPolicyOne['Ok'];
 
         // Policy with name
-        const resultAddPolicyTwo: Result_1 = await actorOne.add_policy(addPolicyArgsTwo);
+        const resultAddPolicyTwo: Result_2 = await actorOne.create_policy(addPolicyArgsTwo);
         expect(resultAddPolicyTwo).toHaveProperty('Ok');
         expect(Object.keys(resultAddPolicyTwo['Ok']).length).toStrictEqual(11);
         expect(Number(resultAddPolicyTwo['Ok'].id)).not.toStrictEqual("");
@@ -121,7 +121,7 @@ describe("POLICY - update_policy()", () => {
             key_box: [[secretA.id, new Uint8Array([1, 2, 3])], [secretB.id, new Uint8Array([4, 5, 6])]],
         }
 
-        let resultUpdatePolicyOne: Result_1 = await actorOne.update_policy(updatePolicyArgsOne);
+        let resultUpdatePolicyOne: Result_2 = await actorOne.update_policy(updatePolicyArgsOne);
         expect(resultUpdatePolicyOne).toHaveProperty('Ok');
         expect(Object.keys(resultUpdatePolicyOne['Ok']).length).toStrictEqual(11);
         expect(Number(resultUpdatePolicyOne['Ok'].id)).not.toStrictEqual("");
@@ -182,7 +182,7 @@ describe("POLICY - update_policy()", () => {
             secrets: [],
             key_box: [],
         };
-        const resultUpdatePolicyOne: Result_1 = await actorTwo.update_policy(updatePolicyArgsOne);
+        const resultUpdatePolicyOne: Result_2 = await actorTwo.update_policy(updatePolicyArgsOne);
         expect(resultUpdatePolicyOne).toHaveProperty('Err');
         expect(resultUpdatePolicyOne['Err']).toHaveProperty('PolicyDoesNotExist');
         expect(resultUpdatePolicyOne['Err'].PolicyDoesNotExist).toStrictEqual(updatePolicyArgsOne.id);
@@ -199,7 +199,7 @@ describe("POLICY - update_policy()", () => {
             secrets: [],
             key_box: [],
         };
-        const resultUpdatePolicyOne: Result_1 = await actorOne.update_policy(updatePolicyArgsOne);
+        const resultUpdatePolicyOne: Result_2 = await actorOne.update_policy(updatePolicyArgsOne);
         expect(resultUpdatePolicyOne).toHaveProperty('Err');
         expect(resultUpdatePolicyOne['Err']).toHaveProperty('PolicyDoesNotExist');
         expect(resultUpdatePolicyOne['Err'].PolicyDoesNotExist).toStrictEqual(updatePolicyArgsOne.id);
@@ -216,7 +216,7 @@ describe("POLICY - update_policy()", () => {
             secrets: ['non-existing-secret-id'],
             key_box: [],
         };
-        const resultUpdatePolicyOne: Result_1 = await actorOne.update_policy(updatePolicyArgsOne);
+        const resultUpdatePolicyOne: Result_2 = await actorOne.update_policy(updatePolicyArgsOne);
         expect(resultUpdatePolicyOne).toHaveProperty('Err');
         expect(resultUpdatePolicyOne['Err']).toHaveProperty('SecretDoesNotExist');
         expect(resultUpdatePolicyOne['Err'].SecretDoesNotExist).toStrictEqual(updatePolicyArgsOne.secrets[0]);
@@ -238,7 +238,7 @@ describe("POLICY - update_policy()", () => {
             key_box: [[secretA.id, new Uint8Array([1, 2, 3])], [secretB.id, new Uint8Array([1, 2, 3])], [secretC.id, new Uint8Array([1, 2, 3])]],
         };
 
-        const resultUpdatePolicyOne: Result_1 = await actorOne.update_policy(updatePolicyArgsOne);
+        const resultUpdatePolicyOne: Result_2 = await actorOne.update_policy(updatePolicyArgsOne);
         expect(resultUpdatePolicyOne).toHaveProperty('Err');
         expect(resultUpdatePolicyOne['Err']).toHaveProperty('SecretDoesNotExist');
         expect(resultUpdatePolicyOne['Err'].SecretDoesNotExist).toStrictEqual(secretB.id);
@@ -259,7 +259,7 @@ describe("POLICY - update_policy()", () => {
             key_box: [[secretA.id, new Uint8Array([1, 2, 3])]],
         };
 
-        let resultUpdatePolicyOne: Result_1 = await actorOne.update_policy(updatePolicyArgsOne);
+        let resultUpdatePolicyOne: Result_2 = await actorOne.update_policy(updatePolicyArgsOne);
         expect(resultUpdatePolicyOne).toHaveProperty('Err');
         expect(resultUpdatePolicyOne['Err']).toHaveProperty('KeyBoxEntryDoesNotExistForSecret');
         expect(resultUpdatePolicyOne['Err'].KeyBoxEntryDoesNotExistForSecret).toStrictEqual(secretB.id);
@@ -292,7 +292,7 @@ describe("POLICY - update_policy()", () => {
             key_box: [],
         };
 
-        const resultUpdatePolicyOne: Result_1 = await actorOne.update_policy(updatePolicyArgsOne);
+        const resultUpdatePolicyOne: Result_2 = await actorOne.update_policy(updatePolicyArgsOne);
         expect(resultUpdatePolicyOne).toHaveProperty('Err');
         expect(resultUpdatePolicyOne['Err']).toHaveProperty('UserDoesNotExist');
         expect(resultUpdatePolicyOne['Err'].UserDoesNotExist).toStrictEqual(updatePolicyArgsOne.beneficiaries[0]);

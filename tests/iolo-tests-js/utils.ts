@@ -3,7 +3,7 @@ import {Secp256k1KeyIdentity} from '@dfinity/identity-secp256k1';
 import {ActorSubclass, HttpAgent} from "@dfinity/agent";
 import {createActor, } from "../../src/declarations/iolo_backend";
 import {
-    AddOrUpdateUserArgs, AddSecretArgs, Secret, Result_2, Result_3, _SERVICE
+    AddOrUpdateUserArgs, CreateSecretArgs, Secret, Result_3, _SERVICE
 } from "../../src/declarations/iolo_backend/iolo_backend.did";
 
 export function determineBackendCanisterId(): string {
@@ -66,7 +66,7 @@ export async function createIoloUsersInBackend(actors: Array<ActorSubclass<_SERV
 export async function createSecretInBackend(prefix: string, actor: ActorSubclass<_SERVICE>): Promise<Secret> {
     const encrypted_symmetric_key = new TextEncoder().encode('mySuperKey'); // just a byte array, no symmetric key
 
-    let addSecretArgsOne: AddSecretArgs = {
+    let addSecretArgsOne: CreateSecretArgs = {
         name: ['secret' + prefix],
         url: ['https://www.secret' + prefix + '.com'],
         category: [{'Password': null}],
@@ -77,7 +77,7 @@ export async function createSecretInBackend(prefix: string, actor: ActorSubclass
     }
 
 
-    const result: Result_2 = await actor.add_secret(addSecretArgsOne);
+    const result: Result_3 = await actor.create_secret(addSecretArgsOne);
     if (!result['Ok']) {
         throw new Error(`Secret creation failed: ${result['Err']}`);
     }

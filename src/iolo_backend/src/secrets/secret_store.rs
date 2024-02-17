@@ -90,7 +90,7 @@ impl SecretStore {
         Ok(self.secrets.get(&sid).unwrap().clone())
     }
 
-    pub fn remove_secret(
+    pub fn delete_secret(
         &mut self,
         caller: &PrincipalID,
         secret_id: &SecretID,

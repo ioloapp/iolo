@@ -2,7 +2,7 @@ import { expect, test, describe } from 'vitest'
 import { determineBackendCanisterId, createIdentity, createNewActor } from "./utils";
 import {Secp256k1KeyIdentity} from "@dfinity/identity-secp256k1";
 import {
-    Result_3,
+    Result,
     User,
     AddOrUpdateUserArgs,
     Result_4,
@@ -31,9 +31,9 @@ let userOneForComparison: User = {} as User;
 
 describe("USER - create_user()", () => {
     test("it must create users properly", async () => {
-        const resultOne: Result_3 = await actorOne.delete_user(); // Just in case the user is already existing on the replica
-        const resultTwo: Result_3 = await actorTwo.delete_user(); // Just in case the user is already existing on the replica
-        const resultThree: Result_3 = await actorThree.delete_user(); // Just in case the user is already existing on the replica
+        const resultOne: Result = await actorOne.delete_user(); // Just in case the user is already existing on the replica
+        const resultTwo: Result = await actorTwo.delete_user(); // Just in case the user is already existing on the replica
+        const resultThree: Result = await actorThree.delete_user(); // Just in case the user is already existing on the replica
 
         // Create user of type Person wit all optional fields
         const addOrUpdateUserArgsOne: AddOrUpdateUserArgs = {
@@ -195,7 +195,7 @@ describe("USER - update_user_login_date()", () => {
 describe("USER - delete_user()", () => {
     test("it must delete a user properly", async () => {
         // Delete user
-        let resultOne: Result_3 = await actorOne.delete_user();
+        let resultOne: Result = await actorOne.delete_user();
         expect(resultOne).toHaveProperty('Ok');
 
         // Delete user again, must fail
@@ -214,11 +214,11 @@ describe("USER - delete_user()", () => {
         expect(userOneAgain['Ok'].id).toStrictEqual(identityOne.getPrincipal().toString());
 
         // Delete user
-        let resultTwo: Result_3 = await actorTwo.delete_user();
+        let resultTwo: Result = await actorTwo.delete_user();
         expect(resultTwo).toHaveProperty('Ok');
 
         // Delete user
-        let resultThree: Result_3 = await actorThree.delete_user();
+        let resultThree: Result = await actorThree.delete_user();
         expect(resultThree).toHaveProperty('Ok');
 
     }, 15000); // Set timeout

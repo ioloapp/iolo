@@ -12,7 +12,7 @@ export const addContactThunk = createAsyncThunk<UiUser, UiUser, {
 >('contacts/add',
     async (contact, {rejectWithValue}) => {
         try {
-            return await ioloService.addContact(contact);
+            return await ioloService.createContact(contact);
         } catch (e) {
             return rejectWithValue(e)
         }

@@ -1,14 +1,15 @@
 import {ActorSubclass, HttpAgent, Identity} from "@dfinity/agent";
 import {
     _SERVICE,
-    AddPolicyArgs,
-    AddSecretArgs,
+    CreatePolicyArgs,
+    CreateSecretArgs,
     AddOrUpdateUserArgs,
     Condition,
     Policy,
     PolicyListEntry,
     PolicyWithSecretListEntries,
     Result, Result_10,
+    Result_1,
     Result_2,
     Result_3,
     Result_6,
@@ -23,7 +24,7 @@ import {
     User,
     UserType,
     XOutOfYCondition,
-    AddContactArgs, Result_1, UpdatePolicyArgs, Result_4, Result_11, FixedDateTimeCondition
+    CreateContactArgs, UpdatePolicyArgs, Result_4, Result_11, FixedDateTimeCondition
 } from "../../../declarations/iolo_backend/iolo_backend.did";
 import {AuthClient} from "@dfinity/auth-client";
 import {createActor} from "../../../declarations/iolo_backend";
@@ -183,7 +184,7 @@ class IoloService {
 
     public async getSecret(secretId: string): Promise<UiSecret> {
         console.debug('start getting secret...')
-        const result1: Result_2 = await (await this.getActor()).get_secret(secretId);
+        const result1: Result_3 = await (await this.getActor()).get_secret(secretId);
         const result2: Result_7 = await (await this.getActor()).get_encrypted_symmetric_key(secretId);
 
         // Wait for both promises to complete
@@ -200,7 +201,7 @@ class IoloService {
 
     public async getSecretAsBeneficiary(secretId: string, policyId: string): Promise<UiSecret> {
         console.debug('start getting secret for beneficiary...')
-        const result1: Result_2 = await (await this.getActor()).get_secret_as_beneficiary(secretId, policyId);
+        const result1: Result_3 = await (await this.getActor()).get_secret_as_beneficiary(secretId, policyId);
         const result2: Result_7 = await (await this.getActor()).get_encrypted_symmetric_key_as_beneficiary(secretId, policyId);
 
         // Wait for both promises to complete
@@ -214,10 +215,10 @@ class IoloService {
         } else throw mapError(value1['Err']);
     }
 
-    public async addSecret(uiSecret: UiSecret): Promise<UiSecret> {
-        console.debug('start adding secret...')
-        const encryptedSecret: AddSecretArgs = await this.encryptNewSecret(uiSecret)
-        const result: Result_2 = await (await this.getActor()).add_secret(encryptedSecret);
+    public async createSecret(uiSecret: UiSecret): Promise<UiSecret> {
+        console.debug('start creating secret...')
+        const encryptedSecret: CreateSecretArgs = await this.encryptNewSecret(uiSecret)
+        const result: Result_3 = await (await this.getActor()).create_secret(encryptedSecret);
         if (result['Ok']) {
             return this.mapSecretToUiSecret(result['Ok'], uiSecret.username, uiSecret.password, uiSecret.notes);
         }
@@ -236,7 +237,7 @@ class IoloService {
         }
 
         // Get secret with encrypted attributes incl. ivs
-        const resultSecret: Result_2 = await (await this.getActor()).get_secret(uiSecret.id);
+        const resultSecret: Result_3 = await (await this.getActor()).get_secret(uiSecret.id);
         let existingSecret: Secret;
         if (resultSecret['Ok']) {
             existingSecret = resultSecret['Ok'];
@@ -254,7 +255,7 @@ class IoloService {
         const encryptedUpdateSecretArgs: UpdateSecretArgs = await this.encryptExistingSecret(uiSecret, decryptedSymmetricKey, existingSecret);
 
         // Update encrypted secret
-        const resultUpdate: Result_2 = await (await this.getActor()).update_secret(encryptedUpdateSecretArgs);
+        const resultUpdate: Result_3 = await (await this.getActor()).update_secret(encryptedUpdateSecretArgs);
 
         if (resultUpdate['Ok']) {
             return this.mapSecretToUiSecret(resultUpdate['Ok'], uiSecret.username, uiSecret.password, uiSecret.notes);
@@ -263,21 +264,21 @@ class IoloService {
     }
 
     public async deleteSecret(secretId: string): Promise<void> {
-        const result: Result_3 = await (await this.getActor()).remove_secret(secretId);
+        const result: Result_3 = await (await this.getActor()).delete_secret(secretId);
         if (result['Ok'] === null) {
             return;
         }
         throw mapError(result['Err']);
     }
 
-    public async addPolicy(uiPolicy: UiPolicy): Promise<UiPolicy> {
-        console.debug('start adding policy...');
-        const addPolicyArgs: AddPolicyArgs = {
+    public async createPolicy(uiPolicy: UiPolicy): Promise<UiPolicy> {
+        console.debug('start creating policy...');
+        const createPolicyArgs: CreatePolicyArgs = {
             name: [uiPolicy.name],
         }
 
-        // Add policy to get an id
-        const result: Result_1 = await (await this.getActor()).add_policy(addPolicyArgs);
+        // Create policy to get an id
+        const result: Result_2 = await (await this.getActor()).create_policy(createPolicyArgs);
         if (result['Ok']) {
             uiPolicy.id = result['Ok'].id; // Use created policy id
             return await this.updatePolicy(uiPolicy); // Update created policy with all other attributes
@@ -289,7 +290,7 @@ class IoloService {
         const updatePolicyArgs: UpdatePolicyArgs = await this.mapUiPolicyToUpdatePolicyArgs(uiPolicy);
 
         // Update policy
-        const result: Result_1 = await (await this.getActor()).update_policy(updatePolicyArgs);
+        const result: Result_2 = await (await this.getActor()).update_policy(updatePolicyArgs);
         if (result['Ok']) {
             return this.mapPolicyToUiPolicy(result['Ok'], UiPolicyListEntryRole.Owner);
         } else throw mapError(result['Err']);
@@ -378,7 +379,7 @@ class IoloService {
     }
 
     public async deletePolicy(id: string): Promise<void> {
-        const result: Result_3 = await (await this.getActor()).remove_policy(id);
+        const result: Result_3 = await (await this.getActor()).delete_policy(id);
         if (result['Ok'] === null) {
             return;
         }
@@ -393,8 +394,8 @@ class IoloService {
         throw mapError(result['Err']);
     }
 
-    public async addContact(contact: UiUser): Promise<UiUser> {
-        console.debug('start adding contact: ', contact);
+    public async createContact(contact: UiUser): Promise<UiUser> {
+        console.debug('start creating contact: ', contact);
 
         // Check if it's a valid principal
         try {
@@ -403,14 +404,14 @@ class IoloService {
             throw mapError(new Error('PrincipalCreationFailed'));
         }
 
-        let addContactArgs: AddContactArgs = {
+        let createContactArgs: CreateContactArgs = {
             email: contact.email ? [contact.email] : [],
             id: contact.id,
             name: contact.name ? [contact.name] : [],
             user_type: contact.type ? [this.mapUiUserTypeToUserType(contact.type)] : [],
         }
 
-        const result: Result = await (await this.getActor()).add_contact(addContactArgs);
+        const result: Result_1 = await (await this.getActor()).create_contact(createContactArgs);
         if (result['Err']) {
             throw mapError(result['Err']);
         }
@@ -427,7 +428,7 @@ class IoloService {
 
     public async updateContact(contact: UiUser): Promise<UiUser> {
         const user = this.mapUiUserToUser(contact);
-        const result: Result = await (await this.getActor()).update_contact(user);
+        const result: Result_1 = await (await this.getActor()).update_contact(user);
 
         if (result['Ok']) {
             return this.mapUserToUiUser(result['Ok']);
@@ -436,7 +437,7 @@ class IoloService {
     }
 
     public async deleteContact(id: string) {
-        const result: Result = await (await this.getActor()).remove_contact(id);
+        const result: Result = await (await this.getActor()).delete_contact(id);
         if (result['Ok'] === null) {
             return;
         }
@@ -544,7 +545,7 @@ class IoloService {
         return BigInt(new Date(isoDate).getTime()) * 1000000n;
     }
 
-    private async encryptNewSecret(uiSecret: UiSecret): Promise<AddSecretArgs> {
+    private async encryptNewSecret(uiSecret: UiSecret): Promise<CreateSecretArgs> {
         // When creating new secrets no encryption key and no ivs are provided, they are generated new
         try {
             // Encrypt the symmetric key

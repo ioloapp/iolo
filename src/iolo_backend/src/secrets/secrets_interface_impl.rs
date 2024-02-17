@@ -11,7 +11,7 @@ use crate::{
 };
 
 use super::{
-    secret::{AddSecretArgs, Secret, SecretListEntry},
+    secret::{CreateSecretArgs, Secret, SecretListEntry},
     secret_store::SecretStore,
 };
 
@@ -24,8 +24,8 @@ use super::{
  * 3. Add the secret to the secret store
  * 4. Add the secret id to the user vault's secret id list
  */
-pub async fn add_secret_impl(
-    args: AddSecretArgs,
+pub async fn create_secret_impl(
+    args: CreateSecretArgs,
     caller: PrincipalID,
 ) -> Result<Secret, SmartVaultErr> {
     // generate a new UUID for the secret
@@ -103,7 +103,7 @@ pub fn update_secret_impl(
     })
 }
 
-pub fn remove_secret_impl(
+pub fn delete_secret_impl(
     secret_id: SecretID,
     principal: PrincipalID,
 ) -> Result<(), SmartVaultErr> {
@@ -111,14 +111,14 @@ pub fn remove_secret_impl(
     SECRET_STORE.with(
         |secret_store_rc: &RefCell<SecretStore>| -> Result<(), SmartVaultErr> {
             let mut secret_store = secret_store_rc.borrow_mut();
-            secret_store.remove_secret(&principal.to_string(), &secret_id)
+            secret_store.delete_secret(&principal.to_string(), &secret_id)
         },
     )?;
 
     // delete secret from users secret list
     USER_STORE.with(|us| -> Result<(), SmartVaultErr> {
         let mut user_store = us.borrow_mut();
-        user_store.remove_secret_from_user(&principal.to_string(), secret_id)
+        user_store.delete_secret_of_user(&principal.to_string(), secret_id)
     })
 }
 
@@ -198,10 +198,10 @@ mod tests {
     use crate::{
         common::error::SmartVaultErr,
         secrets::{
-            secret::{AddSecretArgs, UpdateSecretArgs},
+            secret::{CreateSecretArgs, UpdateSecretArgs},
             secrets_interface_impl::{
-                add_secret_impl, get_encrypted_symmetric_key_impl, get_secret_impl,
-                get_secret_list_impl, remove_secret_impl, update_secret_impl,
+                create_secret_impl, get_encrypted_symmetric_key_impl, get_secret_impl,
+                get_secret_list_impl, delete_secret_impl, update_secret_impl,
             },
         },
         smart_vaults::smart_vault::SECRET_STORE,
@@ -224,7 +224,7 @@ mod tests {
         // Create Mock Secret
         let encrypted_symmetric_key = vec![1, 2, 3];
 
-        let mut asa: AddSecretArgs = AddSecretArgs {
+        let mut asa: CreateSecretArgs = CreateSecretArgs {
             category: None,
             name: Some("Google".to_string()),
             username: Some(vec![1, 2, 3]),
@@ -235,7 +235,7 @@ mod tests {
         };
 
         // Add Secret
-        let added_secret = add_secret_impl(asa.clone(), principal.to_string())
+        let added_secret = create_secret_impl(asa.clone(), principal.to_string())
             .await
             .unwrap();
         assert_eq!(added_secret.name(), asa.name);
@@ -283,7 +283,7 @@ mod tests {
 
         // add another again
         asa.name = Some("iolo".to_string());
-        add_secret_impl(asa.clone(), principal.to_string())
+        create_secret_impl(asa.clone(), principal.to_string())
             .await
             .unwrap();
 
@@ -306,7 +306,7 @@ mod tests {
 
         // delete secret
         let deleted_secret =
-            remove_secret_impl(updated_secret.id().to_string(), principal.to_string());
+            delete_secret_impl(updated_secret.id().to_string(), principal.to_string());
         assert!(deleted_secret.is_ok());
         let test_fetch = get_secret_impl(added_secret.id().to_string(), principal.to_string());
         assert!(test_fetch.is_err());

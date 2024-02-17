@@ -67,7 +67,7 @@ impl PolicyStore {
         }
     }
 
-    pub fn remove_policy(&mut self, policy_id: &str) -> Result<(), SmartVaultErr> {
+    pub fn delete_policy(&mut self, policy_id: &str) -> Result<(), SmartVaultErr> {
         let p = self.policies.remove(&policy_id.to_string());
         match p {
             Some(_) => Ok(()),

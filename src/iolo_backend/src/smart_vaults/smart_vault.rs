@@ -5,31 +5,31 @@ use ic_cdk::{post_upgrade, pre_upgrade};
 use crate::common::error::SmartVaultErr;
 use crate::policies::conditions::ConfirmXOutOfYConditionArgs;
 use crate::policies::policies_interface_impl::{
-    add_policy_impl, confirm_x_out_of_y_condition_impl, get_policy_as_beneficiary_impl,
+    create_policy_impl, confirm_x_out_of_y_condition_impl, get_policy_as_beneficiary_impl,
     get_policy_as_owner_impl, get_policy_as_validator_impl, get_policy_list_as_beneficiary_impl,
-    get_policy_list_as_owner_impl, get_policy_list_as_validator_impl, remove_policy_impl,
+    get_policy_list_as_owner_impl, get_policy_list_as_validator_impl, delete_policy_impl,
     update_policy_impl,
 };
 use crate::policies::policy::{
-    AddPolicyArgs, Policy, PolicyForValidator, PolicyID, PolicyListEntry,
+    CreatePolicyArgs, Policy, PolicyForValidator, PolicyID, PolicyListEntry,
 };
 use crate::policies::policy::{PolicyWithSecretListEntries, UpdatePolicyArgs};
 use crate::policies::policy_registries::PolicyRegistries;
 use crate::policies::policy_store::PolicyStore;
-use crate::secrets::secret::{AddSecretArgs, Secret, SecretID, SecretListEntry, UpdateSecretArgs};
+use crate::secrets::secret::{CreateSecretArgs, Secret, SecretID, SecretListEntry, UpdateSecretArgs};
 use crate::secrets::secret_store::SecretStore;
 use crate::secrets::secrets_interface_impl::{
-    add_secret_impl, get_encrypted_symmetric_key_as_beneficiary_impl,
+    create_secret_impl, get_encrypted_symmetric_key_as_beneficiary_impl,
     get_encrypted_symmetric_key_impl, get_secret_as_beneficiary_impl, get_secret_impl,
-    get_secret_list_impl, remove_secret_impl, update_secret_impl,
+    get_secret_list_impl, delete_secret_impl, update_secret_impl,
 };
 
-use crate::users::contact::{AddContactArgs, Contact};
+use crate::users::contact::{CreateContactArgs, Contact};
 use crate::users::user::{AddOrUpdateUserArgs, PrincipalID, User};
 use crate::users::user_store::UserStore;
 use crate::users::users_interface_impl::{
-    add_contact_impl, create_user_impl, delete_user_impl, get_contact_list_impl,
-    get_current_user_impl, remove_contact_impl, update_contact_impl, update_user_impl,
+    crate_contact_impl, create_user_impl, delete_user_impl, get_contact_list_impl,
+    get_current_user_impl, delete_contact_impl, update_contact_impl, update_user_impl,
     update_user_login_date_impl,
 };
 use crate::utils::caller::get_caller;
@@ -76,8 +76,8 @@ pub fn delete_user() -> Result<(), SmartVaultErr> {
 }
 
 #[ic_cdk_macros::update]
-pub async fn add_secret(args: AddSecretArgs) -> Result<Secret, SmartVaultErr> {
-    add_secret_impl(args, get_caller_id()).await
+pub async fn create_secret(args: CreateSecretArgs) -> Result<Secret, SmartVaultErr> {
+    create_secret_impl(args, get_caller_id()).await
 }
 
 #[ic_cdk_macros::query]
@@ -91,8 +91,8 @@ pub fn update_secret(usa: UpdateSecretArgs) -> Result<Secret, SmartVaultErr> {
 }
 
 #[ic_cdk_macros::update]
-pub fn remove_secret(secret_id: String) -> Result<(), SmartVaultErr> {
-    remove_secret_impl(secret_id, get_caller_id())
+pub fn delete_secret(secret_id: String) -> Result<(), SmartVaultErr> {
+    delete_secret_impl(secret_id, get_caller_id())
 }
 
 #[ic_cdk_macros::query]
@@ -126,8 +126,8 @@ pub fn get_encrypted_symmetric_key_as_beneficiary(
  */
 
 #[ic_cdk_macros::update]
-pub async fn add_policy(args: AddPolicyArgs) -> Result<Policy, SmartVaultErr> {
-    add_policy_impl(args, get_caller_id()).await
+pub async fn create_policy(args: CreatePolicyArgs) -> Result<Policy, SmartVaultErr> {
+    create_policy_impl(args, get_caller_id()).await
 }
 
 #[ic_cdk_macros::query]
@@ -171,8 +171,8 @@ pub async fn update_policy(upa: UpdatePolicyArgs) -> Result<Policy, SmartVaultEr
 }
 
 #[ic_cdk_macros::update]
-pub fn remove_policy(policy_id: String) -> Result<(), SmartVaultErr> {
-    remove_policy_impl(policy_id, get_caller_id())
+pub fn delete_policy(policy_id: String) -> Result<(), SmartVaultErr> {
+    delete_policy_impl(policy_id, get_caller_id())
 }
 
 #[ic_cdk_macros::update]
@@ -186,8 +186,8 @@ pub fn confirm_x_out_of_y_condition(
  * Contact CRUD
  */
 #[ic_cdk_macros::update]
-pub fn add_contact(args: AddContactArgs) -> Result<Contact, SmartVaultErr> {
-    add_contact_impl(args, get_caller_id())
+pub fn create_contact(args: CreateContactArgs) -> Result<Contact, SmartVaultErr> {
+    crate_contact_impl(args, get_caller_id())
 }
 
 #[ic_cdk_macros::query]
@@ -201,8 +201,8 @@ pub fn update_contact(c: Contact) -> Result<Contact, SmartVaultErr> {
 }
 
 #[ic_cdk_macros::update]
-pub fn remove_contact(contact: PrincipalID) -> Result<(), SmartVaultErr> {
-    remove_contact_impl(contact, get_caller_id())
+pub fn delete_contact(contact: PrincipalID) -> Result<(), SmartVaultErr> {
+    delete_contact_impl(contact, get_caller_id())
 }
 
 pub fn get_caller_id() -> PrincipalID {

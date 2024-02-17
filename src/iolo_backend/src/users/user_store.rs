@@ -122,7 +122,7 @@ impl UserStore {
         Ok(())
     }
 
-    pub fn remove_secret_from_user(
+    pub fn delete_secret_of_user(
         &mut self,
         caller: &PrincipalID,
         secret_id: SecretID,
@@ -195,7 +195,7 @@ impl UserStore {
             .collect()
     }
 
-    pub fn add_contact(
+    pub fn create_contact(
         &mut self,
         user: &PrincipalID,
         contact: Contact,
@@ -239,7 +239,7 @@ impl UserStore {
         }
     }
 
-    pub fn remove_contact(
+    pub fn delete_contact(
         &mut self,
         user: &PrincipalID,
         contact_id: PrincipalID,
@@ -323,7 +323,7 @@ mod tests {
             email: Some("test@me.com".to_string()),
             user_type: None,
         };
-        assert!(user_store.add_contact(&new_user.id, contact).is_ok());
+        assert!(user_store.create_contact(&new_user.id, contact).is_ok());
         assert_eq!(user_store.get_contact_list(&new_user.id).unwrap().len(), 1);
     }
 }

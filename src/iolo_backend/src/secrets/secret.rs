@@ -37,7 +37,7 @@ pub struct Secret {
 }
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
-pub struct AddSecretArgs {
+pub struct CreateSecretArgs {
     pub category: Option<SecretCategory>,
     pub name: Option<String>,
     pub username: Option<Vec<u8>>,
@@ -109,7 +109,7 @@ impl Secret {
     pub fn create_from_add_secret_args(
         owner: PrincipalID,
         secret_id: SecretID,
-        asa: AddSecretArgs,
+        asa: CreateSecretArgs,
     ) -> Self {
         let now: u64 = time::get_current_time();
 
@@ -245,7 +245,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_from_add_secret_args() {
-        let args = AddSecretArgs {
+        let args = CreateSecretArgs {
             category: Some(SecretCategory::Password),
             name: Some("test_name".to_string()),
             username: Some(vec![1, 2, 3]),

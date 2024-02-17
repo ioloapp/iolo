@@ -1,23 +1,7 @@
-type AddContactArgs = record {
-  id : text;
-  user_type : opt UserType;
-  name : opt text;
-  email : opt text;
-};
 type AddOrUpdateUserArgs = record {
   user_type : opt UserType;
   name : opt text;
   email : opt text;
-};
-type AddPolicyArgs = record { name : opt text };
-type AddSecretArgs = record {
-  url : opt text;
-  username : opt vec nat8;
-  password : opt vec nat8;
-  name : opt text;
-  encrypted_symmetric_key : vec nat8;
-  notes : opt vec nat8;
-  category : opt SecretCategory;
 };
 type Condition = variant {
   LastLogin : LastLoginTimeCondition;
@@ -30,6 +14,22 @@ type Contact = record {
   user_type : opt UserType;
   name : opt text;
   email : opt text;
+};
+type CreateContactArgs = record {
+  id : text;
+  user_type : opt UserType;
+  name : opt text;
+  email : opt text;
+};
+type CreatePolicyArgs = record { name : opt text };
+type CreateSecretArgs = record {
+  url : opt text;
+  username : opt vec nat8;
+  password : opt vec nat8;
+  name : opt text;
+  encrypted_symmetric_key : vec nat8;
+  notes : opt vec nat8;
+  category : opt SecretCategory;
 };
 type FixedDateTimeCondition = record {
   id : text;
@@ -83,12 +83,12 @@ type PolicyWithSecretListEntries = record {
   conditions : vec Condition;
   date_modified : nat64;
 };
-type Result = variant { Ok : Contact; Err : SmartVaultErr };
-type Result_1 = variant { Ok : Policy; Err : SmartVaultErr };
+type Result = variant { Ok; Err : SmartVaultErr };
+type Result_1 = variant { Ok : Contact; Err : SmartVaultErr };
 type Result_10 = variant { Ok : vec PolicyListEntry; Err : SmartVaultErr };
 type Result_11 = variant { Ok : vec SecretListEntry; Err : SmartVaultErr };
-type Result_2 = variant { Ok : Secret; Err : SmartVaultErr };
-type Result_3 = variant { Ok; Err : SmartVaultErr };
+type Result_2 = variant { Ok : Policy; Err : SmartVaultErr };
+type Result_3 = variant { Ok : Secret; Err : SmartVaultErr };
 type Result_4 = variant { Ok : User; Err : SmartVaultErr };
 type Result_5 = variant { Ok : text; Err : SmartVaultErr };
 type Result_6 = variant { Ok : vec Contact; Err : SmartVaultErr };
@@ -196,12 +196,15 @@ type XOutOfYCondition = record {
   validators : vec Validator;
 };
 service : () -> {
-  add_contact : (AddContactArgs) -> (Result);
-  add_policy : (AddPolicyArgs) -> (Result_1);
-  add_secret : (AddSecretArgs) -> (Result_2);
-  confirm_x_out_of_y_condition : (ConfirmXOutOfYConditionArgs) -> (Result_3);
+  confirm_x_out_of_y_condition : (ConfirmXOutOfYConditionArgs) -> (Result);
+  create_contact : (CreateContactArgs) -> (Result_1);
+  create_policy : (CreatePolicyArgs) -> (Result_2);
+  create_secret : (CreateSecretArgs) -> (Result_3);
   create_user : (AddOrUpdateUserArgs) -> (Result_4);
-  delete_user : () -> (Result_3);
+  delete_contact : (text) -> (Result);
+  delete_policy : (text) -> (Result);
+  delete_secret : (text) -> (Result);
+  delete_user : () -> (Result);
   encrypted_ibe_decryption_key_for_caller : (vec nat8) -> (text);
   generate_vetkd_encrypted_symmetric_key_for_policy : (
       PolicyKeyDerviationArgs,
@@ -217,18 +220,15 @@ service : () -> {
   get_policy_list_as_beneficiary : () -> (Result_10) query;
   get_policy_list_as_owner : () -> (Result_10) query;
   get_policy_list_as_validator : () -> (Result_10) query;
-  get_secret : (text) -> (Result_2) query;
-  get_secret_as_beneficiary : (text, text) -> (Result_2) query;
+  get_secret : (text) -> (Result_3) query;
+  get_secret_as_beneficiary : (text, text) -> (Result_3) query;
   get_secret_list : () -> (Result_11) query;
   ibe_encryption_key : () -> (text);
-  remove_contact : (text) -> (Result_3);
-  remove_policy : (text) -> (Result_3);
-  remove_secret : (text) -> (Result_3);
   start_with_interval_secs : (nat64) -> ();
   symmetric_key_verification_key : () -> (text);
-  update_contact : (Contact) -> (Result);
-  update_policy : (UpdatePolicyArgs) -> (Result_1);
-  update_secret : (UpdateSecretArgs) -> (Result_2);
+  update_contact : (Contact) -> (Result_1);
+  update_policy : (UpdatePolicyArgs) -> (Result_2);
+  update_secret : (UpdateSecretArgs) -> (Result_3);
   update_user : (AddOrUpdateUserArgs) -> (Result_4);
   update_user_login_date : () -> (Result_4);
 }

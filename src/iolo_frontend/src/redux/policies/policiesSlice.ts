@@ -16,7 +16,7 @@ export const addPolicyThunk = createAsyncThunk<UiPolicy, UiPolicy, { state: Root
     'policies/add',
     async (policy, {rejectWithValue}) => {
         try {
-            return await ioloService.addPolicy(policy);
+            return await ioloService.createPolicy(policy);
         } catch (e) {
             console.error(e)
             return rejectWithValue(e.message)

@@ -13,15 +13,15 @@ pub struct Contact {
 }
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
-pub struct AddContactArgs {
+pub struct CreateContactArgs {
     pub id: PrincipalID,
     pub name: Option<String>,
     pub email: Option<String>,
     pub user_type: Option<UserType>,
 }
 
-impl From<AddContactArgs> for Contact {
-    fn from(aca: AddContactArgs) -> Self {
+impl From<CreateContactArgs> for Contact {
+    fn from(aca: CreateContactArgs) -> Self {
         Contact {
             id: aca.id.to_string(),
             name: aca.name,

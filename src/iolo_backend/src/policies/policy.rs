@@ -66,7 +66,7 @@ pub enum LogicalOperator {
 }
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
-pub struct AddPolicyArgs {
+pub struct CreatePolicyArgs {
     pub name: Option<String>,
 }
 
@@ -125,7 +125,7 @@ impl Policy {
         }
     }
 
-    pub fn from_add_policy_args(policy_id: &str, owner: &PrincipalID, apa: AddPolicyArgs) -> Self {
+    pub fn from_create_policy_args(policy_id: &str, owner: &PrincipalID, apa: CreatePolicyArgs) -> Self {
         let mut new_policy = Policy::new(policy_id.to_string(), owner);
         new_policy.owner = owner.to_string();
         new_policy.name = apa.name;
