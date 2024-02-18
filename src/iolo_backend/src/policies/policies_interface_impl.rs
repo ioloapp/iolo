@@ -17,6 +17,7 @@ use crate::{
 use std::collections::HashSet;
 
 use super::conditions::ConditionID;
+use super::conditions::ConditionUpdate;
 use super::conditions_manager::evaluate_overall_conditions_status;
 use super::policy::PolicyForValidator;
 use super::{
@@ -210,10 +211,10 @@ pub async fn update_policy_impl(
     caller: PrincipalID,
 ) -> Result<Policy, SmartVaultErr> {
     // check if policy exists
-    let existing_policy: Policy = get_policy_from_policy_store(&upa.id)?;
+    let old_policy: Policy = get_policy_from_policy_store(&upa.id)?;
 
     // check if caller is owner of policy
-    if existing_policy.owner() != &caller {
+    if old_policy.owner() != &caller {
         return Err(SmartVaultErr::CallerNotPolicyOwner(upa.id));
     }
 
@@ -250,116 +251,41 @@ pub async fn update_policy_impl(
         }
     }
 
-    // Handle conditions
+    // First: we update the conditions which need to be updated because they are in the update policy args
     let mut new_conditions: Vec<Condition> = vec![];
+    let old_conditions_which_need_updates: Vec<Condition> = old_policy
+        .conditions
+        .iter()
+        .filter(|c| !upa.conditions.iter().any(|uc| uc.id() == c.id()))
+        .cloned()
+        .collect();
 
-    // Update and collect conditions already existing in the policy
-    let existing_ids: HashSet<ConditionID> =
-        existing_policy.conditions.iter().map(|c| c.id()).collect();
+    // loop through old_conditions_which_need_updates, update them and add them to new_conditions
+    for condition in old_conditions_which_need_updates.iter() {
+        let mut condition: Condition = condition.clone();
 
-    for update in upa.conditions.iter() {
-        match update {
-            UpdateCondition::LastLogin(update) => {
-                if existing_ids.contains(&update.id) {
-                    let condition = Condition::LastLogin(LastLoginTimeCondition {
-                        id: update.id.clone(),
-                        number_of_days_since_last_login: update.number_of_days_since_last_login,
-                        condition_status: existing_policy
-                            .conditions
-                            .iter()
-                            .find_map(|c| match c {
-                                Condition::LastLogin(cond) if cond.id == update.id => {
-                                    Some(cond.condition_status)
-                                }
-                                _ => None,
-                            })
-                            .unwrap_or(false), // Default to false if not found, adjust as needed
-                    });
-                    new_conditions.push(condition);
-                } else {
-                    // If the condition is new, generate a new ID and create the condition
-                    let new_condition_id = UUID::new().await; // Simulate async ID generation
-                    let condition = Condition::LastLogin(LastLoginTimeCondition {
-                        id: new_condition_id,
-                        number_of_days_since_last_login: update.number_of_days_since_last_login,
-                        condition_status: false,
-                    });
-                    new_conditions.push(condition);
-                }
-            }
-            // Repeat the similar logic for XOutOfY and FixedDateTime
-            UpdateCondition::XOutOfY(update) => {
-                if existing_ids.contains(&update.id) {
-                    let condition = Condition::XOutOfY(XOutOfYCondition {
-                        id: update.id.clone(),
-                        validators: update.validators.clone(),
-                        quorum: update.quorum,
-                        question: update.question.clone(),
-                        condition_status: existing_policy
-                            .conditions
-                            .iter()
-                            .find_map(|c| match c {
-                                Condition::XOutOfY(cond) if cond.id == update.id => {
-                                    Some(cond.condition_status)
-                                }
-                                _ => None,
-                            })
-                            .unwrap_or(false), // Default to false if not found, adjust as needed
-                    });
-                    new_conditions.push(condition);
-                } else {
-                    // If the condition is new, generate a new ID and create the condition
-                    let new_condition_id = UUID::new().await; // Simulate async ID generation
-                    let condition = Condition::XOutOfY(XOutOfYCondition {
-                        id: new_condition_id,
-                        validators: update.validators.clone(),
-                        quorum: update.quorum,
-                        question: update.question.clone(),
-                        condition_status: false,
-                    });
-                    new_conditions.push(condition);
-                }
-            }
-            UpdateCondition::FixedDateTime(update) => {
-                if existing_ids.contains(&update.id) {
-                    let condition = Condition::FixedDateTime(FixedDateTimeCondition {
-                        id: update.id.clone(),
-                        time: update.time,
-                        condition_status: existing_policy
-                            .conditions
-                            .iter()
-                            .find_map(|c| match c {
-                                Condition::FixedDateTime(cond) if cond.id == update.id => {
-                                    Some(cond.condition_status)
-                                }
-                                _ => None,
-                            })
-                            .unwrap_or(false), // Default to false if not found, adjust as needed
-                    });
-                    new_conditions.push(condition);
-                } else {
-                    // If the condition is new, generate a new ID and create the condition
-                    let new_condition_id = UUID::new().await; // Simulate async ID generation
-                    let condition = Condition::FixedDateTime(FixedDateTimeCondition {
-                        id: new_condition_id,
-                        time: update.time,
-                        condition_status: false,
-                    });
-                    new_conditions.push(condition);
-                }
-            }
-        }
+        let updated_condition: Condition = condition.update_condition(
+            upa.conditions
+                .iter()
+                .find(|uc| uc.id() == condition.id())
+                .unwrap()
+                .clone(),
+        );
+        new_conditions.push(updated_condition);
     }
 
-    // Add conditions that are not updated to the new_conditions list
-    for cond in existing_policy.conditions.iter() {
+    // Second: we add the conditions which are not in the update policy args
+    let old_condition_ids: HashSet<ConditionID> =
+        old_policy.conditions.iter().map(|c| c.id()).collect();
+
+    for cond in old_policy.conditions.iter() {
         let cond_id = match &cond {
             Condition::LastLogin(cond) => cond.id.clone(),
             Condition::XOutOfY(cond) => cond.id.clone(),
             Condition::FixedDateTime(cond) => cond.id.clone(),
         };
 
-        if !existing_ids.contains(&cond_id) {
+        if !old_condition_ids.contains(&cond_id) {
             new_conditions.push(cond.clone());
         }
     }
@@ -367,9 +293,9 @@ pub async fn update_policy_impl(
     // create policy from UpdatePolicyArgs
     let policy: Policy = Policy::from_update_policy_args(
         &upa.id,
-        &existing_policy.owner().to_string(),
-        existing_policy.conditions_status,
-        *existing_policy.date_created(),
+        &old_policy.owner().to_string(),
+        old_policy.conditions_status,
+        *old_policy.date_created(),
         new_conditions,
         upa.clone(),
     );

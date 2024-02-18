@@ -82,6 +82,19 @@ pub enum UpdateCondition {
     FixedDateTime(UpdateFixedDateTimeCondition),
 }
 
+impl UpdateCondition {
+    pub fn id(&self) -> ConditionID {
+        match self {
+            UpdateCondition::LastLogin(update) => update.id.clone(),
+            UpdateCondition::XOutOfY(update) => update.id.clone(),
+            UpdateCondition::FixedDateTime(update) => update.id.clone(),
+        }
+    }
+}
+
+/**
+ * Conditon status trait and implementation
+ */
 trait ConditionStatus {
     fn set_condition_status(&mut self, status: bool);
     fn get_condition_status(&self) -> bool;
@@ -112,6 +125,43 @@ impl ConditionStatus for FixedDateTimeCondition {
     }
     fn get_condition_status(&self) -> bool {
         self.condition_status
+    }
+}
+
+/**
+ * Conditon updates trait and implementation
+ */
+pub trait ConditionUpdate {
+    fn update_condition(&mut self, update: UpdateCondition) -> Condition;
+}
+
+impl ConditionUpdate for Condition {
+    fn update_condition(&mut self, update: UpdateCondition) -> Condition {
+        match self {
+            Condition::LastLogin(condition) => {
+                if let UpdateCondition::LastLogin(update) = update {
+                    condition.number_of_days_since_last_login =
+                        update.number_of_days_since_last_login;
+                    return Condition::LastLogin(condition.clone());
+                }
+            }
+            Condition::XOutOfY(condition) => {
+                if let UpdateCondition::XOutOfY(update) = update {
+                    condition.validators = update.validators;
+                    condition.question = update.question;
+                    condition.quorum = update.quorum;
+                    return Condition::XOutOfY(condition.clone());
+                }
+            }
+            Condition::FixedDateTime(condition) => {
+                if let UpdateCondition::FixedDateTime(update) = update {
+                    condition.time = update.time;
+                    return Condition::FixedDateTime(condition.clone());
+                }
+            }
+        }
+        // Return the unchanged condition if no matching update was found.
+        self.clone()
     }
 }
 
