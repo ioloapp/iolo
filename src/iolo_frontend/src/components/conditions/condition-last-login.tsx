@@ -11,13 +11,13 @@ import {useAppDispatch} from "../../redux/hooks";
 import {policiesActions} from "../../redux/policies/policiesSlice";
 import TextField from "@mui/material/TextField";
 
-export interface ConditionTimebasedProps {
+export interface ConditionLastLoginProps {
     condition: UiLastLoginTimeCondition
     readonly?: boolean,
     open: boolean
 }
 
-export const ConditionTimebased: FC<ConditionTimebasedProps> = ({condition, readonly, open}) => {
+export const ConditionLastLogin: FC<ConditionLastLoginProps> = ({condition, readonly, open}) => {
     const {t} = useTranslation();
     const dispatch = useAppDispatch();
 
@@ -52,6 +52,7 @@ export const ConditionTimebased: FC<ConditionTimebasedProps> = ({condition, read
                         label={t('conditions.timebased.max-logout-time')}
                         InputLabelProps={{shrink: true}}
                         fullWidth
+                        type="number"
                         variant="standard"
                         value={condition.numberOfDaysSinceLastLogin}
                         onChange={e => updateCondition({

@@ -19,7 +19,7 @@ export interface BasicDialogProps {
     cancelAction?: () => void;
     okAction?: () => void;
     okButtonText?: string;
-    children: ReactElement | never[];
+    children?: ReactElement | never[];
     error: string;
     dialogItemState: string;
 }

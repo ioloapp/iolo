@@ -5,14 +5,21 @@ import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import {ConditionType, UiCondition, UiLastLoginTimeCondition, UiXOutOfYCondition} from "../../services/IoloTypesForUi";
+import {
+    ConditionType,
+    UiCondition,
+    UiFixedDateTimeCondition,
+    UiLastLoginTimeCondition,
+    UiXOutOfYCondition
+} from "../../services/IoloTypesForUi";
 import {useTranslation} from "react-i18next";
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import {useAppDispatch} from "../../redux/hooks";
 import {policiesActions} from "../../redux/policies/policiesSlice";
-import {ConditionTimebased} from "./condition-timebased";
+import {ConditionLastLogin} from "./condition-last-login";
 import {ConditionXOutOfY} from "./condition-xoutofy";
 import {FormControl, MenuItem, Select, Typography} from "@mui/material";
+import {ConditionFixedDateTime} from "./condition-fixed-date-time";
 
 export interface ConditionProps {
     condition: UiCondition
@@ -85,7 +92,10 @@ export const Condition: FC<ConditionProps> = ({condition, readonly}) => {
                 </TableCell>
             </TableRow>
             {condition.type === ConditionType.LastLogin &&
-                <ConditionTimebased condition={condition as UiLastLoginTimeCondition} readonly={readonly} open={open}/>
+                <ConditionLastLogin condition={condition as UiLastLoginTimeCondition} readonly={readonly} open={open}/>
+            }
+            {condition.type === ConditionType.FixedDateTime &&
+                <ConditionFixedDateTime condition={condition as UiFixedDateTimeCondition} readonly={readonly} open={open}/>
             }
             {condition.type === ConditionType.XOutOfY &&
                 <ConditionXOutOfY condition={condition as UiXOutOfYCondition} readonly={readonly} open={open}/>
