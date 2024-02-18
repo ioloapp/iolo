@@ -1,7 +1,4 @@
-use crate::policies::conditions::{
-    ConfirmXOutOfYConditionArgs, FixedDateTimeCondition, LastLoginTimeCondition, UpdateCondition,
-    XOutOfYCondition,
-};
+use crate::policies::conditions::ConfirmXOutOfYConditionArgs;
 use crate::policies::policy::UpdatePolicyArgs;
 use crate::secrets::secrets_interface_impl::get_secret_from_secret_store;
 use crate::users::users_interface_impl::get_user_from_user_store;
@@ -274,6 +271,7 @@ pub async fn update_policy_impl(
         new_conditions.push(updated_condition);
     }
 
+    // TODO: here we are
     // Second: we add the conditions which are not in the update policy args
     let old_condition_ids: HashSet<ConditionID> =
         old_policy.conditions.iter().map(|c| c.id()).collect();
@@ -552,9 +550,9 @@ mod tests {
                 x_out_of_y_condition.clone(),
             ],
         };
-        let added_policy = update_policy_impl(upa, principal.to_string());
-        assert!(added_policy.await.is_ok());
-        let added_policy = added_policy.await.unwrap();
+        let added_policy = update_policy_impl(upa, principal.to_string()).await;
+        assert!(added_policy.is_ok());
+        let added_policy = added_policy.unwrap();
 
         // check if policy is in policy store and check if it contains the secret
         POLICY_STORE.with(|ps| {
@@ -658,9 +656,9 @@ mod tests {
             conditions: update_conditions,
         };
 
-        let updated_policy = update_policy_impl(upa.clone(), principal.to_string());
-        assert!(updated_policy.await.is_ok());
-        let updated_policy = updated_policy.await.unwrap();
+        let updated_policy = update_policy_impl(upa.clone(), principal.to_string()).await;
+        assert!(updated_policy.is_ok());
+        let updated_policy = updated_policy.unwrap();
         assert_eq!(updated_policy.name(), &upa.name);
         assert!(updated_policy
             .beneficiaries()
@@ -699,15 +697,15 @@ mod tests {
             conditions: vec![last_login_time_condition, x_out_of_y_condition],
         };
 
-        let updated_policy = update_policy_impl(upa, principal.to_string());
-        assert!(updated_policy.await.is_ok());
+        let updated_policy = update_policy_impl(upa, principal.to_string()).await;
+        assert!(updated_policy.is_ok());
         // let updated_policy = updated_policy.unwrap();
         let policy_list_as_old_validator = get_policy_list_as_validator_impl(validator.to_string());
         let policy_list_as_new_validator =
             get_policy_list_as_validator_impl(validator2.to_string());
         assert_eq!(policy_list_as_old_validator.unwrap().len(), 0);
         assert_eq!(policy_list_as_new_validator.unwrap().len(), 1);
-        let updated_policy = updated_policy.await.unwrap();
+        let updated_policy = updated_policy.unwrap();
 
         // test get secret as beneficiary
 
