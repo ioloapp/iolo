@@ -61,7 +61,7 @@ export enum LogicalOperator {
 }
 
 export interface UiCondition {
-    id: string;
+    id?: string;
     type: ConditionType;
     conditionStatus: boolean,
 }

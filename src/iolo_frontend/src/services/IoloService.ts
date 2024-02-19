@@ -716,7 +716,7 @@ class IoloService {
         if (uiCondition.type === ConditionType.LastLogin) {
             const tCondition = uiCondition as UiLastLoginTimeCondition;
             const updateLastLoginTimeCondition: UpdateLastLoginTimeCondition = {
-                id: [tCondition.id],
+                id: tCondition.id ? [tCondition.id] : [],
                 number_of_days_since_last_login: tCondition.numberOfDaysSinceLastLogin ? BigInt(tCondition.numberOfDaysSinceLastLogin) : BigInt(100)
             } as UpdateLastLoginTimeCondition
             return {
@@ -726,7 +726,7 @@ class IoloService {
         if (uiCondition.type === ConditionType.FixedDateTime) {
             const tCondition = uiCondition as UiFixedDateTimeCondition;
             const updateFutureTimeCondition: UpdateFixedDateTimeCondition = {
-                id: [tCondition.id],
+                id: tCondition.id ? [tCondition.id] : [],
                 time: tCondition.time ? BigInt(tCondition.time) : BigInt(100)
             } as UpdateFixedDateTimeCondition
             return {
@@ -736,7 +736,7 @@ class IoloService {
         if (uiCondition.type === ConditionType.XOutOfY) {
             const tCondition = uiCondition as UiXOutOfYCondition;
             const updateXOutOfYCondition: UpdateXOutOfYCondition = {
-                id: [tCondition.id],
+                id: tCondition.id ? [tCondition.id] : [],
                 question: tCondition.question,
                 quorum: tCondition.quorum ? BigInt(tCondition.quorum) : BigInt(tCondition.validators.length),
                 validators: tCondition.validators.map(v => {
