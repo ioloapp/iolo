@@ -201,6 +201,10 @@ pub fn get_policy_list_as_validator_impl(
     })
 }
 
+/// Update notes: This is a full update, meaning
+/// 1) provided ConditionUpdates with existing IDs will update the existing conditions
+/// 2) provided ConditionUpdates without IDs (None) will create new conditions
+/// 3) existing conditions without a matching ConditionUpdate will be removed
 pub async fn update_policy_impl(
     upa: UpdatePolicyArgs,
     caller: PrincipalID,
@@ -247,62 +251,37 @@ pub async fn update_policy_impl(
     }
 
     // let's keep track of the new conditions
-    let mut new_conditions: Vec<Condition> = vec![];
+    let mut new_final_condition_set: Vec<Condition> = vec![];
 
-    // First: we create and attach the brand new conditions (not in the old policy but in the update policy args)
-    let brand_new_conditions: Vec<UpdateCondition> = upa
-        .conditions
-        .iter()
-        .filter(|c| !old_policy.conditions.iter().any(|opc| opc.id() == c.id()))
-        .cloned()
-        .collect();
-
-    for udpate_condition in brand_new_conditions.iter() {
-        let new_condition: Condition =
-            Condition::from_update_condition(udpate_condition.clone()).await;
-        new_conditions.push(new_condition);
+    // Find out which conditions are brand new and which conditions need updates
+    for uc in upa.conditions.iter() {
+        match uc.id() {
+            Some(existing_id) => {
+                // This is an existing condition which needs to be updated
+                let mut existing_condition: Condition = old_policy
+                    .conditions
+                    .iter()
+                    .find(|c| c.id() == existing_id)
+                    .unwrap()
+                    .clone();
+                let updated_condition: Condition = existing_condition.update_condition(uc.clone());
+                new_final_condition_set.push(updated_condition);
+            }
+            None => {
+                // we have a brand new condition
+                let new_condition: Condition = Condition::from_update_condition(uc.clone()).await;
+                new_final_condition_set.push(new_condition);
+            }
+        }
     }
 
-    // Second: we update the conditions which need to be updated because they exist in the old policy and are in the update policy args (both in the old policy and in the update policy args)
-    let old_conditions_which_need_updates: Vec<Condition> = old_policy
-        .conditions
-        .iter()
-        .filter(|c| upa.conditions.iter().any(|uc| uc.id() == c.id()))
-        .cloned()
-        .collect();
-
-    // loop through old_conditions_which_need_updates, update them and add them to new_conditions
-    for condition in old_conditions_which_need_updates.iter() {
-        let mut condition: Condition = condition.clone();
-
-        let updated_condition: Condition = condition.update_condition(
-            upa.conditions
-                .iter()
-                .find(|uc| uc.id() == condition.id())
-                .unwrap()
-                .clone(),
-        );
-        new_conditions.push(updated_condition);
-    }
-
-    // Third: we attach the conditions which are not in the update policy args (in the old policy but not in the update policy args)
-    let leave_untouched: Vec<Condition> = old_policy
-        .conditions
-        .iter()
-        .filter(|c| !upa.conditions.iter().any(|uc| uc.id() == c.id()))
-        .cloned()
-        .collect();
-    leave_untouched
-        .iter()
-        .for_each(|c| new_conditions.push(c.clone()));
-
-    // Finally: create policy from UpdatePolicyArgs
+    // Create policy from UpdatePolicyArgs
     let policy: Policy = Policy::from_update_policy_args(
         &upa.id,
         &old_policy.owner().to_string(),
         old_policy.conditions_status,
         *old_policy.date_created(),
-        new_conditions,
+        new_final_condition_set,
         upa.clone(),
     );
 

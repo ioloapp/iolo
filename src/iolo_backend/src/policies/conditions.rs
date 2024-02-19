@@ -20,7 +20,7 @@ pub struct LastLoginTimeCondition {
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct UpdateLastLoginTimeCondition {
-    pub id: ConditionID,
+    pub id: Option<ConditionID>,
     pub number_of_days_since_last_login: u64,
 }
 
@@ -34,7 +34,7 @@ pub struct FixedDateTimeCondition {
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct UpdateFixedDateTimeCondition {
-    pub id: ConditionID,
+    pub id: Option<ConditionID>,
     pub time: u64,
 }
 
@@ -53,7 +53,7 @@ pub struct XOutOfYCondition {
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct UpdateXOutOfYCondition {
-    pub id: ConditionID,
+    pub id: Option<ConditionID>,
     pub validators: Vec<Validator>,
     pub question: String,
     pub quorum: u64, // in absolute numbers
@@ -84,7 +84,7 @@ pub enum UpdateCondition {
 }
 
 impl UpdateCondition {
-    pub fn id(&self) -> ConditionID {
+    pub fn id(&self) -> Option<ConditionID> {
         match self {
             UpdateCondition::LastLogin(update) => update.id.clone(),
             UpdateCondition::XOutOfY(update) => update.id.clone(),
@@ -250,19 +250,19 @@ impl Condition {
         match self {
             Condition::LastLogin(cond) => {
                 UpdateCondition::LastLogin(UpdateLastLoginTimeCondition {
-                    id: cond.id.clone(),
+                    id: Some(cond.id.clone()),
                     number_of_days_since_last_login: cond.number_of_days_since_last_login,
                 })
             }
             Condition::XOutOfY(cond) => UpdateCondition::XOutOfY(UpdateXOutOfYCondition {
-                id: cond.id.clone(),
+                id: Some(cond.id.clone()),
                 validators: cond.validators.clone(),
                 question: cond.question.clone(),
                 quorum: cond.quorum,
             }),
             Condition::FixedDateTime(cond) => {
                 UpdateCondition::FixedDateTime(UpdateFixedDateTimeCondition {
-                    id: cond.id.clone(),
+                    id: Some(cond.id.clone()),
                     time: cond.time,
                 })
             }
