@@ -120,6 +120,7 @@ type SmartVaultErr = variant {
   ContactDoesNotExist : text;
   UserAlreadyExists : text;
   OnlyOwnerCanDeleteSecret : text;
+  PolicyConditionDoesNotExist : text;
   SecretHasNoId;
   UserDeletionFailed : text;
   KeyBoxEntryDoesNotExistForSecret : text;

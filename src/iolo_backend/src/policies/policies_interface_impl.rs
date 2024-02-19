@@ -256,6 +256,12 @@ pub async fn update_policy_impl(
         match uc.id() {
             Some(existing_id) => {
                 // This is an existing condition which needs to be updated
+                // ensure that the condition exists in the old policy
+                if !old_policy.conditions.iter().any(|c| c.id() == existing_id) {
+                    return Err(SmartVaultErr::PolicyConditionDoesNotExist(
+                        existing_id.to_string(),
+                    ));
+                }
                 let mut existing_condition: Condition = old_policy
                     .conditions
                     .iter()

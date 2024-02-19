@@ -21,6 +21,7 @@ pub enum SmartVaultErr {
     CallerNotPolicyOwner(String),
     PolicyDoesNotExist(String),
     InvalidPolicyCondition,
+    PolicyConditionDoesNotExist(String),
     NoPolicyForBeneficiary(String),
     NoPolicyForValidator(String),
     KeyBoxEntryDoesNotExistForSecret(String),
@@ -93,6 +94,9 @@ impl Display for SmartVaultErr {
             }
             SmartVaultErr::SecretEntryDoesNotExistForKeyBoxEntry(id) => {
                 write!(f, "No secret for key_box entry: {}", id)
+            }
+            SmartVaultErr::PolicyConditionDoesNotExist(id) => {
+                write!(f, "Policy Condition does not exist: {}", id)
             }
             SmartVaultErr::NoPolicyForBeneficiary(id) => {
                 write!(f, "Failed to read policy for beneficiary: {}", id)
