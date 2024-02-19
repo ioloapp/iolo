@@ -93,6 +93,31 @@ impl UpdateCondition {
     }
 }
 
+impl From<Condition> for UpdateCondition {
+    fn from(condition: Condition) -> Self {
+        match condition {
+            Condition::LastLogin(cond) => {
+                UpdateCondition::LastLogin(UpdateLastLoginTimeCondition {
+                    id: Some(cond.id.clone()),
+                    number_of_days_since_last_login: cond.number_of_days_since_last_login,
+                })
+            }
+            Condition::XOutOfY(cond) => UpdateCondition::XOutOfY(UpdateXOutOfYCondition {
+                id: Some(cond.id.clone()),
+                validators: cond.validators,
+                question: cond.question,
+                quorum: cond.quorum,
+            }),
+            Condition::FixedDateTime(cond) => {
+                UpdateCondition::FixedDateTime(UpdateFixedDateTimeCondition {
+                    id: Some(cond.id.clone()),
+                    time: cond.time,
+                })
+            }
+        }
+    }
+}
+
 /**
  * Conditon status trait and implementation
  */

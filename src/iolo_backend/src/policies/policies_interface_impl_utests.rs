@@ -21,10 +21,7 @@ mod tests {
             },
             policy::{CreatePolicyArgs, Policy, PolicyWithSecretListEntries},
         },
-        secrets::{
-            secret::CreateSecretArgs,
-            secrets_interface_impl::{create_secret_impl, get_secret_as_beneficiary_impl},
-        },
+        secrets::{secret::CreateSecretArgs, secrets_interface_impl::create_secret_impl},
         smart_vaults::smart_vault::POLICY_STORE,
         users::{
             user::{AddOrUpdateUserArgs, KeyBox},
@@ -112,10 +109,41 @@ mod tests {
         )
         .await;
 
-        dbg!(&updated_policy);
-
         // UPDATE POLICY CONDITIONS
-        // TODO: implement this
+        let condtion_updates: Vec<UpdateCondition> = updated_policy
+            .conditions
+            .clone()
+            .into_iter()
+            .map(UpdateCondition::from)
+            .map(|c| match c {
+                UpdateCondition::LastLogin(mut llc) => {
+                    llc.number_of_days_since_last_login = 99;
+                    return UpdateCondition::LastLogin(llc);
+                }
+                UpdateCondition::XOutOfY(mut xooy) => {
+                    xooy.question = "this is an updated question for you".to_string();
+                    return UpdateCondition::XOutOfY(xooy);
+                }
+                UpdateCondition::FixedDateTime(_) => c,
+            })
+            .collect();
+        let updated_policy = update_policy_conditions(
+            &principal,
+            &updated_policy,
+            &condtion_updates[0],
+            &condtion_updates[1],
+        )
+        .await;
+
+        // remove a policy condition
+        let updated_policy = remove_one_policy_condition_by_omitting_it(
+            &principal,
+            &updated_policy,
+            &condtion_updates[0],
+        )
+        .await;
+
+        dbg!(&updated_policy);
     }
 
     fn create_principal() -> Principal {
@@ -287,7 +315,85 @@ mod tests {
         updated_policy
     }
 
-    async fn update_policy_conditions(principal: &Principal, policy: &Policy) -> Policy {
-        policy.clone()
+    async fn update_policy_conditions(
+        principal: &Principal,
+        added_policy: &Policy,
+        updated_last_login_time_condition: &UpdateCondition,
+        updated_x_out_of_y_condition: &UpdateCondition,
+    ) -> Policy {
+        let upa: UpdatePolicyArgs = UpdatePolicyArgs {
+            id: added_policy.clone().id().to_string(),
+            name: added_policy.clone().name,
+            beneficiaries: added_policy.beneficiaries().clone(),
+            secrets: added_policy.secrets.clone(),
+            key_box: added_policy.key_box.clone(),
+            conditions_logical_operator: None,
+            conditions: vec![
+                updated_last_login_time_condition.clone(),
+                updated_x_out_of_y_condition.clone(),
+            ],
+        };
+
+        // add policy
+        let added_policy_res = update_policy_impl(upa, principal.to_string()).await;
+        assert!(added_policy_res.is_ok());
+        let added_policy = added_policy_res.unwrap();
+
+        // check if policy is in policy store and check if it contains the secret
+        POLICY_STORE.with(|ps| {
+            let policy_store = ps.borrow();
+            // policy in store
+            let pis = policy_store.get(added_policy.id()).unwrap();
+            assert_eq!(pis.id(), added_policy.id());
+            assert_eq!(pis.name(), added_policy.name());
+            assert_eq!(pis.secrets().len(), 1);
+            assert_eq!(pis.beneficiaries().len(), 2);
+            assert!(!pis.conditions_status);
+            assert!(pis.conditions_logical_operator().is_none());
+            assert_eq!(pis.conditions().len(), 2, "Policy conditions missing");
+        });
+
+        added_policy
+    }
+
+    async fn remove_one_policy_condition_by_omitting_it(
+        principal: &Principal,
+        added_policy: &Policy,
+        updated_last_login_time_condition: &UpdateCondition,
+    ) -> Policy {
+        let upa: UpdatePolicyArgs = UpdatePolicyArgs {
+            id: added_policy.clone().id().to_string(),
+            name: added_policy.clone().name,
+            beneficiaries: added_policy.beneficiaries().clone(),
+            secrets: added_policy.secrets.clone(),
+            key_box: added_policy.key_box.clone(),
+            conditions_logical_operator: None,
+            conditions: vec![updated_last_login_time_condition.clone()],
+        };
+
+        // add policy
+        let added_policy_res = update_policy_impl(upa, principal.to_string()).await;
+        assert!(added_policy_res.is_ok());
+        let added_policy = added_policy_res.unwrap();
+
+        // check if policy is in policy store and check if it contains the secret
+        POLICY_STORE.with(|ps| {
+            let policy_store = ps.borrow();
+            // policy in store
+            let pis = policy_store.get(added_policy.id()).unwrap();
+            assert_eq!(pis.id(), added_policy.id());
+            assert_eq!(pis.name(), added_policy.name());
+            assert_eq!(pis.secrets().len(), 1);
+            assert_eq!(pis.beneficiaries().len(), 2);
+            assert!(!pis.conditions_status);
+            assert!(pis.conditions_logical_operator().is_none());
+            assert_eq!(
+                pis.conditions().len(),
+                1,
+                "Only one policy condition expected"
+            );
+        });
+
+        added_policy
     }
 }

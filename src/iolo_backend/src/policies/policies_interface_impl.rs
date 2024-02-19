@@ -1,4 +1,4 @@
-use crate::policies::conditions::{ConfirmXOutOfYConditionArgs};
+use crate::policies::conditions::ConfirmXOutOfYConditionArgs;
 use crate::policies::policy::UpdatePolicyArgs;
 use crate::secrets::secrets_interface_impl::get_secret_from_secret_store;
 use crate::users::users_interface_impl::get_user_from_user_store;
@@ -66,8 +66,6 @@ pub fn get_policy_as_owner_impl(
 ) -> Result<PolicyWithSecretListEntries, SmartVaultErr> {
     // get policy from policy store
     let policy: Policy = get_policy_from_policy_store(&policy_id)?;
-
-    // TODO: check if caller is owner of policy
 
     let mut policy_response = PolicyWithSecretListEntries::from(policy.clone());
     for secret_id in policy.secrets() {
