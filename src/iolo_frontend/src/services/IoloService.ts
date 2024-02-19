@@ -28,7 +28,7 @@ import {
     User,
     UserType,
     XOutOfYCondition,
-    CreateContactArgs, UpdatePolicyArgs, Result_4, Result_11, FixedDateTimeCondition
+    CreateContactArgs, UpdatePolicyArgs, Result_4, Result_11, FixedDateTimeCondition, LogicalOperator
 } from "../../../declarations/iolo_backend/iolo_backend.did";
 import {AuthClient} from "@dfinity/auth-client";
 import {createActor} from "../../../declarations/iolo_backend";
@@ -44,7 +44,7 @@ import {
 } from "../utils/crypto";
 import {
     ConditionType,
-    LogicalOperator,
+    LogicalOperator as UiLogicalOperator,
     UiCondition, UiFixedDateTimeCondition,
     UiPolicy,
     UiPolicyListEntry,
@@ -701,13 +701,20 @@ class IoloService {
             }
         }
 
+        let logicalOperator: LogicalOperator[]  = [];
+        if (uiPolicy.conditionsLogicalOperator === UiLogicalOperator.And) {
+            logicalOperator = [{'And': null}];
+        } else if (uiPolicy.conditionsLogicalOperator === UiLogicalOperator.Or) {
+            logicalOperator = [{'Or': null}];
+        }
+
         return {
             id: uiPolicy.id,
             beneficiaries: beneficiaries,
             name: [uiPolicy.name],
             secrets: uiPolicy.secrets,
             key_box: keyBox,
-            conditions_logical_operator: uiPolicy.conditionsLogicalOperator == LogicalOperator.And ? [{'And': null}] : [{'Or': null}],
+            conditions_logical_operator: logicalOperator.length > 0 ? [logicalOperator[0]] : [],
             conditions: uiPolicy.conditions.map(uiCondition => this.mapUiConditionToUpdateCondition(uiCondition)),
         }
     }
@@ -761,7 +768,7 @@ class IoloService {
             beneficiaries: policy.beneficiaries.map((item) => {
                 return {id: item}
             }),
-            conditionsLogicalOperator: policy.conditions_logical_operator.hasOwnProperty('And') ? LogicalOperator.And : LogicalOperator.Or,
+            conditionsLogicalOperator: policy.conditions_logical_operator.hasOwnProperty('And') ? UiLogicalOperator.And : UiLogicalOperator.Or,
             conditionsStatus: policy.conditions_status,
             conditions: policy.conditions.map(condition => this.mapConditionToUiCondition(condition)),
             dateCreated: this.nanosecondsInBigintToIsoString(policy.date_created),
@@ -836,7 +843,7 @@ class IoloService {
             beneficiaries: policy.beneficiaries.map((item) => {
                 return {id: item}
             }),
-            conditionsLogicalOperator: policy.conditions_logical_operator.hasOwnProperty('And') ? LogicalOperator.And : LogicalOperator.Or,
+            conditionsLogicalOperator: policy.conditions_logical_operator.hasOwnProperty('And') ? UiLogicalOperator.And : UiLogicalOperator.Or,
             conditionsStatus: policy.conditions_status,
             conditions: policy.conditions.map(condition => this.mapConditionToUiCondition(condition)),
             dateCreated: this.nanosecondsInBigintToIsoString(policy.date_created),
