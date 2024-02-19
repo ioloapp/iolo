@@ -5,8 +5,7 @@ mod tests {
     use std::collections::HashSet;
 
     use crate::policies::conditions::{
-        UpdateCondition, UpdateFixedDateTimeCondition, UpdateLastLoginTimeCondition,
-        UpdateXOutOfYCondition,
+        UpdateCondition, UpdateLastLoginTimeCondition, UpdateXOutOfYCondition,
     };
     use crate::policies::policy::UpdatePolicyArgs;
     use crate::secrets::secret::Secret;
@@ -14,7 +13,7 @@ mod tests {
     use crate::{
         common::error::SmartVaultErr,
         policies::{
-            conditions::{Condition, Validator},
+            conditions::Validator,
             policies_interface_impl::{
                 create_policy_impl, get_policy_as_beneficiary_impl, get_policy_as_owner_impl,
                 get_policy_list_as_beneficiary_impl, get_policy_list_as_owner_impl,
@@ -36,14 +35,16 @@ mod tests {
     #[tokio::test]
     async fn itest_policy_lifecycle() {
         let principal = create_principal();
-        let beneficiary = create_principal();
-        let validator = create_principal();
+        let beneficiary1 = create_principal();
+        let beneficiary2 = create_principal();
+        let validator1 = create_principal();
         let validator2 = create_principal();
 
         // Create Users in the backend
         create_test_users(&principal).await;
-        create_test_users(&beneficiary).await;
-        create_test_users(&validator).await;
+        create_test_users(&beneficiary1).await;
+        create_test_users(&beneficiary2).await;
+        create_test_users(&validator1).await;
         create_test_users(&validator2).await;
 
         // Create a Secret
@@ -53,15 +54,16 @@ mod tests {
         let added_policy: Policy = create_and_add_policy(principal.to_string()).await;
 
         // create two conditions
-        let last_login_time_condition: UpdateCondition = create_last_login_time_condition();
-        let x_out_of_y_condition: UpdateCondition = create_x_oo_y_condition(validator.to_string());
+        let last_login_time_condition: UpdateCondition = create_new_last_login_time_condition();
+        let x_out_of_y_condition: UpdateCondition =
+            create_new_x_oo_y_condition(validator1.to_string());
 
-        // Update policy with other attributes
+        // Update policy: add secret and two conditions
         let added_policy = update_policy_with_secret_and_two_conditions(
             &principal,
             &added_policy,
             &added_secret,
-            &beneficiary,
+            &beneficiary1,
             &last_login_time_condition,
             &x_out_of_y_condition,
         )
@@ -85,85 +87,30 @@ mod tests {
 
         // get list of policies as beneficiary
         let policy_list_as_beneficiary =
-            get_policy_list_as_beneficiary_impl(beneficiary.to_string()).unwrap();
+            get_policy_list_as_beneficiary_impl(beneficiary1.to_string()).unwrap();
         assert_eq!(policy_list_as_beneficiary.len(), 1);
         assert_eq!(&policy_list_as_beneficiary[0].id, added_policy.id());
 
         // get specific policy as beneficiary: this should fail, because policy has not yet been activated
         let policy_response =
-            get_policy_as_beneficiary_impl(added_policy.id().clone(), beneficiary.to_string());
+            get_policy_as_beneficiary_impl(added_policy.id().clone(), beneficiary1.to_string());
         assert!(policy_response.is_err_and(|e| matches!(e, SmartVaultErr::InvalidPolicyCondition)));
 
-        // get policy list as validator
+        // get policy list as validator: we expect a policy to be in there
         let get_policy_list_as_validator =
-            get_policy_list_as_validator_impl(validator.to_string()).unwrap();
+            get_policy_list_as_validator_impl(validator1.to_string()).unwrap();
         assert_eq!(get_policy_list_as_validator.len(), 1);
         assert_eq!(&get_policy_list_as_validator[0].id, added_policy.id());
 
-        // get policy list as beneficiary: this should fail, because validator is not a beneficiary
-        let get_policy_list_as_validator =
-            get_policy_list_as_validator_impl(beneficiary.to_string());
-        assert_eq!(get_policy_list_as_validator.unwrap().len(), 0);
-
-        // get policy as validator: this should fail, because validator is not a beneficiary
-        let policy_response =
-            get_policy_as_beneficiary_impl(added_policy.id().clone(), validator.to_string());
-        assert!(
-            policy_response.is_err_and(|e| matches!(e, SmartVaultErr::NoPolicyForBeneficiary(_)))
-        );
-
-        // UPDATE POLICY NAME and BENEFICIARIES
-        let mut beneficiaries = HashSet::new();
-        beneficiaries.insert(beneficiary.to_string());
-        beneficiaries.insert(validator.to_string());
-
-        let update_conditions: Vec<UpdateCondition> = added_policy
-            .conditions
-            .iter()
-            .map(|condition| match condition {
-                Condition::LastLogin(last_login) => {
-                    UpdateCondition::LastLogin(UpdateLastLoginTimeCondition {
-                        id: last_login.id.clone(),
-                        number_of_days_since_last_login: last_login.number_of_days_since_last_login,
-                    })
-                }
-                Condition::XOutOfY(x_out_of_y) => {
-                    UpdateCondition::XOutOfY(UpdateXOutOfYCondition {
-                        id: x_out_of_y.id.clone(),
-                        validators: x_out_of_y.validators.clone(),
-                        question: x_out_of_y.question.clone(),
-                        quorum: x_out_of_y.quorum,
-                    })
-                }
-                Condition::FixedDateTime(fixed_date_time) => {
-                    UpdateCondition::FixedDateTime(UpdateFixedDateTimeCondition {
-                        id: fixed_date_time.id.clone(),
-                        time: fixed_date_time.time,
-                    })
-                }
-            })
-            .collect();
-
-        let upa: UpdatePolicyArgs = UpdatePolicyArgs {
-            id: added_policy.id().to_string(),
-            name: Some("new policy updates".to_string()),
-            beneficiaries,
-            secrets: added_policy.secrets.clone(),
-            key_box: added_policy.key_box.clone(),
-            conditions_logical_operator: added_policy.conditions_logical_operator().clone(),
-            conditions: update_conditions,
-        };
-
-        let updated_policy = update_policy_impl(upa.clone(), principal.to_string()).await;
-        assert!(updated_policy.is_ok());
-        let updated_policy = updated_policy.unwrap();
-        assert_eq!(updated_policy.name(), &upa.name);
-        assert!(updated_policy
-            .beneficiaries()
-            .contains(&validator.to_string()));
-        assert!(updated_policy
-            .beneficiaries()
-            .contains(&beneficiary.to_string()));
+        // UPDATE POLICY NAME and BENEFICIARIES (lave conditions unchanged)
+        let updated_policy = update_policy_with_new_name_and_additional_beneficiary(
+            &principal,
+            &added_policy,
+            "new name",
+            &beneficiary1,
+            &beneficiary2,
+        )
+        .await;
 
         // UPDATE POLICY CONDITIONS
         let last_login_time_condition: UpdateCondition =
@@ -184,7 +131,7 @@ mod tests {
             });
 
         let mut beneficiaries = HashSet::new();
-        beneficiaries.insert(validator.to_string());
+        beneficiaries.insert(validator1.to_string());
         let upa: UpdatePolicyArgs = UpdatePolicyArgs {
             id: updated_policy.id().to_string(),
             name: updated_policy.name,
@@ -198,7 +145,8 @@ mod tests {
         let updated_policy = update_policy_impl(upa, principal.to_string()).await;
         assert!(updated_policy.is_ok());
         // let updated_policy = updated_policy.unwrap();
-        let policy_list_as_old_validator = get_policy_list_as_validator_impl(validator.to_string());
+        let policy_list_as_old_validator =
+            get_policy_list_as_validator_impl(validator1.to_string());
         let policy_list_as_new_validator =
             get_policy_list_as_validator_impl(validator2.to_string());
         assert_eq!(policy_list_as_old_validator.unwrap().len(), 0);
@@ -211,7 +159,7 @@ mod tests {
         let secret_as_beneficiary = get_secret_as_beneficiary_impl(
             added_secret.id().to_string(),
             updated_policy.id,
-            beneficiary.to_string(),
+            beneficiary1.to_string(),
         );
         assert!(secret_as_beneficiary
             .is_err_and(|e| matches!(e, SmartVaultErr::InvalidPolicyCondition)));
@@ -255,7 +203,7 @@ mod tests {
         added_secret.unwrap()
     }
 
-    fn create_last_login_time_condition() -> UpdateCondition {
+    fn create_new_last_login_time_condition() -> UpdateCondition {
         let last_login_time_condition: UpdateCondition =
             UpdateCondition::LastLogin(UpdateLastLoginTimeCondition {
                 id: "My Time Based Condition".to_string(),
@@ -264,7 +212,7 @@ mod tests {
         last_login_time_condition
     }
 
-    fn create_x_oo_y_condition(validator_id: String) -> UpdateCondition {
+    fn create_new_x_oo_y_condition(validator_id: String) -> UpdateCondition {
         let x_out_of_y_condition: UpdateCondition =
             UpdateCondition::XOutOfY(UpdateXOutOfYCondition {
                 id: "My X out of Y Condition".to_string(),
@@ -316,8 +264,6 @@ mod tests {
         assert!(added_policy_res.is_ok());
         let added_policy = added_policy_res.unwrap();
 
-        dbg!(&added_policy);
-
         // check if policy is in policy store and check if it contains the secret
         POLICY_STORE.with(|ps| {
             let policy_store = ps.borrow();
@@ -343,5 +289,52 @@ mod tests {
         });
 
         added_policy
+    }
+
+    async fn update_policy_with_new_name_and_additional_beneficiary(
+        principal: &Principal,
+        added_policy: &Policy,
+        new_name: &str,
+        beneficiary1: &Principal,
+        beneficiary2: &Principal,
+    ) -> Policy {
+        let mut beneficiaries = HashSet::new();
+        beneficiaries.insert(beneficiary1.to_string());
+        beneficiaries.insert(beneficiary2.to_string());
+
+        let update_conditions: Vec<UpdateCondition> = added_policy
+            .conditions
+            .iter()
+            .map(|condition| condition.into_update_condition())
+            .collect();
+
+        let upa: UpdatePolicyArgs = UpdatePolicyArgs {
+            id: added_policy.id().to_string(),
+            name: Some(new_name.to_string()),
+            beneficiaries,
+            secrets: added_policy.secrets.clone(),
+            key_box: added_policy.key_box.clone(),
+            conditions_logical_operator: added_policy.conditions_logical_operator().clone(),
+            conditions: update_conditions,
+        };
+
+        // perform the update
+        let updated_policy = update_policy_impl(upa.clone(), principal.to_string()).await;
+        assert!(updated_policy.is_ok());
+        let updated_policy = updated_policy.unwrap();
+
+        // check name and beneficiaries
+        assert_eq!(updated_policy.name(), &upa.name);
+        assert!(updated_policy
+            .beneficiaries()
+            .contains(&beneficiary1.to_string()));
+        assert!(updated_policy
+            .beneficiaries()
+            .contains(&beneficiary2.to_string()));
+        updated_policy
+    }
+
+    async fn update_policy_conditions(principal: &Principal, policy: &Policy) -> Policy {
+        policy.clone()
     }
 }

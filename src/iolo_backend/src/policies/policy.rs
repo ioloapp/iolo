@@ -125,7 +125,11 @@ impl Policy {
         }
     }
 
-    pub fn from_create_policy_args(policy_id: &str, owner: &PrincipalID, apa: CreatePolicyArgs) -> Self {
+    pub fn from_create_policy_args(
+        policy_id: &str,
+        owner: &PrincipalID,
+        apa: CreatePolicyArgs,
+    ) -> Self {
         let mut new_policy = Policy::new(policy_id.to_string(), owner);
         new_policy.owner = owner.to_string();
         new_policy.name = apa.name;
@@ -146,10 +150,6 @@ impl Policy {
         new_conditions: Vec<Condition>,
         upa: UpdatePolicyArgs,
     ) -> Self {
-
-
-
-
         let mut new_policy = Policy::new(policy_id.to_string(), owner);
         new_policy.owner = owner.to_string();
         new_policy.name = upa.name;

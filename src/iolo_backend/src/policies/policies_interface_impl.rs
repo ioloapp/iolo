@@ -1,4 +1,4 @@
-use crate::policies::conditions::ConfirmXOutOfYConditionArgs;
+use crate::policies::conditions::{ConfirmXOutOfYConditionArgs, UpdateCondition};
 use crate::policies::policy::UpdatePolicyArgs;
 use crate::secrets::secrets_interface_impl::get_secret_from_secret_store;
 use crate::users::users_interface_impl::get_user_from_user_store;
@@ -11,9 +11,7 @@ use crate::{
     smart_vaults::smart_vault::{POLICY_REGISTRIES, POLICY_STORE, SECRET_STORE, USER_STORE},
     users::user::PrincipalID,
 };
-use std::collections::HashSet;
 
-use super::conditions::ConditionID;
 use super::conditions::ConditionUpdate;
 use super::conditions_manager::evaluate_overall_conditions_status;
 use super::policy::PolicyForValidator;
@@ -248,12 +246,28 @@ pub async fn update_policy_impl(
         }
     }
 
-    // First: we update the conditions which need to be updated because they are in the update policy args
+    // let's keep track of the new conditions
     let mut new_conditions: Vec<Condition> = vec![];
+
+    // First: we create and attach the brand new conditions (not in the old policy but in the update policy args)
+    let brand_new_conditions: Vec<UpdateCondition> = upa
+        .conditions
+        .iter()
+        .filter(|c| !old_policy.conditions.iter().any(|opc| opc.id() == c.id()))
+        .cloned()
+        .collect();
+
+    for udpate_condition in brand_new_conditions.iter() {
+        let new_condition: Condition =
+            Condition::from_update_condition(udpate_condition.clone()).await;
+        new_conditions.push(new_condition);
+    }
+
+    // Second: we update the conditions which need to be updated because they exist in the old policy and are in the update policy args (both in the old policy and in the update policy args)
     let old_conditions_which_need_updates: Vec<Condition> = old_policy
         .conditions
         .iter()
-        .filter(|c| !upa.conditions.iter().any(|uc| uc.id() == c.id()))
+        .filter(|c| upa.conditions.iter().any(|uc| uc.id() == c.id()))
         .cloned()
         .collect();
 
@@ -271,24 +285,18 @@ pub async fn update_policy_impl(
         new_conditions.push(updated_condition);
     }
 
-    // TODO: here we are
-    // Second: we add the conditions which are not in the update policy args
-    let old_condition_ids: HashSet<ConditionID> =
-        old_policy.conditions.iter().map(|c| c.id()).collect();
+    // Third: we attach the conditions which are not in the update policy args (in the old policy but not in the update policy args)
+    let leave_untouched: Vec<Condition> = old_policy
+        .conditions
+        .iter()
+        .filter(|c| !upa.conditions.iter().any(|uc| uc.id() == c.id()))
+        .cloned()
+        .collect();
+    leave_untouched
+        .iter()
+        .for_each(|c| new_conditions.push(c.clone()));
 
-    for cond in old_policy.conditions.iter() {
-        let cond_id = match &cond {
-            Condition::LastLogin(cond) => cond.id.clone(),
-            Condition::XOutOfY(cond) => cond.id.clone(),
-            Condition::FixedDateTime(cond) => cond.id.clone(),
-        };
-
-        if !old_condition_ids.contains(&cond_id) {
-            new_conditions.push(cond.clone());
-        }
-    }
-
-    // create policy from UpdatePolicyArgs
+    // Finally: create policy from UpdatePolicyArgs
     let policy: Policy = Policy::from_update_policy_args(
         &upa.id,
         &old_policy.owner().to_string(),

@@ -2,6 +2,7 @@
 //! 1. Time based conditions - Checks whether a certain time threshold is reached
 //! 2. X out of Y conditions - Checks whether X out of Y validators have voted "yes" on the condition
 
+use crate::common::uuid::UUID;
 use crate::policies::policy::PolicyID;
 use candid::{CandidType, Deserialize};
 use serde::Serialize;
@@ -215,6 +216,56 @@ impl Condition {
             Condition::LastLogin(cond) => cond.id.clone(),
             Condition::XOutOfY(cond) => cond.id.clone(),
             Condition::FixedDateTime(cond) => cond.id.clone(),
+        }
+    }
+
+    // create condition from UpdateCondition
+    pub async fn from_update_condition(update: UpdateCondition) -> Self {
+        let new_condition_id = UUID::new().await;
+        match update {
+            UpdateCondition::LastLogin(update) => Condition::LastLogin(LastLoginTimeCondition {
+                id: new_condition_id,
+                number_of_days_since_last_login: update.number_of_days_since_last_login,
+                condition_status: false,
+            }),
+            UpdateCondition::XOutOfY(update) => Condition::XOutOfY(XOutOfYCondition {
+                id: new_condition_id,
+                validators: update.validators,
+                question: update.question,
+                quorum: update.quorum,
+                condition_status: false,
+            }),
+            UpdateCondition::FixedDateTime(update) => {
+                Condition::FixedDateTime(FixedDateTimeCondition {
+                    id: new_condition_id,
+                    time: update.time,
+                    condition_status: false,
+                })
+            }
+        }
+    }
+
+    // create updatecondition from condition
+    pub fn into_update_condition(&self) -> UpdateCondition {
+        match self {
+            Condition::LastLogin(cond) => {
+                UpdateCondition::LastLogin(UpdateLastLoginTimeCondition {
+                    id: cond.id.clone(),
+                    number_of_days_since_last_login: cond.number_of_days_since_last_login,
+                })
+            }
+            Condition::XOutOfY(cond) => UpdateCondition::XOutOfY(UpdateXOutOfYCondition {
+                id: cond.id.clone(),
+                validators: cond.validators.clone(),
+                question: cond.question.clone(),
+                quorum: cond.quorum,
+            }),
+            Condition::FixedDateTime(cond) => {
+                UpdateCondition::FixedDateTime(UpdateFixedDateTimeCondition {
+                    id: cond.id.clone(),
+                    time: cond.time,
+                })
+            }
         }
     }
 }
