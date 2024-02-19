@@ -144,9 +144,9 @@ type UpdateCondition = variant {
   FixedDateTime : UpdateFixedDateTimeCondition;
   XOutOfY : UpdateXOutOfYCondition;
 };
-type UpdateFixedDateTimeCondition = record { id : text; time : nat64 };
+type UpdateFixedDateTimeCondition = record { id : opt text; time : nat64 };
 type UpdateLastLoginTimeCondition = record {
-  id : text;
+  id : opt text;
   number_of_days_since_last_login : nat64;
 };
 type UpdatePolicyArgs = record {
@@ -168,7 +168,7 @@ type UpdateSecretArgs = record {
   category : opt SecretCategory;
 };
 type UpdateXOutOfYCondition = record {
-  id : text;
+  id : opt text;
   question : text;
   quorum : nat64;
   validators : vec Validator;
