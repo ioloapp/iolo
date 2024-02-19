@@ -80,7 +80,7 @@ export interface UiLastLoginTimeCondition extends UiCondition{
 
 export interface UiFixedDateTimeCondition extends UiCondition{
     type: ConditionType.FixedDateTime
-    time: number,
+    datetime: number,
 }
 
 export interface UiXOutOfYCondition extends UiCondition {

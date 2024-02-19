@@ -26,6 +26,9 @@ pub enum SmartVaultErr {
     NoPolicyForValidator(String),
     KeyBoxEntryDoesNotExistForSecret(String),
     SecretEntryDoesNotExistForKeyBoxEntry(String),
+    LogicalOperatorWithLessThanTwoConditions,
+    InvalidDateTime(String),
+    InvalidQuorum(String, String),
     // Various errors
     CallerNotBeneficiary(String),
     KeyGenerationNotAllowed,
@@ -104,17 +107,20 @@ impl Display for SmartVaultErr {
             SmartVaultErr::NoPolicyForValidator(id) => {
                 write!(f, "Failed to read policy for validator: {}", id)
             }
+            SmartVaultErr::LogicalOperatorWithLessThanTwoConditions => {
+                write!(f, "Logical operator provided with less than two conditions")
+            }
             SmartVaultErr::InvalidPolicyCondition => {
-                write!(
-                    f,
-                    "Policy cannot be read by beneficiary because of wrong condition state"
-                )
+                write!(f, "Policy cannot be read by beneficiary because of wrong condition state")
+            }
+            SmartVaultErr::InvalidDateTime(datetime) => {
+                write!(f, "Datetime {} is invalid or in the past", datetime)
+            }
+            SmartVaultErr::InvalidQuorum(quorum, validators) => {
+                write!(f, "Quorum {} must be less than number of validators: {}", quorum, validators)
             }
             SmartVaultErr::KeyGenerationNotAllowed => {
-                write!(
-                    f,
-                    "Key cannot be generated because some conditions are not met"
-                )
+                write!(f, "Key cannot be generated because some conditions are not met")
             }
             SmartVaultErr::Unauthorized => {
                 write!(f, "Unauthorized")

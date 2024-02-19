@@ -727,7 +727,7 @@ class IoloService {
             const tCondition = uiCondition as UiFixedDateTimeCondition;
             const updateFutureTimeCondition: UpdateFixedDateTimeCondition = {
                 id: tCondition.id ? [tCondition.id] : [],
-                time: tCondition.time ? BigInt(tCondition.time) : BigInt(100)
+                datetime: tCondition.datetime ? BigInt(tCondition.datetime) : BigInt(100)
             } as UpdateFixedDateTimeCondition
             return {
                 FixedDateTime: updateFutureTimeCondition
@@ -781,12 +781,12 @@ class IoloService {
             } as UiLastLoginTimeCondition
         }
         if (condition.hasOwnProperty(ConditionType.FixedDateTime)) {
-            const futureTimeCondition: FixedDateTimeCondition = condition[ConditionType.FixedDateTime];
+            const fixedDateTimeCondition: FixedDateTimeCondition = condition[ConditionType.FixedDateTime];
             return {
-                id: futureTimeCondition.id,
+                id: fixedDateTimeCondition.id,
                 type: ConditionType.FixedDateTime,
-                conditionStatus: futureTimeCondition.condition_status,
-                time: Number(futureTimeCondition.time)
+                conditionStatus: fixedDateTimeCondition.condition_status,
+                datetime: Number(fixedDateTimeCondition.datetime)
             } as UiFixedDateTimeCondition
         }
         if (condition.hasOwnProperty(ConditionType.XOutOfY)) {

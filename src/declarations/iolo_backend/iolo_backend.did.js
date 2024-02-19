@@ -7,17 +7,21 @@ export const idlFactory = ({ IDL }) => {
     'ContactDoesNotExist' : IDL.Text,
     'UserAlreadyExists' : IDL.Text,
     'OnlyOwnerCanDeleteSecret' : IDL.Text,
+    'PolicyConditionDoesNotExist' : IDL.Text,
     'SecretHasNoId' : IDL.Null,
     'UserDeletionFailed' : IDL.Text,
     'KeyBoxEntryDoesNotExistForSecret' : IDL.Text,
     'ContactAlreadyExists' : IDL.Text,
     'CallerNotBeneficiary' : IDL.Text,
+    'InvalidQuorum' : IDL.Tuple(IDL.Text, IDL.Text),
     'SecretDoesNotExist' : IDL.Text,
     'NoPolicyForBeneficiary' : IDL.Text,
     'CallerNotPolicyOwner' : IDL.Text,
     'SecretEntryDoesNotExistForKeyBoxEntry' : IDL.Text,
+    'InvalidDateTime' : IDL.Text,
     'Unauthorized' : IDL.Null,
     'UserUpdateFailed' : IDL.Text,
+    'LogicalOperatorWithLessThanTwoConditions' : IDL.Null,
     'NoPolicyForValidator' : IDL.Text,
     'PolicyAlreadyExists' : IDL.Text,
     'PolicyDoesNotExist' : IDL.Text,
@@ -51,7 +55,7 @@ export const idlFactory = ({ IDL }) => {
   const FixedDateTimeCondition = IDL.Record({
     'id' : IDL.Text,
     'condition_status' : IDL.Bool,
-    'time' : IDL.Nat64,
+    'datetime' : IDL.Nat64,
   });
   const Validator = IDL.Record({
     'status' : IDL.Bool,
@@ -193,7 +197,7 @@ export const idlFactory = ({ IDL }) => {
   });
   const UpdateFixedDateTimeCondition = IDL.Record({
     'id' : IDL.Opt(IDL.Text),
-    'time' : IDL.Nat64,
+    'datetime' : IDL.Nat64,
   });
   const UpdateXOutOfYCondition = IDL.Record({
     'id' : IDL.Opt(IDL.Text),

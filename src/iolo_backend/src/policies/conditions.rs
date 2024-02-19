@@ -28,14 +28,14 @@ pub struct UpdateLastLoginTimeCondition {
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct FixedDateTimeCondition {
     pub id: ConditionID,
-    pub time: u64,
+    pub datetime: u64,
     pub condition_status: bool,
 }
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct UpdateFixedDateTimeCondition {
     pub id: Option<ConditionID>,
-    pub time: u64,
+    pub datetime: u64,
 }
 
 /// The X out of Y condition contains a set of validators and defines a quorum.
@@ -111,7 +111,7 @@ impl From<Condition> for UpdateCondition {
             Condition::FixedDateTime(cond) => {
                 UpdateCondition::FixedDateTime(UpdateFixedDateTimeCondition {
                     id: Some(cond.id.clone()),
-                    time: cond.time,
+                    datetime: cond.datetime,
                 })
             }
         }
@@ -181,7 +181,7 @@ impl ConditionUpdate for Condition {
             }
             Condition::FixedDateTime(condition) => {
                 if let UpdateCondition::FixedDateTime(update) = update {
-                    condition.time = update.time;
+                    condition.datetime = update.datetime;
                     return Condition::FixedDateTime(condition.clone());
                 }
             }
@@ -215,7 +215,7 @@ impl Condition {
             }
             Condition::FixedDateTime(condition) => {
                 let current_time: u64 = time::get_current_time();
-                current_time >= condition.time
+                current_time >= condition.datetime
             }
         }
     }
@@ -263,7 +263,7 @@ impl Condition {
             UpdateCondition::FixedDateTime(update) => {
                 Condition::FixedDateTime(FixedDateTimeCondition {
                     id: new_condition_id,
-                    time: update.time,
+                    datetime: update.datetime,
                     condition_status: false,
                 })
             }
@@ -288,7 +288,7 @@ impl Condition {
             Condition::FixedDateTime(cond) => {
                 UpdateCondition::FixedDateTime(UpdateFixedDateTimeCondition {
                     id: Some(cond.id.clone()),
-                    time: cond.time,
+                    datetime: cond.datetime,
                 })
             }
         }

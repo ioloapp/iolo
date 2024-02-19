@@ -34,7 +34,7 @@ type CreateSecretArgs = record {
 type FixedDateTimeCondition = record {
   id : text;
   condition_status : bool;
-  time : nat64;
+  datetime : nat64;
 };
 type LastLoginTimeCondition = record {
   id : text;
@@ -126,12 +126,15 @@ type SmartVaultErr = variant {
   KeyBoxEntryDoesNotExistForSecret : text;
   ContactAlreadyExists : text;
   CallerNotBeneficiary : text;
+  InvalidQuorum : record { text; text };
   SecretDoesNotExist : text;
   NoPolicyForBeneficiary : text;
   CallerNotPolicyOwner : text;
   SecretEntryDoesNotExistForKeyBoxEntry : text;
+  InvalidDateTime : text;
   Unauthorized;
   UserUpdateFailed : text;
+  LogicalOperatorWithLessThanTwoConditions;
   NoPolicyForValidator : text;
   PolicyAlreadyExists : text;
   PolicyDoesNotExist : text;
@@ -145,7 +148,7 @@ type UpdateCondition = variant {
   FixedDateTime : UpdateFixedDateTimeCondition;
   XOutOfY : UpdateXOutOfYCondition;
 };
-type UpdateFixedDateTimeCondition = record { id : opt text; time : nat64 };
+type UpdateFixedDateTimeCondition = record { id : opt text; datetime : nat64 };
 type UpdateLastLoginTimeCondition = record {
   id : opt text;
   number_of_days_since_last_login : nat64;

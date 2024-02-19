@@ -1,4 +1,4 @@
-use crate::policies::conditions::ConfirmXOutOfYConditionArgs;
+use crate::policies::conditions::{ConfirmXOutOfYConditionArgs, UpdateCondition};
 use crate::policies::policy::UpdatePolicyArgs;
 use crate::secrets::secrets_interface_impl::get_secret_from_secret_store;
 use crate::users::users_interface_impl::get_user_from_user_store;
@@ -11,6 +11,7 @@ use crate::{
     smart_vaults::smart_vault::{POLICY_REGISTRIES, POLICY_STORE, SECRET_STORE, USER_STORE},
     users::user::PrincipalID,
 };
+use crate::utils::time;
 
 use super::conditions::ConditionUpdate;
 use super::conditions_manager::evaluate_overall_conditions_status;
@@ -248,11 +249,36 @@ pub async fn update_policy_impl(
         }
     }
 
+    // Check that logical operator is only set if two ore more conditions are provided
+    if upa.conditions.len() < 2 && upa.conditions_logical_operator.is_some() {
+        return Err(SmartVaultErr::LogicalOperatorWithLessThanTwoConditions);
+    }
+
     // let's keep track of the new conditions
     let mut new_final_condition_set: Vec<Condition> = vec![];
 
     // Find out which conditions are brand new and which conditions need updates
     for uc in upa.conditions.iter() {
+        // Validaton of x out of y conditions
+        if let UpdateCondition::XOutOfY(c) = uc.clone() {
+            // Check that validators do exist if it's an XOutOfY condition
+            for v in c.validators.clone() {
+                if get_user_from_user_store(&v.principal_id).is_err() {
+                    return Err(SmartVaultErr::UserDoesNotExist(v.principal_id.to_string()));
+                }
+            }
+            // Check that the quorum is less than or equal to the number of validators
+            if c.quorum > c.validators.len() as u64 {
+                return Err(SmartVaultErr::InvalidQuorum(c.quorum.to_string(), c.validators.len().to_string()));
+            }
+        }
+        // Check that the fixed date time is in the future
+        if let UpdateCondition::FixedDateTime(c) = uc.clone() {
+            if c.datetime < time::get_current_time() {
+                return Err(SmartVaultErr::InvalidDateTime(c.datetime.to_string()));
+            }
+
+        }
         match uc.id() {
             Some(existing_id) => {
                 // This is an existing condition which needs to be updated
@@ -272,7 +298,7 @@ pub async fn update_policy_impl(
                 new_final_condition_set.push(updated_condition);
             }
             None => {
-                // we have a brand new condition
+                // we have a brand-new condition
                 let new_condition: Condition = Condition::from_update_condition(uc.clone()).await;
                 new_final_condition_set.push(new_condition);
             }

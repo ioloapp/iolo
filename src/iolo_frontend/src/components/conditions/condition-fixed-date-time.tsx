@@ -34,7 +34,7 @@ export const ConditionFixedDateTime: FC<ConditionFixedDateTimeProps> = ({conditi
                     <Collapse in={open} timeout="auto" unmountOnExit>
                         <Box sx={{margin: 1}}>
                             <Typography variant="body2">
-                                {t('conditions.date-of-event')}: {condition.time}
+                                {t('conditions.date-of-event')}: {condition.datetime}
                             </Typography>
                         </Box>
                     </Collapse>
@@ -49,7 +49,7 @@ export const ConditionFixedDateTime: FC<ConditionFixedDateTimeProps> = ({conditi
                 <Collapse in={open} timeout="auto" unmountOnExit>
                     <DateTimePicker
                         label="Uncontrolled picker"
-                        value={dayjs(condition.time)}
+                        value={dayjs(condition.datetime)}
                         defaultValue={dayjs()}
                     />
                 </Collapse>

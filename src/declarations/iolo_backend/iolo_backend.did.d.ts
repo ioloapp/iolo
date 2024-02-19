@@ -38,7 +38,7 @@ export interface CreateSecretArgs {
 export interface FixedDateTimeCondition {
   'id' : string,
   'condition_status' : boolean,
-  'time' : bigint,
+  'datetime' : bigint,
 }
 export interface LastLoginTimeCondition {
   'id' : string,
@@ -135,17 +135,21 @@ export interface SecretListEntry {
 export type SmartVaultErr = { 'ContactDoesNotExist' : string } |
   { 'UserAlreadyExists' : string } |
   { 'OnlyOwnerCanDeleteSecret' : string } |
+  { 'PolicyConditionDoesNotExist' : string } |
   { 'SecretHasNoId' : null } |
   { 'UserDeletionFailed' : string } |
   { 'KeyBoxEntryDoesNotExistForSecret' : string } |
   { 'ContactAlreadyExists' : string } |
   { 'CallerNotBeneficiary' : string } |
+  { 'InvalidQuorum' : [string, string] } |
   { 'SecretDoesNotExist' : string } |
   { 'NoPolicyForBeneficiary' : string } |
   { 'CallerNotPolicyOwner' : string } |
   { 'SecretEntryDoesNotExistForKeyBoxEntry' : string } |
+  { 'InvalidDateTime' : string } |
   { 'Unauthorized' : null } |
   { 'UserUpdateFailed' : string } |
+  { 'LogicalOperatorWithLessThanTwoConditions' : null } |
   { 'NoPolicyForValidator' : string } |
   { 'PolicyAlreadyExists' : string } |
   { 'PolicyDoesNotExist' : string } |
@@ -158,7 +162,7 @@ export type UpdateCondition = { 'LastLogin' : UpdateLastLoginTimeCondition } |
   { 'XOutOfY' : UpdateXOutOfYCondition };
 export interface UpdateFixedDateTimeCondition {
   'id' : [] | [string],
-  'time' : bigint,
+  'datetime' : bigint,
 }
 export interface UpdateLastLoginTimeCondition {
   'id' : [] | [string],

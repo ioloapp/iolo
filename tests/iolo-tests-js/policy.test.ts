@@ -22,6 +22,7 @@ const canisterId: string = determineBackendCanisterId();
 const identityOne: Secp256k1KeyIdentity = createIdentity();
 const identityTwo: Secp256k1KeyIdentity = createIdentity();
 const identityThree: Secp256k1KeyIdentity = createIdentity();
+const identityFour: Secp256k1KeyIdentity = createIdentity(); // Only principal, no iolo user!
 const actorOne: ActorSubclass<_SERVICE> = createNewActor(identityOne, canisterId);
 const actorTwo: ActorSubclass<_SERVICE> = createNewActor(identityTwo, canisterId);
 const actorThree: ActorSubclass<_SERVICE> = createNewActor(identityThree, canisterId);
@@ -37,6 +38,7 @@ const addPolicyArgsTwo: CreatePolicyArgs = {
 let policyOne: Policy;
 let secretA: Secret;
 let secretB: Secret;
+let secretC: Secret;
 /*
  This test suit tests all policy related methods of the backend canister.
  Focus is on the correct return types and the correct behavior of the methods.
@@ -102,13 +104,13 @@ describe("POLICY - update_policy()", () => {
         }
         const xOutOfYCondition: UpdateXOutOfYCondition = {
             id: [],
-            quorum: BigInt(3),
+            quorum: BigInt(1),
             validators: [ValidatorOne],
             question: "Is the sky blue?",
         }
         const fixedDateTimeCondition: UpdateFixedDateTimeCondition = {
             id: [],
-            time: 123456789n,
+            datetime: BigInt((Date.now() + 14 * 24 * 60 * 60 * 1000) * 1000000), // now + 14 days in nanoseconds
         }
         let updatePolicyArgsOne: UpdatePolicyArgs = {
             id: policyOne.id,
@@ -155,7 +157,7 @@ describe("POLICY - update_policy()", () => {
         expect(resultUpdatePolicyOne['Ok'].conditions).toContainEqual({
             FixedDateTime: expect.objectContaining({
                 id: expect.any(String),
-                time: fixedDateTimeCondition.time,
+                datetime: fixedDateTimeCondition.datetime,
                 condition_status: false
             })
         });
@@ -169,7 +171,7 @@ describe("POLICY - update_policy()", () => {
 
     test("it must update policies properly by updating existing attributes", async () => {
         // Remove secretB and add a new one
-        const secretC: Secret = await createSecretInBackend('C', actorOne);
+        secretC = await createSecretInBackend('C', actorOne);
         let secrets: string[] = [secretA.id, secretC.id];
 
         // Remove lastLoginTimeCondition condition and update the two others
@@ -177,7 +179,7 @@ describe("POLICY - update_policy()", () => {
         const xOutOfYCondition: XOutOfYCondition = (policyOne.conditions.find(condition => 'XOutOfY' in condition) as { 'XOutOfY': XOutOfYCondition } | undefined)?.['XOutOfY'];
         const updateXOutOfYCondition: UpdateXOutOfYCondition = {
             id: [xOutOfYCondition.id],
-            quorum: BigInt(5),
+            quorum: BigInt(1),
             question: "Is the sky green?",
             validators: [{principal_id: identityTwo.getPrincipal().toString(), status: false}],
         };
@@ -185,16 +187,16 @@ describe("POLICY - update_policy()", () => {
         const fixedDateTimeCondition: FixedDateTimeCondition = (policyOne.conditions.find(condition => 'FixedDateTime' in condition) as { 'FixedDateTime': FixedDateTimeCondition } | undefined)?.['FixedDateTime'];
         const updateFixedDateTimeCondition: UpdateFixedDateTimeCondition = {
             id: [fixedDateTimeCondition.id],
-            time: 987654321n,
+            datetime: BigInt((Date.now() + 21 * 24 * 60 * 60 * 1000) * 1000000), // now + 21 days in nanoseconds
         };
         conditions.push({'FixedDateTime': updateFixedDateTimeCondition});
 
         let updatePolicyArgsOne: UpdatePolicyArgs = {
             id: policyOne.id,
             name: ['policyAUpdated'],
-            beneficiaries: [identityTwo.getPrincipal().toString()],
+            beneficiaries: [identityTwo.getPrincipal().toString()], // Remove identityThree
             conditions: conditions,
-            conditions_logical_operator: [{'Or': null}],
+            conditions_logical_operator: [{'Or': null}], // Change operator
             secrets: secrets,
             key_box: [[secretA.id, new Uint8Array([1, 2, 3])], [secretC.id, new Uint8Array([4, 5, 6])]],
         }
@@ -226,7 +228,7 @@ describe("POLICY - update_policy()", () => {
         expect(resultUpdatePolicyOne['Ok'].conditions).toContainEqual({
             FixedDateTime: expect.objectContaining({
                 id: fixedDateTimeCondition.id, // id as string, not as array
-                time: updateFixedDateTimeCondition.time,
+                datetime: updateFixedDateTimeCondition.datetime,
                 condition_status: xOutOfYCondition.condition_status,
             })
         });
@@ -241,7 +243,7 @@ describe("POLICY - update_policy()", () => {
     test("it must not update policy of a different principal", async () => {
         let updatePolicyArgsOne: UpdatePolicyArgs = {
             id: policyOne.id,
-            name: ['policyOneUpdated'],
+            name: policyOne.name,
             beneficiaries: [],
             conditions: [],
             conditions_logical_operator: [],
@@ -275,7 +277,7 @@ describe("POLICY - update_policy()", () => {
     test("it must not update with a non-existing secret", async () => {
         let updatePolicyArgsOne: UpdatePolicyArgs = {
             id: policyOne.id,
-            name: [],
+            name: policyOne.name,
             beneficiaries: [],
             conditions: [],
             conditions_logical_operator: [],
@@ -296,7 +298,7 @@ describe("POLICY - update_policy()", () => {
 
         let updatePolicyArgsOne: UpdatePolicyArgs = {
             id: policyOne.id,
-            name: [],
+            name: policyOne.name,
             beneficiaries: [],
             conditions: [],
             conditions_logical_operator: [],
@@ -317,7 +319,7 @@ describe("POLICY - update_policy()", () => {
 
         let updatePolicyArgsOne: UpdatePolicyArgs = {
             id: policyOne.id,
-            name: [],
+            name: policyOne.name,
             beneficiaries: [],
             conditions: [],
             conditions_logical_operator: [],
@@ -350,7 +352,7 @@ describe("POLICY - update_policy()", () => {
     test("it must not update with a non-existing beneficiary", async () => {
         let updatePolicyArgsOne: UpdatePolicyArgs = {
             id: policyOne.id,
-            name: [],
+            name: policyOne.name,
             beneficiaries: ['non-existing-beneficiary-id'],
             conditions: [],
             conditions_logical_operator: [],
@@ -366,17 +368,177 @@ describe("POLICY - update_policy()", () => {
     }, 60000); // Set timeout
 
     test("it must not update a non-existing condition", async () => {
-        // TODO
+
+        // x-out-of-y condition
+        let conditions = [];
+        const updateXOutOfYCondition: UpdateXOutOfYCondition = {
+            id: ['non-existing-condition-id'],
+            quorum: BigInt(1),
+            question: "Is the sky green?",
+            validators: [{principal_id: identityTwo.getPrincipal().toString(), status: false}],
+        };
+        conditions.push({'XOutOfY': updateXOutOfYCondition});
+
+        let updatePolicyArgsOne: UpdatePolicyArgs = {
+            id: policyOne.id,
+            name: policyOne.name,
+            beneficiaries: [],
+            conditions: conditions,
+            conditions_logical_operator: [],
+            secrets: [],
+            key_box: [],
+        };
+
+        let resultUpdatePolicyOne: Result_2 = await actorOne.update_policy(updatePolicyArgsOne);
+        expect(resultUpdatePolicyOne).toHaveProperty('Err');
+        expect(resultUpdatePolicyOne['Err']).toHaveProperty('PolicyConditionDoesNotExist');
+
+        // fixed-date-time condition
+        conditions = [];
+        const updateFixedDateTimeCondition: UpdateFixedDateTimeCondition = {
+            id: ['non-existing-condition-id'],
+            datetime: BigInt((Date.now() + 14 * 24 * 60 * 60 * 1000) * 1000000), // now + 14 days in nanoseconds
+        };
+        conditions.push({'FixedDateTime': updateFixedDateTimeCondition});
+
+        updatePolicyArgsOne = {
+            id: policyOne.id,
+            name: policyOne.name,
+            beneficiaries: [],
+            conditions: conditions,
+            conditions_logical_operator: [],
+            secrets: [],
+            key_box: [],
+        };
+
+        resultUpdatePolicyOne = await actorOne.update_policy(updatePolicyArgsOne);
+        expect(resultUpdatePolicyOne).toHaveProperty('Err');
+        expect(resultUpdatePolicyOne['Err']).toHaveProperty('PolicyConditionDoesNotExist');
+
+        // last-login-time condition
+        conditions = [];
+        const updateLastLoginTimeCondition: UpdateLastLoginTimeCondition = {
+            id: ['non-existing-condition-id'],
+            number_of_days_since_last_login: BigInt(10),
+        };
+        conditions.push({'LastLogin': updateLastLoginTimeCondition});
+
+        updatePolicyArgsOne = {
+            id: policyOne.id,
+            name: policyOne.name,
+            beneficiaries: [],
+            conditions: conditions,
+            conditions_logical_operator: [],
+            secrets: [],
+            key_box: [],
+        };
+        resultUpdatePolicyOne = await actorOne.update_policy(updatePolicyArgsOne);
+        expect(resultUpdatePolicyOne).toHaveProperty('Err');
+        expect(resultUpdatePolicyOne['Err']).toHaveProperty('PolicyConditionDoesNotExist');
 
     }, 60000); // Set timeout
 
-    test("it must not update with a x-out-of-y condition validator that does not exist", async () => {
-        // TODO
+    test("it must not update with an x-out-of-y condition validator that does not exist", async () => {
+        let conditions = [];
+        const updateXOutOfYCondition: UpdateXOutOfYCondition = {
+            id: [],
+            quorum: BigInt(5),
+            question: "Is the sky green?",
+            validators: [{principal_id: identityTwo.getPrincipal().toString(), status: false}, {principal_id: identityFour.getPrincipal().toString(), status: false}],
+        };
+        conditions.push({'XOutOfY': updateXOutOfYCondition});
+
+        let updatePolicyArgsOne: UpdatePolicyArgs = {
+            id: policyOne.id,
+            name: policyOne.name,
+            beneficiaries: [],
+            conditions: conditions,
+            conditions_logical_operator: [],
+            secrets: [],
+            key_box: [],
+        }
+
+        let resultUpdatePolicyOne: Result_2 = await actorOne.update_policy(updatePolicyArgsOne);
+        expect(resultUpdatePolicyOne).toHaveProperty('Err');
+        expect(resultUpdatePolicyOne['Err']).toHaveProperty('UserDoesNotExist');
+        expect(resultUpdatePolicyOne['Err'].UserDoesNotExist).toStrictEqual(identityFour.getPrincipal().toString());
 
     }, 60000); // Set timeout
 
-    test("it must not update with a x-out-of-y condition logical operator if only one policy is set", async () => {
-        // TODO
+    test("it must not update with a logical operator if only one condition is set", async () => {
+        let conditions = [];
+        const updateXOutOfYCondition: UpdateXOutOfYCondition = {
+            id: [],
+            quorum: BigInt(5),
+            question: "Is the sky green?",
+            validators: [{principal_id: identityTwo.getPrincipal().toString(), status: false}],
+        };
+        conditions.push({'XOutOfY': updateXOutOfYCondition});
+
+        let updatePolicyArgsOne: UpdatePolicyArgs = {
+            id: policyOne.id,
+            name: policyOne.name,
+            beneficiaries: [],
+            conditions: conditions,
+            conditions_logical_operator: [{'And': null}],
+            secrets: [],
+            key_box: [],
+        }
+
+        let resultUpdatePolicyOne: Result_2 = await actorOne.update_policy(updatePolicyArgsOne);
+        expect(resultUpdatePolicyOne).toHaveProperty('Err');
+        expect(resultUpdatePolicyOne['Err']).toHaveProperty('LogicalOperatorWithLessThanTwoConditions');
+
+    }, 60000); // Set timeout
+
+    test("it must not update a time based condition with a datetime in the past", async () => {
+        let conditions = [];
+        const updateFixedDateTimeCondition: UpdateFixedDateTimeCondition = {
+            id: [],
+            datetime: BigInt((Date.now() - 60 * 1000) * 1000000), // now  1 minute in nanoseconds
+        };
+        conditions.push({'FixedDateTime': updateFixedDateTimeCondition});
+
+        const updatePolicyArgsOne: UpdatePolicyArgs = {
+            id: policyOne.id,
+            name: policyOne.name,
+            beneficiaries: [],
+            conditions: conditions,
+            conditions_logical_operator: [],
+            secrets: [],
+            key_box: [],
+        };
+
+        const resultUpdatePolicyOne: Result_2 = await actorOne.update_policy(updatePolicyArgsOne);
+        expect(resultUpdatePolicyOne).toHaveProperty('Err');
+        expect(resultUpdatePolicyOne['Err']).toHaveProperty('InvalidDateTime');
+        expect(resultUpdatePolicyOne['Err'].InvalidDateTime).toStrictEqual(updateFixedDateTimeCondition.datetime.toString());
+
+    }, 60000); // Set timeout
+
+    test("it must not update an x-out-of-y condition with a quorum that is not less than the number of validators", async () => {
+        let conditions = [];
+        const updateXOutOfYCondition: UpdateXOutOfYCondition = {
+            id: [],
+            quorum: BigInt(2),
+            question: "Is the sky green?",
+            validators: [{principal_id: identityTwo.getPrincipal().toString(), status: false}],
+        };
+        conditions.push({'XOutOfY': updateXOutOfYCondition});
+
+        const updatePolicyArgsOne: UpdatePolicyArgs = {
+            id: policyOne.id,
+            name: policyOne.name,
+            beneficiaries: [],
+            conditions: conditions,
+            conditions_logical_operator: [],
+            secrets: [],
+            key_box: [],
+        };
+
+        const resultUpdatePolicyOne: Result_2 = await actorOne.update_policy(updatePolicyArgsOne);
+        expect(resultUpdatePolicyOne).toHaveProperty('Err');
+        expect(resultUpdatePolicyOne['Err']).toHaveProperty('InvalidQuorum');
 
     }, 60000); // Set timeout
 });
