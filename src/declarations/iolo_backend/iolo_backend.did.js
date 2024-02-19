@@ -188,15 +188,15 @@ export const idlFactory = ({ IDL }) => {
     'Err' : SmartVaultErr,
   });
   const UpdateLastLoginTimeCondition = IDL.Record({
-    'id' : IDL.Text,
+    'id' : IDL.Opt(IDL.Text),
     'number_of_days_since_last_login' : IDL.Nat64,
   });
   const UpdateFixedDateTimeCondition = IDL.Record({
-    'id' : IDL.Text,
+    'id' : IDL.Opt(IDL.Text),
     'time' : IDL.Nat64,
   });
   const UpdateXOutOfYCondition = IDL.Record({
-    'id' : IDL.Text,
+    'id' : IDL.Opt(IDL.Text),
     'question' : IDL.Text,
     'quorum' : IDL.Nat64,
     'validators' : IDL.Vec(Validator),

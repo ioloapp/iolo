@@ -7,12 +7,12 @@ import {
 } from "./utils";
 import {Secp256k1KeyIdentity} from "@dfinity/identity-secp256k1";
 import {
-    Result_3, CreatePolicyArgs, Policy, _SERVICE, Result_2,
+    CreatePolicyArgs, Policy, _SERVICE, Result_2,
     UpdatePolicyArgs,
     UpdateXOutOfYCondition,
     Validator,
     Secret,
-    UpdateLastLoginTimeCondition, UpdateFixedDateTimeCondition
+    UpdateLastLoginTimeCondition, UpdateFixedDateTimeCondition, FixedDateTimeCondition, XOutOfYCondition,
 } from "../../src/declarations/iolo_backend/iolo_backend.did";
 import {ActorSubclass} from "@dfinity/agent";
 
@@ -35,8 +35,8 @@ const addPolicyArgsTwo: CreatePolicyArgs = {
 }
 
 let policyOne: Policy;
-let policyTwo: Policy;
-
+let secretA: Secret;
+let secretB: Secret;
 /*
  This test suit tests all policy related methods of the backend canister.
  Focus is on the correct return types and the correct behavior of the methods.
@@ -81,20 +81,19 @@ describe("POLICY - create_policy()", () => {
         expect(resultAddPolicyTwo['Ok'].conditions_status).toStrictEqual(false);
         expect(resultAddPolicyTwo['Ok'].date_created).toBeGreaterThan(0);
         expect(resultAddPolicyTwo['Ok'].date_modified).toStrictEqual(resultAddPolicyTwo['Ok'].date_created);
-        policyTwo = resultAddPolicyTwo['Ok'];
 
     }, 60000); // Set timeout
 });
 
 describe("POLICY - update_policy()", () => {
-    test("it must update policies properly", async () => {
+    test("it must update policies properly by creating new attributes", async () => {
 
         // Update policy with two secrets, two beneficiaries and all condition-types with AND operator
-        const secretA: Secret = await createSecretInBackend('A', actorOne);
-        const secretB: Secret = await createSecretInBackend('B', actorOne);
+        secretA = await createSecretInBackend('A', actorOne);
+        secretB = await createSecretInBackend('B', actorOne);
 
         const lastLoginTimeCondition: UpdateLastLoginTimeCondition = {
-            id: "",
+            id: [],
             number_of_days_since_last_login: BigInt(10),
         };
         const ValidatorOne: Validator = {
@@ -102,13 +101,13 @@ describe("POLICY - update_policy()", () => {
             status: false,
         }
         const xOutOfYCondition: UpdateXOutOfYCondition = {
-            id: "",
+            id: [],
             quorum: BigInt(3),
             validators: [ValidatorOne],
             question: "Is the sky blue?",
         }
         const fixedDateTimeCondition: UpdateFixedDateTimeCondition = {
-            id: "",
+            id: [],
             time: 123456789n,
         }
         let updatePolicyArgsOne: UpdatePolicyArgs = {
@@ -164,15 +163,82 @@ describe("POLICY - update_policy()", () => {
         expect(resultUpdatePolicyOne['Ok'].conditions_status).toStrictEqual(false);
         expect(resultUpdatePolicyOne['Ok'].date_created).toStrictEqual(policyOne.date_created);
         expect(resultUpdatePolicyOne['Ok'].date_modified).toBeGreaterThan(policyOne.date_modified);
-        policyOne.date_modified = resultUpdatePolicyOne['Ok'].date_modified;
+        policyOne = resultUpdatePolicyOne['Ok'];
 
     }, 60000); // Set timeout
 
-    test("it must update conditions properly", async () => {
-        // TODO
-    });
+    test("it must update policies properly by updating existing attributes", async () => {
+        // Remove secretB and add a new one
+        const secretC: Secret = await createSecretInBackend('C', actorOne);
+        let secrets: string[] = [secretA.id, secretC.id];
 
-    test("it must not update policy with a different owner", async () => {
+        // Remove lastLoginTimeCondition condition and update the two others
+        let conditions = [];
+        const xOutOfYCondition: XOutOfYCondition = (policyOne.conditions.find(condition => 'XOutOfY' in condition) as { 'XOutOfY': XOutOfYCondition } | undefined)?.['XOutOfY'];
+        const updateXOutOfYCondition: UpdateXOutOfYCondition = {
+            id: [xOutOfYCondition.id],
+            quorum: BigInt(5),
+            question: "Is the sky green?",
+            validators: [{principal_id: identityTwo.getPrincipal().toString(), status: false}],
+        };
+        conditions.push({'XOutOfY': updateXOutOfYCondition});
+        const fixedDateTimeCondition: FixedDateTimeCondition = (policyOne.conditions.find(condition => 'FixedDateTime' in condition) as { 'FixedDateTime': FixedDateTimeCondition } | undefined)?.['FixedDateTime'];
+        const updateFixedDateTimeCondition: UpdateFixedDateTimeCondition = {
+            id: [fixedDateTimeCondition.id],
+            time: 987654321n,
+        };
+        conditions.push({'FixedDateTime': updateFixedDateTimeCondition});
+
+        let updatePolicyArgsOne: UpdatePolicyArgs = {
+            id: policyOne.id,
+            name: ['policyAUpdated'],
+            beneficiaries: [identityTwo.getPrincipal().toString()],
+            conditions: conditions,
+            conditions_logical_operator: [{'Or': null}],
+            secrets: secrets,
+            key_box: [[secretA.id, new Uint8Array([1, 2, 3])], [secretC.id, new Uint8Array([4, 5, 6])]],
+        }
+
+        let resultUpdatePolicyOne: Result_2 = await actorOne.update_policy(updatePolicyArgsOne);
+        expect(resultUpdatePolicyOne).toHaveProperty('Ok');
+        expect(Object.keys(resultUpdatePolicyOne['Ok']).length).toStrictEqual(11);
+        expect(Number(resultUpdatePolicyOne['Ok'].id)).not.toStrictEqual("");
+        expect(resultUpdatePolicyOne['Ok'].name).toStrictEqual(updatePolicyArgsOne.name);
+        expect(resultUpdatePolicyOne['Ok'].owner).toStrictEqual(identityOne.getPrincipal().toString());
+        expect(resultUpdatePolicyOne['Ok'].secrets).toHaveLength(2)
+        expect(resultUpdatePolicyOne['Ok'].secrets).toContainEqual(updatePolicyArgsOne.secrets[0]);
+        expect(resultUpdatePolicyOne['Ok'].secrets).toContainEqual(updatePolicyArgsOne.secrets[1]);
+        expect(resultUpdatePolicyOne['Ok'].key_box).toHaveLength(2);
+        expect(resultUpdatePolicyOne['Ok'].key_box).toContainEqual(updatePolicyArgsOne.key_box[0]);
+        expect(resultUpdatePolicyOne['Ok'].key_box).toContainEqual(updatePolicyArgsOne.key_box[1]);
+        expect(resultUpdatePolicyOne['Ok'].beneficiaries).toHaveLength(1);
+        expect(resultUpdatePolicyOne['Ok'].beneficiaries).toContainEqual(updatePolicyArgsOne.beneficiaries[0]);
+        expect(resultUpdatePolicyOne['Ok'].conditions).toHaveLength(2);
+        expect(resultUpdatePolicyOne['Ok'].conditions).toContainEqual({
+            XOutOfY: expect.objectContaining({
+                id: xOutOfYCondition.id, // id as string, not as array
+                question: updateXOutOfYCondition.question,
+                quorum: updateXOutOfYCondition.quorum,
+                validators: updateXOutOfYCondition.validators,
+                condition_status: xOutOfYCondition.condition_status,
+            })
+        });
+        expect(resultUpdatePolicyOne['Ok'].conditions).toContainEqual({
+            FixedDateTime: expect.objectContaining({
+                id: fixedDateTimeCondition.id, // id as string, not as array
+                time: updateFixedDateTimeCondition.time,
+                condition_status: xOutOfYCondition.condition_status,
+            })
+        });
+        expect(resultUpdatePolicyOne['Ok'].conditions_logical_operator).toStrictEqual(updatePolicyArgsOne.conditions_logical_operator);
+        expect(resultUpdatePolicyOne['Ok'].conditions_status).toStrictEqual(false);
+        expect(resultUpdatePolicyOne['Ok'].date_created).toStrictEqual(policyOne.date_created);
+        expect(resultUpdatePolicyOne['Ok'].date_modified).toBeGreaterThan(policyOne.date_modified);
+        policyOne = resultUpdatePolicyOne['Ok'];
+
+    }, 60000); // Set timeout
+
+    test("it must not update policy of a different principal", async () => {
         let updatePolicyArgsOne: UpdatePolicyArgs = {
             id: policyOne.id,
             name: ['policyOneUpdated'],
@@ -184,8 +250,8 @@ describe("POLICY - update_policy()", () => {
         };
         const resultUpdatePolicyOne: Result_2 = await actorTwo.update_policy(updatePolicyArgsOne);
         expect(resultUpdatePolicyOne).toHaveProperty('Err');
-        expect(resultUpdatePolicyOne['Err']).toHaveProperty('PolicyDoesNotExist');
-        expect(resultUpdatePolicyOne['Err'].PolicyDoesNotExist).toStrictEqual(updatePolicyArgsOne.id);
+        expect(resultUpdatePolicyOne['Err']).toHaveProperty('CallerNotPolicyOwner');
+        expect(resultUpdatePolicyOne['Err'].CallerNotPolicyOwner).toStrictEqual(updatePolicyArgsOne.id);
 
     }, 60000); // Set timeout
 

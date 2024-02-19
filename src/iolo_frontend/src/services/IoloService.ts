@@ -20,7 +20,11 @@ import {
     SecretCategory,
     SecretListEntry,
     UpdateSecretArgs,
+    UpdateCondition,
     LastLoginTimeCondition,
+    UpdateLastLoginTimeCondition,
+    UpdateFixedDateTimeCondition,
+    UpdateXOutOfYCondition,
     User,
     UserType,
     XOutOfYCondition,
@@ -708,45 +712,42 @@ class IoloService {
         }
     }
 
-    private mapUiConditionToUpdateCondition(uiCondition: UiCondition): Condition {
+    private mapUiConditionToUpdateCondition(uiCondition: UiCondition): UpdateCondition {
         if (uiCondition.type === ConditionType.LastLogin) {
             const tCondition = uiCondition as UiLastLoginTimeCondition;
-            const lastLoginTimeCondition = {
-                id: tCondition.id,
-                condition_status: tCondition.conditionStatus,
+            const updateLastLoginTimeCondition: UpdateLastLoginTimeCondition = {
+                id: [tCondition.id],
                 number_of_days_since_last_login: tCondition.numberOfDaysSinceLastLogin ? BigInt(tCondition.numberOfDaysSinceLastLogin) : BigInt(100)
-            } as LastLoginTimeCondition
+            } as UpdateLastLoginTimeCondition
             return {
-                LastLogin: lastLoginTimeCondition
+                LastLogin: updateLastLoginTimeCondition
             }
         }
         if (uiCondition.type === ConditionType.FixedDateTime) {
             const tCondition = uiCondition as UiFixedDateTimeCondition;
-            const futureTimeCondition = {
-                id: tCondition.id,
-                condition_status: tCondition.conditionStatus,
+            const updateFutureTimeCondition: UpdateFixedDateTimeCondition = {
+                id: [tCondition.id],
                 time: tCondition.time ? BigInt(tCondition.time) : BigInt(100)
-            } as FixedDateTimeCondition
+            } as UpdateFixedDateTimeCondition
             return {
-                FixedDateTime: futureTimeCondition
+                FixedDateTime: updateFutureTimeCondition
             }
         }
         if (uiCondition.type === ConditionType.XOutOfY) {
-            const xCondition = uiCondition as UiXOutOfYCondition;
-            const xOutOfYCondition: XOutOfYCondition = {
-                id: xCondition.id,
-                condition_status: xCondition.conditionStatus,
-                question: xCondition.question,
-                quorum: xCondition.quorum ? BigInt(xCondition.quorum) : BigInt(xCondition.validators.length),
-                validators: xCondition.validators.map(v => {
+            const tCondition = uiCondition as UiXOutOfYCondition;
+            const updateXOutOfYCondition: UpdateXOutOfYCondition = {
+                id: [tCondition.id],
+                question: tCondition.question,
+                quorum: tCondition.quorum ? BigInt(tCondition.quorum) : BigInt(tCondition.validators.length),
+                validators: tCondition.validators.map(v => {
                     return {
                         principal_id: v.user.id,
                         status: v.status
                     }
                 })
-            }
+            } as UpdateXOutOfYCondition
             return {
-                XOutOfY: xOutOfYCondition
+                XOutOfY: updateXOutOfYCondition
             }
         }
     }

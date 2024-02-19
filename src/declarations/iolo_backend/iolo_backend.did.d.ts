@@ -156,9 +156,12 @@ export type SmartVaultErr = { 'ContactDoesNotExist' : string } |
 export type UpdateCondition = { 'LastLogin' : UpdateLastLoginTimeCondition } |
   { 'FixedDateTime' : UpdateFixedDateTimeCondition } |
   { 'XOutOfY' : UpdateXOutOfYCondition };
-export interface UpdateFixedDateTimeCondition { 'id' : string, 'time' : bigint }
+export interface UpdateFixedDateTimeCondition {
+  'id' : [] | [string],
+  'time' : bigint,
+}
 export interface UpdateLastLoginTimeCondition {
-  'id' : string,
+  'id' : [] | [string],
   'number_of_days_since_last_login' : bigint,
 }
 export interface UpdatePolicyArgs {
@@ -180,7 +183,7 @@ export interface UpdateSecretArgs {
   'category' : [] | [SecretCategory],
 }
 export interface UpdateXOutOfYCondition {
-  'id' : string,
+  'id' : [] | [string],
   'question' : string,
   'quorum' : bigint,
   'validators' : Array<Validator>,
