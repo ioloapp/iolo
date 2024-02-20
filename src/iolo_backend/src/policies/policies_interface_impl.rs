@@ -174,7 +174,7 @@ pub fn get_policy_as_validator_impl(
     let pfv: PolicyForValidator = PolicyForValidator {
         id: policy.id().to_string(),
         owner: policy.owner().to_string(),
-        xooy_conditions: filtered_xooy_conditions,
+        conditions: filtered_xooy_conditions,
     };
 
     Ok(pfv)

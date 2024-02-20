@@ -57,7 +57,7 @@ type Policy = record {
 };
 type PolicyForValidator = record {
   id : text;
-  xooy_conditions : vec Condition;
+  conditions : vec Condition;
   owner : text;
 };
 type PolicyKeyDerviationArgs = record {

@@ -62,8 +62,8 @@ export interface Policy {
 }
 export interface PolicyForValidator {
   'id' : string,
-  'xooy_conditions' : Array<Condition>,
   'owner' : string,
+  'conditions' : Array<Condition>,
 }
 export interface PolicyKeyDerviationArgs {
   'encryption_public_key' : Uint8Array | number[],

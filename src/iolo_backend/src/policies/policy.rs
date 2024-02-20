@@ -93,7 +93,7 @@ pub struct PolicyListEntry {
 pub struct PolicyForValidator {
     pub id: PolicyID,
     pub owner: PrincipalID,
-    pub xooy_conditions: Vec<Condition>,
+    pub conditions: Vec<Condition>,
 }
 
 impl From<Policy> for PolicyListEntry {

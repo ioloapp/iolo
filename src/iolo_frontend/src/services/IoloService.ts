@@ -541,13 +541,19 @@ class IoloService {
     }
 
     private nanosecondsInBigintToIsoString(nanoseconds: BigInt): string {
-        const number = Number(nanoseconds);
-        const milliseconds = Number(number / 1000000);
-        return new Date(milliseconds).toISOString();
+        if(nanoseconds) {
+            const number = Number(nanoseconds);
+            const milliseconds = Number(number / 1000000);
+            return new Date(milliseconds).toISOString();
+        }
+        return null;
     }
 
     private dateToNanosecondsInBigint(isoDate: string): bigint {
-        return BigInt(new Date(isoDate).getTime()) * 1000000n;
+        if(isoDate) {
+            return BigInt(new Date(isoDate).getTime()) * 1000000n;
+        }
+        return null;
     }
 
     private async encryptNewSecret(uiSecret: UiSecret): Promise<CreateSecretArgs> {
@@ -818,7 +824,7 @@ class IoloService {
     }
 
     private mapPolicyWithSecretListEntriesToUiPolicyWithSecretListEntries(policy: PolicyWithSecretListEntries, role: UiPolicyListEntryRole): UiPolicyWithSecretListEntries {
-        let secrets: UiSecretListEntry[] = policy.secrets.map((item) => {
+        let secrets: UiSecretListEntry[] = policy.secrets?.map((item) => {
             let category = undefined;
             if (item.category.length > 0) {
                 if (item.category[0].hasOwnProperty('Password')) {
@@ -836,17 +842,18 @@ class IoloService {
                 category: category,
             }
         })
+        console.log('policy', policy)
         return {
             id: policy.id,
-            name: policy.name.length > 0 ? policy.name[0] : undefined,
+            name: policy.name?.length > 0 ? policy.name[0] : undefined,
             owner: {id: policy.owner},
             secrets: secrets,
-            beneficiaries: policy.beneficiaries.map((item) => {
+            beneficiaries: policy.beneficiaries?.map((item) => {
                 return {id: item}
             }),
-            conditionsLogicalOperator: policy.conditions_logical_operator.hasOwnProperty('And') ? UiLogicalOperator.And : UiLogicalOperator.Or,
+            conditionsLogicalOperator: policy.conditions_logical_operator?.hasOwnProperty('And') ? UiLogicalOperator.And : UiLogicalOperator.Or,
             conditionsStatus: policy.conditions_status,
-            conditions: policy.conditions.map(condition => this.mapConditionToUiCondition(condition)),
+            conditions: policy.conditions?.map(condition => this.mapConditionToUiCondition(condition)),
             dateCreated: this.nanosecondsInBigintToIsoString(policy.date_created),
             dateModified: this.nanosecondsInBigintToIsoString(policy.date_modified),
             role

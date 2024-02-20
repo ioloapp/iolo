@@ -170,8 +170,8 @@ export const idlFactory = ({ IDL }) => {
   });
   const PolicyForValidator = IDL.Record({
     'id' : IDL.Text,
-    'xooy_conditions' : IDL.Vec(Condition),
     'owner' : IDL.Text,
+    'conditions' : IDL.Vec(Condition),
   });
   const Result_9 = IDL.Variant({
     'Ok' : PolicyForValidator,
