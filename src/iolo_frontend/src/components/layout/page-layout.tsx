@@ -82,7 +82,7 @@ export const PageLayout: FC<PageLayoutProps> = ({title, children, filterList, sh
                     textAlign: 'center',
                 }}
             >
-                <Typography variant="h4">{title}</Typography>
+                <Typography variant="h1">{title}</Typography>
             </Box>
 
             <Box sx={{

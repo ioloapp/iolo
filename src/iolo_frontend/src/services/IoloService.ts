@@ -285,7 +285,8 @@ class IoloService {
         const result: Result_2 = await (await this.getActor()).create_policy(createPolicyArgs);
         if (result['Ok']) {
             uiPolicy.id = result['Ok'].id; // Use created policy id
-            return await this.updatePolicy(uiPolicy); // Update created policy with all other attributes
+            const policyForCreate = this.preparePolicyForCreate(uiPolicy);
+            return await this.updatePolicy(policyForCreate); // Update created policy with all other attributes
         } else throw mapError(result['Err']);
     }
 
@@ -858,6 +859,17 @@ class IoloService {
                 return {'Person': null}
             case UiUserType.Company:
                 return {'Company': null}
+        }
+    }
+
+    private preparePolicyForCreate(uiPolicy: UiPolicy): UiPolicy {
+        const conditions = uiPolicy.conditions?.map(c => {
+            const {id, ...cond} = c;
+            return cond;
+        })
+        return {
+            ...uiPolicy,
+            conditions
         }
     }
 }
