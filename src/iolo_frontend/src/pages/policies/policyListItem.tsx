@@ -34,7 +34,7 @@ export const PolicyListItem: FC<PolicyListItemProps> = ({policy}) => {
     }
 
     return (
-        <ListItem key={policy.id} secondaryAction={
+        <ListItem secondaryAction={
             <>
                 {
                     policy.role === UiPolicyListEntryRole.Owner &&

@@ -42,21 +42,25 @@ export function Policies() {
     const contactListState = useSelector(selectContactListState);
     const {t} = useTranslation();
 
-    const [filteredPolicies, setFilteredPolicies] = useState(policies)
-    const [filteredBeneficiaryPolicies, setFilteredBeneficiaryPolicies] = useState(beneficiaryPolicies)
-    const [filteredValidatorPolicies, setFilteredValidatorPolicies] = useState(validatorPolicies)
+    const [filteredPolicies, setFilteredPolicies] = useState(policies ? policies : [])
+    const [filteredBeneficiaryPolicies, setFilteredBeneficiaryPolicies] = useState(beneficiaryPolicies ? beneficiaryPolicies : [])
+    const [filteredValidatorPolicies, setFilteredValidatorPolicies] = useState(validatorPolicies ? validatorPolicies : [])
+    const [listError, setListError] = useState(false);
 
     useEffect(() => {
+        setListError(policyListState === 'failed')
         setFilteredPolicies(policies)
-    }, [policies]);
+    }, [policies, policyListState]);
 
     useEffect(() => {
-        setFilteredBeneficiaryPolicies(filteredBeneficiaryPolicies)
-    }, [filteredBeneficiaryPolicies]);
+        setListError(policyListState === 'failed')
+        setFilteredBeneficiaryPolicies(beneficiaryPolicies)
+    }, [beneficiaryPolicies, policyListState]);
 
     useEffect(() => {
-        setFilteredValidatorPolicies(filteredValidatorPolicies)
-    }, [filteredValidatorPolicies]);
+        setListError(policyListState === 'failed')
+        setFilteredValidatorPolicies(validatorPolicies)
+    }, [validatorPolicies, policyListState]);
 
     useEffect(() => {
         if (secretListState === 'init') {
@@ -83,48 +87,36 @@ export function Policies() {
         }
     }
 
-    const hasError = (): boolean => {
-        return policyListState === 'failed';
-    }
-
     return (
         <PageLayout title={t('policies.title')} filterList={filterPolicyList}>
             <>
                 <Box>
-                    {hasError() &&
+                    {listError &&
                         <Error error={policyListError}/>
                     }
-                    {!hasError() && filteredPolicies &&
+                    {!listError &&
                         <>
                             <Typography variant="h2">{t('policies.list.owner')}</Typography>
                             <Box>
                                 <List dense={false}>
-                                    {filteredPolicies.flatMap(f => f ? [f] : []).map((policy: UiPolicy) =>
-                                        <PolicyListItem policy={policy}/>
+                                    {filteredPolicies.map((policy: UiPolicy) =>
+                                        <PolicyListItem policy={policy} key={policy.id}/>
                                     )}
                                 </List>
                             </Box>
-                        </>
-                    }
-                    {!hasError() && filteredBeneficiaryPolicies &&
-                        <>
                             <Typography variant="h2">{t('policies.list.beneficiary')}</Typography>
                             <Box>
                                 <List dense={false}>
-                                    {filteredBeneficiaryPolicies.flatMap(f => f ? [f] : []).map((policy: UiPolicy) =>
-                                        <PolicyListItem policy={policy}/>
+                                    {filteredBeneficiaryPolicies.map((policy: UiPolicy) =>
+                                        <PolicyListItem policy={policy} key={policy.id}/>
                                     )}
                                 </List>
                             </Box>
-                        </>
-                    }
-                    {!hasError() && filteredValidatorPolicies &&
-                        <>
                             <Typography variant="h2">{t('policies.list.validator')}</Typography>
                             <Box>
                                 <List dense={false}>
-                                    {filteredValidatorPolicies.flatMap(f => f ? [f] : []).map((policy: UiPolicy) =>
-                                        <PolicyListItem policy={policy}/>
+                                    {filteredValidatorPolicies.map((policy: UiPolicy) =>
+                                        <PolicyListItem policy={policy} key={policy.id}/>
                                     )}
                                 </List>
                             </Box>
