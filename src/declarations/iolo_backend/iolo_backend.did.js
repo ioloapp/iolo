@@ -180,14 +180,18 @@ export const idlFactory = ({ IDL }) => {
   const PolicyListEntry = IDL.Record({
     'id' : IDL.Text,
     'owner' : IDL.Text,
-    'condition_status' : IDL.Bool,
     'name' : IDL.Opt(IDL.Text),
+    'conditions_status' : IDL.Bool,
   });
   const Result_10 = IDL.Variant({
     'Ok' : IDL.Vec(PolicyListEntry),
     'Err' : SmartVaultErr,
   });
   const Result_11 = IDL.Variant({
+    'Ok' : IDL.Vec(PolicyForValidator),
+    'Err' : SmartVaultErr,
+  });
+  const Result_12 = IDL.Variant({
     'Ok' : IDL.Vec(SecretListEntry),
     'Err' : SmartVaultErr,
   });
@@ -270,14 +274,14 @@ export const idlFactory = ({ IDL }) => {
     'get_policy_as_validator' : IDL.Func([IDL.Text], [Result_9], ['query']),
     'get_policy_list_as_beneficiary' : IDL.Func([], [Result_10], ['query']),
     'get_policy_list_as_owner' : IDL.Func([], [Result_10], ['query']),
-    'get_policy_list_as_validator' : IDL.Func([], [Result_10], ['query']),
+    'get_policy_list_as_validator' : IDL.Func([], [Result_11], ['query']),
     'get_secret' : IDL.Func([IDL.Text], [Result_3], ['query']),
     'get_secret_as_beneficiary' : IDL.Func(
         [IDL.Text, IDL.Text],
         [Result_3],
         ['query'],
       ),
-    'get_secret_list' : IDL.Func([], [Result_11], ['query']),
+    'get_secret_list' : IDL.Func([], [Result_12], ['query']),
     'ibe_encryption_key' : IDL.Func([], [IDL.Text], []),
     'start_with_interval_secs' : IDL.Func([IDL.Nat64], [], []),
     'symmetric_key_verification_key' : IDL.Func([], [IDL.Text], []),

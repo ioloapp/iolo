@@ -32,5 +32,5 @@ export const initialState: PoliciesState = {
     showAddDialog: false,
     showViewDialog: false,
     showEditDialog: false,
-    showDeleteDialog: false
+    showDeleteDialog: false,
 }

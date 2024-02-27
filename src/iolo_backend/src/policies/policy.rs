@@ -86,7 +86,7 @@ pub struct PolicyListEntry {
     pub id: PolicyID,
     pub name: Option<String>,
     pub owner: PrincipalID,
-    pub condition_status: bool,
+    pub conditions_status: bool,
 }
 
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
@@ -102,7 +102,7 @@ impl From<Policy> for PolicyListEntry {
             id: t.id().into(),
             name: t.name,
             owner: t.owner,
-            condition_status: t.conditions_status,
+            conditions_status: t.conditions_status,
         }
     }
 }

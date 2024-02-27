@@ -122,6 +122,34 @@ export const loadPoliciesWhereUserIsBeneficiaryThunk = createAsyncThunk<UiPolicy
     }
 );
 
+export const confirmConditionThunk = createAsyncThunk<boolean,
+    {policyId: string, conditionId: string}, {
+    state: RootState
+}>('policies/confirm-condition',
+    async ({policyId, conditionId}, {rejectWithValue}) => {
+        try {
+            await ioloService.confirmXOutOfYCondition(policyId, conditionId, true);
+            return true;
+        } catch (e) {
+            return rejectWithValue(e)
+        }
+    }
+);
+
+export const declineConditionThunk = createAsyncThunk<boolean,
+    {policyId: string, conditionId: string}, {
+    state: RootState
+}>('policies/decline-condition',
+    async ({policyId, conditionId}, {rejectWithValue}) => {
+        try {
+            await ioloService.confirmXOutOfYCondition(policyId, conditionId, false);
+            return true;
+        } catch (e) {
+            return rejectWithValue(e)
+        }
+    }
+);
+
 // Define a type for the slice state
 export const policiesSlice = createSlice({
     name: 'policies',

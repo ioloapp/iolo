@@ -24,7 +24,7 @@ export interface UiPolicyListEntry {
     name?: string,
     owner?: UiUser,
     role?: UiPolicyListEntryRole
-    conditionStatus?: boolean,
+    conditionsStatus?: boolean,
 }
 
 export interface UiPolicy {

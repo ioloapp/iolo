@@ -72,8 +72,8 @@ export interface PolicyKeyDerviationArgs {
 export interface PolicyListEntry {
   'id' : string,
   'owner' : string,
-  'condition_status' : boolean,
   'name' : [] | [string],
+  'conditions_status' : boolean,
 }
 export interface PolicyWithSecretListEntries {
   'id' : string,
@@ -94,7 +94,9 @@ export type Result_1 = { 'Ok' : Contact } |
   { 'Err' : SmartVaultErr };
 export type Result_10 = { 'Ok' : Array<PolicyListEntry> } |
   { 'Err' : SmartVaultErr };
-export type Result_11 = { 'Ok' : Array<SecretListEntry> } |
+export type Result_11 = { 'Ok' : Array<PolicyForValidator> } |
+  { 'Err' : SmartVaultErr };
+export type Result_12 = { 'Ok' : Array<SecretListEntry> } |
   { 'Err' : SmartVaultErr };
 export type Result_2 = { 'Ok' : Policy } |
   { 'Err' : SmartVaultErr };
@@ -252,10 +254,10 @@ export interface _SERVICE {
   'get_policy_as_validator' : ActorMethod<[string], Result_9>,
   'get_policy_list_as_beneficiary' : ActorMethod<[], Result_10>,
   'get_policy_list_as_owner' : ActorMethod<[], Result_10>,
-  'get_policy_list_as_validator' : ActorMethod<[], Result_10>,
+  'get_policy_list_as_validator' : ActorMethod<[], Result_11>,
   'get_secret' : ActorMethod<[string], Result_3>,
   'get_secret_as_beneficiary' : ActorMethod<[string, string], Result_3>,
-  'get_secret_list' : ActorMethod<[], Result_11>,
+  'get_secret_list' : ActorMethod<[], Result_12>,
   'ibe_encryption_key' : ActorMethod<[], string>,
   'start_with_interval_secs' : ActorMethod<[bigint], undefined>,
   'symmetric_key_verification_key' : ActorMethod<[], string>,

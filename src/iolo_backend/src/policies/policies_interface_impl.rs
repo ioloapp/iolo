@@ -144,7 +144,7 @@ pub fn get_policy_as_validator_impl(
 
     // Get all the policies for the validator
     let validator_policies =
-        POLICY_REGISTRIES.with(|pr| -> Result<Vec<PolicyListEntry>, SmartVaultErr> {
+        POLICY_REGISTRIES.with(|pr| -> Result<Vec<Policy>, SmartVaultErr> {
             let policy_registries = pr.borrow();
             policy_registries.get_policy_ids_as_validator(&validator.to_string())
         })?;
@@ -157,6 +157,12 @@ pub fn get_policy_as_validator_impl(
         )));
     };
 
+    let pfv = map_policy_for_validator(&policy);
+
+    Ok(pfv)
+}
+
+fn map_policy_for_validator(policy: &Policy) -> PolicyForValidator {
     // we return only the xooy conditions and filter out some fields
     let filtered_xooy_conditions: Vec<Condition> = policy
         .conditions()
@@ -171,13 +177,11 @@ pub fn get_policy_as_validator_impl(
         })
         .collect();
 
-    let pfv: PolicyForValidator = PolicyForValidator {
+    return PolicyForValidator {
         id: policy.id().to_string(),
         owner: policy.owner().to_string(),
         conditions: filtered_xooy_conditions,
     };
-
-    Ok(pfv)
 }
 
 pub fn get_policy_list_as_beneficiary_impl(
@@ -192,11 +196,14 @@ pub fn get_policy_list_as_beneficiary_impl(
 
 pub fn get_policy_list_as_validator_impl(
     validator: PrincipalID,
-) -> Result<Vec<PolicyListEntry>, SmartVaultErr> {
+) -> Result<Vec<PolicyForValidator>, SmartVaultErr> {
     // get all policy ids for caller by checking the policy registry index for validators
-    POLICY_REGISTRIES.with(|pr| -> Result<Vec<PolicyListEntry>, SmartVaultErr> {
+    POLICY_REGISTRIES.with(|pr| -> Result<Vec<PolicyForValidator>, SmartVaultErr> {
         let policy_registries = pr.borrow();
-        policy_registries.get_policy_ids_as_validator(&validator.to_string())
+        let policies = policy_registries.get_policy_ids_as_validator(&validator.to_string());
+
+        let policies_for_validator = policies.unwrap().iter().map(map_policy_for_validator).collect();
+        Ok(policies_for_validator)
     })
 }
 
@@ -395,12 +402,14 @@ pub fn confirm_x_out_of_y_condition_impl(
 
     let mut policy_needs_update = false;
     for condition in &mut policy.conditions {
-        if let Condition::XOutOfY(x_out_of_y) = condition {
-            for v in &mut x_out_of_y.validators {
-                if v.principal_id == validator {
-                    // there is a condition for which the validator is authorized validator
-                    v.status = args.status;
-                    policy_needs_update = true;
+        if condition.id() == args.condition_id {
+            if let Condition::XOutOfY(x_out_of_y) = condition {
+                for v in &mut x_out_of_y.validators {
+                    if v.principal_id == validator {
+                        // there is a condition for which the validator is authorized validator
+                        v.status = Some(args.status);
+                        policy_needs_update = true;
+                    }
                 }
             }
         }

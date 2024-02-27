@@ -28,7 +28,7 @@ import {
     User,
     UserType,
     XOutOfYCondition,
-    CreateContactArgs, UpdatePolicyArgs, Result_4, Result_11, FixedDateTimeCondition, LogicalOperator
+    CreateContactArgs, UpdatePolicyArgs, Result_4, Result_11, FixedDateTimeCondition, LogicalOperator, Result_12
 } from "../../../declarations/iolo_backend/iolo_backend.did";
 import {AuthClient} from "@dfinity/auth-client";
 import {createActor} from "../../../declarations/iolo_backend";
@@ -173,7 +173,7 @@ class IoloService {
     }
 
     public async getSecretList(): Promise<UiSecretListEntry[]> {
-        const result: Result_11 = await (await this.getActor()).get_secret_list();
+        const result: Result_12 = await (await this.getActor()).get_secret_list();
         if (result['Ok']) {
             return result['Ok'].map((secretListEntry: SecretListEntry): UiSecretListEntry => {
                 return {
@@ -311,7 +311,7 @@ class IoloService {
                     name: item.name?.length > 0 ? item.name[0] : undefined,
                     owner: {id: item.owner},
                     role: UiPolicyListEntryRole.Owner,
-                    conditionStatus: item.condition_status,
+                    conditionsStatus: item.conditions_status,
                 }
             });
         } else {
@@ -330,7 +330,7 @@ class IoloService {
                     name: item.name?.length > 0 ? item.name[0] : undefined,
                     owner: {id: item.owner},
                     role: UiPolicyListEntryRole.Beneficiary,
-                    conditionStatus: item.condition_status,
+                    conditionsStatus: item.conditions_status,
                 }
             });
         } else if (resultAsBeneficiary['Err']) {
@@ -340,16 +340,16 @@ class IoloService {
     }
 
     public async getPolicyListWhereUserIsValidator(): Promise<UiPolicyListEntry[]> {
-        const resultAsValidator: Result_10 = await (await this.getActor()).get_policy_list_as_validator();
-        let policiesAsValidator: UiPolicyListEntry[] = [];
+        const resultAsValidator: Result_11 = await (await this.getActor()).get_policy_list_as_validator();
+        let policiesAsValidator: UiPolicy[] = [];
         if (resultAsValidator['Ok'] && resultAsValidator['Ok'].length > 0) {
-            policiesAsValidator = resultAsValidator['Ok'].map((item: PolicyListEntry): UiPolicyListEntry => {
+            policiesAsValidator = resultAsValidator['Ok'].map((item: Policy): UiPolicy => {
                 return {
                     id: item.id,
                     name: item.name?.length > 0 ? item.name[0] : undefined,
                     owner: {id: item.owner},
                     role: UiPolicyListEntryRole.Validator,
-                    conditionStatus: item.condition_status,
+                    conditionsStatus: item.conditions_status,
                 }
             });
         } else if (resultAsValidator['Err']) {
@@ -391,7 +391,7 @@ class IoloService {
         throw mapError(result['Err']);
     }
 
-    public async confirmXOutOfYCondition(policyId: string, status: boolean): Promise<void> {
+    public async confirmXOutOfYCondition(policyId: string, conditionId: string, status: boolean): Promise<void> {
         const result: Result_3 = await (await this.getActor()).confirm_x_out_of_y_condition({status, policy_id: policyId});
         if (result['Ok'] === null) {
             return;
