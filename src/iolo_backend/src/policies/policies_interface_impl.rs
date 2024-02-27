@@ -157,12 +157,12 @@ pub fn get_policy_as_validator_impl(
         )));
     };
 
-    let pfv = map_policy_for_validator(&policy);
+    let pfv = map_policy_for_validator(&policy, &validator);
 
     Ok(pfv)
 }
 
-fn map_policy_for_validator(policy: &Policy) -> PolicyForValidator {
+fn map_policy_for_validator(policy: &Policy, validator: &PrincipalID) -> PolicyForValidator {
     // we return only the xooy conditions and filter out some fields
     let filtered_xooy_conditions: Vec<Condition> = policy
         .conditions()
@@ -170,7 +170,14 @@ fn map_policy_for_validator(policy: &Policy) -> PolicyForValidator {
         .filter_map(|c| match c {
             Condition::XOutOfY(xooy) => {
                 let mut xooy_clone = xooy.clone();
-                xooy_clone.validators = vec![]; // Reset the validators to an empty vector
+                xooy_clone.validators = xooy.validators.iter().filter_map(
+                    |v|  {
+                        if v.principal_id == *validator {
+                            return Some(v.clone())
+                        }
+                        return None
+                    }
+                ).collect(); // Reset the validators to an empty vector
                 Some(Condition::XOutOfY(xooy_clone)) // Return the modified condition
             }
             _ => None,
@@ -202,7 +209,7 @@ pub fn get_policy_list_as_validator_impl(
         let policy_registries = pr.borrow();
         let policies = policy_registries.get_policy_ids_as_validator(&validator.to_string());
 
-        let policies_for_validator = policies.unwrap().iter().map(map_policy_for_validator).collect();
+        let policies_for_validator = policies.unwrap().iter().map(|policy| map_policy_for_validator(policy, &validator)).collect();
         Ok(policies_for_validator)
     })
 }

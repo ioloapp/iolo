@@ -1,6 +1,7 @@
 export const idlFactory = ({ IDL }) => {
   const ConfirmXOutOfYConditionArgs = IDL.Record({
     'status' : IDL.Bool,
+    'condition_id' : IDL.Text,
     'policy_id' : IDL.Text,
   });
   const SmartVaultErr = IDL.Variant({
@@ -58,7 +59,7 @@ export const idlFactory = ({ IDL }) => {
     'datetime' : IDL.Nat64,
   });
   const Validator = IDL.Record({
-    'status' : IDL.Bool,
+    'status' : IDL.Opt(IDL.Bool),
     'principal_id' : IDL.Text,
   });
   const XOutOfYCondition = IDL.Record({

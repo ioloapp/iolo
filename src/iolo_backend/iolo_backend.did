@@ -8,7 +8,11 @@ type Condition = variant {
   FixedDateTime : FixedDateTimeCondition;
   XOutOfY : XOutOfYCondition;
 };
-type ConfirmXOutOfYConditionArgs = record { status : bool; policy_id : text };
+type ConfirmXOutOfYConditionArgs = record {
+  status : bool;
+  condition_id : text;
+  policy_id : text;
+};
 type Contact = record {
   id : text;
   user_type : opt UserType;
@@ -192,7 +196,7 @@ type User = record {
   policies : vec text;
 };
 type UserType = variant { Company; Person };
-type Validator = record { status : bool; principal_id : text };
+type Validator = record { status : opt bool; principal_id : text };
 type XOutOfYCondition = record {
   id : text;
   question : text;

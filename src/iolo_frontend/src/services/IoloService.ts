@@ -350,6 +350,7 @@ class IoloService {
                     owner: {id: item.owner},
                     role: UiPolicyListEntryRole.Validator,
                     conditionsStatus: item.conditions_status,
+                    conditions: item.conditions ? item.conditions.map(condition => this.mapConditionToUiCondition(condition)) : []
                 }
             });
         } else if (resultAsValidator['Err']) {
@@ -392,7 +393,7 @@ class IoloService {
     }
 
     public async confirmXOutOfYCondition(policyId: string, conditionId: string, status: boolean): Promise<void> {
-        const result: Result_3 = await (await this.getActor()).confirm_x_out_of_y_condition({status, policy_id: policyId});
+        const result: Result_3 = await (await this.getActor()).confirm_x_out_of_y_condition({status, policy_id: policyId, condition_id: conditionId});
         if (result['Ok'] === null) {
             return;
         }
@@ -756,7 +757,7 @@ class IoloService {
                 validators: tCondition.validators.map(v => {
                     return {
                         principal_id: v.user.id,
-                        status: v.status
+                        status: [v.status]
                     }
                 })
             } as UpdateXOutOfYCondition
@@ -813,7 +814,7 @@ class IoloService {
                 quorum: Number(xOutOfYCondition.quorum),
                 validators: xOutOfYCondition.validators.map(v => {
                     return {
-                        status: v.status,
+                        status: v.status && v.status.length > 0 ? v.status[0]: undefined,
                         user: {
                             id: v.principal_id
                         }

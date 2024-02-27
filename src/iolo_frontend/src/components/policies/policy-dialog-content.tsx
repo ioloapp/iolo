@@ -40,7 +40,7 @@ export const PolicyDialogContent: FC<PolicyDialogContentProps> = ({readonly, vie
             setSelectedSecrets(dialogItem.secrets);
             const beneficiaries = dialogItem.beneficiaries?.map(b => {
                 if(contacts){
-                    const c = contacts.find(c => c.id === b.id);
+                    const c = contacts?.find(c => c.id === b.id);
                     return c ? c: b;
                 }
                 return b;
@@ -53,7 +53,7 @@ export const PolicyDialogContent: FC<PolicyDialogContentProps> = ({readonly, vie
             })
             setSelectedContacts(contactsSelection)
             const selectedSecrets = [...groupedSecretList.passwordList, ...groupedSecretList.notesList, ...groupedSecretList.documentsList, ...groupedSecretList.othersList].map(s => {
-                const secret = dialogItem.secrets.find(ds => ds.id === s.id);
+                const secret = dialogItem.secrets?.find(ds => ds.id === s.id);
                 return secret ? {...s, selected: true} : {...s, selected: false};
             })
             setSelectedSecrets(selectedSecrets)
@@ -65,16 +65,16 @@ export const PolicyDialogContent: FC<PolicyDialogContentProps> = ({readonly, vie
     }
 
     const handleSecretChange = (secret: SelectedSecret) => {
-        const oldState = dialogItem.secrets.find(s => s.id === secret.id);
+        const oldState = dialogItem.secrets?.find(s => s.id === secret.id);
         let secrets: UiSecretListEntry[];
         if (oldState) {
             //not selected
-            secrets = dialogItem.secrets.filter(s => s.id !== secret.id);
-            setSelectedSecrets(selectedSecrets.map(s => s.id !== secret.id ? s : {...s, selected: false}));
+            secrets = dialogItem.secrets?.filter(s => s.id !== secret.id);
+            setSelectedSecrets(selectedSecrets?.map(s => s.id !== secret.id ? s : {...s, selected: false}));
         }else{
             //selected
             secrets = [...dialogItem.secrets, secret]
-            setSelectedSecrets(selectedSecrets.map(s => s.id !== secret.id ? s : {...s, selected: true}));
+            setSelectedSecrets(selectedSecrets?.map(s => s.id !== secret.id ? s : {...s, selected: true}));
         }
         //Add
         dispatch(policiesActions.updateDialogItem({
@@ -84,16 +84,16 @@ export const PolicyDialogContent: FC<PolicyDialogContentProps> = ({readonly, vie
     };
 
     const handleBeneficiaryChange = (beneficiary: SelectedBeneficiary) => {
-        const oldState = dialogItem.beneficiaries.find(s => s.id === beneficiary.id);
+        const oldState = dialogItem.beneficiaries?.find(s => s.id === beneficiary.id);
         let beneficiaries: UiUser[];
         if (oldState) {
             //not selected
-            beneficiaries = dialogItem.beneficiaries.filter(s => s.id !== beneficiary.id)
-            setSelectedContacts(selectedContacts.map(s => s.id !== beneficiary.id ? s : {...s, selected: false}));
+            beneficiaries = dialogItem.beneficiaries?.filter(s => s.id !== beneficiary.id)
+            setSelectedContacts(selectedContacts?.map(s => s.id !== beneficiary.id ? s : {...s, selected: false}));
         }else{
             //selected
             beneficiaries = [...dialogItem.beneficiaries, beneficiary]
-            setSelectedContacts(selectedContacts.map(s => s.id !== beneficiary.id ? s : {...s, selected: true}));
+            setSelectedContacts(selectedContacts?.map(s => s.id !== beneficiary.id ? s : {...s, selected: true}));
         }
         //Add
         dispatch(policiesActions.updateDialogItem({

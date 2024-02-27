@@ -11,6 +11,7 @@ export type Condition = { 'LastLogin' : LastLoginTimeCondition } |
   { 'XOutOfY' : XOutOfYCondition };
 export interface ConfirmXOutOfYConditionArgs {
   'status' : boolean,
+  'condition_id' : string,
   'policy_id' : string,
 }
 export interface Contact {
@@ -209,7 +210,10 @@ export interface User {
 }
 export type UserType = { 'Company' : null } |
   { 'Person' : null };
-export interface Validator { 'status' : boolean, 'principal_id' : string }
+export interface Validator {
+  'status' : [] | [boolean],
+  'principal_id' : string,
+}
 export interface XOutOfYCondition {
   'id' : string,
   'question' : string,
