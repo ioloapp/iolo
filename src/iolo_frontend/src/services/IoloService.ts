@@ -871,7 +871,6 @@ class IoloService {
                 category: category,
             }
         })
-        console.log('policy', policy)
         return {
             id: policy.id,
             name: policy.name?.length > 0 ? policy.name[0] : undefined,

@@ -32,7 +32,6 @@ export const ValidationListItem: FC<ValidationListItemProps> = ({ownerId, condit
     const [conditionStatus, setConditionStatus] = useState(xouty?.validators?.length > 0 ? xouty.validators[0].status : undefined)
 
     const handleConditionChange = (policyId: string, conditionId: string, newStatus: boolean) => {
-        console.log(newStatus, conditionStatus)
         if(newStatus !== null && conditionStatus !== newStatus) {
             if (newStatus == true) {
                 dispatch(confirmConditionThunk({policyId, conditionId}))

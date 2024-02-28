@@ -36,7 +36,6 @@ export const ConditionXOutOfY: FC<ConditionXOutOfYProps> = ({condition, readonly
     const contacts: UiUser[] = useSelector(selectContacts);
 
     const handleValidatorChange = (userId: string, index: number) => {
-        console.log('s', userId, index)
         const newValidators = [...condition.validators];
         const selectedValidator = contacts.find(s => s.id === userId);
         newValidators[index] = {user: selectedValidator, status: false};

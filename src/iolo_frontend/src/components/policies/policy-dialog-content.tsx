@@ -33,7 +33,6 @@ export const PolicyDialogContent: FC<PolicyDialogContentProps> = ({readonly, vie
     const contacts = useSelector(selectContacts);
     const [selectedSecrets, setSelectedSecrets] = React.useState<SelectedSecret[]>([]);
     const [selectedContacts, setSelectedContacts] = React.useState<SelectedBeneficiary[]>([]);
-    console.log('dialogItem', dialogItem)
 
     useEffect(() => {
         if (readonly){

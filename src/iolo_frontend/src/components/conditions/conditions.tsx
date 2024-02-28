@@ -24,7 +24,6 @@ export interface ConditionsProps {
 export const Conditions: FC<ConditionsProps> = ({conditions, readonly}) => {
     const {t} = useTranslation();
     const dispatch = useAppDispatch();
-    console.log('conditions', conditions)
 
     const addCondition = () => {
         dispatch(policiesActions.addConditionToDialogItem({
