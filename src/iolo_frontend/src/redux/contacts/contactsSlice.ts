@@ -106,9 +106,9 @@ export const contactsSlice = createSlice({
                 state.loadingState = 'succeeded';
                 state.contactsList = action.payload
             })
-            .addCase(loadContactsThunk.rejected, (state, action) => {
+            .addCase(loadContactsThunk.rejected, (state, action: PayloadAction<any>) => {
                 state.loadingState = 'failed';
-                state.error = action.error.message;
+                state.error = action.payload.name;
             })
             .addCase(addContactThunk.pending, (state) => {
                 state.dialogItemState = 'pending';
@@ -123,9 +123,9 @@ export const contactsSlice = createSlice({
                     state.contactsList = [...(state.contactsList ? state.contactsList : []), action.payload]
                 }
             })
-            .addCase(addContactThunk.rejected, (state, action) => {
+            .addCase(addContactThunk.rejected, (state, action: PayloadAction<any>) => {
                 state.dialogItemState = 'failed';
-                state.error = action.error.message;
+                state.error = action.payload.name;
                 state.showAddDialog = true;
             })
             .addCase(updateContactThunk.pending, (state) => {
@@ -140,24 +140,24 @@ export const contactsSlice = createSlice({
                     state.contactsList = [...state.contactsList.filter(h => h.id != action.payload.id), action.payload]
                 }
             })
-            .addCase(updateContactThunk.rejected, (state, action) => {
+            .addCase(updateContactThunk.rejected, (state, action: PayloadAction<any>) => {
                 state.dialogItemState = 'failed';
-                state.error = action.error.message;
+                state.error = action.payload.name;
             })
             .addCase(deleteContactThunk.pending, (state) => {
                 state.dialogItemState = 'pending';
                 state.error = undefined;
             })
-            .addCase(deleteContactThunk.fulfilled, (state, action) => {
+            .addCase(deleteContactThunk.fulfilled, (state, action: PayloadAction<any>) => {
                 state.dialogItemState = 'succeeded';
                 state.showDeleteDialog = false;
                 if(action.payload) {
                     state.contactsList = [...state.contactsList.filter(h => h.id != action.payload)]
                 }
             })
-            .addCase(deleteContactThunk.rejected, (state, action) => {
+            .addCase(deleteContactThunk.rejected, (state, action: PayloadAction<any>) => {
                 state.dialogItemState = 'failed';
-                state.error = action.error.message;
+                state.error = action.payload.name;
             });
     },
 })

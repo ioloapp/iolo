@@ -1,4 +1,4 @@
-import {createAsyncThunk, createSlice} from '@reduxjs/toolkit';
+import {createAsyncThunk, createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {GroupedSecretList, initialState} from "./secretsState";
 import IoloService from "../../services/IoloService";
 import {RootState} from "../store";
@@ -148,9 +148,9 @@ export const secretsSlice = createSlice({
                 state.listItemsState = 'succeeded';
                 state.groupedSecretList = splitSecretListByCategory(action.payload);
             })
-            .addCase(loadSecretsThunk.rejected, (state, action) => {
+            .addCase(loadSecretsThunk.rejected, (state, action: PayloadAction<any>) => {
                 state.listItemsState = 'failed';
-                state.error = action.error.message;
+                state.error = action.payload.name;
             })
             .addCase(addSecretThunk.pending, (state) => {
                 state.dialogItemState = 'pending';
@@ -162,9 +162,9 @@ export const secretsSlice = createSlice({
                 state.dialogItem = initialState.dialogItem;
                 state.groupedSecretList = addSecretToGroupedSecretList(state.groupedSecretList, action.payload)
             })
-            .addCase(addSecretThunk.rejected, (state, action) => {
+            .addCase(addSecretThunk.rejected, (state, action: PayloadAction<any>) => {
                 state.dialogItemState = 'failed';
-                state.error = action.error.message;
+                state.error = action.payload.name;
             })
             .addCase(getSecretThunk.pending, (state) => {
                 state.showAddDialog = false;
@@ -179,9 +179,9 @@ export const secretsSlice = createSlice({
                 state.showAddDialog = false;
                 state.showEditDialog = true;
             })
-            .addCase(getSecretThunk.rejected, (state, action) => {
+            .addCase(getSecretThunk.rejected, (state, action: PayloadAction<any>) => {
                 state.dialogItemState = 'failed';
-                state.error = action.error.message;
+                state.error = action.payload.name;
                 state.showAddDialog = false;
                 state.showEditDialog = false;
             })
@@ -195,9 +195,9 @@ export const secretsSlice = createSlice({
                 state.dialogItemState = 'succeeded';
                 state.dialogItem = action.payload;
             })
-            .addCase(getSecretInViewModeThunk.rejected, (state, action) => {
+            .addCase(getSecretInViewModeThunk.rejected, (state, action: PayloadAction<any>) => {
                 state.dialogItemState = 'failed';
-                state.error = action.error.message;
+                state.error = action.payload.name;
             })
             .addCase(updateSecretThunk.pending, (state) => {
                 state.dialogItemState = 'pending';
@@ -209,9 +209,9 @@ export const secretsSlice = createSlice({
                 state.dialogItem = initialState.dialogItem;
                 state.groupedSecretList = updateSecretInGroupedSecretList(state.groupedSecretList, action.payload)
             })
-            .addCase(updateSecretThunk.rejected, (state, action) => {
+            .addCase(updateSecretThunk.rejected, (state, action: PayloadAction<any>) => {
                 state.dialogItemState = 'failed';
-                state.error = action.error.message;
+                state.error = action.payload.name;
             })
             .addCase(deleteSecretThunk.pending, (state) => {
                 state.dialogItemState = 'pending';
@@ -222,9 +222,9 @@ export const secretsSlice = createSlice({
                 state.showDeleteDialog = false;
                 state.groupedSecretList = removeSecretFromGroupedSecretList(state.groupedSecretList, action.payload)
             })
-            .addCase(deleteSecretThunk.rejected, (state, action) => {
+            .addCase(deleteSecretThunk.rejected, (state, action: PayloadAction<any>) => {
                 state.dialogItemState = 'failed';
-                state.error = action.error.message;
+                state.error = action.payload.name;
             });
     },
 })

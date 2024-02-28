@@ -392,10 +392,10 @@ class IoloService {
         throw mapError(result['Err']);
     }
 
-    public async confirmXOutOfYCondition(policyId: string, conditionId: string, status: boolean): Promise<void> {
+    public async confirmXOutOfYCondition(policyValidatorList: UiPolicy[], policyId: string, conditionId: string, status: boolean): Promise<UiPolicy[]> {
         const result: Result_3 = await (await this.getActor()).confirm_x_out_of_y_condition({status, policy_id: policyId, condition_id: conditionId});
         if (result['Ok'] === null) {
-            return;
+            return this.mapValidationStausToPolicy(policyValidatorList, policyId, conditionId, status);
         }
         throw mapError(result['Err']);
     }
@@ -722,7 +722,7 @@ class IoloService {
             name: [uiPolicy.name],
             secrets: uiPolicy.secrets,
             key_box: keyBox,
-            conditions_logical_operator: logicalOperator.length > 0 ? [logicalOperator[0]] : [],
+            conditions_logical_operator: uiPolicy.conditions.length > 1 && logicalOperator.length > 0 ? [logicalOperator[0]] : [],
             conditions: uiPolicy.conditions.map(uiCondition => this.mapUiConditionToUpdateCondition(uiCondition)),
         }
     }
@@ -757,7 +757,7 @@ class IoloService {
                 validators: tCondition.validators.map(v => {
                     return {
                         principal_id: v.user.id,
-                        status: [v.status]
+                        status: [] //do not init validation state with a value
                     }
                 })
             } as UpdateXOutOfYCondition
@@ -814,7 +814,7 @@ class IoloService {
                 quorum: Number(xOutOfYCondition.quorum),
                 validators: xOutOfYCondition.validators.map(v => {
                     return {
-                        status: v.status && v.status.length > 0 ? v.status[0]: undefined,
+                        status: v.status && v.status.length > 0 ? v.status[0] : undefined,
                         user: {
                             id: v.principal_id
                         }
@@ -822,6 +822,34 @@ class IoloService {
                 })
             } as UiXOutOfYCondition
         }
+    }
+
+    private mapValidationStausToPolicy(policyValidatorList: UiPolicy[], policyId: string, conditionId: string, status: boolean) {
+        const updatedPolicies = policyValidatorList.map(p => {
+            if (p.id === policyId) {
+                const copiedConditions = p.conditions.map(c => {
+                        if (c.id == conditionId && c.type == ConditionType.XOutOfY) {
+                            const xouty = c as UiXOutOfYCondition;
+                            return {
+                                ...xouty,
+                                validators: [{
+                                    ...xouty.validators[0],
+                                    status: status
+                                }]
+                            } as UiXOutOfYCondition
+                        } else {
+                            return c
+                        }
+                    }
+                )
+                return {
+                    ...p,
+                    conditions: copiedConditions,
+                } as UiPolicy
+            }
+            return p;
+        })
+        return updatedPolicies;
     }
 
     private mapPolicyWithSecretListEntriesToUiPolicyWithSecretListEntries(policy: PolicyWithSecretListEntries, role: UiPolicyListEntryRole): UiPolicyWithSecretListEntries {

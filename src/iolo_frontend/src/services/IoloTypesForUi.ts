@@ -91,7 +91,7 @@ export interface UiXOutOfYCondition extends UiCondition {
 }
 
 export interface UiValidator {
-    status: boolean,
+    status?: boolean,
     user: UiUser
 }
 

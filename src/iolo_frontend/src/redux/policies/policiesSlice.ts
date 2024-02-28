@@ -122,28 +122,28 @@ export const loadPoliciesWhereUserIsBeneficiaryThunk = createAsyncThunk<UiPolicy
     }
 );
 
-export const confirmConditionThunk = createAsyncThunk<boolean,
-    {policyId: string, conditionId: string}, {
+export const confirmConditionThunk = createAsyncThunk<UiPolicy[],
+    { policyId: string, conditionId: string }, {
     state: RootState
 }>('policies/confirm-condition',
-    async ({policyId, conditionId}, {rejectWithValue}) => {
+    async ({policyId, conditionId}, {getState, rejectWithValue}) => {
+        const {policies}: RootState = getState();
         try {
-            await ioloService.confirmXOutOfYCondition(policyId, conditionId, true);
-            return true;
+            return await ioloService.confirmXOutOfYCondition(policies.policyValidatorList, policyId, conditionId, true);
         } catch (e) {
             return rejectWithValue(e)
         }
     }
 );
 
-export const declineConditionThunk = createAsyncThunk<boolean,
-    {policyId: string, conditionId: string}, {
+export const declineConditionThunk = createAsyncThunk<UiPolicy[],
+    { policyId: string, conditionId: string }, {
     state: RootState
 }>('policies/decline-condition',
-    async ({policyId, conditionId}, {rejectWithValue}) => {
+    async ({policyId, conditionId}, {getState, rejectWithValue}) => {
+        const {policies}: RootState = getState();
         try {
-            await ioloService.confirmXOutOfYCondition(policyId, conditionId, false);
-            return true;
+            return await ioloService.confirmXOutOfYCondition(policies.policyValidatorList, policyId, conditionId, false);
         } catch (e) {
             return rejectWithValue(e)
         }
@@ -227,9 +227,9 @@ export const policiesSlice = createSlice({
                 state.loadingState = 'succeeded';
                 state.policyList = action.payload
             })
-            .addCase(loadPoliciesThunk.rejected, (state, action) => {
+            .addCase(loadPoliciesThunk.rejected, (state, action: PayloadAction<any>) => {
                 state.loadingState = 'failed';
-                state.error = action.error.message;
+                state.error = action.payload.name;
             })
             .addCase(loadPoliciesWhereUserIsBeneficiaryThunk.pending, (state) => {
                 state.loadingState = 'pending';
@@ -239,9 +239,9 @@ export const policiesSlice = createSlice({
                 state.loadingState = 'succeeded';
                 state.policyBeneficiaryList = action.payload
             })
-            .addCase(loadPoliciesWhereUserIsBeneficiaryThunk.rejected, (state, action) => {
+            .addCase(loadPoliciesWhereUserIsBeneficiaryThunk.rejected, (state, action: PayloadAction<any>) => {
                 state.loadingState = 'failed';
-                state.error = action.error.message;
+                state.error = action.payload.name;
             })
             .addCase(loadPoliciesWhereUserIsValidatorThunk.pending, (state) => {
                 state.loadingState = 'pending';
@@ -251,9 +251,9 @@ export const policiesSlice = createSlice({
                 state.loadingState = 'succeeded';
                 state.policyValidatorList = action.payload
             })
-            .addCase(loadPoliciesWhereUserIsValidatorThunk.rejected, (state, action) => {
+            .addCase(loadPoliciesWhereUserIsValidatorThunk.rejected, (state, action: PayloadAction<any>) => {
                 state.loadingState = 'failed';
-                state.error = action.error.message;
+                state.error = action.payload.name;
             })
             .addCase(addPolicyThunk.pending, (state) => {
                 state.dialogItemState = 'pending';
@@ -266,9 +266,9 @@ export const policiesSlice = createSlice({
                 state.dialogItem = initialState.dialogItem;
                 state.policyList = [...state.policyList, action.payload]
             })
-            .addCase(addPolicyThunk.rejected, (state, action) => {
+            .addCase(addPolicyThunk.rejected, (state, action: PayloadAction<any>) => {
                 state.dialogItemState = 'failed';
-                state.error = action.error.message;
+                state.error = action.payload.name;
                 state.showAddDialog = true;
             })
             .addCase(viewPolicyThunk.pending, (state) => {
@@ -280,9 +280,9 @@ export const policiesSlice = createSlice({
                 state.dialogItemState = 'succeeded';
                 state.dialogItem = action.payload;
             })
-            .addCase(viewPolicyThunk.rejected, (state, action) => {
+            .addCase(viewPolicyThunk.rejected, (state, action: PayloadAction<any>) => {
                 state.dialogItemState = 'failed';
-                state.error = action.error.message;
+                state.error = action.payload.name;
             })
             .addCase(editPolicyThunk.pending, (state) => {
                 state.dialogItemState = 'pending';
@@ -293,9 +293,9 @@ export const policiesSlice = createSlice({
                 state.dialogItemState = 'succeeded';
                 state.dialogItem = action.payload;
             })
-            .addCase(editPolicyThunk.rejected, (state, action) => {
+            .addCase(editPolicyThunk.rejected, (state, action: PayloadAction<any>) => {
                 state.dialogItemState = 'failed';
-                state.error = action.error.message;
+                state.error = action.payload.name;
             })
             .addCase(updatePolicyThunk.pending, (state) => {
                 state.dialogItemState = 'pending';
@@ -307,9 +307,9 @@ export const policiesSlice = createSlice({
                 state.dialogItem = initialState.dialogItem;
                 state.policyList = [...state.policyList.filter(h => h.id != action.payload.id), action.payload]
             })
-            .addCase(updatePolicyThunk.rejected, (state, action) => {
+            .addCase(updatePolicyThunk.rejected, (state, action: PayloadAction<any>) => {
                 state.dialogItemState = 'failed';
-                state.error = action.error.message;
+                state.error = action.payload.name;
             })
             .addCase(deletePolicyThunk.pending, (state) => {
                 state.dialogItemState = 'pending';
@@ -320,9 +320,27 @@ export const policiesSlice = createSlice({
                 state.showDeleteDialog = false;
                 state.policyList = [...state.policyList.filter(h => h.id != action.payload)]
             })
-            .addCase(deletePolicyThunk.rejected, (state, action) => {
+            .addCase(deletePolicyThunk.rejected, (state, action: PayloadAction<any>) => {
                 state.dialogItemState = 'failed';
-                state.error = action.error.message;
+                state.error = action.payload.name;
+            })
+            .addCase(confirmConditionThunk.pending, (state) => {
+                state.error = undefined;
+            })
+            .addCase(confirmConditionThunk.fulfilled, (state: RootState, action) => {
+                state.policyValidatorList = action.payload;
+            })
+            .addCase(confirmConditionThunk.rejected, (state, action: PayloadAction<any>) => {
+                state.error = action.payload.name;
+            })
+            .addCase(declineConditionThunk.pending, (state) => {
+                state.error = undefined;
+            })
+            .addCase(declineConditionThunk.fulfilled, (state: RootState, action) => {
+                state.policyValidatorList = action.payload;
+            })
+            .addCase(declineConditionThunk.rejected, (state, action: PayloadAction<any>) => {
+                state.error = action.payload.name;
             });
     },
 })

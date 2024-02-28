@@ -1,13 +1,22 @@
 import * as React from "react";
-import {FC} from "react";
+import {FC, useState} from "react";
 import {ConditionType, UiCondition, UiPolicyListEntryRole, UiXOutOfYCondition} from "../../services/IoloTypesForUi";
-import {Avatar, IconButton, ListItem, ListItemAvatar, ListItemText} from "@mui/material";
+import {
+    Avatar,
+    IconButton,
+    ListItem,
+    ListItemAvatar,
+    ListItemText,
+    ToggleButton,
+    ToggleButtonGroup
+} from "@mui/material";
 import {useAppDispatch} from "../../redux/hooks";
 import {useTranslation} from "react-i18next";
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 import {confirmConditionThunk, declineConditionThunk} from "../../redux/policies/policiesSlice";
+import {b} from "vitest/dist/reporters-QGe8gs4b";
 
 export interface ValidationListItemProps {
     ownerId: string;
@@ -17,44 +26,38 @@ export interface ValidationListItemProps {
 
 export const ValidationListItem: FC<ValidationListItemProps> = ({ownerId, condition, policyId}) => {
 
+    const xouty = condition.type === ConditionType.XOutOfY ? condition as UiXOutOfYCondition : undefined;
     const dispatch = useAppDispatch();
     const {t} = useTranslation();
+    const [conditionStatus, setConditionStatus] = useState(xouty?.validators?.length > 0 ? xouty.validators[0].status : undefined)
 
-    const confirmCondition = (policyId: string, conditionId: string) => {
-        dispatch(confirmConditionThunk({policyId, conditionId}))
+    const handleConditionChange = (policyId: string, conditionId: string, newStatus: boolean) => {
+        console.log(newStatus, conditionStatus)
+        if(newStatus !== null && conditionStatus !== newStatus) {
+            if (newStatus == true) {
+                dispatch(confirmConditionThunk({policyId, conditionId}))
+            } else {
+                dispatch(declineConditionThunk({policyId, conditionId}))
+            }
+            setConditionStatus(!conditionStatus);
+        }
     }
-
-    const declineCondition = (policyId: string, conditionId: string) => {
-        dispatch(declineConditionThunk({policyId, conditionId}))
-    }
-
-    const xouty = condition.type === ConditionType.XOutOfY ? condition as UiXOutOfYCondition : undefined;
 
     return (
         <ListItem secondaryAction={
-            <>
-                {
-                    condition.conditionStatus === undefined &&
-                    <>
-                        <IconButton edge="end" aria-label="view"
-                                    onClick={() => confirmCondition(policyId, condition.id)}>
-                            <CheckIcon/>
-                        </IconButton>
-                        <IconButton edge="end" aria-label="edit"
-                                    onClick={() => declineCondition(policyId, condition.id)}>
-                            <CloseIcon/>
-                        </IconButton>
-                    </>
-                }
-                {
-                    condition.conditionStatus &&
-                            <CheckIcon/>
-                }
-                {
-                    condition.conditionStatus === false &&
+            <ToggleButtonGroup
+                value={conditionStatus}
+                exclusive
+                onChange={(_event, value) => handleConditionChange(policyId, condition.id, value)}
+                aria-label="text alignment"
+            >
+                <ToggleButton value={true}>
+                    <CheckIcon/>
+                </ToggleButton>
+                <ToggleButton value={false}>
                     <CloseIcon/>
-                }
-            </>
+                </ToggleButton>
+            </ToggleButtonGroup>
         }>
             <ListItemAvatar>
                 <Avatar>

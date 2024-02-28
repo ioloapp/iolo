@@ -141,6 +141,11 @@ pub fn get_policy_as_validator_impl(
 ) -> Result<PolicyForValidator, SmartVaultErr> {
     // get policy from policy store
     let policy: Policy = get_policy_from_policy_store(&policy_id)?;
+    if policy.conditions_status {
+        return Err(SmartVaultErr::NoPolicyForValidator(format!(
+            "Policy {:?} has nothing to validate", policy_id
+        )));
+    }
 
     // Get all the policies for the validator
     let validator_policies =
@@ -157,38 +162,46 @@ pub fn get_policy_as_validator_impl(
         )));
     };
 
-    let pfv = map_policy_for_validator(&policy, &validator);
-
-    Ok(pfv)
+    return map_policy_for_validator(&policy, &validator);
 }
 
-fn map_policy_for_validator(policy: &Policy, validator: &PrincipalID) -> PolicyForValidator {
+fn map_policy_for_validator(policy: &Policy, validator: &PrincipalID) -> Result<PolicyForValidator, SmartVaultErr> {
     // we return only the xooy conditions and filter out some fields
     let filtered_xooy_conditions: Vec<Condition> = policy
         .conditions()
         .into_iter()
         .filter_map(|c| match c {
             Condition::XOutOfY(xooy) => {
-                let mut xooy_clone = xooy.clone();
-                xooy_clone.validators = xooy.validators.iter().filter_map(
-                    |v|  {
-                        if v.principal_id == *validator {
-                            return Some(v.clone())
+                if !xooy.condition_status {
+                    //only conditions which are not already true should be validated
+                    let mut xooy_clone = xooy.clone();
+                    xooy_clone.validators = xooy.validators.iter().filter_map(
+                        |v| {
+                            if v.principal_id == *validator {
+                                return Some(v.clone())
+                            }
+                            return None
                         }
-                        return None
-                    }
-                ).collect(); // Reset the validators to an empty vector
-                Some(Condition::XOutOfY(xooy_clone)) // Return the modified condition
+                    ).collect(); // Reset the validators to an empty vector
+                    return Some(Condition::XOutOfY(xooy_clone)) // Return the modified condition
+                }
+                return None
             }
             _ => None,
         })
         .collect();
 
-    return PolicyForValidator {
+    if filtered_xooy_conditions.len() == 0 {
+        return Err(SmartVaultErr::NoPolicyForValidator(format!(
+            "Policy {:?} has nothing to validate", policy.id
+        )));
+    }
+
+    Ok(PolicyForValidator {
         id: policy.id().to_string(),
         owner: policy.owner().to_string(),
         conditions: filtered_xooy_conditions,
-    };
+    })
 }
 
 pub fn get_policy_list_as_beneficiary_impl(
@@ -209,7 +222,11 @@ pub fn get_policy_list_as_validator_impl(
         let policy_registries = pr.borrow();
         let policies = policy_registries.get_policy_ids_as_validator(&validator.to_string());
 
-        let policies_for_validator = policies.unwrap().iter().map(|policy| map_policy_for_validator(policy, &validator)).collect();
+        let policies_for_validator = policies
+            .unwrap()
+            .iter()
+            .map(|policy| map_policy_for_validator(policy, &validator).unwrap())
+            .collect();
         Ok(policies_for_validator)
     })
 }

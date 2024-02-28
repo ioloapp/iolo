@@ -47,7 +47,6 @@ export function Policies() {
     const [filteredBeneficiaryPolicies, setFilteredBeneficiaryPolicies] = useState(beneficiaryPolicies ? beneficiaryPolicies : [])
     const [filteredValidatorPolicies, setFilteredValidatorPolicies] = useState(validatorPolicies ? validatorPolicies : [])
     const [listError, setListError] = useState(false);
-    console.log('v', filteredValidatorPolicies);
 
     useEffect(() => {
         setListError(policyListState === 'failed')
