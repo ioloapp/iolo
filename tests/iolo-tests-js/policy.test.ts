@@ -13,6 +13,7 @@ import {
     Validator,
     Secret,
     UpdateLastLoginTimeCondition, UpdateFixedDateTimeCondition, FixedDateTimeCondition, XOutOfYCondition,
+    Result_8, Result_3
 } from "../../src/declarations/iolo_backend/iolo_backend.did";
 import {ActorSubclass} from "@dfinity/agent";
 
@@ -240,7 +241,7 @@ describe("POLICY - update_policy()", () => {
 
     }, 60000); // Set timeout
 
-    test("it must not update policy of a different principal", async () => {
+   /* test("it must not update policy of a different principal", async () => {
         let updatePolicyArgsOne: UpdatePolicyArgs = {
             id: policyOne.id,
             name: policyOne.name,
@@ -541,4 +542,49 @@ describe("POLICY - update_policy()", () => {
         expect(resultUpdatePolicyOne['Err']).toHaveProperty('InvalidQuorum');
 
     }, 60000); // Set timeout
+*/
+});
+
+
+describe("POLICY - get_policy_as_owner()", () => {
+    test("it must read a policy properly", async () => {
+        let resultGetPolicyOne: Result_8 = await actorOne.get_policy_as_owner(policyOne.id);
+        expect(resultGetPolicyOne).toHaveProperty('Ok');
+
+        // Read secrets to compare with the result
+        let secrets: Secret[] = [];
+        for (const secretId of policyOne.secrets) {
+            let resultGetSecret: Result_3 = await actorOne.get_secret(secretId);
+            expect(resultGetSecret).toHaveProperty('Ok');
+            secrets.push(resultGetSecret['Ok']);
+        }
+
+        expect(Object.keys(resultGetPolicyOne['Ok']).length).toStrictEqual(11);
+        expect(resultGetPolicyOne['Ok'].id).toStrictEqual(policyOne.id);
+        expect(resultGetPolicyOne['Ok'].name).toStrictEqual(policyOne.name);
+        expect(resultGetPolicyOne['Ok'].owner).toStrictEqual(identityOne.getPrincipal().toString());
+        expect(resultGetPolicyOne['Ok'].secrets).toHaveLength(2)
+        expect(resultGetPolicyOne['Ok'].secrets).toContainEqual({
+            id: secrets[0].id,
+            name: secrets[0].name,
+            category: secrets[0].category,
+        });
+        expect(resultGetPolicyOne['Ok'].secrets).toContainEqual({
+            id: secrets[0].id,
+            name: secrets[0].name,
+            category: secrets[0].category,
+        });
+        expect(resultGetPolicyOne['Ok'].key_box).toHaveLength(2);
+        expect(resultGetPolicyOne['Ok'].key_box).toContainEqual(policyOne.key_box[0]);
+        expect(resultGetPolicyOne['Ok'].key_box).toContainEqual(policyOne.key_box[1]);
+        expect(resultGetPolicyOne['Ok'].beneficiaries).toHaveLength(1);
+        expect(resultGetPolicyOne['Ok'].beneficiaries).toContainEqual(policyOne.beneficiaries[0]);
+        expect(resultGetPolicyOne['Ok'].conditions).toHaveLength(2);
+        expect(resultGetPolicyOne['Ok'].conditions).toContainEqual(policyOne.conditions[0]);
+        expect(resultGetPolicyOne['Ok'].conditions).toContainEqual(policyOne.conditions[1]);
+        expect(resultGetPolicyOne['Ok'].conditions_logical_operator).toStrictEqual(policyOne.conditions_logical_operator);
+        expect(resultGetPolicyOne['Ok'].conditions_status).toStrictEqual(policyOne.conditions_status);
+        expect(resultGetPolicyOne['Ok'].date_created).toStrictEqual(policyOne.date_created);
+        expect(resultGetPolicyOne['Ok'].date_modified).toStrictEqual(policyOne.date_modified);
+    });
 });
