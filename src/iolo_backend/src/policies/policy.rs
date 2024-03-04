@@ -59,7 +59,7 @@ impl Storable for Policy {
     const BOUND: Bound = Bound::Unbounded;
 }
 
-#[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
+#[derive(Debug, CandidType, Deserialize, Serialize, Clone, PartialEq)]
 pub enum LogicalOperator {
     And,
     Or,
@@ -206,10 +206,7 @@ impl Policy {
     pub fn conditions_logical_operator(&self) -> &Option<LogicalOperator> {
         &self.conditions_logical_operator
     }
-
-    pub fn set_condition_status(&mut self, status: bool) {
-        self.conditions_status = status;
-    }
+    
     /// Returns whether the value was newly inserted. That is:
     /// - If beneficiaries did not previously contain this beneficiary, true is returned.
     /// - If beneficiaries already contained this beneficiary, false is returned, and the set is not modified.
@@ -257,6 +254,33 @@ impl Policy {
         }
         // If no matching confirmer is found, return None
         None
+    }
+
+    pub fn validate_overall_conditions_status(&mut self) {
+        let mut set_to_true:bool = false;
+        if self.conditions_logical_operator.is_none() || self.conditions_logical_operator == Some(LogicalOperator::And) {
+            // All conditions must be true
+            set_to_true = true;
+            for condition in &self.conditions {
+                if !condition.get_condition_status() {
+                    set_to_true = false;
+                    break;
+                } 
+            }
+        } else if self.conditions_logical_operator == Some(LogicalOperator::Or) {
+            // At least one condition must be true
+            set_to_true = false;
+            for condition in &self.conditions {
+                if condition.get_condition_status() {
+                    set_to_true = true;
+                    break;
+                }
+            }
+        }
+        
+        if set_to_true {
+            self.conditions_status = true;
+        }
     }
 }
 

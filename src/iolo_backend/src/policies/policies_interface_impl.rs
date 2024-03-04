@@ -416,6 +416,7 @@ pub fn confirm_x_out_of_y_condition_impl(
     args: ConfirmXOutOfYConditionArgs,
     validator: PrincipalID,
 ) -> Result<(), SmartVaultErr> {
+    
     // fetch policy from policy store and check if caller is beneficiary
     let mut policy: Policy;
     if let Ok(p) = get_policy_from_policy_store(&args.policy_id) {
@@ -425,6 +426,7 @@ pub fn confirm_x_out_of_y_condition_impl(
     }
 
     let mut policy_needs_update = false;
+    let mut condition_needs_evaluation = false;
     for condition in &mut policy.conditions {
         if condition.id() == args.condition_id {
             if let Condition::XOutOfY(x_out_of_y) = condition {
@@ -432,15 +434,31 @@ pub fn confirm_x_out_of_y_condition_impl(
                     if v.principal_id == validator {
                         // there is a condition for which the validator is authorized validator
                         v.status = Some(args.status);
+                        condition_needs_evaluation = true;
                         policy_needs_update = true;
                     }
                 }
             }
         }
-        // check if the XooY condition has reached quorum
-        condition.evaluate(None);
     }
 
+    // check if the XooY condition has reached quorum
+    if condition_needs_evaluation {
+        for condition in &mut policy.conditions {
+            if condition.id() == args.condition_id {
+                if condition.evaluate(None) {
+                    // Assuming you can find and update the specific condition here
+                    // You might need to find the condition again and mutate it, or design your data structures differently
+                    condition.set_condition_status(true);
+                }
+            }
+        }
+    }
+    
+    if condition_needs_evaluation {
+        policy.validate_overall_conditions_status();
+    }
+    
     if policy_needs_update {
         update_policy_in_policy_store(policy.clone())?;
         evaluate_overall_conditions_status(policy.id())?;
