@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {FC} from 'react';
+import {FC, useEffect} from 'react';
 import IconButton from '@mui/material/IconButton';
 import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
@@ -24,12 +24,21 @@ import {ConditionFixedDateTime} from "./condition-fixed-date-time";
 export interface ConditionProps {
     condition?: UiCondition
     readonly?: boolean
+    openConditionId?: string
 }
 
-export const Condition: FC<ConditionProps> = ({condition, readonly}) => {
+export const Condition: FC<ConditionProps> = ({condition, readonly, openConditionId}) => {
     const {t} = useTranslation();
     const [open, setOpen] = React.useState(false);
     const dispatch = useAppDispatch();
+
+    useEffect(() => {
+        if(condition?.id === openConditionId){
+            setOpen(true)
+        }else{
+            setOpen(false)
+        }
+    }, [openConditionId, condition]);
 
     const deleteCondition = (condition: UiCondition) => {
         dispatch(policiesActions.deleteConditionOfDialogItem(condition))
