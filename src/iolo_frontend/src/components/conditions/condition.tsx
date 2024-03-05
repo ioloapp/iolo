@@ -24,10 +24,11 @@ import {ConditionFixedDateTime} from "./condition-fixed-date-time";
 export interface ConditionProps {
     condition?: UiCondition
     readonly?: boolean
-    openConditionId?: string
+    openConditionId?: string,
+    className?: string
 }
 
-export const Condition: FC<ConditionProps> = ({condition, readonly, openConditionId}) => {
+export const Condition: FC<ConditionProps> = ({condition, readonly, openConditionId, className}) => {
     const {t} = useTranslation();
     const [open, setOpen] = React.useState(false);
     const dispatch = useAppDispatch();
@@ -54,7 +55,7 @@ export const Condition: FC<ConditionProps> = ({condition, readonly, openConditio
 
     return (
         <>
-            <TableRow sx={{'& > *': {borderBottom: 'unset'}}}>
+            <TableRow sx={{'& > *': {borderBottom: 'unset'}}} className={className}>
                 <TableCell>
                     <IconButton
                         aria-label="expand row"
@@ -105,13 +106,13 @@ export const Condition: FC<ConditionProps> = ({condition, readonly, openConditio
                 </TableCell>
             </TableRow>
             {condition.type === ConditionType.LastLogin &&
-                <ConditionLastLogin condition={condition as UiLastLoginTimeCondition} readonly={readonly} open={open}/>
+                <ConditionLastLogin condition={condition as UiLastLoginTimeCondition} readonly={readonly} open={open} className={className}/>
             }
             {condition.type === ConditionType.FixedDateTime &&
-                <ConditionFixedDateTime condition={condition as UiFixedDateTimeCondition} readonly={readonly} open={open}/>
+                <ConditionFixedDateTime condition={condition as UiFixedDateTimeCondition} readonly={readonly} open={open} className={className}/>
             }
             {condition.type === ConditionType.XOutOfY &&
-                <ConditionXOutOfY condition={condition as UiXOutOfYCondition} readonly={readonly} open={open}/>
+                <ConditionXOutOfY condition={condition as UiXOutOfYCondition} readonly={readonly} open={open} className={className}/>
             }
 
         </>

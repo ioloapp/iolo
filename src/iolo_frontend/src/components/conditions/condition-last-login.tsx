@@ -14,10 +14,11 @@ import TextField from "@mui/material/TextField";
 export interface ConditionLastLoginProps {
     condition: UiLastLoginTimeCondition
     readonly?: boolean,
-    open: boolean
+    open: boolean,
+    className?: string
 }
 
-export const ConditionLastLogin: FC<ConditionLastLoginProps> = ({condition, readonly, open}) => {
+export const ConditionLastLogin: FC<ConditionLastLoginProps> = ({condition, readonly, open, className}) => {
     const {t} = useTranslation();
     const dispatch = useAppDispatch();
 
@@ -27,7 +28,7 @@ export const ConditionLastLogin: FC<ConditionLastLoginProps> = ({condition, read
 
     if (readonly) {
         return (
-            <TableRow>
+            <TableRow className={className}>
                 <TableCell style={{paddingBottom: 0, paddingTop: 0}} colSpan={6}>
                     <Collapse in={open} timeout="auto" unmountOnExit>
                         <Box sx={{margin: 1}}>

@@ -49,8 +49,8 @@ export const Conditions: FC<ConditionsProps> = ({conditions, readonly}) => {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {conditions?.map((condition) => (
-                            <Condition key={condition.id} condition={condition} readonly={readonly} openConditionId={openConditionId}/>
+                        {conditions?.map((condition, index) => (
+                            <Condition key={condition.id} condition={condition} readonly={readonly} openConditionId={openConditionId} className={index%2 == 0 ? 'condition-even' : 'condition-odd'}/>
                         ))}
                     </TableBody>
                 </Table>
