@@ -199,7 +199,7 @@ mod tests {
                 id: None,
                 validators: vec![Validator {
                     principal_id: validator_id,
-                    status: false,
+                    status: Some(false),
                 }],
                 quorum: 1,
                 question: "When will you be happy?".to_string(),

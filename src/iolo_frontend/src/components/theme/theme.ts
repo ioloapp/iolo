@@ -120,6 +120,16 @@ export const getBaseTheme = (mode: PaletteMode) => ({
                 }
             },
         },
+        MuiToggleButton: {
+            styleOverrides: {
+                root: {
+                    "&.Mui-selected": {
+                        borderColor: "#1C5264",
+                        borderWidth: "1px solid"
+                    }
+                }
+            }
+        },
         MuiAppBar: {
             styleOverrides: {
                 root: {

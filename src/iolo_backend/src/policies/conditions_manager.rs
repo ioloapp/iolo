@@ -38,7 +38,7 @@ pub fn evaluate_overall_conditions_status(policy_id: &PolicyID) -> Result<(), Sm
     }
 
     if overall_conditions_status {
-        policy.set_condition_status(true);
+        policy.set_conditions_status(true);
         update_policy_in_policy_store(policy.clone())?;
     }
 

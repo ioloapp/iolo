@@ -22,7 +22,7 @@ import {FormControl, MenuItem, Select, Typography} from "@mui/material";
 import {ConditionFixedDateTime} from "./condition-fixed-date-time";
 
 export interface ConditionProps {
-    condition: UiCondition
+    condition?: UiCondition
     readonly?: boolean
 }
 
@@ -37,6 +37,10 @@ export const Condition: FC<ConditionProps> = ({condition, readonly}) => {
 
     const updateCondition = (condition: UiCondition) => {
         dispatch(policiesActions.updateConditionOfDialogItem(condition))
+    }
+
+    if(!condition){
+        return null;
     }
 
     return (

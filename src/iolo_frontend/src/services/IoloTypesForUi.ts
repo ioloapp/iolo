@@ -24,7 +24,7 @@ export interface UiPolicyListEntry {
     name?: string,
     owner?: UiUser,
     role?: UiPolicyListEntryRole
-    conditionStatus?: boolean,
+    conditionsStatus?: boolean,
 }
 
 export interface UiPolicy {
@@ -91,7 +91,7 @@ export interface UiXOutOfYCondition extends UiCondition {
 }
 
 export interface UiValidator {
-    status: boolean,
+    status?: boolean,
     user: UiUser
 }
 

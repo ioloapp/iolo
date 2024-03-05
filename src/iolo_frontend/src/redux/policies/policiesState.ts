@@ -1,9 +1,9 @@
-import {UiPolicyListEntry, UiPolicyWithSecretListEntries} from "../../services/IoloTypesForUi";
+import {UiPolicy, UiPolicyListEntry, UiPolicyWithSecretListEntries} from "../../services/IoloTypesForUi";
 
 export interface PoliciesState {
     policyList: UiPolicyListEntry[],
     policyBeneficiaryList: UiPolicyListEntry[],
-    policyValidatorList: UiPolicyListEntry[],
+    policyValidatorList: UiPolicy[],
     dialogItem: UiPolicyWithSecretListEntries
     dialogItemState: string,
     loadingState: string,
@@ -32,5 +32,5 @@ export const initialState: PoliciesState = {
     showAddDialog: false,
     showViewDialog: false,
     showEditDialog: false,
-    showDeleteDialog: false
+    showDeleteDialog: false,
 }
