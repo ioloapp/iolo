@@ -167,6 +167,8 @@ export const policiesSlice = createSlice({
         openAddDialog: state => {
             state.showAddDialog = true
             state.error = undefined
+            state.dialogItem = {...initialState.dialogItem}
+            state.dialogItemState = "init"
         },
         cancelAddPolicy: state => {
             state.dialogItem = initialState.dialogItem;
@@ -229,7 +231,7 @@ export const policiesSlice = createSlice({
             })
             .addCase(loadPoliciesThunk.rejected, (state, action: PayloadAction<any>) => {
                 state.loadingState = 'failed';
-                state.error = action.payload.name;
+                state.error = action.payload?.name ? action.payload.name : 'error';
             })
             .addCase(loadPoliciesWhereUserIsBeneficiaryThunk.pending, (state) => {
                 state.loadingState = 'pending';
@@ -241,7 +243,7 @@ export const policiesSlice = createSlice({
             })
             .addCase(loadPoliciesWhereUserIsBeneficiaryThunk.rejected, (state, action: PayloadAction<any>) => {
                 state.loadingState = 'failed';
-                state.error = action.payload.name;
+                state.error = action.payload?.name ? action.payload.name : 'error';
             })
             .addCase(loadPoliciesWhereUserIsValidatorThunk.pending, (state) => {
                 state.loadingState = 'pending';
@@ -253,7 +255,7 @@ export const policiesSlice = createSlice({
             })
             .addCase(loadPoliciesWhereUserIsValidatorThunk.rejected, (state, action: PayloadAction<any>) => {
                 state.loadingState = 'failed';
-                state.error = action.payload.name;
+                state.error = action.payload?.name ? action.payload.name : 'error';
             })
             .addCase(addPolicyThunk.pending, (state) => {
                 state.dialogItemState = 'pending';
@@ -268,7 +270,7 @@ export const policiesSlice = createSlice({
             })
             .addCase(addPolicyThunk.rejected, (state, action: PayloadAction<any>) => {
                 state.dialogItemState = 'failed';
-                state.error = action.payload.name;
+                state.error = action.payload?.name ? action.payload.name : 'error';
                 state.showAddDialog = true;
             })
             .addCase(viewPolicyThunk.pending, (state) => {
@@ -282,7 +284,7 @@ export const policiesSlice = createSlice({
             })
             .addCase(viewPolicyThunk.rejected, (state, action: PayloadAction<any>) => {
                 state.dialogItemState = 'failed';
-                state.error = action.payload.name;
+                state.error = action.payload?.name ? action.payload.name : 'error';
             })
             .addCase(editPolicyThunk.pending, (state) => {
                 state.dialogItemState = 'pending';
@@ -295,7 +297,7 @@ export const policiesSlice = createSlice({
             })
             .addCase(editPolicyThunk.rejected, (state, action: PayloadAction<any>) => {
                 state.dialogItemState = 'failed';
-                state.error = action.payload.name;
+                state.error = action.payload?.name ? action.payload.name : 'error';
             })
             .addCase(updatePolicyThunk.pending, (state) => {
                 state.dialogItemState = 'pending';
@@ -309,7 +311,7 @@ export const policiesSlice = createSlice({
             })
             .addCase(updatePolicyThunk.rejected, (state, action: PayloadAction<any>) => {
                 state.dialogItemState = 'failed';
-                state.error = action.payload.name;
+                state.error = action.payload?.name ? action.payload.name : 'error';
             })
             .addCase(deletePolicyThunk.pending, (state) => {
                 state.dialogItemState = 'pending';
@@ -322,7 +324,7 @@ export const policiesSlice = createSlice({
             })
             .addCase(deletePolicyThunk.rejected, (state, action: PayloadAction<any>) => {
                 state.dialogItemState = 'failed';
-                state.error = action.payload.name;
+                state.error = action.payload?.name ? action.payload.name : 'error';
             })
             .addCase(confirmConditionThunk.pending, (state) => {
                 state.error = undefined;
@@ -331,7 +333,7 @@ export const policiesSlice = createSlice({
                 state.policyValidatorList = action.payload;
             })
             .addCase(confirmConditionThunk.rejected, (state, action: PayloadAction<any>) => {
-                state.error = action.payload.name;
+                state.error = action.payload?.name ? action.payload.name : 'error';
             })
             .addCase(declineConditionThunk.pending, (state) => {
                 state.error = undefined;
@@ -340,7 +342,7 @@ export const policiesSlice = createSlice({
                 state.policyValidatorList = action.payload;
             })
             .addCase(declineConditionThunk.rejected, (state, action: PayloadAction<any>) => {
-                state.error = action.payload.name;
+                state.error = action.payload?.name ? action.payload.name : 'error';
             });
     },
 })

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {FC} from 'react';
+import {FC, useEffect} from 'react';
 import IconButton from '@mui/material/IconButton';
 import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
@@ -24,12 +24,22 @@ import {ConditionFixedDateTime} from "./condition-fixed-date-time";
 export interface ConditionProps {
     condition?: UiCondition
     readonly?: boolean
+    openConditionId?: string,
+    className?: string
 }
 
-export const Condition: FC<ConditionProps> = ({condition, readonly}) => {
+export const Condition: FC<ConditionProps> = ({condition, readonly, openConditionId, className}) => {
     const {t} = useTranslation();
     const [open, setOpen] = React.useState(false);
     const dispatch = useAppDispatch();
+
+    useEffect(() => {
+        if(condition?.id === openConditionId){
+            setOpen(true)
+        }else{
+            setOpen(false)
+        }
+    }, [openConditionId, condition]);
 
     const deleteCondition = (condition: UiCondition) => {
         dispatch(policiesActions.deleteConditionOfDialogItem(condition))
@@ -45,7 +55,7 @@ export const Condition: FC<ConditionProps> = ({condition, readonly}) => {
 
     return (
         <>
-            <TableRow sx={{'& > *': {borderBottom: 'unset'}}}>
+            <TableRow sx={{'& > *': {borderBottom: 'unset'}}} className={className}>
                 <TableCell>
                     <IconButton
                         aria-label="expand row"
@@ -96,13 +106,13 @@ export const Condition: FC<ConditionProps> = ({condition, readonly}) => {
                 </TableCell>
             </TableRow>
             {condition.type === ConditionType.LastLogin &&
-                <ConditionLastLogin condition={condition as UiLastLoginTimeCondition} readonly={readonly} open={open}/>
+                <ConditionLastLogin condition={condition as UiLastLoginTimeCondition} readonly={readonly} open={open} className={className}/>
             }
             {condition.type === ConditionType.FixedDateTime &&
-                <ConditionFixedDateTime condition={condition as UiFixedDateTimeCondition} readonly={readonly} open={open}/>
+                <ConditionFixedDateTime condition={condition as UiFixedDateTimeCondition} readonly={readonly} open={open} className={className}/>
             }
             {condition.type === ConditionType.XOutOfY &&
-                <ConditionXOutOfY condition={condition as UiXOutOfYCondition} readonly={readonly} open={open}/>
+                <ConditionXOutOfY condition={condition as UiXOutOfYCondition} readonly={readonly} open={open} className={className}/>
             }
 
         </>

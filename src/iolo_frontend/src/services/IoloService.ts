@@ -740,9 +740,10 @@ class IoloService {
         }
         if (uiCondition.type === ConditionType.FixedDateTime) {
             const tCondition = uiCondition as UiFixedDateTimeCondition;
+            const datetimemiliseconds = tCondition.datetime ? tCondition.datetime.getTime() : new Date().getTime();
             const updateFutureTimeCondition: UpdateFixedDateTimeCondition = {
                 id: tCondition.id ? [tCondition.id] : [],
-                datetime: tCondition.datetime ? BigInt(tCondition.datetime) : BigInt(100)
+                datetime: BigInt(datetimemiliseconds * 1000000)
             } as UpdateFixedDateTimeCondition
             return {
                 FixedDateTime: updateFutureTimeCondition
@@ -801,7 +802,7 @@ class IoloService {
                 id: fixedDateTimeCondition.id,
                 type: ConditionType.FixedDateTime,
                 conditionStatus: fixedDateTimeCondition.condition_status,
-                datetime: Number(fixedDateTimeCondition.datetime)
+                datetime: new Date(Number(fixedDateTimeCondition.datetime) / 1000000)
             } as UiFixedDateTimeCondition
         }
         if (condition.hasOwnProperty(ConditionType.XOutOfY)) {

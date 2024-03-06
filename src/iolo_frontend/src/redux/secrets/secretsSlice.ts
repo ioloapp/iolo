@@ -150,7 +150,7 @@ export const secretsSlice = createSlice({
             })
             .addCase(loadSecretsThunk.rejected, (state, action: PayloadAction<any>) => {
                 state.listItemsState = 'failed';
-                state.error = action.payload.name;
+                state.error = action.payload?.name ? action.payload.name : 'error';
             })
             .addCase(addSecretThunk.pending, (state) => {
                 state.dialogItemState = 'pending';
@@ -164,7 +164,7 @@ export const secretsSlice = createSlice({
             })
             .addCase(addSecretThunk.rejected, (state, action: PayloadAction<any>) => {
                 state.dialogItemState = 'failed';
-                state.error = action.payload.name;
+                state.error = action.payload?.name ? action.payload.name : 'error';
             })
             .addCase(getSecretThunk.pending, (state) => {
                 state.showAddDialog = false;
@@ -181,7 +181,7 @@ export const secretsSlice = createSlice({
             })
             .addCase(getSecretThunk.rejected, (state, action: PayloadAction<any>) => {
                 state.dialogItemState = 'failed';
-                state.error = action.payload.name;
+                state.error = action.payload?.name ? action.payload.name : 'error';
                 state.showAddDialog = false;
                 state.showEditDialog = false;
             })
@@ -197,7 +197,7 @@ export const secretsSlice = createSlice({
             })
             .addCase(getSecretInViewModeThunk.rejected, (state, action: PayloadAction<any>) => {
                 state.dialogItemState = 'failed';
-                state.error = action.payload.name;
+                state.error = action.payload?.name ? action.payload.name : 'error';
             })
             .addCase(updateSecretThunk.pending, (state) => {
                 state.dialogItemState = 'pending';
@@ -211,7 +211,7 @@ export const secretsSlice = createSlice({
             })
             .addCase(updateSecretThunk.rejected, (state, action: PayloadAction<any>) => {
                 state.dialogItemState = 'failed';
-                state.error = action.payload.name;
+                state.error = action.payload?.name ? action.payload.name : 'error';
             })
             .addCase(deleteSecretThunk.pending, (state) => {
                 state.dialogItemState = 'pending';
@@ -224,7 +224,7 @@ export const secretsSlice = createSlice({
             })
             .addCase(deleteSecretThunk.rejected, (state, action: PayloadAction<any>) => {
                 state.dialogItemState = 'failed';
-                state.error = action.payload.name;
+                state.error = action.payload?.name ? action.payload.name : 'error';
             });
     },
 })

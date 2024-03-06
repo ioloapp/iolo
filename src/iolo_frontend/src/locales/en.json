@@ -79,6 +79,9 @@
       "question": "What question do your validators need to confirm?",
       "min-validators": "How many validators need to confirm it in minimum?",
       "valdiators": "Validators of your condition"
+    },
+    "fixeddatetime": {
+      "date-of-event": "Date of Event"
     }
   },
   "validators": {

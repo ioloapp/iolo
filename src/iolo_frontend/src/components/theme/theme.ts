@@ -120,6 +120,25 @@ export const getBaseTheme = (mode: PaletteMode) => ({
                 }
             },
         },
+        MuiTableCell: {
+            styleOverrides: {
+                head: {
+                    backgroundColor: "#CACACA"
+                }
+            }
+        },
+        MuiTableRow: {
+            styleOverrides: {
+                root: {
+                    '&.condition-even': {
+                        backgroundColor: "white",
+                    },
+                    '&.condition-odd': {
+                        backgroundColor: "#EEE",
+                    },
+                }
+            }
+        },
         MuiToggleButton: {
             styleOverrides: {
                 root: {

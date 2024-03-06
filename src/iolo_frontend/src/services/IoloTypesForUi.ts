@@ -1,7 +1,7 @@
 export enum UiSecretCategory {
     Password = "Password",
     Note = "Note",
-    Document = "Document"
+    //Document = "Document"
 }
 
 export interface UiSecretListEntry {
@@ -80,7 +80,7 @@ export interface UiLastLoginTimeCondition extends UiCondition{
 
 export interface UiFixedDateTimeCondition extends UiCondition{
     type: ConditionType.FixedDateTime
-    datetime: number,
+    datetime: Date,
 }
 
 export interface UiXOutOfYCondition extends UiCondition {
