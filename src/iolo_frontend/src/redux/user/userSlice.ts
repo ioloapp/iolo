@@ -94,7 +94,7 @@ export const userSlice = createSlice({
             })
             .addCase(loginUserThunk.rejected, (state, action: PayloadAction<any>) => {
                 state.loginStatus = 'failed';
-                state.error = action.payload.name;
+                state.error = action.payload?.name ? action.payload.name : 'error';
             })
             .addCase(createUserThunk.pending, (state) => {
                 state.loginStatus = 'pending';
@@ -105,7 +105,7 @@ export const userSlice = createSlice({
             })
             .addCase(createUserThunk.rejected, (state, action: PayloadAction<any>) => {
                 state.loginStatus = 'failed';
-                state.error = action.payload.name;
+                state.error = action.payload?.name ? action.payload.name : 'error';
             })
             .addCase(getCurrentUserThunk.pending, (state) => {
                 state.loginStatus = 'pending';
@@ -116,7 +116,7 @@ export const userSlice = createSlice({
             })
             .addCase(getCurrentUserThunk.rejected, (state, action: PayloadAction<any>) => {
                 state.loginStatus = 'failed';
-                state.error = action.payload.name;
+                state.error = action.payload?.name ? action.payload.name : 'error';
             })
             .addCase(updateUserThunk.pending, (state) => {
                 state.loginStatus = 'pending';
@@ -127,7 +127,7 @@ export const userSlice = createSlice({
             })
             .addCase(updateUserThunk.rejected, (state, action: PayloadAction<any>) => {
                 state.loginStatus = 'failed';
-                state.error = action.payload.name;
+                state.error = action.payload?.name ? action.payload.name : 'error';
             });
     },
 })

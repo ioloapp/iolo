@@ -108,7 +108,7 @@ export const contactsSlice = createSlice({
             })
             .addCase(loadContactsThunk.rejected, (state, action: PayloadAction<any>) => {
                 state.loadingState = 'failed';
-                state.error = action.payload.name;
+                state.error = action.payload?.name ? action.payload.name : 'error';
             })
             .addCase(addContactThunk.pending, (state) => {
                 state.dialogItemState = 'pending';
@@ -125,7 +125,7 @@ export const contactsSlice = createSlice({
             })
             .addCase(addContactThunk.rejected, (state, action: PayloadAction<any>) => {
                 state.dialogItemState = 'failed';
-                state.error = action.payload.name;
+                state.error = action.payload?.name ? action.payload.name : 'error';
                 state.showAddDialog = true;
             })
             .addCase(updateContactThunk.pending, (state) => {
@@ -142,7 +142,7 @@ export const contactsSlice = createSlice({
             })
             .addCase(updateContactThunk.rejected, (state, action: PayloadAction<any>) => {
                 state.dialogItemState = 'failed';
-                state.error = action.payload.name;
+                state.error = action.payload?.name ? action.payload.name : 'error';
             })
             .addCase(deleteContactThunk.pending, (state) => {
                 state.dialogItemState = 'pending';
@@ -157,7 +157,7 @@ export const contactsSlice = createSlice({
             })
             .addCase(deleteContactThunk.rejected, (state, action: PayloadAction<any>) => {
                 state.dialogItemState = 'failed';
-                state.error = action.payload.name;
+                state.error = action.payload?.name ? action.payload.name : 'error';
             });
     },
 })
