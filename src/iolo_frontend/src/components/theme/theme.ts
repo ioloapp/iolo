@@ -120,6 +120,35 @@ export const getBaseTheme = (mode: PaletteMode) => ({
                 }
             },
         },
+        MuiTableCell: {
+            styleOverrides: {
+                head: {
+                    backgroundColor: "#CACACA"
+                }
+            }
+        },
+        MuiTableRow: {
+            styleOverrides: {
+                root: {
+                    '&.condition-even': {
+                        backgroundColor: "white",
+                    },
+                    '&.condition-odd': {
+                        backgroundColor: "#EEE",
+                    },
+                }
+            }
+        },
+        MuiToggleButton: {
+            styleOverrides: {
+                root: {
+                    "&.Mui-selected": {
+                        borderColor: "#1C5264",
+                        borderWidth: "1px solid"
+                    }
+                }
+            }
+        },
         MuiAppBar: {
             styleOverrides: {
                 root: {

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {FC} from 'react';
+import {FC, useState} from 'react';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -24,14 +24,16 @@ export interface ConditionsProps {
 export const Conditions: FC<ConditionsProps> = ({conditions, readonly}) => {
     const {t} = useTranslation();
     const dispatch = useAppDispatch();
-    console.log('conditions', conditions)
+    const [openConditionId, setOpenConditionId] = useState();
 
     const addCondition = () => {
+        const newConditionId = uuidv4()
         dispatch(policiesActions.addConditionToDialogItem({
-            id: uuidv4(),
+            id: newConditionId,
             conditionStatus: false,
             type: ConditionType.Undefined,
-        }))
+        }));
+        setOpenConditionId(newConditionId)
     }
 
     return (
@@ -47,8 +49,8 @@ export const Conditions: FC<ConditionsProps> = ({conditions, readonly}) => {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {conditions?.map((condition) => (
-                            <Condition key={condition.id} condition={condition} readonly={readonly}/>
+                        {conditions?.map((condition, index) => (
+                            <Condition key={condition.id} condition={condition} readonly={readonly} openConditionId={openConditionId} className={index%2 == 0 ? 'condition-even' : 'condition-odd'}/>
                         ))}
                     </TableBody>
                 </Table>

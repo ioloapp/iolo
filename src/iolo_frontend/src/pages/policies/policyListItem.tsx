@@ -1,5 +1,5 @@
 import {FC} from "react";
-import {UiPolicy, UiPolicyListEntryRole} from "../../services/IoloTypesForUi";
+import {UiPolicy, UiPolicyListEntry, UiPolicyListEntryRole} from "../../services/IoloTypesForUi";
 import {Avatar, IconButton, ListItem, ListItemAvatar, ListItemText} from "@mui/material";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
@@ -12,7 +12,7 @@ import {useAppDispatch} from "../../redux/hooks";
 import {useTranslation} from "react-i18next";
 
 export interface PolicyListItemProps {
-    policy: UiPolicy
+    policy: UiPolicyListEntry
 }
 
 export const PolicyListItem: FC<PolicyListItemProps> = ({policy}) => {
@@ -20,16 +20,16 @@ export const PolicyListItem: FC<PolicyListItemProps> = ({policy}) => {
     const dispatch = useAppDispatch();
     const { t } = useTranslation();
 
-    const deletePolicy = (uiPolicy: UiPolicy) => {
+    const deletePolicy = (uiPolicy: UiPolicyListEntry) => {
         dispatch(policiesActions.updateDialogItem({id: uiPolicy.id, name: uiPolicy.name}));
         dispatch(policiesActions.openDeleteDialog());
     }
 
-    const viewPolicy = (uiPolicy: UiPolicy) => {
+    const viewPolicy = (uiPolicy: UiPolicyListEntry) => {
         dispatch(viewPolicyThunk(uiPolicy));
     }
 
-    const editPolicy = (uiPolicy: UiPolicy) => {
+    const editPolicy = (uiPolicy: UiPolicyListEntry) => {
         dispatch(editPolicyThunk(uiPolicy));
     }
 

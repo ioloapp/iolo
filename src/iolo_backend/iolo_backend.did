@@ -8,7 +8,11 @@ type Condition = variant {
   FixedDateTime : FixedDateTimeCondition;
   XOutOfY : XOutOfYCondition;
 };
-type ConfirmXOutOfYConditionArgs = record { status : bool; policy_id : text };
+type ConfirmXOutOfYConditionArgs = record {
+  status : bool;
+  condition_id : text;
+  policy_id : text;
+};
 type Contact = record {
   id : text;
   user_type : opt UserType;
@@ -67,8 +71,8 @@ type PolicyKeyDerviationArgs = record {
 type PolicyListEntry = record {
   id : text;
   owner : text;
-  condition_status : bool;
   name : opt text;
+  conditions_status : bool;
 };
 type PolicyWithSecretListEntries = record {
   id : text;
@@ -86,7 +90,8 @@ type PolicyWithSecretListEntries = record {
 type Result = variant { Ok; Err : SmartVaultErr };
 type Result_1 = variant { Ok : Contact; Err : SmartVaultErr };
 type Result_10 = variant { Ok : vec PolicyListEntry; Err : SmartVaultErr };
-type Result_11 = variant { Ok : vec SecretListEntry; Err : SmartVaultErr };
+type Result_11 = variant { Ok : vec PolicyForValidator; Err : SmartVaultErr };
+type Result_12 = variant { Ok : vec SecretListEntry; Err : SmartVaultErr };
 type Result_2 = variant { Ok : Policy; Err : SmartVaultErr };
 type Result_3 = variant { Ok : Secret; Err : SmartVaultErr };
 type Result_4 = variant { Ok : User; Err : SmartVaultErr };
@@ -191,7 +196,7 @@ type User = record {
   policies : vec text;
 };
 type UserType = variant { Company; Person };
-type Validator = record { status : bool; principal_id : text };
+type Validator = record { status : opt bool; principal_id : text };
 type XOutOfYCondition = record {
   id : text;
   question : text;
@@ -223,10 +228,10 @@ service : () -> {
   get_policy_as_validator : (text) -> (Result_9) query;
   get_policy_list_as_beneficiary : () -> (Result_10) query;
   get_policy_list_as_owner : () -> (Result_10) query;
-  get_policy_list_as_validator : () -> (Result_10) query;
+  get_policy_list_as_validator : () -> (Result_11) query;
   get_secret : (text) -> (Result_3) query;
   get_secret_as_beneficiary : (text, text) -> (Result_3) query;
-  get_secret_list : () -> (Result_11) query;
+  get_secret_list : () -> (Result_12) query;
   ibe_encryption_key : () -> (text);
   start_with_interval_secs : (nat64) -> ();
   symmetric_key_verification_key : () -> (text);

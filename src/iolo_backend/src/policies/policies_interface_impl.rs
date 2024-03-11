@@ -141,10 +141,15 @@ pub fn get_policy_as_validator_impl(
 ) -> Result<PolicyForValidator, SmartVaultErr> {
     // get policy from policy store
     let policy: Policy = get_policy_from_policy_store(&policy_id)?;
+    if policy.conditions_status {
+        return Err(SmartVaultErr::NoPolicyForValidator(format!(
+            "Policy {:?} has nothing to validate", policy_id
+        )));
+    }
 
     // Get all the policies for the validator
     let validator_policies =
-        POLICY_REGISTRIES.with(|pr| -> Result<Vec<PolicyListEntry>, SmartVaultErr> {
+        POLICY_REGISTRIES.with(|pr| -> Result<Vec<Policy>, SmartVaultErr> {
             let policy_registries = pr.borrow();
             policy_registries.get_policy_ids_as_validator(&validator.to_string())
         })?;
@@ -157,27 +162,46 @@ pub fn get_policy_as_validator_impl(
         )));
     };
 
+    return map_policy_for_validator(&policy, &validator);
+}
+
+fn map_policy_for_validator(policy: &Policy, validator: &PrincipalID) -> Result<PolicyForValidator, SmartVaultErr> {
     // we return only the xooy conditions and filter out some fields
     let filtered_xooy_conditions: Vec<Condition> = policy
         .conditions()
         .into_iter()
         .filter_map(|c| match c {
             Condition::XOutOfY(xooy) => {
-                let mut xooy_clone = xooy.clone();
-                xooy_clone.validators = vec![]; // Reset the validators to an empty vector
-                Some(Condition::XOutOfY(xooy_clone)) // Return the modified condition
+                if !xooy.condition_status {
+                    //only conditions which are not already true should be validated
+                    let mut xooy_clone = xooy.clone();
+                    xooy_clone.validators = xooy.validators.iter().filter_map(
+                        |v| {
+                            if v.principal_id == *validator {
+                                return Some(v.clone())
+                            }
+                            return None
+                        }
+                    ).collect(); // Reset the validators to an empty vector
+                    return Some(Condition::XOutOfY(xooy_clone)) // Return the modified condition
+                }
+                return None
             }
             _ => None,
         })
         .collect();
 
-    let pfv: PolicyForValidator = PolicyForValidator {
+    if filtered_xooy_conditions.len() == 0 {
+        return Err(SmartVaultErr::NoPolicyForValidator(format!(
+            "Policy {:?} has nothing to validate", policy.id
+        )));
+    }
+
+    Ok(PolicyForValidator {
         id: policy.id().to_string(),
         owner: policy.owner().to_string(),
         conditions: filtered_xooy_conditions,
-    };
-
-    Ok(pfv)
+    })
 }
 
 pub fn get_policy_list_as_beneficiary_impl(
@@ -192,11 +216,18 @@ pub fn get_policy_list_as_beneficiary_impl(
 
 pub fn get_policy_list_as_validator_impl(
     validator: PrincipalID,
-) -> Result<Vec<PolicyListEntry>, SmartVaultErr> {
+) -> Result<Vec<PolicyForValidator>, SmartVaultErr> {
     // get all policy ids for caller by checking the policy registry index for validators
-    POLICY_REGISTRIES.with(|pr| -> Result<Vec<PolicyListEntry>, SmartVaultErr> {
+    POLICY_REGISTRIES.with(|pr| -> Result<Vec<PolicyForValidator>, SmartVaultErr> {
         let policy_registries = pr.borrow();
-        policy_registries.get_policy_ids_as_validator(&validator.to_string())
+        let policies = policy_registries.get_policy_ids_as_validator(&validator.to_string());
+
+        let policies_for_validator = policies
+            .unwrap()
+            .iter()
+            .map(|policy| map_policy_for_validator(policy, &validator).unwrap())
+            .collect();
+        Ok(policies_for_validator)
     })
 }
 
@@ -385,6 +416,7 @@ pub fn confirm_x_out_of_y_condition_impl(
     args: ConfirmXOutOfYConditionArgs,
     validator: PrincipalID,
 ) -> Result<(), SmartVaultErr> {
+    
     // fetch policy from policy store and check if caller is beneficiary
     let mut policy: Policy;
     if let Ok(p) = get_policy_from_policy_store(&args.policy_id) {
@@ -394,20 +426,39 @@ pub fn confirm_x_out_of_y_condition_impl(
     }
 
     let mut policy_needs_update = false;
+    let mut condition_needs_evaluation = false;
     for condition in &mut policy.conditions {
-        if let Condition::XOutOfY(x_out_of_y) = condition {
-            for v in &mut x_out_of_y.validators {
-                if v.principal_id == validator {
-                    // there is a condition for which the validator is authorized validator
-                    v.status = args.status;
-                    policy_needs_update = true;
+        if condition.id() == args.condition_id {
+            if let Condition::XOutOfY(x_out_of_y) = condition {
+                for v in &mut x_out_of_y.validators {
+                    if v.principal_id == validator {
+                        // there is a condition for which the validator is authorized validator
+                        v.status = Some(args.status);
+                        condition_needs_evaluation = true;
+                        policy_needs_update = true;
+                    }
                 }
             }
         }
-        // check if the XooY condition has reached quorum
-        condition.evaluate(None);
     }
 
+    // check if the XooY condition has reached quorum
+    if condition_needs_evaluation {
+        for condition in &mut policy.conditions {
+            if condition.id() == args.condition_id {
+                if condition.evaluate(None) {
+                    // Assuming you can find and update the specific condition here
+                    // You might need to find the condition again and mutate it, or design your data structures differently
+                    condition.set_condition_status(true);
+                }
+            }
+        }
+    }
+    
+    if condition_needs_evaluation {
+        policy.validate_overall_conditions_status();
+    }
+    
     if policy_needs_update {
         update_policy_in_policy_store(policy.clone())?;
         evaluate_overall_conditions_status(policy.id())?;

@@ -17,7 +17,7 @@ import {
     loadPoliciesWhereUserIsBeneficiaryThunk,
     loadPoliciesWhereUserIsValidatorThunk
 } from "../../redux/policies/policiesSlice";
-import {UiPolicy} from "../../services/IoloTypesForUi";
+import {UiPolicy, UiPolicyListEntry} from "../../services/IoloTypesForUi";
 import DeletePolicyDialog from "../../components/policies/delete-policy-dialog";
 import EditPolicyDialog from "../../components/policies/edit-policy-dialog";
 import {Error} from "../../components/error/error";
@@ -29,6 +29,7 @@ import {selectContactListState} from "../../redux/contacts/contactsSelectors";
 import ViewSecretDialog from "../../components/secret/view-secret-dialog";
 import {useTranslation} from "react-i18next";
 import {PolicyListItem} from "./policyListItem";
+import {ValidationListItem} from "./validationListItem";
 
 export function Policies() {
 
@@ -99,7 +100,7 @@ export function Policies() {
                             <Typography variant="h2">{t('policies.list.owner')}</Typography>
                             <Box>
                                 <List dense={false}>
-                                    {filteredPolicies.map((policy: UiPolicy) =>
+                                    {filteredPolicies.map((policy: UiPolicyListEntry) =>
                                         <PolicyListItem policy={policy} key={policy.id}/>
                                     )}
                                 </List>
@@ -107,7 +108,7 @@ export function Policies() {
                             <Typography variant="h2">{t('policies.list.beneficiary')}</Typography>
                             <Box>
                                 <List dense={false}>
-                                    {filteredBeneficiaryPolicies.map((policy: UiPolicy) =>
+                                    {filteredBeneficiaryPolicies.map((policy: UiPolicyListEntry) =>
                                         <PolicyListItem policy={policy} key={policy.id}/>
                                     )}
                                 </List>
@@ -116,7 +117,9 @@ export function Policies() {
                             <Box>
                                 <List dense={false}>
                                     {filteredValidatorPolicies.map((policy: UiPolicy) =>
-                                        <PolicyListItem policy={policy} key={policy.id}/>
+                                        policy.conditions?.map(condition =>
+                                            <ValidationListItem ownerId={policy.owner.id} policyId={policy.id} condition={condition} key={condition.id}/>
+                                        )
                                     )}
                                 </List>
                             </Box>

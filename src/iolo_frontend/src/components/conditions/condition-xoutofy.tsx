@@ -24,19 +24,19 @@ import TextField from "@mui/material/TextField";
 export interface ConditionXOutOfYProps {
     condition: UiXOutOfYCondition
     readonly?: boolean
-    open: boolean
+    open: boolean,
+    className?: string
 }
 
 interface SelectedValidator extends SelectListItem, UiValidator {
 }
 
-export const ConditionXOutOfY: FC<ConditionXOutOfYProps> = ({condition, readonly, open}) => {
+export const ConditionXOutOfY: FC<ConditionXOutOfYProps> = ({condition, readonly, open, className}) => {
     const {t} = useTranslation();
     const dispatch = useAppDispatch();
     const contacts: UiUser[] = useSelector(selectContacts);
 
     const handleValidatorChange = (userId: string, index: number) => {
-        console.log('s', userId, index)
         const newValidators = [...condition.validators];
         const selectedValidator = contacts.find(s => s.id === userId);
         newValidators[index] = {user: selectedValidator, status: false};
@@ -89,7 +89,7 @@ export const ConditionXOutOfY: FC<ConditionXOutOfYProps> = ({condition, readonly
 
     if (readonly) {
         return (
-            <TableRow>
+            <TableRow className={className}>
                 <TableCell style={{paddingBottom: 0, paddingTop: 0}} colSpan={6}>
                     <Collapse in={open} timeout="auto" unmountOnExit>
                         <Box sx={{margin: 1}}>

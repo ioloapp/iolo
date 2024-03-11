@@ -63,7 +63,7 @@ pub struct UpdateXOutOfYCondition {
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct Validator {
     pub principal_id: PrincipalID,
-    pub status: bool,
+    pub status: Option<bool>,
 }
 
 pub type ConditionID = String;
@@ -207,7 +207,7 @@ impl Condition {
             Condition::XOutOfY(condition) => {
                 let mut i = 0;
                 for confirmer in &condition.validators {
-                    if confirmer.status {
+                    if confirmer.status == Some(true) {
                         i += 1;
                     }
                 }
@@ -298,5 +298,6 @@ impl Condition {
 #[derive(Debug, CandidType, Deserialize, Serialize, Clone)]
 pub struct ConfirmXOutOfYConditionArgs {
     pub policy_id: PolicyID,
+    pub condition_id: ConditionID,
     pub status: bool,
 }

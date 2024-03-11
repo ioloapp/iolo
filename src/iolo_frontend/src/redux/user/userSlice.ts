@@ -4,7 +4,7 @@ import IoloService from "../../services/IoloService";
 import {RootState} from "../store";
 import {UiUser} from "../../services/IoloTypesForUi";
 import {REHYDRATE} from "redux-persist/es/constants";
-import {LoginFailedException} from "../../error/Errors";
+import {IoloError, LoginFailedException, UserAlreadyExists} from "../../error/Errors";
 
 const ioloService = new IoloService();
 
@@ -42,6 +42,13 @@ export const createUserThunk = createAsyncThunk<UiUser, UiUser, { state: RootSta
         try{
             return await ioloService.createUser(uiUser);
         } catch (e) {
+            if(e instanceof UserAlreadyExists){
+                try{
+                    return await ioloService.getCurrentUser();
+                } catch (e) {
+                    return rejectWithValue(e)
+                }
+            }
             return rejectWithValue(e)
         }
     });
@@ -85,9 +92,9 @@ export const userSlice = createSlice({
                     ...action.payload
                 }
             })
-            .addCase(loginUserThunk.rejected, (state, action) => {
+            .addCase(loginUserThunk.rejected, (state, action: PayloadAction<any>) => {
                 state.loginStatus = 'failed';
-                state.error = action.error.message;
+                state.error = action.payload?.name ? action.payload.name : 'error';
             })
             .addCase(createUserThunk.pending, (state) => {
                 state.loginStatus = 'pending';
@@ -96,9 +103,9 @@ export const userSlice = createSlice({
                 state.loginStatus = 'succeeded';
                 state.user = action.payload;
             })
-            .addCase(createUserThunk.rejected, (state, action) => {
+            .addCase(createUserThunk.rejected, (state, action: PayloadAction<any>) => {
                 state.loginStatus = 'failed';
-                state.error = action.error.message;
+                state.error = action.payload?.name ? action.payload.name : 'error';
             })
             .addCase(getCurrentUserThunk.pending, (state) => {
                 state.loginStatus = 'pending';
@@ -107,9 +114,9 @@ export const userSlice = createSlice({
                 state.loginStatus = 'succeeded';
                 state.user = action.payload;
             })
-            .addCase(getCurrentUserThunk.rejected, (state, action) => {
+            .addCase(getCurrentUserThunk.rejected, (state, action: PayloadAction<any>) => {
                 state.loginStatus = 'failed';
-                state.error = action.error.message;
+                state.error = action.payload?.name ? action.payload.name : 'error';
             })
             .addCase(updateUserThunk.pending, (state) => {
                 state.loginStatus = 'pending';
@@ -118,9 +125,9 @@ export const userSlice = createSlice({
                 state.loginStatus = 'succeeded';
                 state.user = action.payload;
             })
-            .addCase(updateUserThunk.rejected, (state, action) => {
+            .addCase(updateUserThunk.rejected, (state, action: PayloadAction<any>) => {
                 state.loginStatus = 'failed';
-                state.error = action.error.message;
+                state.error = action.payload?.name ? action.payload.name : 'error';
             });
     },
 })

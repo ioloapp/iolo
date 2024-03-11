@@ -161,7 +161,7 @@ pub fn get_policy_list_as_beneficiary() -> Result<Vec<PolicyListEntry>, SmartVau
 }
 
 #[ic_cdk_macros::query]
-pub fn get_policy_list_as_validator() -> Result<Vec<PolicyListEntry>, SmartVaultErr> {
+pub fn get_policy_list_as_validator() -> Result<Vec<PolicyForValidator>, SmartVaultErr> {
     get_policy_list_as_validator_impl(get_caller_id())
 }
 

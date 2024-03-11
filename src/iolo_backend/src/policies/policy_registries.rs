@@ -156,7 +156,7 @@ impl PolicyRegistries {
     pub fn get_policy_ids_as_validator(
         &self,
         validator: &PrincipalID,
-    ) -> Result<Vec<PolicyListEntry>, SmartVaultErr> {
+    ) -> Result<Vec<Policy>, SmartVaultErr> {
         let policy_ids = match self.validator_to_policies.get(validator) {
             Some(sphs) => sphs.0.clone(),
             None => return Ok(vec![]),
@@ -164,7 +164,7 @@ impl PolicyRegistries {
 
         // get the policies form the policy store
         let policies = get_policies_from_policy_store(policy_ids.into_iter().collect())?;
-        Ok(policies.into_iter().map(PolicyListEntry::from).collect())
+        Ok(policies)
     }
 
     pub fn update_policy_to_beneficiary(
