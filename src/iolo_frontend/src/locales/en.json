@@ -2,6 +2,7 @@
   "policies": {
     "title": "Policies",
     "beneficiary": "Beneficiary",
+    "owner": "Owner of policy",
     "list": {
       "owner": "Your policies",
       "beneficiary": "Beneficiary policies",
@@ -67,6 +68,8 @@
   },
   "conditions": {
     "status": "Status",
+    "valid": "confirmed",
+    "invalid": "declined",
     "type": "Type",
     "delete": "Delete",
     "button": {
@@ -159,6 +162,9 @@
       "cancel": "Cancel",
       "close": "Close"
     }
+  },
+  "validations": {
+    "questioner": "Questioner"
   },
   "error": {
     "title": "Error"

@@ -1,50 +1,58 @@
 {
-  "testaments": {
-    "title": "Testamentos",
-    "testator": "Testador",
+  "policies": {
+    "title": "Políticas",
+    "beneficiary": "Beneficiario",
+    "owner": "Propietario de la política",
+    "list": {
+      "owner": "Tus políticas",
+      "beneficiary": "Políticas del beneficiario",
+      "validator": "Políticas del validador"
+    },
     "dialog": {
       "add": {
-        "title": "Agregar testamento",
-        "text": "Para agregar un testamento, elija los secretos, herederos y complete la información necesaria.",
-        "button": "Agregar testamento"
+        "title": "Agregar política",
+        "text": "Para agregar una política, elige los secretos, contactos y completa la información necesaria.",
+        "button": "Agregar política"
       },
       "delete": {
-        "title": "Eliminar testamento",
-        "text": "¿Está seguro de que desea eliminar el testamento {{testament}}?",
-        "button": "Eliminar testamento"
+        "title": "Eliminar política",
+        "text": "¿Estás seguro de querer eliminar la política '{{policy}}'?",
+        "button": "Eliminar política"
       },
       "edit": {
-        "title": "Editar testamento",
-        "text": "Edite el nombre, los secretos y los herederos de su testamento.",
-        "button": "Actualizar testamento"
+        "title": "Editar política",
+        "text": "Edita el nombre de tus políticas, secretos y contactos.",
+        "button": "Actualizar política"
       },
       "view": {
-        "title": "Ver testamento",
-        "text": "Este es su testamento."
+        "title": "Ver política",
+        "text": "Esta es tu política."
       },
       "content": {
         "name": "Nombre",
-        "max-logout-time": "Tiempo máximo de cierre de sesión en segundos"
+        "max-logout-time": "Tiempo máx. de cierre de sesión en días",
+        "beneficiaries": "Beneficiarios",
+        "secrets": "Secretos"
       }
     }
   },
-  "heirs": {
-    "title": "Herederos",
+  "contacts": {
+    "title": "Contactos",
     "dialog": {
       "add": {
-        "title": "Agregar heredero",
-        "text": "Para agregar un nuevo heredero, ingrese su identificación y agregue un nombre conocido.",
-        "button": "Agregar heredero"
+        "title": "Agregar contacto",
+        "text": "Para agregar un nuevo contacto, introduce la identificación del mismo y extiéndelo con un nombre conocido.",
+        "button": "Agregar contacto"
       },
       "delete": {
-        "title": "Eliminar heredero",
-        "text": "¿Está seguro de que desea eliminar al heredero {{heir}}?",
-        "button": "Eliminar heredero"
+        "title": "Eliminar contacto",
+        "text": "¿Estás seguro de querer eliminar el contacto '{{contact}}'?",
+        "button": "Eliminar contacto"
       },
       "edit": {
-        "title": "Editar heredero",
-        "text": "Actualice la información de su heredero.",
-        "button": "Actualizar heredero"
+        "title": "Editar contacto",
+        "text": "Actualiza la información de tu contacto.",
+        "button": "Actualizar contacto"
       }
     }
   },
@@ -55,8 +63,34 @@
     "button": "Cerrar sesión"
   },
   "onboarding": {
-    "title": "Introducción",
-    "text":"Parece que aún no has creado tu cuenta de IOLO. ¿Quieres crear una?"
+    "title": "Incorporación",
+    "text": "Parece que aún no has creado tu cuenta IOLO. ¿Quieres hacerlo?"
+  },
+  "conditions": {
+    "status": "Estado",
+    "valid": "confirmado",
+    "invalid": "rechazado",
+    "type": "Tipo",
+    "delete": "Eliminar",
+    "button": {
+      "add": "Agregar condición"
+    },
+    "timebased": {
+      "max-logout-time": "Tiempo máx. en días sin haber iniciado sesión en IOLO"
+    },
+    "xoutofy": {
+      "question": "¿Qué pregunta necesitan confirmar tus validadores?",
+      "min-validators": "¿Cuántos validadores necesitan confirmarlo como mínimo?",
+      "valdiators": "Validadores de tu condición"
+    },
+    "fixeddatetime": {
+      "date-of-event": "Fecha del evento"
+    }
+  },
+  "validators": {
+    "button": {
+      "add": "Agregar"
+    }
   },
   "user": {
     "type": "Tipo de usuario",
@@ -68,21 +102,21 @@
       "update": "Actualizar usuario"
     },
     "icon": {
-      "label": "Cuenta del usuario actual"
+      "label": "cuenta del usuario actual"
     }
   },
   "profile": {
     "title": "Perfil",
-    "mode": "Modo Oscuro de la Interfaz de Usuario"
+    "mode": "Modo oscuro UI"
   },
   "rules": {
     "title": "Reglas",
     "dead-man-switch": {
-      "button": "Interruptor de hombre muerto"
+      "button": "Interruptor hombre muerto"
     }
   },
   "secrets": {
-    "title": "Billetera",
+    "title": "Caja fuerte",
     "passwords": "Contraseñas",
     "notes": "Notas",
     "documents": "Documentos",
@@ -90,44 +124,39 @@
     "dialog": {
       "add": {
         "title": "Agregar secreto",
-        "text": "Para agregar un nuevo secreto, elija la categoría y complete la información necesaria.",
+        "text": "Para agregar un nuevo secreto, elige su categoría y completa la información necesaria.",
         "button": "Agregar secreto"
       },
       "delete": {
         "title": "Eliminar secreto",
-        "text": "¿Está seguro de que desea eliminar el secreto {{secret}}?",
+        "text": "¿Estás seguro de querer eliminar el secreto {{secret}}?",
         "button": "Eliminar secreto"
       },
       "edit": {
         "title": "Editar secreto",
-        "text": "Edite su secreto",
+        "text": "Edita tu secreto",
         "button": "Actualizar secreto"
-      },
-      "content": {
-        "category": "Categoría",
-        "name": "Nombre",
-        "username": "Nombre de usuario",
-        "password": "Contraseña",
-        "url": "URL",
-        "notes": "Notas"
       },
       "view": {
         "title": "Editar secreto",
-        "text": "Edite su secreto"
+        "text": "Edita tu secreto"
       }
     }
   },
   "share": {
     "title-short": "Compartir",
-    "title": "Comparta su ID",
-    "info": "Compartir este código QR permite que una persona lo registre como heredero.",
-    "own-id": "Su ID de Internet es: "
+    "title": "Comparte tu ID",
+    "info": "Compartir este código QR permite a una persona registrarte como contacto.",
+    "own-id": "Tu ID de Internet es: "
   },
   "dialog": {
     "button": {
       "cancel": "Cancelar",
       "close": "Cerrar"
     }
+  },
+  "validations": {
+    "questioner": "Interrogador"
   },
   "error": {
     "title": "Error"

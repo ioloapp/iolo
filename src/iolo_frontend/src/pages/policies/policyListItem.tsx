@@ -73,7 +73,7 @@ export const PolicyListItem: FC<PolicyListItemProps> = ({policy}) => {
             </ListItemAvatar>
             <ListItemText
                 primary={policy.name}
-                secondary={policy.role === UiPolicyListEntryRole.Beneficiary ? `${t('policies.beneficiary')}: ${policy.owner?.id}` : ''}
+                secondary={policy.role === UiPolicyListEntryRole.Beneficiary ? `${t('policies.owner')}: ${policy.owner?.name ? policy.owner.name: policy.owner?.id}` : ''}
             />
         </ListItem>
     )
