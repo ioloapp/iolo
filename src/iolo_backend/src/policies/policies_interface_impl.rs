@@ -220,10 +220,9 @@ pub fn get_policy_list_as_validator_impl(
     // get all policy ids for caller by checking the policy registry index for validators
     POLICY_REGISTRIES.with(|pr| -> Result<Vec<PolicyForValidator>, SmartVaultErr> {
         let policy_registries = pr.borrow();
-        let policies = policy_registries.get_policy_ids_as_validator(&validator.to_string());
+        let policies = policy_registries.get_policy_ids_as_validator(&validator.to_string())?;
 
         let policies_for_validator = policies
-            .unwrap()
             .iter()
             .filter_map(|policy| match map_policy_for_validator(policy, &validator) {
                 Ok(valid_policy) => Some(valid_policy),
