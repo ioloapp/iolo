@@ -13,7 +13,7 @@ export interface SecretDialogContentProps {
     readonly? : boolean;
 }
 
-export const SecretDialogContent : FC<SecretDialogContentProps> = ({readonly}) => {
+export const VaultDialogContent : FC<SecretDialogContentProps> = ({readonly}) => {
     const dispatch = useAppDispatch();
     const { t } = useTranslation();
     const dialogItem = useSelector(selectDialogItem);
@@ -30,7 +30,7 @@ export const SecretDialogContent : FC<SecretDialogContentProps> = ({readonly}) =
         <>
             <FormControl fullWidth>
                 <div className="input-field">
-                    <Typography variant="body2">{t('secrets.dialog.content.category')}</Typography>
+                    <Typography className="MuiFormLabel-root">{t('secrets.dialog.content.category')}</Typography>
                     <Select
                         id="category-select"
                         value={dialogItem.category}
@@ -120,10 +120,11 @@ export const SecretDialogContent : FC<SecretDialogContentProps> = ({readonly}) =
                     label={t('secrets.dialog.content.notes')}
                     InputLabelProps={{shrink: true}}
                     fullWidth
-                    variant="standard"
                     value={dialogItem.notes}
                     disabled={readonly}
                     multiline
+                    rows={4}
+                    variant="standard"
                     onChange={e => updateSecretToAdd({
                         ...dialogItem,
                         notes: e.target.value

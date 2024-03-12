@@ -63,7 +63,7 @@ export const Onboarding = () => {
                         }}
                     >
                         <div className="input-field">
-                            <Typography variant="body2">{t('user.type')}</Typography>
+                            <Typography className="MuiFormLabel-root">{t('user.type')}</Typography>
                             <Select
                                 id="usertype-select"
                                 value={currentUser?.type}
@@ -111,7 +111,7 @@ export const Onboarding = () => {
                             })}
                         />
                         <div className="input-field">
-                            <Typography variant="body2">{t('user.language')}</Typography>
+                            <Typography className="MuiFormLabel-root">{t('user.language')}</Typography>
                             <Select
                                 id="language-select"
                                 value={currentUser?.language}

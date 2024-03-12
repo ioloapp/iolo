@@ -45,7 +45,7 @@ export const BasicDialog = ({title, leadText, isOpen, handleClose, cancelAction,
             <DialogActions>
                 {cancelAction && <Button onClick={cancelAction}>{t('dialog.button.cancel')}</Button>}
                 {!cancelAction && <Button onClick={handleClose}>{t('dialog.button.close')}</Button>}
-                {!error && okAction && <Button onClick={okAction}>{okButtonText}</Button>}
+                {!error && okAction && <Button className="primary-button" onClick={okAction}>{okButtonText}</Button>}
             </DialogActions>
         </Dialog>
     );

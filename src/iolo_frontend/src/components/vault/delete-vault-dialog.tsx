@@ -11,7 +11,7 @@ import {deleteSecretThunk, secretsActions} from "../../redux/secrets/secretsSlic
 import {BasicDialog} from "../dialog/basic-dialog";
 import {Trans, useTranslation} from "react-i18next";
 
-export default function DeleteSecretDialog() {
+export default function DeleteVaultDialog() {
     const dispatch = useAppDispatch();
     const { t } = useTranslation();
     const showDeleteSecretDialog: boolean = useSelector(selectShowDeleteSecretDialog);

@@ -20,3 +20,7 @@
   z-index: 1000;
   background-color: #333131;
 }
+
+.primary-button {
+  background-color: #F5B542 !important;
+}

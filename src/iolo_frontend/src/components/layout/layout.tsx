@@ -1,6 +1,6 @@
 import {BrowserRouter as Router, Route, Routes} from 'react-router-dom';
 import AppBottomNavigation from '../navigation/bottom/bottom-navigation';
-import {Secrets} from '../../pages/vault/secrets';
+import {Vaults} from '../../pages/vault/vaults';
 import {Policies} from '../../pages/policies/policies';
 import {Contacts} from '../../pages/contacts/contacts';
 import {Login} from '../../pages/login/login';
@@ -15,7 +15,7 @@ import {SideBar} from "../navigation/sidebar/sidbar";
 import {Box} from "@mui/material";
 import {mobileWidth} from "../../App";
 import useWindowResize from "../../utils/useWindowResize";
-import {ROUTE_CONTACTS, ROUTE_POLICIES, ROUTE_PROFILE, ROUTE_SECRETS, ROUTE_SHARE} from "./routes";
+import {ROUTE_CONTACTS, ROUTE_POLICIES, ROUTE_PROFILE, ROUTE_VAULTS, ROUTE_SHARE} from "./routes";
 
 export const Layout: FC = () => {
     const isLoggedIn = useSelector(selectPrincipal);
@@ -41,7 +41,7 @@ export const Layout: FC = () => {
                     sx={{flexGrow: 1, bgcolor: 'background.default', p: 3}}
                 >
                     <Routes>
-                        <Route path={ROUTE_SECRETS} Component={Secrets}/>
+                        <Route path={ROUTE_VAULTS} Component={Vaults}/>
                         <Route path={ROUTE_POLICIES} Component={Policies}/>
                         <Route path={ROUTE_CONTACTS} Component={Contacts}/>
                         <Route path={ROUTE_PROFILE} Component={Profile}/>
