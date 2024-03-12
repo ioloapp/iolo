@@ -103,13 +103,16 @@ export const getBaseTheme = (mode: PaletteMode) => ({
                 }
             },
         },
-        MuiInput: {
+        MuiInputBase: {
             styleOverrides: {
                 root: {
                     fontSize: '16px',
                     fontWeight: 400,
                     height: '36px',
                     color: 'rgba(0, 0, 0, 0.6)',
+                },
+                multiline: {
+                    height: 'auto'
                 }
             },
         },

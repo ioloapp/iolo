@@ -133,11 +133,11 @@ export const PolicyDialogContent: FC<PolicyDialogContentProps> = ({readonly, vie
                 />
             </FormControl>
             <FormControl fullWidth>
-                <Typography variant="body2">{t('policies.dialog.content.secrets')}</Typography>
+                <Typography className="MuiFormLabel-root">{t('policies.dialog.content.secrets')}</Typography>
                 <SelectList handleToggle={handleSecretChange} listItem={selectedSecrets} readonly={readonly} viewItem={viewSecret}/>
             </FormControl>
             <FormControl fullWidth>
-                <Typography variant="body2">{t('policies.dialog.content.beneficiaries')}</Typography>
+                <Typography className="MuiFormLabel-root">{t('policies.dialog.content.beneficiaries')}</Typography>
                 <SelectList handleToggle={handleBeneficiaryChange} listItem={selectedContacts} readonly={readonly}/>
             </FormControl>
             <FormControl fullWidth>

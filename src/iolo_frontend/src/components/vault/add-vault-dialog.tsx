@@ -11,10 +11,10 @@ import {addSecretThunk, secretsActions} from "../../redux/secrets/secretsSlice";
 import AddIcon from "@mui/icons-material/Add";
 import {Fab} from "@mui/material";
 import {BasicDialog} from "../dialog/basic-dialog";
-import {SecretDialogContent} from './secret-dialog-content';
+import {VaultDialogContent} from './vault-dialog-content';
 import {useTranslation} from "react-i18next";
 
-export default function AddSecretDialog() {
+export default function AddVaultDialog() {
     const dispatch = useAppDispatch();
     const { t } = useTranslation();
     const showAddSecretDialog: boolean = useSelector(selectShowAddSecretDialog);
@@ -56,7 +56,7 @@ export default function AddSecretDialog() {
                          okButtonText={t('secrets.dialog.add.button')}
                          error={secretError}
                          dialogItemState={secretToAddState}>
-                <SecretDialogContent/>
+                <VaultDialogContent/>
             </BasicDialog>
         </div>
     );

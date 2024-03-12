@@ -8,10 +8,10 @@ import {
 import {useAppDispatch} from "../../redux/hooks";
 import {secretsActions} from "../../redux/secrets/secretsSlice";
 import {BasicDialog} from "../dialog/basic-dialog";
-import {SecretDialogContent} from './secret-dialog-content';
+import {VaultDialogContent} from './vault-dialog-content';
 import {useTranslation} from "react-i18next";
 
-export default function ViewSecretDialog() {
+export default function ViewVaultDialog() {
     const dispatch = useAppDispatch();
     const { t } = useTranslation();
     const showViewSecretDialog: boolean = useSelector(selectShowViewSecretDialog);
@@ -29,7 +29,7 @@ export default function ViewSecretDialog() {
                      handleClose={handleClose}
                      error={secretError}
                      dialogItemState={dialogItemState}>
-            <SecretDialogContent readonly={true}/>
+            <VaultDialogContent readonly={true}/>
         </BasicDialog>
     );
 }

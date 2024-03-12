@@ -11,7 +11,7 @@
     "dialog": {
       "add": {
         "title": "Add policy",
-        "text": "To add a policy choose the secrets, contacts and fill in the necessary information.",
+        "text": "To add a policy choose the vaults, contacts and fill in the necessary information.",
         "button": "Add policy"
       },
       "delete": {
@@ -21,7 +21,7 @@
       },
       "edit": {
         "title": "Edit policy",
-        "text": "Edit your policies name, secrets and contacts.",
+        "text": "Edit your policies name, vaults and contacts.",
         "button": "Update policy"
       },
       "view": {
@@ -32,7 +32,7 @@
         "name": "Name",
         "max-logout-time": "Max. logout time in days",
         "beneficiaries": "Beneficiaries",
-        "secrets": "Secrets"
+        "secrets": "Vaults"
       }
     }
   },
@@ -123,19 +123,19 @@
     "no-category": "No Category",
     "dialog": {
       "add": {
-        "title": "Add secret",
-        "text": "To add a new secret choose the category of it and fill in the necessary information.",
-        "button": "Add secret"
+        "title": "Add vault ",
+        "text": "To add a new vault  choose the category of it and fill in the necessary information.",
+        "button": "Add vault "
       },
       "delete": {
-        "title": "Delete secret",
-        "text": "Are you sure you want to delete the secret {{secret}}?",
-        "button": "Delete secret"
+        "title": "Delete vault ",
+        "text": "Are you sure you want to delete the vault  {{secret}}?",
+        "button": "Delete vault "
       },
       "edit": {
-        "title": "Edit secret",
-        "text": "Edit your secret",
-        "button": "Update secret"
+        "title": "Edit vault ",
+        "text": "Edit your vault ",
+        "button": "Update vault "
       },
       "content": {
         "category": "Category",
@@ -146,8 +146,8 @@
         "notes": "Notes"
       },
       "view": {
-        "title": "Edit secret",
-        "text": "Edit your secret"
+        "title": "Edit vault",
+        "text": "Edit your vault"
       }
     }
   },

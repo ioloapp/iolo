@@ -12,7 +12,7 @@ import {userActions} from "../../../redux/user/userSlice";
 import {useAppDispatch} from "../../../redux/hooks";
 import {sidebarWith} from "../../../App";
 import {useTranslation} from "react-i18next";
-import {ROUTE_CONTACTS, ROUTE_POLICIES, ROUTE_PROFILE, ROUTE_SECRETS, ROUTE_SHARE} from "../../layout/routes";
+import {ROUTE_CONTACTS, ROUTE_POLICIES, ROUTE_PROFILE, ROUTE_VAULTS, ROUTE_SHARE} from "../../layout/routes";
 import {IoloLogo} from "../../../resources/logo";
 
 export const SideBar = () => {
@@ -42,7 +42,7 @@ export const SideBar = () => {
         >
             <IoloLogo/>
             <List>
-                <ListItemButton component={Link} to={ROUTE_SECRETS} selected={matchRoutes([{ path: ROUTE_SECRETS}], location) != undefined}>
+                <ListItemButton component={Link} to={ROUTE_VAULTS} selected={matchRoutes([{ path: ROUTE_VAULTS}], location) != undefined}>
                     <ListItemIcon>
                         <LockOpenOutlinedIcon className="navigation-icon"/>
                     </ListItemIcon>
@@ -78,7 +78,7 @@ export const SideBar = () => {
             </List>
             <Divider/>
             <List>
-                <ListItem component={Link} to={ROUTE_SECRETS} onClick={handleLogout}>
+                <ListItem component={Link} to={ROUTE_VAULTS} onClick={handleLogout}>
                     <ListItemIcon>
                         <LogoutIcon className="navigation-icon"/>
                     </ListItemIcon>

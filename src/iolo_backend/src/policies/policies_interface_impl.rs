@@ -416,7 +416,7 @@ pub fn confirm_x_out_of_y_condition_impl(
     args: ConfirmXOutOfYConditionArgs,
     validator: PrincipalID,
 ) -> Result<(), SmartVaultErr> {
-    
+
     // fetch policy from policy store and check if caller is beneficiary
     let mut policy: Policy;
     if let Ok(p) = get_policy_from_policy_store(&args.policy_id) {
@@ -454,11 +454,11 @@ pub fn confirm_x_out_of_y_condition_impl(
             }
         }
     }
-    
+
     if condition_needs_evaluation {
         policy.validate_overall_conditions_status();
     }
-    
+
     if policy_needs_update {
         update_policy_in_policy_store(policy.clone())?;
         evaluate_overall_conditions_status(policy.id())?;

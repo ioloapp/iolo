@@ -26,7 +26,7 @@ import {selectSecretListState} from "../../redux/secrets/secretsSelectors";
 import {loadSecretsThunk} from "../../redux/secrets/secretsSlice";
 import {loadContactsThunk} from "../../redux/contacts/contactsSlice";
 import {selectContactListState} from "../../redux/contacts/contactsSelectors";
-import ViewSecretDialog from "../../components/secret/view-secret-dialog";
+import ViewVaultDialog from "../../components/vault/view-vault-dialog";
 import {useTranslation} from "react-i18next";
 import {PolicyListItem} from "./policyListItem";
 import {ValidationListItem} from "./validationListItem";
@@ -126,7 +126,7 @@ export function Policies() {
                         </>
                     }
                 </Box>
-                <ViewSecretDialog/>
+                <ViewVaultDialog/>
                 <AddPolicyDialog/>
                 <ViewPolicyDialog/>
                 <EditPolicyDialog/>

@@ -15,17 +15,17 @@ import DescriptionIcon from '@mui/icons-material/Description';
 import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 import {useSelector} from "react-redux";
 import {selectGroupedSecrets, selectSecretListState, selectSecretsError} from "../../redux/secrets/secretsSelectors";
-import AddSecretDialog from "../../components/secret/add-secret-dialog";
+import AddVaultDialog from "../../components/vault/add-vault-dialog";
 import {UiSecretListEntry} from "../../services/IoloTypesForUi";
-import {SecretItem} from "./secret-item";
-import DeleteSecretDialog from "../../components/secret/delete-secret-dialog";
-import EditSecretDialog from "../../components/secret/edit-secret-dialog";
+import {VaultItem} from "./vault-item";
+import DeleteVaultDialog from "../../components/vault/delete-vault-dialog";
+import EditVaultDialog from "../../components/vault/edit-vault-dialog";
 import {Error} from "../../components/error/error";
 import {SelectListItem} from "../../components/selectlist/select-list";
-import ViewSecretDialog from "../../components/secret/view-secret-dialog";
+import ViewVaultDialog from "../../components/vault/view-vault-dialog";
 import {useTranslation} from "react-i18next";
 
-export function Secrets() {
+export function Vaults() {
 
     const dispatch = useAppDispatch();
     const { t } = useTranslation();
@@ -88,9 +88,9 @@ export function Secrets() {
                                     <Typography variant="h5">{t('secrets.passwords')}</Typography>
                                     <List dense={false}>
                                         {filteredSecretList.passwordList.map((secret: UiSecretListEntry) =>
-                                            <SecretItem key={secret.id} secret={secret} editAction={editItem}
-                                                        viewAction={viewItem}
-                                                        deleteAction={deleteItem}><PasswordIcon/></SecretItem>
+                                            <VaultItem key={secret.id} secret={secret} editAction={editItem}
+                                                       viewAction={viewItem}
+                                                       deleteAction={deleteItem}><PasswordIcon/></VaultItem>
                                         )}
                                     </List>
                                 </Box>
@@ -100,9 +100,9 @@ export function Secrets() {
                                     <Typography variant="h5">{t('secrets.notes')}</Typography>
                                     <List dense={false}>
                                         {filteredSecretList.notesList.map((secret: UiSecretListEntry) =>
-                                            <SecretItem key={secret.id} secret={secret} editAction={editItem}
-                                                        viewAction={viewItem}
-                                                        deleteAction={deleteItem}><NotesIcon/></SecretItem>
+                                            <VaultItem key={secret.id} secret={secret} editAction={editItem}
+                                                       viewAction={viewItem}
+                                                       deleteAction={deleteItem}><NotesIcon/></VaultItem>
                                         )}
                                     </List>
                                 </Box>
@@ -112,9 +112,9 @@ export function Secrets() {
                                     <Typography variant="h5">{t('secrets.documents')}</Typography>
                                     <List dense={false}>
                                         {filteredSecretList.documentsList.map((secret: UiSecretListEntry) =>
-                                            <SecretItem key={secret.id} secret={secret} editAction={editItem}
-                                                        viewAction={viewItem}
-                                                        deleteAction={deleteItem}><DescriptionIcon/></SecretItem>
+                                            <VaultItem key={secret.id} secret={secret} editAction={editItem}
+                                                       viewAction={viewItem}
+                                                       deleteAction={deleteItem}><DescriptionIcon/></VaultItem>
                                         )}
                                     </List>
                                 </Box>
@@ -124,9 +124,9 @@ export function Secrets() {
                                     <Typography variant="h5">{t('secrets.no-category')}</Typography>
                                     <List dense={false}>
                                         {filteredSecretList.othersList.map((secret: UiSecretListEntry) =>
-                                            <SecretItem key={secret.id} secret={secret} editAction={editItem}
-                                                        viewAction={viewItem}
-                                                        deleteAction={deleteItem}><QuestionMarkIcon/></SecretItem>
+                                            <VaultItem key={secret.id} secret={secret} editAction={editItem}
+                                                       viewAction={viewItem}
+                                                       deleteAction={deleteItem}><QuestionMarkIcon/></VaultItem>
                                         )}
                                     </List>
                                 </Box>
@@ -134,10 +134,10 @@ export function Secrets() {
                         </>
                     }
                 </Box>
-                <ViewSecretDialog/>
-                <AddSecretDialog/>
-                <EditSecretDialog/>
-                <DeleteSecretDialog/>
+                <ViewVaultDialog/>
+                <AddVaultDialog/>
+                <EditVaultDialog/>
+                <DeleteVaultDialog/>
             </>
         </PageLayout>);
 }

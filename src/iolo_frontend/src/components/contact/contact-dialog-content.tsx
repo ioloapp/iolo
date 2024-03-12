@@ -18,7 +18,7 @@ export default function ContactDialogContent() {
     return (
         <>
             <FormControl fullWidth>
-                <Typography variant="body2">Category</Typography>
+                <Typography className="MuiFormLabel-root">Category</Typography>
                 <Select
                     labelId="category-select-label"
                     id="type"

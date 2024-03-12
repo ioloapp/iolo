@@ -13,7 +13,7 @@ export interface SecretItemProps{
     viewAction: (secret: UiSecretListEntry) => void;
     children: ReactNode
 }
-export const SecretItem: FC<SecretItemProps> = ({secret, children, deleteAction, editAction, viewAction}) => {
+export const VaultItem: FC<SecretItemProps> = ({secret, children, deleteAction, editAction, viewAction}) => {
 
     return (
         <ListItem key={secret.id} secondaryAction={

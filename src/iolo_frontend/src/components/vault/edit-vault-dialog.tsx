@@ -9,10 +9,10 @@ import {
 import {useAppDispatch} from "../../redux/hooks";
 import {secretsActions, updateSecretThunk} from "../../redux/secrets/secretsSlice";
 import {BasicDialog} from "../dialog/basic-dialog";
-import {SecretDialogContent} from './secret-dialog-content';
+import {VaultDialogContent} from './vault-dialog-content';
 import {useTranslation} from "react-i18next";
 
-export default function EditSecretDialog() {
+export default function EditVaultDialog() {
     const dispatch = useAppDispatch();
     const { t } = useTranslation();
     const showEditSecretDialog: boolean = useSelector(selectShowEditSecretDialog);
@@ -42,7 +42,7 @@ export default function EditSecretDialog() {
                      okButtonText={t('secrets.dialog.edit.button')}
                      error={secretError}
                      dialogItemState={dialogItemState}>
-            <SecretDialogContent/>
+            <VaultDialogContent/>
         </BasicDialog>
     );
 }

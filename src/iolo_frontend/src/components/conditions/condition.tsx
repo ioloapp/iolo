@@ -72,7 +72,7 @@ export const Condition: FC<ConditionProps> = ({condition, readonly, openConditio
                     }
                     {!readonly &&
                         <FormControl fullWidth>
-                            <Typography variant="body2">Category</Typography>
+                            <Typography className="MuiFormLabel-root">Category</Typography>
                             <Select
                                 labelId="category-select-label"
                                 id="type"
