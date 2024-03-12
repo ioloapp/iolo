@@ -1,50 +1,58 @@
 {
-  "testaments": {
-    "title": "Testamenti",
-    "testator": "Testatore",
+  "policies": {
+    "title": "Politiche",
+    "beneficiary": "Beneficiario",
+    "owner": "Proprietario della politica",
+    "list": {
+      "owner": "Le tue politiche",
+      "beneficiary": "Politiche del beneficiario",
+      "validator": "Politiche del validatore"
+    },
     "dialog": {
       "add": {
-        "title": "Aggiungi testamento",
-        "text": "Per aggiungere un testamento, scegli i segreti, gli eredi e compila le informazioni necessarie.",
-        "button": "Aggiungi testamento"
+        "title": "Aggiungi politica",
+        "text": "Per aggiungere una politica, scegli i segreti, i contatti e inserisci le informazioni necessarie.",
+        "button": "Aggiungi politica"
       },
       "delete": {
-        "title": "Elimina testamento",
-        "text": "Sei sicuro di voler eliminare il testamento {{testament}}?",
-        "button": "Elimina testamento"
+        "title": "Elimina politica",
+        "text": "Sei sicuro di voler eliminare la politica '{{policy}}'?",
+        "button": "Elimina politica"
       },
       "edit": {
-        "title": "Modifica testamento",
-        "text": "Modifica il nome, i segreti e gli eredi del tuo testamento.",
-        "button": "Aggiorna testamento"
+        "title": "Modifica politica",
+        "text": "Modifica il nome delle tue politiche, i segreti e i contatti.",
+        "button": "Aggiorna politica"
       },
       "view": {
-        "title": "Visualizza testamento",
-        "text": "Questo è il tuo testamento."
+        "title": "Visualizza politica",
+        "text": "Questa è la tua politica."
       },
       "content": {
         "name": "Nome",
-        "max-logout-time": "Tempo massimo di disconnessione in secondi"
+        "max-logout-time": "Tempo massimo di logout in giorni",
+        "beneficiaries": "Beneficiari",
+        "secrets": "Segreti"
       }
     }
   },
-  "heirs": {
-    "title": "Eredi",
+  "contacts": {
+    "title": "Contatti",
     "dialog": {
       "add": {
-        "title": "Aggiungi erede",
-        "text": "Per aggiungere un nuovo erede, inserisci la sua identificazione e aggiungi un nome conosciuto.",
-        "button": "Aggiungi erede"
+        "title": "Aggiungi contatto",
+        "text": "Per aggiungere un nuovo contatto, inserisci l'ID di esso e estendilo con un nome noto.",
+        "button": "Aggiungi contatto"
       },
       "delete": {
-        "title": "Elimina erede",
-        "text": "Sei sicuro di voler eliminare l'erede {{heir}}?",
-        "button": "Elimina erede"
+        "title": "Elimina contatto",
+        "text": "Sei sicuro di voler eliminare il contatto '{{contact}}'?",
+        "button": "Elimina contatto"
       },
       "edit": {
-        "title": "Modifica erede",
-        "text": "Aggiorna le informazioni del tuo erede.",
-        "button": "Aggiorna erede"
+        "title": "Modifica contatto",
+        "text": "Aggiorna le informazioni del tuo contatto.",
+        "button": "Aggiorna contatto"
       }
     }
   },
@@ -55,8 +63,34 @@
     "button": "Esci"
   },
   "onboarding": {
-    "title": "Onboarding",
-    "text":"Sembra che tu non abbia ancora creato il tuo account IOLO. Ne vuoi uno?"
+    "title": "Introduzione",
+    "text": "Sembra che tu non abbia ancora creato il tuo account IOLO. Vuoi procedere?"
+  },
+  "conditions": {
+    "status": "Stato",
+    "valid": "confermato",
+    "invalid": "rifiutato",
+    "type": "Tipo",
+    "delete": "Elimina",
+    "button": {
+      "add": "Aggiungi condizione"
+    },
+    "timebased": {
+      "max-logout-time": "Tempo massimo in giorni in cui non hai effettuato l'accesso a IOLO"
+    },
+    "xoutofy": {
+      "question": "Quale domanda devono confermare i tuoi validatori?",
+      "min-validators": "Quanti validatori devono confermarla al minimo?",
+      "valdiators": "Validatori della tua condizione"
+    },
+    "fixeddatetime": {
+      "date-of-event": "Data dell'evento"
+    }
+  },
+  "validators": {
+    "button": {
+      "add": "Aggiungi"
+    }
   },
   "user": {
     "type": "Tipo di utente",
@@ -64,25 +98,25 @@
     "email": "Email",
     "language": "Lingua",
     "button": {
-      "create": "Crea account",
-      "update": "Aggiorna utente"
+      "create": "Crea Account",
+      "update": "Aggiorna Utente"
     },
     "icon": {
-      "label": "Account dell'utente corrente"
+      "label": "account dell'utente corrente"
     }
   },
   "profile": {
     "title": "Profilo",
-    "mode": "Modalità scura UI"
+    "mode": "Modalità UI scura"
   },
   "rules": {
     "title": "Regole",
     "dead-man-switch": {
-      "button": "Interruttore del morto"
+      "button": "Interruttore uomo morto"
     }
   },
   "secrets": {
-    "title": "Portafoglio",
+    "title": "Cassaforte",
     "passwords": "Password",
     "notes": "Note",
     "documents": "Documenti",
@@ -103,14 +137,6 @@
         "text": "Modifica il tuo segreto",
         "button": "Aggiorna segreto"
       },
-      "content": {
-        "category": "Categoria",
-        "name": "Nome",
-        "username": "Nome utente",
-        "password": "Password",
-        "url": "URL",
-        "notes": "Note"
-      },
       "view": {
         "title": "Modifica segreto",
         "text": "Modifica il tuo segreto"
@@ -120,14 +146,17 @@
   "share": {
     "title-short": "Condividi",
     "title": "Condividi il tuo ID",
-    "info": "Condividendo questo codice QR, una persona può registrarti come erede.",
-    "own-id": "Il tuo ID Internet è: "
+    "info": "Condividendo questo codice QR, una persona può registrarti come contatto.",
+    "own-id": "Il tuo ID internet è: "
   },
   "dialog": {
     "button": {
       "cancel": "Annulla",
       "close": "Chiudi"
     }
+  },
+  "validations": {
+    "questioner": "Interrogatore"
   },
   "error": {
     "title": "Errore"

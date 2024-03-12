@@ -65,7 +65,7 @@ export const Condition: FC<ConditionProps> = ({condition, readonly, openConditio
                         {open ? <KeyboardArrowUpIcon/> : <KeyboardArrowDownIcon/>}
                     </IconButton>
                 </TableCell>
-                <TableCell>{condition.conditionStatus}</TableCell>
+                <TableCell><p>{condition?.conditionStatus}</p></TableCell>
                 <TableCell>
                     {readonly && condition.type !== ConditionType.Undefined &&
                         <>{condition.type}</>

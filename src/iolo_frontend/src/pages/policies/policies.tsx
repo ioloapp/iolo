@@ -118,7 +118,7 @@ export function Policies() {
                                 <List dense={false}>
                                     {filteredValidatorPolicies.map((policy: UiPolicy) =>
                                         policy.conditions?.map(condition =>
-                                            <ValidationListItem ownerId={policy.owner.id} policyId={policy.id} condition={condition} key={condition.id}/>
+                                            <ValidationListItem owner={policy.owner} policyId={policy.id} condition={condition} key={condition.id}/>
                                         )
                                     )}
                                 </List>

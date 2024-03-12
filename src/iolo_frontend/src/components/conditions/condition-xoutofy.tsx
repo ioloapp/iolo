@@ -121,7 +121,7 @@ export const ConditionXOutOfY: FC<ConditionXOutOfYProps> = ({condition, readonly
                                             <TableCell component="th" scope="row">
                                                 {getValidatorName(validator.user)}
                                             </TableCell>
-                                            <TableCell>{validator.status}</TableCell>
+                                            <TableCell><p>{validator?.status ? t('conditions.valid'): t('conditions.invalid')}</p></TableCell>
                                         </TableRow>
                                     ))}
                                 </TableBody>

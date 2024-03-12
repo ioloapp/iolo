@@ -14,9 +14,9 @@ const ioloService = new IoloService();
 
 export const addPolicyThunk = createAsyncThunk<UiPolicy, UiPolicy, { state: RootState }>(
     'policies/add',
-    async (policy, {rejectWithValue}) => {
+    async (policy, {rejectWithValue, getState}) => {
         try {
-            return await ioloService.createPolicy(policy);
+            return await ioloService.createPolicy(getState(), policy);
         } catch (e) {
             console.error(e)
             return rejectWithValue(e.message)
@@ -31,11 +31,11 @@ export const viewPolicyThunk = createAsyncThunk<UiPolicyWithSecretListEntries | 
     async (policy, {rejectWithValue, getState}) => {
         try {
             if (policy.role === UiPolicyListEntryRole.Owner) {
-                return await ioloService.getPolicyAsOwner(policy.id);
+                return await ioloService.getPolicyAsOwner(getState(), policy.id);
             } else if (policy.role === UiPolicyListEntryRole.Validator) {
-                return await ioloService.getPolicyAsValidator(policy.id);
+                return await ioloService.getPolicyAsValidator(getState(), policy.id);
             } else {
-                return await ioloService.getPolicyAsBeneficiary(policy.id);
+                return await ioloService.getPolicyAsBeneficiary(getState(), policy.id);
             }
         } catch (e) {
             return rejectWithValue(e)
@@ -45,12 +45,12 @@ export const viewPolicyThunk = createAsyncThunk<UiPolicyWithSecretListEntries | 
 
 export const editPolicyThunk = createAsyncThunk<UiPolicyWithSecretListEntries, UiPolicy, { state: RootState }>(
     'policies/edit',
-    async (policy, {rejectWithValue}) => {
+    async (policy, {rejectWithValue, getState}) => {
         try {
             if (policy.role === UiPolicyListEntryRole.Owner) {
-                return await ioloService.getPolicyAsOwner(policy.id);
+                return await ioloService.getPolicyAsOwner(getState(), policy.id);
             } else {
-                return await ioloService.getPolicyAsBeneficiary(policy.id);
+                return await ioloService.getPolicyAsBeneficiary(getState(), policy.id);
             }
 
         } catch (e) {
@@ -63,9 +63,9 @@ export const updatePolicyThunk = createAsyncThunk<UiPolicy, UiPolicy, {
     state: RootState
 }
 >('policies/update',
-    async (policy, {rejectWithValue}) => {
+    async (policy, {rejectWithValue, getState}) => {
         try {
-            return await ioloService.updatePolicy(policy);
+            return await ioloService.updatePolicy(getState(), policy);
         } catch (e) {
             return rejectWithValue(e)
         }
@@ -89,9 +89,9 @@ export const deletePolicyThunk = createAsyncThunk<string, string, {
 export const loadPoliciesThunk = createAsyncThunk<UiPolicyListEntry[], void, {
     state: RootState
 }>('policies/load-list',
-    async (_, {rejectWithValue}) => {
+    async (_, {rejectWithValue, getState}) => {
         try {
-            return await ioloService.getPolicyListOfUser();
+            return await ioloService.getPolicyListOfUser(getState());
         } catch (e) {
             return rejectWithValue(e)
         }
@@ -101,9 +101,9 @@ export const loadPoliciesThunk = createAsyncThunk<UiPolicyListEntry[], void, {
 export const loadPoliciesWhereUserIsValidatorThunk = createAsyncThunk<UiPolicyListEntry[], void, {
     state: RootState
 }>('policies/load-validator-list',
-    async (_, {rejectWithValue}) => {
+    async (_, {rejectWithValue, getState}) => {
         try {
-            return await ioloService.getPolicyListWhereUserIsValidator();
+            return await ioloService.getPolicyListWhereUserIsValidator(getState());
         } catch (e) {
             return rejectWithValue(e)
         }
@@ -113,9 +113,9 @@ export const loadPoliciesWhereUserIsValidatorThunk = createAsyncThunk<UiPolicyLi
 export const loadPoliciesWhereUserIsBeneficiaryThunk = createAsyncThunk<UiPolicyListEntry[], void, {
     state: RootState
 }>('policies/load-beneficiary-list',
-    async (_, {rejectWithValue}) => {
+    async (_, {rejectWithValue, getState}) => {
         try {
-            return await ioloService.getPolicyListWhereUserIsBeneficiary();
+            return await ioloService.getPolicyListWhereUserIsBeneficiary(getState());
         } catch (e) {
             return rejectWithValue(e)
         }

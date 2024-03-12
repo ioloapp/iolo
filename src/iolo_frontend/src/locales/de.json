@@ -1,62 +1,96 @@
 {
-  "testaments": {
-    "title": "Testamente",
-    "testator": "Testator",
+  "policies": {
+    "title": "Richtlinien",
+    "beneficiary": "Begünstigter",
+    "owner": "Inhaber der Richtlinie",
+    "list": {
+      "owner": "Ihre Richtlinien",
+      "beneficiary": "Richtlinien des Begünstigten",
+      "validator": "Richtlinien des Prüfers"
+    },
     "dialog": {
       "add": {
-        "title": "Testament hinzufügen",
-        "text": "Um ein Testament hinzuzufügen, wählen Sie die Geheimnisse, Erben und füllen Sie die erforderlichen Informationen aus.",
-        "button": "Testament hinzufügen"
+        "title": "Richtlinie hinzufügen",
+        "text": "Um eine Richtlinie hinzuzufügen, wählen Sie die Geheimnisse, Kontakte aus und füllen Sie die notwendigen Informationen aus.",
+        "button": "Richtlinie hinzufügen"
       },
       "delete": {
-        "title": "Testament löschen",
-        "text": "Sind Sie sicher, dass Sie das Testament {{testament}} löschen möchten?",
-        "button": "Testament löschen"
+        "title": "Richtlinie löschen",
+        "text": "Sind Sie sicher, dass Sie die Richtlinie '{{policy}}' löschen möchten?",
+        "button": "Richtlinie löschen"
       },
       "edit": {
-        "title": "Testament bearbeiten",
-        "text": "Bearbeiten Sie den Namen, die Geheimnisse und die Erben Ihres Testaments.",
-        "button": "Testament aktualisieren"
+        "title": "Richtlinie bearbeiten",
+        "text": "Bearbeiten Sie den Namen Ihrer Richtlinien, Geheimnisse und Kontakte.",
+        "button": "Richtlinie aktualisieren"
       },
       "view": {
-        "title": "Testament anzeigen",
-        "text": "Dies ist Ihr Testament."
+        "title": "Richtlinie ansehen",
+        "text": "Dies ist Ihre Richtlinie."
       },
       "content": {
         "name": "Name",
-        "max-logout-time": "Max. Abmeldezeit in Sekunden"
+        "max-logout-time": "Max. Abmeldezeit in Tagen",
+        "beneficiaries": "Begünstigte",
+        "secrets": "Geheimnisse"
       }
     }
   },
-  "heirs": {
-    "title": "Erben",
+  "contacts": {
+    "title": "Kontakte",
     "dialog": {
       "add": {
-        "title": "Erben hinzufügen",
-        "text": "Um einen neuen Erben hinzuzufügen, geben Sie die ID ein und ergänzen Sie sie um einen bekannten Namen.",
-        "button": "Erben hinzufügen"
+        "title": "Kontakt hinzufügen",
+        "text": "Um einen neuen Kontakt hinzuzufügen, geben Sie die ID davon ein und erweitern Sie diese mit einem bekannten Namen.",
+        "button": "Kontakt hinzufügen"
       },
       "delete": {
-        "title": "Erben löschen",
-        "text": "Sind Sie sicher, dass Sie den Erben {{heir}} löschen möchten?",
-        "button": "Erben löschen"
+        "title": "Kontakt löschen",
+        "text": "Sind Sie sicher, dass Sie den Kontakt '{{contact}}' löschen möchten?",
+        "button": "Kontakt löschen"
       },
       "edit": {
-        "title": "Erben bearbeiten",
-        "text": "Aktualisieren Sie die Informationen zu Ihrem Erben.",
-        "button": "Erben aktualisieren"
+        "title": "Kontakt bearbeiten",
+        "text": "Aktualisieren Sie die Informationen Ihres Kontakts.",
+        "button": "Kontakt aktualisieren"
       }
     }
   },
   "login": {
-    "button": "Anmelden"
+    "button": "Einloggen"
   },
   "logout": {
-    "button": "Abmelden"
+    "button": "Ausloggen"
   },
   "onboarding": {
     "title": "Einführung",
-    "text":"Es scheint, dass Sie Ihr IOLO-Konto noch nicht erstellt haben. Möchten Sie eins erstellen?"
+    "text": "Es scheint, als hätten Sie noch kein IOLO-Konto erstellt. Möchten Sie eines erstellen?"
+  },
+  "conditions": {
+    "status": "Status",
+    "valid": "bestätigt",
+    "invalid": "abgelehnt",
+    "type": "Typ",
+    "delete": "Löschen",
+    "button": {
+      "add": "Bedingung hinzufügen"
+    },
+    "timebased": {
+      "max-logout-time": "Max. Zeit in Tagen, in denen Sie sich nicht bei IOLO angemeldet haben"
+    },
+    "xoutofy": {
+      "question": "Welche Frage müssen Ihre Prüfer bestätigen?",
+      "min-validators": "Wie viele Prüfer müssen es mindestens bestätigen?",
+      "valdiators": "Prüfer Ihrer Bedingung"
+    },
+    "fixeddatetime": {
+      "date-of-event": "Datum des Ereignisses"
+    }
+  },
+  "validators": {
+    "button":{
+      "add": "Hinzufügen"
+    }
   },
   "user": {
     "type": "Benutzertyp",
@@ -82,7 +116,7 @@
     }
   },
   "secrets": {
-    "title": "Brieftasche",
+    "title": "Tresor",
     "passwords": "Passwörter",
     "notes": "Notizen",
     "documents": "Dokumente",
@@ -90,7 +124,7 @@
     "dialog": {
       "add": {
         "title": "Geheimnis hinzufügen",
-        "text": "Um ein neues Geheimnis hinzuzufügen, wählen Sie die Kategorie aus und füllen Sie die erforderlichen Informationen aus.",
+        "text": "Um ein neues Geheimnis hinzuzufügen, wählen Sie die Kategorie davon aus und füllen Sie die notwendigen Informationen aus.",
         "button": "Geheimnis hinzufügen"
       },
       "delete": {
@@ -103,14 +137,6 @@
         "text": "Bearbeiten Sie Ihr Geheimnis",
         "button": "Geheimnis aktualisieren"
       },
-      "content": {
-        "category": "Kategorie",
-        "name": "Name",
-        "username": "Benutzername",
-        "password": "Passwort",
-        "url": "URL",
-        "notes": "Notizen"
-      },
       "view": {
         "title": "Geheimnis bearbeiten",
         "text": "Bearbeiten Sie Ihr Geheimnis"
@@ -119,15 +145,18 @@
   },
   "share": {
     "title-short": "Teilen",
-    "title": "Ihre ID teilen",
-    "info": "Durch das Teilen dieses QR-Codes kann eine Person Sie als Erben registrieren.",
-    "own-id": "Ihre Internet-ID lautet: "
+    "title": "Teilen Sie Ihre ID",
+    "info": "Das Teilen dieses QR-Codes ermöglicht es einer Person, Sie als Kontakt zu registrieren.",
+    "own-id": "Ihre Internet-ID ist: "
   },
   "dialog": {
     "button": {
       "cancel": "Abbrechen",
       "close": "Schließen"
     }
+  },
+  "validations": {
+    "questioner": "Fragesteller"
   },
   "error": {
     "title": "Fehler"

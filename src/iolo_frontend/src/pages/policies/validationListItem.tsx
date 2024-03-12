@@ -1,6 +1,12 @@
 import * as React from "react";
 import {FC, useState} from "react";
-import {ConditionType, UiCondition, UiPolicyListEntryRole, UiXOutOfYCondition} from "../../services/IoloTypesForUi";
+import {
+    ConditionType,
+    UiCondition,
+    UiPolicyListEntryRole,
+    UiUser,
+    UiXOutOfYCondition
+} from "../../services/IoloTypesForUi";
 import {
     Avatar,
     IconButton,
@@ -19,12 +25,12 @@ import {confirmConditionThunk, declineConditionThunk} from "../../redux/policies
 import {b} from "vitest/dist/reporters-QGe8gs4b";
 
 export interface ValidationListItemProps {
-    ownerId: string;
+    owner: UiUser;
     policyId: string;
     condition: UiCondition
 }
 
-export const ValidationListItem: FC<ValidationListItemProps> = ({ownerId, condition, policyId}) => {
+export const ValidationListItem: FC<ValidationListItemProps> = ({owner, condition, policyId}) => {
 
     const xouty = condition.type === ConditionType.XOutOfY ? condition as UiXOutOfYCondition : undefined;
     const dispatch = useAppDispatch();
@@ -66,7 +72,7 @@ export const ValidationListItem: FC<ValidationListItemProps> = ({ownerId, condit
             {xouty &&
                 <ListItemText
                 primary={xouty.question}
-                secondary={`${t('validations.owner')}: ${ownerId}`}
+                secondary={`${t('validations.questioner')}: ${owner?.name ? owner.name: owner?.id}`}
                 />
             }
         </ListItem>

@@ -1,34 +1,28 @@
 import {ActorSubclass, HttpAgent, Identity} from "@dfinity/agent";
 import {
     _SERVICE,
+    AddOrUpdateUserArgs,
+    CreateContactArgs,
     CreatePolicyArgs,
     CreateSecretArgs,
-    AddOrUpdateUserArgs,
-    Condition,
     Policy,
     PolicyListEntry,
-    PolicyWithSecretListEntries,
-    Result, Result_10,
+    Result,
     Result_1,
+    Result_10,
+    Result_11,
+    Result_12,
     Result_2,
     Result_3,
+    Result_4,
     Result_6,
     Result_7,
     Result_8,
     Result_9,
     Secret,
-    SecretCategory,
     SecretListEntry,
-    UpdateSecretArgs,
-    UpdateCondition,
-    LastLoginTimeCondition,
-    UpdateLastLoginTimeCondition,
-    UpdateFixedDateTimeCondition,
-    UpdateXOutOfYCondition,
-    User,
-    UserType,
-    XOutOfYCondition,
-    CreateContactArgs, UpdatePolicyArgs, Result_4, Result_11, FixedDateTimeCondition, LogicalOperator, Result_12
+    UpdatePolicyArgs,
+    UpdateSecretArgs
 } from "../../../declarations/iolo_backend/iolo_backend.did";
 import {AuthClient} from "@dfinity/auth-client";
 import {createActor} from "../../../declarations/iolo_backend";
@@ -43,21 +37,17 @@ import {
     get_local_random_aes_256_gcm_key
 } from "../utils/crypto";
 import {
-    ConditionType,
-    LogicalOperator as UiLogicalOperator,
-    UiCondition, UiFixedDateTimeCondition,
     UiPolicy,
     UiPolicyListEntry,
     UiPolicyListEntryRole,
     UiPolicyWithSecretListEntries,
     UiSecret,
-    UiSecretCategory,
     UiSecretListEntry,
-    UiLastLoginTimeCondition,
     UiUser,
-    UiUserType,
-    UiXOutOfYCondition
+    UiUserType
 } from "./IoloTypesForUi";
+import {RootState} from "../redux/store";
+import IoloServiceMapper from "./IoloServiceMapper";
 
 class IoloService {
     static instance: IoloService;
@@ -66,12 +56,14 @@ class IoloService {
     private agent: HttpAgent
     private actor: ActorSubclass<_SERVICE>;
     private ivLength = 12;
+    private ioloServiceMapper: IoloServiceMapper;
 
     constructor() {
         if (IoloService.instance) {
             return IoloService.instance;
         }
         IoloService.instance = this;
+        this.ioloServiceMapper = new IoloServiceMapper();
         void this.initClient();
     }
 
@@ -132,7 +124,7 @@ class IoloService {
         }
         const result: Result_4 = await (await this.getActor()).create_user(args);
         if (result['Ok']) {
-            return this.mapUserToUiUser(result['Ok']);
+            return this.ioloServiceMapper.mapUserToUiUser(result['Ok']);
         }
         throw mapError(result['Err']);
     }
@@ -140,7 +132,7 @@ class IoloService {
     public async getCurrentUser(principal?: Principal): Promise<UiUser> {
         const result: Result_4 = await (await this.getActor()).get_current_user();
         if (result['Ok']) {
-            return this.mapUserToUiUser(result['Ok']);
+            return this.ioloServiceMapper.mapUserToUiUser(result['Ok']);
         }
         if (result['Err'].hasOwnProperty('UserDoesNotExist') && principal) {
             //onboarding
@@ -159,7 +151,7 @@ class IoloService {
         }
         let result: Result_4 = await (await this.getActor()).update_user(addOrUpdateUserArgs);
         if (result['Ok']) {
-            return this.mapUserToUiUser(result['Ok']);
+            return this.ioloServiceMapper.mapUserToUiUser(result['Ok']);
         }
         throw mapError(result['Err']);
     }
@@ -167,7 +159,7 @@ class IoloService {
     public async updateUserLoginDate(): Promise<UiUser> {
         let result: Result_4 = await (await this.getActor()).update_user_login_date();
         if (result['Ok']) {
-            return this.mapUserToUiUser(result['Ok']);
+            return this.ioloServiceMapper.mapUserToUiUser(result['Ok']);
         }
         throw mapError(result['Err']);
     }
@@ -179,7 +171,7 @@ class IoloService {
                 return {
                     id: secretListEntry.id,
                     name: secretListEntry.name.length > 0 ? secretListEntry.name[0] : undefined,
-                    category: secretListEntry.category.length > 0 ? this.mapSecretCategoryToUiSecretCategory(secretListEntry.category[0]) : undefined,
+                    category: secretListEntry.category.length > 0 ? this.ioloServiceMapper.mapSecretCategoryToUiSecretCategory(secretListEntry.category[0]) : undefined,
                 };
             });
         }
@@ -224,7 +216,7 @@ class IoloService {
         const encryptedSecret: CreateSecretArgs = await this.encryptNewSecret(uiSecret)
         const result: Result_3 = await (await this.getActor()).create_secret(encryptedSecret);
         if (result['Ok']) {
-            return this.mapSecretToUiSecret(result['Ok'], uiSecret.username, uiSecret.password, uiSecret.notes);
+            return this.ioloServiceMapper.mapSecretToUiSecret(result['Ok'], uiSecret.username, uiSecret.password, uiSecret.notes);
         }
         throw mapError(result['Err']);
     }
@@ -262,7 +254,7 @@ class IoloService {
         const resultUpdate: Result_3 = await (await this.getActor()).update_secret(encryptedUpdateSecretArgs);
 
         if (resultUpdate['Ok']) {
-            return this.mapSecretToUiSecret(resultUpdate['Ok'], uiSecret.username, uiSecret.password, uiSecret.notes);
+            return this.ioloServiceMapper.mapSecretToUiSecret(resultUpdate['Ok'], uiSecret.username, uiSecret.password, uiSecret.notes);
         }
         throw mapError(resultUpdate['Err']);
     }
@@ -275,7 +267,7 @@ class IoloService {
         throw mapError(result['Err']);
     }
 
-    public async createPolicy(uiPolicy: UiPolicy): Promise<UiPolicy> {
+    public async createPolicy(state: RootState, uiPolicy: UiPolicy): Promise<UiPolicy> {
         console.debug('start creating policy...');
         const createPolicyArgs: CreatePolicyArgs = {
             name: [uiPolicy.name],
@@ -285,23 +277,23 @@ class IoloService {
         const result: Result_2 = await (await this.getActor()).create_policy(createPolicyArgs);
         if (result['Ok']) {
             uiPolicy.id = result['Ok'].id; // Use created policy id
-            const policyForCreate = this.preparePolicyForCreate(uiPolicy);
-            return await this.updatePolicy(policyForCreate); // Update created policy with all other attributes
+            const policyForCreate = this.ioloServiceMapper.preparePolicyForCreate(uiPolicy);
+            return await this.updatePolicy(state, policyForCreate); // Update created policy with all other attributes
         } else throw mapError(result['Err']);
     }
 
-    public async updatePolicy(uiPolicy: UiPolicy): Promise<UiPolicy> {
+    public async updatePolicy(state: RootState, uiPolicy: UiPolicy): Promise<UiPolicy> {
         console.debug('start updating policy...')
         const updatePolicyArgs: UpdatePolicyArgs = await this.mapUiPolicyToUpdatePolicyArgs(uiPolicy);
 
         // Update policy
         const result: Result_2 = await (await this.getActor()).update_policy(updatePolicyArgs);
         if (result['Ok']) {
-            return this.mapPolicyToUiPolicy(result['Ok'], UiPolicyListEntryRole.Owner);
+            return this.ioloServiceMapper.mapPolicyToUiPolicy(state, result['Ok'], UiPolicyListEntryRole.Owner);
         } else throw mapError(result['Err']);
     }
 
-    public async getPolicyListOfUser(): Promise<UiPolicyListEntry[]> {
+    public async getPolicyListOfUser(state: RootState): Promise<UiPolicyListEntry[]> {
         const resultAsOwner: Result_10 = await (await this.getActor()).get_policy_list_as_owner();
         let policiesAsOwner: UiPolicyListEntry[] = [];
         if (resultAsOwner['Ok']) {
@@ -309,7 +301,7 @@ class IoloService {
                 return {
                     id: item.id,
                     name: item.name?.length > 0 ? item.name[0] : undefined,
-                    owner: {id: item.owner},
+                    owner: this.ioloServiceMapper.getUiUserFromId(state, item.owner),
                     role: UiPolicyListEntryRole.Owner,
                     conditionsStatus: item.conditions_status,
                 }
@@ -320,7 +312,7 @@ class IoloService {
         return policiesAsOwner;
     }
 
-    public async getPolicyListWhereUserIsBeneficiary(): Promise<UiPolicyListEntry[]> {
+    public async getPolicyListWhereUserIsBeneficiary(state: RootState): Promise<UiPolicyListEntry[]> {
         const resultAsBeneficiary: Result_10 = await (await this.getActor()).get_policy_list_as_beneficiary();
         let policiesAsBeneficiary: UiPolicyListEntry[] = [];
         if (resultAsBeneficiary['Ok'] && resultAsBeneficiary['Ok'].length > 0) {
@@ -328,7 +320,7 @@ class IoloService {
                 return {
                     id: item.id,
                     name: item.name?.length > 0 ? item.name[0] : undefined,
-                    owner: {id: item.owner},
+                    owner: this.ioloServiceMapper.getUiUserFromId(state, item.owner),
                     role: UiPolicyListEntryRole.Beneficiary,
                     conditionsStatus: item.conditions_status,
                 }
@@ -339,7 +331,7 @@ class IoloService {
         return policiesAsBeneficiary;
     }
 
-    public async getPolicyListWhereUserIsValidator(): Promise<UiPolicyListEntry[]> {
+    public async getPolicyListWhereUserIsValidator(state: RootState): Promise<UiPolicyListEntry[]> {
         const resultAsValidator: Result_11 = await (await this.getActor()).get_policy_list_as_validator();
         let policiesAsValidator: UiPolicy[] = [];
         if (resultAsValidator['Ok'] && resultAsValidator['Ok'].length > 0) {
@@ -347,10 +339,10 @@ class IoloService {
                 return {
                     id: item.id,
                     name: item.name?.length > 0 ? item.name[0] : undefined,
-                    owner: {id: item.owner},
+                    owner: this.ioloServiceMapper.getUiUserFromId(state, item.owner),
                     role: UiPolicyListEntryRole.Validator,
                     conditionsStatus: item.conditions_status,
-                    conditions: item.conditions ? item.conditions.map(condition => this.mapConditionToUiCondition(condition)) : []
+                    conditions: item.conditions ? item.conditions.map(condition => this.ioloServiceMapper.mapConditionToUiCondition(state, condition)) : []
                 }
             });
         } else if (resultAsValidator['Err']) {
@@ -359,27 +351,27 @@ class IoloService {
         return policiesAsValidator;
     }
 
-    public async getPolicyAsOwner(id: string): Promise<UiPolicyWithSecretListEntries> {
+    public async getPolicyAsOwner(state: RootState, id: string): Promise<UiPolicyWithSecretListEntries> {
         const result: Result_8 = await (await this.getActor()).get_policy_as_owner(id);
         console.debug('start get policies as owner', result);
         if (result['Ok']) {
-            return this.mapPolicyWithSecretListEntriesToUiPolicyWithSecretListEntries(result['Ok'], UiPolicyListEntryRole.Owner);
+            return this.ioloServiceMapper.mapPolicyWithSecretListEntriesToUiPolicyWithSecretListEntries(state, result['Ok'], UiPolicyListEntryRole.Owner);
         }
         throw mapError(result['Err']);
     }
 
-    public async getPolicyAsBeneficiary(id: string): Promise<UiPolicyWithSecretListEntries> {
+    public async getPolicyAsBeneficiary(state: RootState, id: string): Promise<UiPolicyWithSecretListEntries> {
         const result: Result_8 = await (await this.getActor()).get_policy_as_beneficiary(id);
         if (result['Ok']) {
-            return this.mapPolicyWithSecretListEntriesToUiPolicyWithSecretListEntries(result['Ok'], UiPolicyListEntryRole.Beneficiary);
+            return this.ioloServiceMapper.mapPolicyWithSecretListEntriesToUiPolicyWithSecretListEntries(state, result['Ok'], UiPolicyListEntryRole.Beneficiary);
         }
         throw mapError(result['Err']);
     }
 
-    public async getPolicyAsValidator(id: string): Promise<UiPolicyWithSecretListEntries> {
+    public async getPolicyAsValidator(state: RootState, id: string): Promise<UiPolicyWithSecretListEntries> {
         const result: Result_9 = await (await this.getActor()).get_policy_as_validator(id);
         if (result['Ok']) {
-            return this.mapPolicyWithSecretListEntriesToUiPolicyWithSecretListEntries(result['Ok'], UiPolicyListEntryRole.Beneficiary);
+            return this.ioloServiceMapper.mapPolicyWithSecretListEntriesToUiPolicyWithSecretListEntries(state, result['Ok'], UiPolicyListEntryRole.Beneficiary);
         }
         throw mapError(result['Err']);
     }
@@ -393,9 +385,13 @@ class IoloService {
     }
 
     public async confirmXOutOfYCondition(policyValidatorList: UiPolicy[], policyId: string, conditionId: string, status: boolean): Promise<UiPolicy[]> {
-        const result: Result_3 = await (await this.getActor()).confirm_x_out_of_y_condition({status, policy_id: policyId, condition_id: conditionId});
+        const result: Result_3 = await (await this.getActor()).confirm_x_out_of_y_condition({
+            status,
+            policy_id: policyId,
+            condition_id: conditionId
+        });
         if (result['Ok'] === null) {
-            return this.mapValidationStausToPolicy(policyValidatorList, policyId, conditionId, status);
+            return this.ioloServiceMapper.mapValidationStausToPolicy(policyValidatorList, policyId, conditionId, status);
         }
         throw mapError(result['Err']);
     }
@@ -414,7 +410,7 @@ class IoloService {
             email: contact.email ? [contact.email] : [],
             id: contact.id,
             name: contact.name ? [contact.name] : [],
-            user_type: contact.type ? [this.mapUiUserTypeToUserType(contact.type)] : [],
+            user_type: contact.type ? [this.ioloServiceMapper.mapUiUserTypeToUserType(contact.type)] : [],
         }
 
         const result: Result_1 = await (await this.getActor()).create_contact(createContactArgs);
@@ -427,17 +423,17 @@ class IoloService {
     public async getContactsList(): Promise<UiUser[]> {
         const result: Result_6 = await (await this.getActor()).get_contact_list();
         if (result['Ok']) {
-            return result['Ok'].map((item) => this.mapUserToUiUser(item));
+            return result['Ok'].map((item) => this.ioloServiceMapper.mapUserToUiUser(item));
         }
         throw mapError(result['Err']);
     }
 
     public async updateContact(contact: UiUser): Promise<UiUser> {
-        const user = this.mapUiUserToUser(contact);
+        const user = this.ioloServiceMapper.mapUiUserToUser(contact);
         const result: Result_1 = await (await this.getActor()).update_contact(user);
 
         if (result['Ok']) {
-            return this.mapUserToUiUser(result['Ok']);
+            return this.ioloServiceMapper.mapUserToUiUser(result['Ok']);
         }
         throw mapError(result['Err']);
     }
@@ -448,45 +444,6 @@ class IoloService {
             return;
         }
         throw mapError(result['Err']);
-    }
-
-    private mapUserToUiUser(user: User): UiUser {
-        let uiUser: UiUser = {
-            id: user.id,
-            name: user.name.length > 0 ? user.name[0] : undefined,
-            email: user.email.length > 0 ? user.email[0] : undefined,
-            dateLastLogin: user.date_last_login?.length > 0 ? this.nanosecondsInBigintToIsoString(user.date_last_login[0]) : undefined,
-            dateCreated: user.date_created ? this.nanosecondsInBigintToIsoString(user.date_created) : undefined,
-            dateModified: user.date_modified ? this.nanosecondsInBigintToIsoString(user.date_modified) : undefined,
-        }
-
-        if (user.user_type === undefined || user.user_type.length === 0) {
-            uiUser.type = undefined;
-        } else if (user.user_type[0].hasOwnProperty('Person')) {
-            uiUser.type = UiUserType.Person;
-        } else if (user.user_type[0].hasOwnProperty('Company')) {
-            uiUser.type = UiUserType.Company;
-        } else {
-            uiUser.type = undefined;
-        }
-
-        return uiUser;
-    }
-
-    private mapUiUserToUser(uiUser: UiUser): User {
-        return {
-            key_box: undefined,
-            policies: undefined,
-            secrets: undefined,
-            id: uiUser.id,
-            user_type: uiUser.type ? [this.mapUiUserTypeToUserType(uiUser.type)] : [],
-            date_created: uiUser.dateCreated ? this.dateToNanosecondsInBigint(uiUser.dateCreated) : 0n,
-            name: uiUser.name ? [uiUser.name] : [],
-            date_last_login: uiUser.dateLastLogin ? [this.dateToNanosecondsInBigint(uiUser.dateLastLogin)] : [],
-            email: uiUser.email ? [uiUser.email] : [],
-            date_modified: uiUser.dateCreated ? this.dateToNanosecondsInBigint(uiUser.dateModified) : 0n,
-            contacts: [],
-        };
     }
 
     private async mapEncryptedSecretToUiSecret(secret: Secret, encrypted_symmetric_key: Uint8Array, vetKey: Uint8Array): Promise<UiSecret> {
@@ -509,52 +466,7 @@ class IoloService {
             decryptedNotes = await aes_gcm_decrypt(secret.notes[0] as Uint8Array, decryptedSymmetricKey, this.ivLength);
         }
 
-        return this.mapSecretToUiSecret(secret, new TextDecoder().decode(decryptedUsername), new TextDecoder().decode(decryptedPassword), new TextDecoder().decode(decryptedNotes));
-    }
-
-    private async mapSecretToUiSecret(secret: Secret, username: string, password: string, notes: string): Promise<UiSecret> {
-
-        let uiSecret: UiSecret = {
-            id: secret.id,
-            name: secret.name.length > 0 ? secret.name[0] : undefined,
-            url: secret.url.length > 0 ? secret.url[0] : undefined,
-            username: username,
-            password: password,
-            notes: notes,
-            dateCreated: this.nanosecondsInBigintToIsoString(secret.date_modified),
-            dateModified: this.nanosecondsInBigintToIsoString(secret.date_created),
-        };
-
-        if (secret.category.length === 0) {
-            uiSecret.category = undefined;
-        } else if (secret.category[0].hasOwnProperty(UiSecretCategory.Password)) {
-            uiSecret.category = UiSecretCategory.Password;
-            //TODO reactivate
-            // } else if (secret.category[0].hasOwnProperty(UiSecretCategory.Document)) {
-            //     uiSecret.category = UiSecretCategory.Document;
-        } else if (secret.category[0].hasOwnProperty(UiSecretCategory.Note)) {
-            uiSecret.category = UiSecretCategory.Note;
-        } else {
-            uiSecret.category = undefined;
-        }
-
-        return uiSecret;
-    }
-
-    private nanosecondsInBigintToIsoString(nanoseconds: BigInt): string {
-        if(nanoseconds) {
-            const number = Number(nanoseconds);
-            const milliseconds = Number(number / 1000000);
-            return new Date(milliseconds).toISOString();
-        }
-        return null;
-    }
-
-    private dateToNanosecondsInBigint(isoDate: string): bigint {
-        if(isoDate) {
-            return BigInt(new Date(isoDate).getTime()) * 1000000n;
-        }
-        return null;
+        return this.ioloServiceMapper.mapSecretToUiSecret(secret, new TextDecoder().decode(decryptedUsername), new TextDecoder().decode(decryptedPassword), new TextDecoder().decode(decryptedNotes));
     }
 
     private async encryptNewSecret(uiSecret: UiSecret): Promise<CreateSecretArgs> {
@@ -588,7 +500,7 @@ class IoloService {
             return {
                 url: uiSecret.url ? [uiSecret.url] : [],
                 name: [uiSecret.name],
-                category: [this.mapUiSecretCategoryToSecretCategory(uiSecret.category)],
+                category: [this.ioloServiceMapper.mapUiSecretCategoryToSecretCategory(uiSecret.category)],
                 username: encryptedUsername.length > 0 ? [encryptedUsername] : [],
                 password: encryptedPassword.length > 0 ? [encryptedPassword] : [],
                 notes: encryptedNotes.length > 0 ? [encryptedNotes] : [],
@@ -649,7 +561,7 @@ class IoloService {
                 id: uiSecret.id,
                 url: uiSecret.url ? [uiSecret.url] : [],
                 name: [uiSecret.name],
-                category: [this.mapUiSecretCategoryToSecretCategory(uiSecret.category)],
+                category: [this.ioloServiceMapper.mapUiSecretCategoryToSecretCategory(uiSecret.category)],
                 username: encryptedUsername.length > 0 ? [encryptedUsername] : [],
                 password: encryptedPassword.length > 0 ? [encryptedPassword] : [],
                 notes: encryptedNotes.length > 0 ? [encryptedNotes] : [],
@@ -659,32 +571,7 @@ class IoloService {
         }
     }
 
-    private mapUiSecretCategoryToSecretCategory(uiCategory: UiSecretCategory): SecretCategory {
-        switch (uiCategory) {
-            case UiSecretCategory.Password:
-                return {'Password': null}
-            case UiSecretCategory.Note:
-                return {'Note': null}
-            //TODO reactivate
-            // case UiSecretCategory.Document:
-            //     return {'Document': null}
-        }
-    }
-
-    private mapSecretCategoryToUiSecretCategory(category: SecretCategory): UiSecretCategory {
-        if (category.hasOwnProperty('Password')) {
-            return UiSecretCategory.Password;
-        } else if (category.hasOwnProperty('Note')) {
-            return UiSecretCategory.Note;
-            //TODO reactivate
-            // } else if (category.hasOwnProperty('Document')) {
-            //     return  UiSecretCategory.Document;
-        }
-    }
-
     private async mapUiPolicyToUpdatePolicyArgs(uiPolicy: UiPolicy): Promise<UpdatePolicyArgs> {
-        const beneficiaries = uiPolicy.beneficiaries.map((item) => item.id);
-
         // Get the user vetKey to decrypt the symmetric encryption key
         const userVetKey: Uint8Array = await get_aes_256_gcm_key_for_user(await this.getUserPrincipal(), (await this.getActor()));
 
@@ -709,204 +596,7 @@ class IoloService {
             }
         }
 
-        let logicalOperator: LogicalOperator[]  = [];
-        if (uiPolicy.conditionsLogicalOperator === UiLogicalOperator.And) {
-            logicalOperator = [{'And': null}];
-        } else if (uiPolicy.conditionsLogicalOperator === UiLogicalOperator.Or) {
-            logicalOperator = [{'Or': null}];
-        }
-
-        return {
-            id: uiPolicy.id,
-            beneficiaries: beneficiaries,
-            name: [uiPolicy.name],
-            secrets: uiPolicy.secrets,
-            key_box: keyBox,
-            conditions_logical_operator: uiPolicy.conditions.length > 1 && logicalOperator.length > 0 ? [logicalOperator[0]] : [],
-            conditions: uiPolicy.conditions.map(uiCondition => this.mapUiConditionToUpdateCondition(uiCondition)),
-        }
-    }
-
-    private mapUiConditionToUpdateCondition(uiCondition: UiCondition): UpdateCondition {
-        if (uiCondition.type === ConditionType.LastLogin) {
-            const tCondition = uiCondition as UiLastLoginTimeCondition;
-            const updateLastLoginTimeCondition: UpdateLastLoginTimeCondition = {
-                id: tCondition.id ? [tCondition.id] : [],
-                number_of_days_since_last_login: tCondition.numberOfDaysSinceLastLogin ? BigInt(tCondition.numberOfDaysSinceLastLogin) : BigInt(100)
-            } as UpdateLastLoginTimeCondition
-            return {
-                LastLogin: updateLastLoginTimeCondition
-            }
-        }
-        if (uiCondition.type === ConditionType.FixedDateTime) {
-            const tCondition = uiCondition as UiFixedDateTimeCondition;
-            const datetimemiliseconds = tCondition.datetime ? tCondition.datetime.getTime() : new Date().getTime();
-            const updateFutureTimeCondition: UpdateFixedDateTimeCondition = {
-                id: tCondition.id ? [tCondition.id] : [],
-                datetime: BigInt(datetimemiliseconds * 1000000)
-            } as UpdateFixedDateTimeCondition
-            return {
-                FixedDateTime: updateFutureTimeCondition
-            }
-        }
-        if (uiCondition.type === ConditionType.XOutOfY) {
-            const tCondition = uiCondition as UiXOutOfYCondition;
-            const updateXOutOfYCondition: UpdateXOutOfYCondition = {
-                id: tCondition.id ? [tCondition.id] : [],
-                question: tCondition.question,
-                quorum: tCondition.quorum ? BigInt(tCondition.quorum) : BigInt(tCondition.validators.length),
-                validators: tCondition.validators.map(v => {
-                    return {
-                        principal_id: v.user.id,
-                        status: [] //do not init validation state with a value
-                    }
-                })
-            } as UpdateXOutOfYCondition
-            return {
-                XOutOfY: updateXOutOfYCondition
-            }
-        }
-    }
-
-    private mapPolicyToUiPolicy(policy: Policy, role: UiPolicyListEntryRole): UiPolicy {
-        return {
-            id: policy.id,
-            name: policy.name.length > 0 ? policy.name[0] : undefined,
-            owner: {id: policy.owner},
-            secrets: policy.secrets,
-            beneficiaries: policy.beneficiaries.map((item) => {
-                return {id: item}
-            }),
-            conditionsLogicalOperator: policy.conditions_logical_operator.hasOwnProperty('And') ? UiLogicalOperator.And : UiLogicalOperator.Or,
-            conditionsStatus: policy.conditions_status,
-            conditions: policy.conditions.map(condition => this.mapConditionToUiCondition(condition)),
-            dateCreated: this.nanosecondsInBigintToIsoString(policy.date_created),
-            dateModified: this.nanosecondsInBigintToIsoString(policy.date_modified),
-            role
-        };
-    }
-
-    private mapConditionToUiCondition(condition: Condition): UiLastLoginTimeCondition | UiXOutOfYCondition | UiFixedDateTimeCondition {
-        if (condition.hasOwnProperty(ConditionType.LastLogin)) {
-            const timeBasedCondition: LastLoginTimeCondition = condition[ConditionType.LastLogin];
-            return {
-                id: timeBasedCondition.id,
-                type: ConditionType.LastLogin,
-                conditionStatus: timeBasedCondition.condition_status,
-                numberOfDaysSinceLastLogin: Number(timeBasedCondition.number_of_days_since_last_login)
-            } as UiLastLoginTimeCondition
-        }
-        if (condition.hasOwnProperty(ConditionType.FixedDateTime)) {
-            const fixedDateTimeCondition: FixedDateTimeCondition = condition[ConditionType.FixedDateTime];
-            return {
-                id: fixedDateTimeCondition.id,
-                type: ConditionType.FixedDateTime,
-                conditionStatus: fixedDateTimeCondition.condition_status,
-                datetime: new Date(Number(fixedDateTimeCondition.datetime) / 1000000)
-            } as UiFixedDateTimeCondition
-        }
-        if (condition.hasOwnProperty(ConditionType.XOutOfY)) {
-            const xOutOfYCondition: XOutOfYCondition = condition[ConditionType.XOutOfY];
-            return {
-                id: xOutOfYCondition.id,
-                type: ConditionType.XOutOfY,
-                conditionStatus: xOutOfYCondition.condition_status,
-                question: xOutOfYCondition.question,
-                quorum: Number(xOutOfYCondition.quorum),
-                validators: xOutOfYCondition.validators.map(v => {
-                    return {
-                        status: v.status && v.status.length > 0 ? v.status[0] : undefined,
-                        user: {
-                            id: v.principal_id
-                        }
-                    }
-                })
-            } as UiXOutOfYCondition
-        }
-    }
-
-    private mapValidationStausToPolicy(policyValidatorList: UiPolicy[], policyId: string, conditionId: string, status: boolean) {
-        const updatedPolicies = policyValidatorList.map(p => {
-            if (p.id === policyId) {
-                const copiedConditions = p.conditions.map(c => {
-                        if (c.id == conditionId && c.type == ConditionType.XOutOfY) {
-                            const xouty = c as UiXOutOfYCondition;
-                            return {
-                                ...xouty,
-                                validators: [{
-                                    ...xouty.validators[0],
-                                    status: status
-                                }]
-                            } as UiXOutOfYCondition
-                        } else {
-                            return c
-                        }
-                    }
-                )
-                return {
-                    ...p,
-                    conditions: copiedConditions,
-                } as UiPolicy
-            }
-            return p;
-        })
-        return updatedPolicies;
-    }
-
-    private mapPolicyWithSecretListEntriesToUiPolicyWithSecretListEntries(policy: PolicyWithSecretListEntries, role: UiPolicyListEntryRole): UiPolicyWithSecretListEntries {
-        let secrets: UiSecretListEntry[] = policy.secrets?.map((item) => {
-            let category = undefined;
-            if (item.category.length > 0) {
-                if (item.category[0].hasOwnProperty('Password')) {
-                    category = UiSecretCategory.Password;
-                } else if (item.category[0].hasOwnProperty('Note')) {
-                    category = UiSecretCategory.Note;
-                    //TODO reactivate
-                    // } else if (item.category[0].hasOwnProperty('Document')) {
-                    //     category = UiSecretCategory.Document;
-                }
-            }
-            return {
-                id: item.id,
-                name: item.name.length > 0 ? item.name[0] : undefined,
-                category: category,
-            }
-        })
-        return {
-            id: policy.id,
-            name: policy.name?.length > 0 ? policy.name[0] : undefined,
-            owner: {id: policy.owner},
-            secrets: secrets,
-            beneficiaries: policy.beneficiaries?.map((item) => {
-                return {id: item}
-            }),
-            conditionsLogicalOperator: policy.conditions_logical_operator?.hasOwnProperty('And') ? UiLogicalOperator.And : UiLogicalOperator.Or,
-            conditionsStatus: policy.conditions_status,
-            conditions: policy.conditions?.map(condition => this.mapConditionToUiCondition(condition)),
-            dateCreated: this.nanosecondsInBigintToIsoString(policy.date_created),
-            dateModified: this.nanosecondsInBigintToIsoString(policy.date_modified),
-            role
-        };
-    }
-
-    private mapUiUserTypeToUserType(uiUserType: UiUserType): UserType {
-        switch (uiUserType) {
-            case UiUserType.Person:
-                return {'Person': null}
-            case UiUserType.Company:
-                return {'Company': null}
-        }
-    }
-
-    private preparePolicyForCreate(uiPolicy: UiPolicy): UiPolicy {
-        const conditions = uiPolicy.conditions?.map(c => {
-            const {id, ...cond} = c;
-            return cond;
-        })
-        return {
-            ...uiPolicy,
-            conditions
-        }
+        return this.ioloServiceMapper.mapUiPolicyToUpdatePolicyArgs(uiPolicy, keyBox);
     }
 }
 

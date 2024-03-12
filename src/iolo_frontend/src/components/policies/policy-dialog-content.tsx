@@ -31,6 +31,7 @@ export const PolicyDialogContent: FC<PolicyDialogContentProps> = ({readonly, vie
     const dialogItem: UiPolicyWithSecretListEntries = useSelector(selectPolicyDialogItem);
     const groupedSecretList = useSelector(selectGroupedSecrets);
     const contacts = useSelector(selectContacts);
+
     const [selectedSecrets, setSelectedSecrets] = React.useState<SelectedSecret[]>([]);
     const [selectedContacts, setSelectedContacts] = React.useState<SelectedBeneficiary[]>([]);
 
