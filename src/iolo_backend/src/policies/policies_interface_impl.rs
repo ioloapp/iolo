@@ -225,7 +225,10 @@ pub fn get_policy_list_as_validator_impl(
         let policies_for_validator = policies
             .unwrap()
             .iter()
-            .map(|policy| map_policy_for_validator(policy, &validator).unwrap())
+            .filter_map(|policy| match map_policy_for_validator(policy, &validator) {
+                Ok(valid_policy) => Some(valid_policy),
+                Err(_e) => None
+            })
             .collect();
         Ok(policies_for_validator)
     })
