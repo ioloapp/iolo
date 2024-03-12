@@ -323,15 +323,17 @@ impl PolicyWithSecretListEntries {
 }
 
 impl From<Policy> for PolicyWithSecretListEntries {
-    fn from(t: Policy) -> Self {
-        let mut new_policies = PolicyWithSecretListEntries::new(t.id);
-        new_policies.name = t.name;
-        new_policies.owner = t.owner;
-        new_policies.beneficiaries = t.beneficiaries;
-        new_policies.key_box = t.key_box;
-        new_policies.conditions = t.conditions;
-        new_policies.conditions_logical_operator = t.conditions_logical_operator;
-        new_policies.conditions_status = t.conditions_status;
-        new_policies
+    fn from(p: Policy) -> Self {
+        let mut new_policy = PolicyWithSecretListEntries::new(p.id);
+        new_policy.name = p.name;
+        new_policy.owner = p.owner;
+        new_policy.beneficiaries = p.beneficiaries;
+        new_policy.key_box = p.key_box;
+        new_policy.conditions = p.conditions;
+        new_policy.conditions_logical_operator = p.conditions_logical_operator;
+        new_policy.conditions_status = p.conditions_status;
+        new_policy.date_created = p.date_created;
+        new_policy.date_modified = p.date_modified;
+        new_policy
     }
 }

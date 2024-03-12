@@ -101,7 +101,7 @@ describe("POLICY - update_policy()", () => {
         };
         const ValidatorOne: Validator = {
             principal_id: identityOne.getPrincipal().toString(),
-            status: false,
+            status: [],
         }
         const xOutOfYCondition: UpdateXOutOfYCondition = {
             id: [],
@@ -182,7 +182,7 @@ describe("POLICY - update_policy()", () => {
             id: [xOutOfYCondition.id],
             quorum: BigInt(1),
             question: "Is the sky green?",
-            validators: [{principal_id: identityTwo.getPrincipal().toString(), status: false}],
+            validators: [{principal_id: identityTwo.getPrincipal().toString(), status: []}],
         };
         conditions.push({'XOutOfY': updateXOutOfYCondition});
         const fixedDateTimeCondition: FixedDateTimeCondition = (policyOne.conditions.find(condition => 'FixedDateTime' in condition) as { 'FixedDateTime': FixedDateTimeCondition } | undefined)?.['FixedDateTime'];
@@ -241,7 +241,7 @@ describe("POLICY - update_policy()", () => {
 
     }, 60000); // Set timeout
 
-   /* test("it must not update policy of a different principal", async () => {
+    test("it must not update policy of a different principal", async () => {
         let updatePolicyArgsOne: UpdatePolicyArgs = {
             id: policyOne.id,
             name: policyOne.name,
@@ -376,7 +376,7 @@ describe("POLICY - update_policy()", () => {
             id: ['non-existing-condition-id'],
             quorum: BigInt(1),
             question: "Is the sky green?",
-            validators: [{principal_id: identityTwo.getPrincipal().toString(), status: false}],
+            validators: [{principal_id: identityTwo.getPrincipal().toString(), status: []}],
         };
         conditions.push({'XOutOfY': updateXOutOfYCondition});
 
@@ -445,7 +445,7 @@ describe("POLICY - update_policy()", () => {
             id: [],
             quorum: BigInt(5),
             question: "Is the sky green?",
-            validators: [{principal_id: identityTwo.getPrincipal().toString(), status: false}, {principal_id: identityFour.getPrincipal().toString(), status: false}],
+            validators: [{principal_id: identityTwo.getPrincipal().toString(), status: []}, {principal_id: identityFour.getPrincipal().toString(), status: []}],
         };
         conditions.push({'XOutOfY': updateXOutOfYCondition});
 
@@ -472,7 +472,7 @@ describe("POLICY - update_policy()", () => {
             id: [],
             quorum: BigInt(5),
             question: "Is the sky green?",
-            validators: [{principal_id: identityTwo.getPrincipal().toString(), status: false}],
+            validators: [{principal_id: identityTwo.getPrincipal().toString(), status: []}],
         };
         conditions.push({'XOutOfY': updateXOutOfYCondition});
 
@@ -523,7 +523,7 @@ describe("POLICY - update_policy()", () => {
             id: [],
             quorum: BigInt(2),
             question: "Is the sky green?",
-            validators: [{principal_id: identityTwo.getPrincipal().toString(), status: false}],
+            validators: [{principal_id: identityTwo.getPrincipal().toString(), status: []}],
         };
         conditions.push({'XOutOfY': updateXOutOfYCondition});
 
@@ -542,9 +542,8 @@ describe("POLICY - update_policy()", () => {
         expect(resultUpdatePolicyOne['Err']).toHaveProperty('InvalidQuorum');
 
     }, 60000); // Set timeout
-*/
-});
 
+});
 
 describe("POLICY - get_policy_as_owner()", () => {
     test("it must read a policy properly", async () => {
