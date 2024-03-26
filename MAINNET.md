@@ -53,4 +53,12 @@ You can add for example your "normal" principal (internet-identity-based) as cus
 * Start canister: `dfx canister start iolo_backend --ic`
 * Delete canister: `dfx canister delete iolo_backend --ic`
 * Re-install code onto a canister (keeps canister ids, but deletes code and state): `dfx canister install iolo_backend --mode reinstall --ic`
-* Upgrade code on a canister (keeps canister ids and state): `dfx canister install iolo_backend --mode upgrade --ic` 
+* Upgrade code on a canister (keeps canister ids and state): `dfx canister install iolo_backend --mode upgrade --ic`
+
+
+## Current mainnet canister IDs:
+* Frontend canister via browser
+  * iolo_frontend: https://cyznk-kaaaa-aaaal-qcrcq-cai.icp0.io/
+* Backend canister via Candid interface:
+  * iolo_backend: https://a4gq6-oaaaa-aaaab-qaa4q-cai.raw.icp0.io/?id=c7yl6-hyaaa-aaaal-qcrca-cai
+  * system_api: https://a4gq6-oaaaa-aaaab-qaa4q-cai.raw.icp0.io/?id=cr2gw-4iaaa-aaaal-qcrda-cai
