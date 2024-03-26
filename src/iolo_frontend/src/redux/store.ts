@@ -26,7 +26,7 @@ const rootReducer = (state, action) => {
     }
     if(action.type === REHYDRATE) {
         const incomingState = action.payload;
-        if (incomingState.user.loginStatus === 'pending') {
+        if (incomingState?.user?.loginStatus === 'pending') {
             return {
                 ...incomingState,
                 user: {
