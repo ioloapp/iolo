@@ -123,19 +123,19 @@
     "no-category": "No Category",
     "dialog": {
       "add": {
-        "title": "Add vault ",
-        "text": "To add a new vault  choose the category of it and fill in the necessary information.",
-        "button": "Add vault "
+        "title": "Add secret ",
+        "text": "To add a new secret to the vault choose the category and fill in the necessary information.",
+        "button": "Add secret "
       },
       "delete": {
-        "title": "Delete vault ",
-        "text": "Are you sure you want to delete the vault  {{secret}}?",
-        "button": "Delete vault "
+        "title": "Delete secret ",
+        "text": "Are you sure you want to delete the secret {{secret}}?",
+        "button": "Delete secret "
       },
       "edit": {
-        "title": "Edit vault ",
-        "text": "Edit your vault ",
-        "button": "Update vault "
+        "title": "Edit secret ",
+        "text": "Edit your secret ",
+        "button": "Update secret "
       },
       "content": {
         "category": "Category",
@@ -146,8 +146,8 @@
         "notes": "Notes"
       },
       "view": {
-        "title": "Edit vault",
-        "text": "Edit your vault"
+        "title": "Edit secret",
+        "text": "Edit your secret"
       }
     }
   },
