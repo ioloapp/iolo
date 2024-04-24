@@ -40,27 +40,34 @@ export function createNewActor(identity: Secp256k1KeyIdentity, canisterId: strin
 }
 
 export async function createIoloUsersInBackend(actors: Array<ActorSubclass<_SERVICE>>) {
-    if (actors.length > 3) {
-        throw new Error('Maximum 3 users possible currently!');
+    if (actors.length > 4) {
+        throw new Error('Maximum 4 users possible currently!');
     }
 
     const users = [
         { name: 'Alice', email: 'alice@ioloapp.io'},
         { name: 'Bob', email: 'bob@ioloapp.io'},
         { name: 'Charlie', email: 'charlie@ioloapp.io'},
+        { name: 'David', email: 'david@ioloapp.io'},
     ];
-
-    for (let i = 0; i < actors.length; i++) {
+    
+    const promises = actors.map((actor, i) => {
         const addOrUpdateUserArgs: AddOrUpdateUserArgs = {
             name: [users[i].name],
             email: [users[i].email],
             user_type: [{ 'Person': null }],
         };
-        const result: Result_3 = await actors[i].create_user(addOrUpdateUserArgs);
+        return actor.create_user(addOrUpdateUserArgs);
+    });
+
+    const results = await Promise.all(promises);
+
+    // Check results and handle any errors
+    results.forEach((result, index) => {
         if (!result['Ok']) {
-            throw new Error(`User creation failed for ${users[i].name}`);
+            throw new Error(`User creation failed for ${users[index].name}`);
         }
-    }
+    });
 }
 
 export async function createSecretInBackend(prefix: string, actor: ActorSubclass<_SERVICE>): Promise<Secret> {

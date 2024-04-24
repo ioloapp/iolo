@@ -48,7 +48,7 @@ pub fn evaluate_overall_conditions_status(policy_id: &PolicyID) -> Result<(), Sm
 /// This function is called every time the timer fires.
 /// It will check the last login date of all users and set the condition status of all policies
 /// to true if the last login date is older than the allowed number of days.
-pub fn check_login_date_conditions() {
+pub fn check_time_based_conditions() {
     // read all users
     let users: Vec<User> = USER_STORE.with(|ur: &RefCell<UserStore>| -> Vec<User> {
         let user_store = ur.borrow();
@@ -67,19 +67,25 @@ pub fn check_login_date_conditions() {
 
             // iterate over policy conditions
             for condition in policy.conditions_mut().iter_mut() {
-                if let Condition::LastLogin(tb) = &condition {
+                if let Condition::LastLogin(cond) = &condition {
                     if condition.evaluate(Some(&user)) {
                         // Last login date earlier than allowed, set condition status of all user policies to true
-                        ic_cdk::println!("Last login date of user {:?} is older than {:?} days, condition status of all its policies is set to true", user.id, tb.number_of_days_since_last_login);
-                        // policy.set_condition_status(true);
+                        //ic_cdk::println!("Last login date of user {:?} is older than {:?} days, condition status of all its policies is set to true", user.id, cond.number_of_days_since_last_login);
                         condition.set_condition_status(true);
                         policy_needs_update = true;
                     } else {
-                        ic_cdk::println!(
-                            "Last login date of user {:?} is NOT older than {:?} days!",
-                            user.id,
-                            tb.number_of_days_since_last_login
-                        );
+                        //ic_cdk::println!("Last login date of user {:?} is NOT older than {:?} days!", user.id, cond.number_of_days_since_last_login);
+                    }
+                }
+                
+                if let Condition::FixedDateTime(cond) = &condition {
+                    if condition.evaluate(None) {
+                        // Time based condition is met, set condition status of all user policies to true
+                        //ic_cdk::println!("Time based condition is met, condition status is set to true");
+                        condition.set_condition_status(true);
+                        policy_needs_update = true;
+                    } else {
+                        //ic_cdk::println!("Time based condition is NOT met!");
                     }
                 }
             }

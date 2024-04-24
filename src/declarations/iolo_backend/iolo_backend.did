@@ -1,0 +1,243 @@
+type AddOrUpdateUserArgs = record {
+  user_type : opt UserType;
+  name : opt text;
+  email : opt text;
+};
+type Condition = variant {
+  LastLogin : LastLoginTimeCondition;
+  FixedDateTime : FixedDateTimeCondition;
+  XOutOfY : XOutOfYCondition;
+};
+type ConfirmXOutOfYConditionArgs = record {
+  status : bool;
+  condition_id : text;
+  policy_id : text;
+};
+type Contact = record {
+  id : text;
+  user_type : opt UserType;
+  name : opt text;
+  email : opt text;
+};
+type CreateContactArgs = record {
+  id : text;
+  user_type : opt UserType;
+  name : opt text;
+  email : opt text;
+};
+type CreatePolicyArgs = record { name : opt text };
+type CreateSecretArgs = record {
+  url : opt text;
+  username : opt vec nat8;
+  password : opt vec nat8;
+  name : opt text;
+  encrypted_symmetric_key : vec nat8;
+  notes : opt vec nat8;
+  category : opt SecretCategory;
+};
+type FixedDateTimeCondition = record {
+  id : text;
+  condition_status : bool;
+  datetime : nat64;
+};
+type LastLoginTimeCondition = record {
+  id : text;
+  condition_status : bool;
+  number_of_days_since_last_login : nat64;
+};
+type LogicalOperator = variant { Or; And };
+type Policy = record {
+  id : text;
+  date_created : nat64;
+  owner : text;
+  name : opt text;
+  conditions_logical_operator : opt LogicalOperator;
+  secrets : vec text;
+  conditions_status : bool;
+  beneficiaries : vec text;
+  key_box : vec record { text; vec nat8 };
+  conditions : vec Condition;
+  date_modified : nat64;
+};
+type PolicyForValidator = record {
+  id : text;
+  owner : text;
+  conditions : vec Condition;
+};
+type PolicyKeyDerviationArgs = record {
+  encryption_public_key : vec nat8;
+  policy_id : text;
+};
+type PolicyListEntry = record {
+  id : text;
+  owner : text;
+  name : opt text;
+  conditions_status : bool;
+};
+type PolicyWithSecretListEntries = record {
+  id : text;
+  date_created : nat64;
+  owner : text;
+  name : opt text;
+  conditions_logical_operator : opt LogicalOperator;
+  secrets : vec SecretListEntry;
+  conditions_status : bool;
+  beneficiaries : vec text;
+  key_box : vec record { text; vec nat8 };
+  conditions : vec Condition;
+  date_modified : nat64;
+};
+type Result = variant { Ok; Err : SmartVaultErr };
+type Result_1 = variant { Ok : Contact; Err : SmartVaultErr };
+type Result_10 = variant { Ok : vec PolicyListEntry; Err : SmartVaultErr };
+type Result_11 = variant { Ok : vec PolicyForValidator; Err : SmartVaultErr };
+type Result_12 = variant { Ok : vec SecretListEntry; Err : SmartVaultErr };
+type Result_2 = variant { Ok : Policy; Err : SmartVaultErr };
+type Result_3 = variant { Ok : Secret; Err : SmartVaultErr };
+type Result_4 = variant { Ok : User; Err : SmartVaultErr };
+type Result_5 = variant { Ok : text; Err : SmartVaultErr };
+type Result_6 = variant { Ok : vec Contact; Err : SmartVaultErr };
+type Result_7 = variant { Ok : vec nat8; Err : SmartVaultErr };
+type Result_8 = variant {
+  Ok : PolicyWithSecretListEntries;
+  Err : SmartVaultErr;
+};
+type Result_9 = variant { Ok : PolicyForValidator; Err : SmartVaultErr };
+type Secret = record {
+  id : text;
+  url : opt text;
+  username : opt vec nat8;
+  date_created : nat64;
+  owner : text;
+  password : opt vec nat8;
+  name : opt text;
+  notes : opt vec nat8;
+  category : opt SecretCategory;
+  date_modified : nat64;
+};
+type SecretCategory = variant { Password; Note; Document };
+type SecretListEntry = record {
+  id : text;
+  name : opt text;
+  category : opt SecretCategory;
+};
+type SmartVaultErr = variant {
+  ContactDoesNotExist : text;
+  UserAlreadyExists : text;
+  OnlyOwnerCanDeleteSecret : text;
+  PolicyConditionDoesNotExist : text;
+  SecretHasNoId;
+  UserDeletionFailed : text;
+  KeyBoxEntryDoesNotExistForSecret : text;
+  ContactAlreadyExists : text;
+  CallerNotBeneficiary : text;
+  InvalidQuorum : record { text; text };
+  SecretDoesNotExist : text;
+  NoPolicyForBeneficiary : text;
+  CallerNotPolicyOwner : text;
+  SecretEntryDoesNotExistForKeyBoxEntry : text;
+  InvalidDateTime : text;
+  Unauthorized;
+  UserUpdateFailed : text;
+  LogicalOperatorWithLessThanTwoConditions;
+  NoPolicyForValidator : text;
+  PolicyAlreadyExists : text;
+  PolicyDoesNotExist : text;
+  UserDoesNotExist : text;
+  SecretAlreadyExists : text;
+  InvalidPolicyCondition;
+  KeyGenerationNotAllowed;
+};
+type UpdateCondition = variant {
+  LastLogin : UpdateLastLoginTimeCondition;
+  FixedDateTime : UpdateFixedDateTimeCondition;
+  XOutOfY : UpdateXOutOfYCondition;
+};
+type UpdateFixedDateTimeCondition = record { id : opt text; datetime : nat64 };
+type UpdateLastLoginTimeCondition = record {
+  id : opt text;
+  number_of_days_since_last_login : nat64;
+};
+type UpdatePolicyArgs = record {
+  id : text;
+  name : opt text;
+  conditions_logical_operator : opt LogicalOperator;
+  secrets : vec text;
+  beneficiaries : vec text;
+  key_box : vec record { text; vec nat8 };
+  conditions : vec UpdateCondition;
+};
+type UpdateSecretArgs = record {
+  id : text;
+  url : opt text;
+  username : opt vec nat8;
+  password : opt vec nat8;
+  name : opt text;
+  notes : opt vec nat8;
+  category : opt SecretCategory;
+};
+type UpdateXOutOfYCondition = record {
+  id : opt text;
+  question : text;
+  quorum : nat64;
+  validators : vec Validator;
+};
+type User = record {
+  id : text;
+  user_type : opt UserType;
+  date_created : nat64;
+  contacts : vec Contact;
+  name : opt text;
+  secrets : vec text;
+  date_last_login : opt nat64;
+  email : opt text;
+  key_box : vec record { text; vec nat8 };
+  date_modified : nat64;
+  policies : vec text;
+};
+type UserType = variant { Company; Person };
+type Validator = record { status : opt bool; principal_id : text };
+type XOutOfYCondition = record {
+  id : text;
+  question : text;
+  condition_status : bool;
+  quorum : nat64;
+  validators : vec Validator;
+};
+service : () -> {
+  confirm_x_out_of_y_condition : (ConfirmXOutOfYConditionArgs) -> (Result);
+  create_contact : (CreateContactArgs) -> (Result_1);
+  create_policy : (CreatePolicyArgs) -> (Result_2);
+  create_secret : (CreateSecretArgs) -> (Result_3);
+  create_user : (AddOrUpdateUserArgs) -> (Result_4);
+  delete_contact : (text) -> (Result);
+  delete_policy : (text) -> (Result);
+  delete_secret : (text) -> (Result);
+  delete_user : () -> (Result);
+  encrypted_ibe_decryption_key_for_caller : (vec nat8) -> (text);
+  generate_vetkd_encrypted_symmetric_key_for_policy : (
+      PolicyKeyDerviationArgs,
+    ) -> (Result_5);
+  generate_vetkd_encrypted_symmetric_key_for_user : (vec nat8) -> (text);
+  get_contact_list : () -> (Result_6) query;
+  get_current_user : () -> (Result_4) query;
+  get_encrypted_symmetric_key : (text) -> (Result_7) query;
+  get_encrypted_symmetric_key_as_beneficiary : (text, text) -> (Result_7) query;
+  get_policy_as_beneficiary : (text) -> (Result_8) query;
+  get_policy_as_owner : (text) -> (Result_8) query;
+  get_policy_as_validator : (text) -> (Result_9) query;
+  get_policy_list_as_beneficiary : () -> (Result_10) query;
+  get_policy_list_as_owner : () -> (Result_10) query;
+  get_policy_list_as_validator : () -> (Result_11) query;
+  get_secret : (text) -> (Result_3) query;
+  get_secret_as_beneficiary : (text, text) -> (Result_3) query;
+  get_secret_list : () -> (Result_12) query;
+  ibe_encryption_key : () -> (text);
+  start_with_interval_secs : (nat64) -> ();
+  symmetric_key_verification_key : () -> (text);
+  update_contact : (Contact) -> (Result_1);
+  update_policy : (UpdatePolicyArgs) -> (Result_2);
+  update_secret : (UpdateSecretArgs) -> (Result_3);
+  update_user : (AddOrUpdateUserArgs) -> (Result_4);
+  update_user_login_date : () -> (Result_4);
+}

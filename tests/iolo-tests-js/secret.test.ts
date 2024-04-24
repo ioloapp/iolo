@@ -11,7 +11,7 @@ import {
     Result,
     Result_3,
     Secret,
-    Result_11, Result_7, UpdateSecretArgs, _SERVICE
+    Result_12, Result_7, UpdateSecretArgs, _SERVICE
 } from "../../src/declarations/iolo_backend/iolo_backend.did";
 import {ActorSubclass} from "@dfinity/agent";
 
@@ -226,7 +226,7 @@ describe("SECRET - get_secret_list()", () => {
     test("it must read the secret list properly", async () => {
 
         // Check created secret of identity one via getSecretList
-        const resultSecretListOne: Result_11 = await actorOne.get_secret_list();
+        const resultSecretListOne: Result_12 = await actorOne.get_secret_list();
         expect(resultSecretListOne).toHaveProperty('Ok');
         expect(Array.isArray(resultSecretListOne['Ok'])).toBe(true);
         resultSecretListOne['Ok'].sort((a, b) => {
@@ -243,7 +243,7 @@ describe("SECRET - get_secret_list()", () => {
         expect(resultSecretListOne['Ok'][1].category).toStrictEqual(addSecretArgsTwo.category);
 
         // Check created secret of identity two via getSecretList
-        const resultSecretListTwo: Result_11 = await actorTwo.get_secret_list();
+        const resultSecretListTwo: Result_12 = await actorTwo.get_secret_list();
         expect(resultSecretListTwo).toHaveProperty('Ok');
         expect(Array.isArray(resultSecretListTwo['Ok'])).toBe(true);
         resultSecretListTwo['Ok'].sort((a, b) => {
@@ -359,7 +359,7 @@ describe("SECRET - delete_secret()", () => {
         expect(resultRemoveSecretOne['Ok']).toBeNull();
 
         // Only one secret must exist in the backend now
-        const resultSecretListOne: Result_11 = await actorOne.get_secret_list();
+        const resultSecretListOne: Result_12 = await actorOne.get_secret_list();
         expect(resultSecretListOne).toHaveProperty('Ok');
         expect(Array.isArray(resultSecretListOne['Ok'])).toBe(true);
         expect(resultSecretListOne['Ok']).toHaveLength(1);

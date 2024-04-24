@@ -1,5 +1,6 @@
 import type { Principal } from '@dfinity/principal';
 import type { ActorMethod } from '@dfinity/agent';
+import type { IDL } from '@dfinity/candid';
 
 export interface AddOrUpdateUserArgs {
   'user_type' : [] | [UserType],
@@ -271,3 +272,5 @@ export interface _SERVICE {
   'update_user' : ActorMethod<[AddOrUpdateUserArgs], Result_4>,
   'update_user_login_date' : ActorMethod<[], Result_4>,
 }
+export declare const idlFactory: IDL.InterfaceFactory;
+export declare const init: (args: { IDL: typeof IDL }) => IDL.Type[];

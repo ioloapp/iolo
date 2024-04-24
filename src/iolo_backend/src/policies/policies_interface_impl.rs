@@ -282,7 +282,7 @@ pub async fn update_policy_impl(
         }
     }
 
-    // Check that logical operator is only set if two ore more conditions are provided
+    // Check that logical operator is only set if two or more conditions are provided
     if upa.conditions.len() < 2 && upa.conditions_logical_operator.is_some() {
         return Err(SmartVaultErr::LogicalOperatorWithLessThanTwoConditions);
     }
@@ -292,7 +292,7 @@ pub async fn update_policy_impl(
 
     // Find out which conditions are brand new and which conditions need updates
     for uc in upa.conditions.iter() {
-        // Validaton of x out of y conditions
+        // Validation of x out of y conditions
         if let UpdateCondition::XOutOfY(c) = uc.clone() {
             // Check that validators do exist if it's an XOutOfY condition
             for v in c.validators.clone() {
