@@ -64,7 +64,6 @@ beforeAll(async () => {
         key_box: [[secretA.id, new Uint8Array([1, 2, 3])], [secretB.id, new Uint8Array([4, 5, 6])]],
     }
     let resultUpdatePolicy: Result_2 = await actorOne.update_policy(updatePolicyArgs);
-    console.log(resultUpdatePolicy)
     expect(resultUpdatePolicy).toHaveProperty('Ok');
     policy = resultUpdatePolicy['Ok'];
 
