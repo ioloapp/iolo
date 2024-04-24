@@ -67,7 +67,7 @@ pub fn check_time_based_conditions() {
 
             // iterate over policy conditions
             for condition in policy.conditions_mut().iter_mut() {
-                if let Condition::LastLogin(cond) = &condition {
+                if let Condition::LastLogin(_cond) = &condition {
                     if condition.evaluate(Some(&user)) {
                         // Last login date earlier than allowed, set condition status of all user policies to true
                         //ic_cdk::println!("Last login date of user {:?} is older than {:?} days, condition status of all its policies is set to true", user.id, cond.number_of_days_since_last_login);
@@ -78,7 +78,7 @@ pub fn check_time_based_conditions() {
                     }
                 }
                 
-                if let Condition::FixedDateTime(cond) = &condition {
+                if let Condition::FixedDateTime(_cond) = &condition {
                     if condition.evaluate(None) {
                         // Time based condition is met, set condition status of all user policies to true
                         //ic_cdk::println!("Time based condition is met, condition status is set to true");
